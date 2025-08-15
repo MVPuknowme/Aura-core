@@ -1,0 +1,81 @@
+{
+  "dashboardTitle": "Aura Impact: Chaos to Clarity",
+  "panels": [
+    {
+      "id": "panel_hero_intro",
+      "title": "🦸 Who We Helped This Week",
+      "characters": [
+        {
+          "name": "Dev Dynamo",
+          "role": "Developer",
+          "impact": "Fixed 3 login bugs, saved 12 hours",
+          "location": "Bend, OR"
+        },
+        {
+          "name": "Mom Multitasker",
+          "role": "Family User",
+          "impact": "Used Sync For You to juggle 4 appointments",
+          "location": "La Pine, OR"
+        }
+      ],
+      "totalHelped": 42
+    },
+    {
+      "id": "panel_chaos_meter",
+      "title": "💥 Chaos Avoided",
+      "chaosEvents": [
+        {
+          "type": "Login Failure",
+          "count": 7,
+          "resolvedBy": "SoFi Fixer Flow"
+        },
+        {
+          "type": "GPS Drift",
+          "count": 3,
+          "resolvedBy": "Location Snapback"
+        }
+      ],
+      "boomSandwichLevel": "Medium"
+    },
+    {
+      "id": "panel_time_saver",
+      "title": "⏱️ Time Saved",
+      "estimates": {
+        "totalHoursSaved": 87,
+        "topFeature": "Dropshipping Tracker",
+        "runnerUp": "Sync For You"
+      }
+    },
+    {
+      "id": "panel_creative_sparks",
+      "title": "🎭 Stories Sparked",
+      "comicMoments": [
+        {
+          "title": "Boom Sandwich at the Cops",
+          "theme": "Deployment chaos turned into comedy",
+          "characters": ["Dev Dynamo", "Bugzilla", "CopBot"]
+        },
+        {
+          "title": "The Sync Whisperer",
+          "theme": "Calendar syncing saves a family reunion",
+          "characters": ["Mom Multitasker", "Aura Core"]
+        }
+      ]
+    },
+    {
+      "id": "panel_growth_tracker",
+      "title": "📈 Growth & Reach",
+      "metrics": {
+        "activeUsers": 58,
+        "newSignups": 12,
+        "regions": ["Central Oregon", "Remote testers", "Partner outreach"]
+      },
+      "projectedNextMonth": 120
+    },
+    {
+      "id": "panel_gpt_summary",
+      "title": "🧠 Copilot Says...",
+      "summary": "Aura Core turned 87 hours of chaos into clarity this week. Dropshipping Tracker led the charge, while Boom Sandwich made us laugh through the bugs. Keep syncing, keep sparking."
+    }
+  ]
+}
