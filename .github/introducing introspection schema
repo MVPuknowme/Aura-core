@@ -1,0 +1,14 @@
+aura-core-introspection/
+├── schema/
+│   └── introspection.schema.json
+├── server/
+│   ├── index.js
+│   ├── package.json
+│   └── verify.js
+├── agent/
+│   └── emit_event.py
+├── contracts/
+│   └── NameRegistry.sol
+├── scripts/
+│   └── anchor.js
+└── README.md
