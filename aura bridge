@@ -1,0 +1,40 @@
+import openai
+import os
+import subprocess
+
+# Set your OpenAI API key
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+REPO_PATH = os.path.dirname(os.path.abspath(__file__))
+
+def generate_code(prompt, max_tokens=512):
+    """Generate code using Codex for a given prompt"""
+    response = openai.Completion.create(
+        engine="code-davinci-002",
+        prompt=prompt,
+        temperature=0.2,
+        max_tokens=max_tokens
+    )
+    return response.choices[0].text.strip()
+
+def git_commit_push(file_path, message="Update from Aura Bridge"):
+    """Auto-commit and push changes"""
+    try:
+        subprocess.run(["git", "add", file_path], cwd=REPO_PATH, check=True)
+        subprocess.run(["git", "commit", "-m", message], cwd=REPO_PATH, check=True)
+        subprocess.run(["git", "push"], cwd=REPO_PATH, check=True)
+        print("Changes pushed successfully!")
+    except subprocess.CalledProcessError as e:
+        print(f"Git operation failed: {e}")
+
+if __name__ == "__main__":
+    prompt = "Write a Python function that connects Aura to this MVPuknowme repo and syncs data automatically."
+    code_output = generate_code(prompt)
+    
+    # Save generated code
+    file_name = os.path.join(REPO_PATH, "aura_generated.py")
+    with open(file_name, "w") as f:
+        f.write(code_output)
+    
+    print(f"Generated code saved to {file_name}")
+    git_commit_push(file_name)
