@@ -1,0 +1,14 @@
+# server_ingest.py
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+@app.route("/ingest", methods=["POST"])
+def ingest():
+    data = request.get_json()
+    # Validate, log, store in DB or file
+    print("Received:", data)
+    return jsonify({"status": "ok"}), 200
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
