@@ -1,0 +1,59 @@
+import time
+import json
+import requests
+from datetime import datetime
+
+HUB_ENDPOINT = "https://YOUR-HUB-URL.com/ingest"
+DEVICE_ID = "your_device_id_string"
+
+def send_packet(metric_type, value, metadata=None):
+    payload = {
+        "device_id": DEVICE_ID,
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "metric_type": metric_type,
+        "value": value,
+        "metadata": metadata or {}
+    }
+
+    try:
+        response = requests.post(
+            HUB_ENDPOINT,
+            data=json.dumps(payload),
+            headers={"Content-Type": "application/json"},
+            timeout=6
+        )
+        return response.status_code, response.text
+    except Exception as e:
+        return None, str(e)
+
+
+def mock_heart_rate():
+    """Placeholder until native biometric access is added."""
+    import random
+    return random.randint(60, 110)
+
+
+def mock_accelerometer():
+    """Simulates a basic 3-axis reading."""
+    import random
+    return {
+        "x": round(random.uniform(-1.0, 1.0), 3),
+        "y": round(random.uniform(-1.0, 1.0), 3),
+        "z": round(random.uniform(-1.0, 1.0), 3)
+    }
+
+
+def main():
+    """Simple loop sending periodic packets."""
+    while True:
+        hr = mock_heart_rate()
+        accel = mock_accelerometer()
+
+        send_packet("heart_rate", hr)
+        send_packet("accelerometer", accel)
+
+        time.sleep(5)  # adjustable sampling rate
+
+
+if __name__ == "__main__":
+    main()
