@@ -57,3 +57,40 @@ def main():
 
 if __name__ == "__main__":
     main()
+name: Aura Auto-Generate
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  aura_generation:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install openai
+
+      - name: Run Aura Bridge
+        run: python aura_bridge.py
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "Aura Auto"
+          git config --global user.email "aura@autogen.com"
+          git add .
+          git commit -m "Aura Bridge auto-generated code" || echo "No changes to commit"
+          git push
