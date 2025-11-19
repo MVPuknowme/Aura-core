@@ -1,0 +1,47 @@
+import LocalAuthentication
+
+final class BiometricAuth {
+    enum AuthError: Error {
+        case notAvailable
+        case failed(String)
+        case canceled
+    }
+    
+    // Check if biometrics are available and enrolled
+    func canEvaluateBiometrics() -> Bool {
+        let ctx = LAContext()
+        var error: NSError?
+        let policy = LAPolicy.deviceOwnerAuthenticationWithBiometrics
+        return ctx.canEvaluatePolicy(policy, error: &error)
+    }
+    
+    // Prompt Face ID / Touch ID
+    func authenticate(reason: String = "Authenticate to continue",
+                      completion: @escaping (Result<Void, AuthError>) -> Void) {
+        let ctx = LAContext()
+        ctx.localizedReason = reason
+        let policy = LAPolicy.deviceOwnerAuthenticationWithBiometrics
+        
+        guard ctx.canEvaluatePolicy(policy, error: nil) else {
+            completion(.failure(.notAvailable))
+            return
+        }
+        
+        ctx.evaluatePolicy(policy, localizedReason: reason) { success, error in
+            DispatchQueue.main.async {
+                if success {
+                    completion(.success(()))
+                } else if let laError = error as? LAError {
+                    switch laError.code {
+                    case .userCancel, .systemCancel, .appCancel:
+                        completion(.failure(.canceled))
+                    default:
+                        completion(.failure(.failed(laError.localizedDescription)))
+                    }
+                } else {
+                    completion(.failure(.failed(error?.localizedDescription ?? "Unknown error")))
+                }
+            }
+        }
+    }
+}
