@@ -1,0 +1,35 @@
+func payBill(for service: CloudData) {
+    // 1. Trigger Python bridge to handle the payment
+    let task = Process()
+    task.launchPath = "/usr/bin/python3"
+    task.arguments = [
+        "/path/to/aura_bridge.py",      // Your Aura Bridge Python file
+        service.service,
+        "\(service.nextBill)"
+    ]
+    
+    task.terminationHandler = { process in
+        DispatchQueue.main.async {
+            if process.terminationStatus == 0 {
+                print("Payment executed for \(service.service): $\(service.nextBill)")
+                
+                // 2. Trigger Samsung Bluetooth alert
+                triggerSamsungAlert()
+                
+                // Optional: Update UI, show confirmation alert
+                showPaymentConfirmation(for: service)
+            } else {
+                print("Payment failed for \(service.service)")
+            }
+        }
+    }
+    
+    task.launch()
+}
+
+// Optional: SwiftUI alert for confirmation
+func showPaymentConfirmation(for service: CloudData) {
+    // Implementation depends on your view structure
+    // Example: Using @State var showAlert in your view
+    print("Confirmation: Payment completed for \(service.service)")
+}
