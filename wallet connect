@@ -3,3 +3,61 @@ from modules.wallet.connector import WalletConnector
 wc = WalletConnector()
 balance = wc.get_balance()
 transactions = wc.get_transactions()
+import os
+import logging
+from dotenv import load_dotenv
+from coinbase.wallet.client import Client
+
+load_dotenv()
+
+API_KEY = os.getenv("COINBASE_API_KEY")
+API_SECRET = os.getenv("COINBASE_API_SECRET")
+PASSPHRASE = os.getenv("COINBASE_PASSPHRASE")
+WALLET_ADDRESS = os.getenv("WALLET_ADDRESS")
+
+# Set up logging
+logging.basicConfig(
+    filename="wallet_connector.log",
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(message)s"
+)
+
+class WalletConnector:
+    def __init__(self):
+        self.client = Client(API_KEY, API_SECRET)
+
+    def get_balance(self):
+        try:
+            account = self.client.get_account(WALLET_ADDRESS)
+            balance = account.balance.amount
+            logging.info(f"Balance for {WALLET_ADDRESS}: {balance}")
+            return balance
+        except Exception as e:
+            logging.error(f"Failed to retrieve balance: {e}")
+            return None
+
+    def get_transactions(self):
+        try:
+            account = self.client.get_account(WALLET_ADDRESS)
+            txs = account.get_transactions()
+            for tx in txs.data:
+                logging.info(f"Transaction: {tx.id} | {tx.status} | {tx.amount.amount} {tx.amount.currency}")
+            return txs.data
+        except Exception as e:
+            logging.error(f"Failed to fetch transactions: {e}")
+            return []
+
+    def send_payment(self, to_address, amount, currency="USD"):
+        try:
+            account = self.client.get_account(WALLET_ADDRESS)
+            tx = account.send_money(to=to_address, amount=amount, currency=currency)
+            logging.info(f"Sent {amount} {currency} to {to_address}. TxID: {tx.id}")
+            return tx
+        except Exception as e:
+            logging.error(f"Payment failed: {e}")
+            return None
+
+if __name__ == "__main__":
+    wc = WalletConnector()
+    wc.get_balance()
+    wc.get_transactions()
