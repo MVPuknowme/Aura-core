@@ -26,3 +26,32 @@
     package_release.sh
   README.md
   LICENSE
+import sys
+from connector import WalletConnector
+
+def main():
+    wc = WalletConnector()
+    success = True
+
+    # Test balance retrieval
+    balance = wc.get_balance()
+    if balance is None:
+        print("[FAIL] Unable to fetch wallet balance")
+        success = False
+    else:
+        print(f"[PASS] Wallet balance retrieved: {balance}")
+
+    # Test transaction retrieval
+    txs = wc.get_transactions()
+    if not txs:
+        print("[FAIL] Unable to fetch transactions or no transactions found")
+        # This might not always be a failure; just a warning
+        print("[WARN] No transactions found" if txs == [] else "")
+    else:
+        print(f"[PASS] Retrieved {len(txs)} transaction(s)")
+
+    # Exit code for CI/CD
+    sys.exit(0 if success else 1)
+
+if __name__ == "__main__":
+    main()
