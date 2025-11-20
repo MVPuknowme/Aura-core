@@ -1,0 +1,43 @@
+from flask import Flask, request, jsonify
+import subprocess, os, hashlib, hmac, json, uuid
+
+app = Flask(__name__)
+# simple token auth via header - rotate and manage in secrets
+ORCH_TOKEN = os.environ.get("ORCH_TOKEN", "replace-me")
+
+def auth():
+    token = request.headers.get("Authorization","").replace("Bearer ","")
+    return token == ORCH_TOKEN
+
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({"status":"ok","id":str(uuid.uuid4())})
+
+@app.route("/execute", methods=["POST"])
+def execute():
+    if not auth(): return jsonify({"error":"unauthorized"}), 401
+    body = request.get_json() or {}
+    # body: { "cmd": "...", "target": "validator-1", "type": "deploy" }
+    cmd = body.get("cmd")
+    if not cmd:
+        return jsonify({"error":"no-cmd"}), 400
+    # WARNING: remote-run policy - in prod, replace with job queue and ephemeral runners
+    # here we relay the command into a trusted runner environment via subprocess
+    try:
+        out = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, timeout=300)
+        return jsonify({"ok": True, "out": out.decode("utf-8")})
+    except subprocess.CalledProcessError as e:
+        return jsonify({"ok": False, "code": e.returncode, "out": e.output.decode("utf-8")}), 500
+
+@app.route("/deploy", methods=["POST"])
+def deploy():
+    if not auth(): return jsonify({"error":"unauthorized"}), 401
+    data = request.get_json() or {}
+    # deploy payload: {module, image, env, target}
+    # For production: push to job queue like RabbitMQ/SQS and let runner agents pick jobs.
+    # For now: write job file to /var/aura/jobs for runners to pick up
+    os.makedirs("/var/aura/jobs", exist_ok=True)
+    job_id = str(uuid.uuid4())
+    with open(f"/var/aura/jobs/{job_id}.json","w") as fh:
+        json.dump(data, fh)
+    return jsonify({"job_id": job_id})
