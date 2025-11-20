@@ -1,0 +1,41 @@
+import subprocess
+import os
+from modules.wallet.connector import WalletConnector
+
+REPO_DIR = os.path.abspath(".")
+LOG_FILE = "highspeed_runner.log"
+
+def run_command(name, command, cwd=None):
+    print(f"\n=== Running: {name} ===")
+    with open(LOG_FILE, "a") as log:
+        log.write(f"\n=== {name} ===\n")
+    try:
+        result = subprocess.run(command, shell=True, cwd=cwd, capture_output=True, text=True)
+        with open(LOG_FILE, "a") as log:
+            log.write(result.stdout)
+            if result.stderr:
+                log.write(result.stderr)
+        if result.returncode != 0:
+            print(f"[FAIL] {name}")
+            return False
+        print(f"[PASS] {name}")
+        return True
+    except Exception as e:
+        print(f"[ERROR] {name}: {e}")
+        return False
+
+def sync_repo():
+    run_command("Git Pull", "git pull", cwd=REPO_DIR)
+
+def fetch_ai_updates(prompt="Update Aura-Core modules via Copilot"):
+    ai_file = "modules/generated_module.py"
+    with open(ai_file, "w") as f:
+        f.write(f"# AI-generated module\n# Prompt: {prompt}\n")
+    print(f"[Bridge] Generated AI module at {ai_file}")
+
+def verify_suite():
+    return run_command("Suite Verification", "python verify_suite.py", cwd=REPO_DIR)
+
+def run_wallet():
+    required_files = ["connector.py"]
+    if check_module_integrity("modules
