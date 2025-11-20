@@ -61,3 +61,50 @@ if __name__ == "__main__":
     wc = WalletConnector()
     wc.get_balance()
     wc.get_transactions()
+name: Wallet Sync
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # every 5 minutes
+  workflow_dispatch:        # allows manual trigger
+
+jobs:
+  sync-wallet:
+    runs-on: ubuntu-latest
+    env:
+      COINBASE_API_KEY: ${{ secrets.COINBASE_API_KEY }}
+      COINBASE_API_SECRET: ${{ secrets.COINBASE_API_SECRET }}
+      COINBASE_PASSPHRASE: ${{ secrets.COINBASE_PASSPHRASE }}
+      WALLET_ADDRESS: ${{ secrets.WALLET_ADDRESS }}
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install Requirements
+        run: |
+          pip install -r modules/wallet/requirements.txt
+
+      - name: Run Wallet Sync
+        run: |
+          python modules/wallet/connector.py
+
+      - name: Commit Audit Log
+        run: |
+          git config --global user.name "Aura-Core Bot"
+          git config --global user.email "aura-core-bot@example.com"
+          git add modules/wallet/wallet_connector.log
+          git commit -m "Update wallet audit log"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Notify if Balance Changed
+        run: |
+          last_balance=$(tail -n 1 modules/wallet/wallet_connector.log | awk '{print $NF}')
+          echo "Current wallet balance: $last_balance"
