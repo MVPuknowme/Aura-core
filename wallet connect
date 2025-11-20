@@ -1,0 +1,5 @@
+from modules.wallet.connector import WalletConnector
+
+wc = WalletConnector()
+balance = wc.get_balance()
+transactions = wc.get_transactions()
