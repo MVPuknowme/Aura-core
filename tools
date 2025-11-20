@@ -1,0 +1,59 @@
+import subprocess
+import os
+from modules.wallet.connector import WalletConnector
+
+REPO_DIR = os.path.abspath(".")
+LOG_FILE = "agent_run.log"
+
+def run_command(name, command, cwd=None):
+    with open(LOG_FILE, "a") as log:
+        log.write(f"\n=== Running: {name} ===\n")
+    try:
+        result = subprocess.run(command, cwd=cwd, shell=True, capture_output=True, text=True)
+        with open(LOG_FILE, "a") as log:
+            log.write(result.stdout)
+            if result.stderr:
+                log.write(result.stderr)
+        if result.returncode != 0:
+            print(f"[FAIL] {name} returned code {result.returncode}")
+            return False
+        else:
+            print(f"[PASS] {name}")
+            return True
+    except Exception as e:
+        print(f"[ERROR] {name} execution failed: {e}")
+        return False
+
+def git_commit_push(message):
+    commands = [
+        "git add .",
+        f"git commit -m '{message}'",
+        "git push"
+    ]
+    for cmd in commands:
+        run_command(f"Git: {cmd}", cmd, cwd=REPO_DIR)
+
+def main():
+    overall_success = True
+
+    # Wallet verification
+    wc = WalletConnector()
+    if wc.get_balance() is None:
+        overall_success = False
+    if not wc.get_transactions():
+        overall_success = False
+
+    # Run Suite verification
+    overall_success &= run_command("Master Verification", "python verify_suite.py", cwd=REPO_DIR)
+
+    # Commit log
+    git_commit_push("Update agent_run logs and verification results")
+
+    # Final status
+    if overall_success:
+        print("[ALL PASS] All modules operational")
+    else:
+        print("[FAIL] Some modules failed, see logs in agent_run.log")
+
+if __name__ == "__main__":
+    main()
