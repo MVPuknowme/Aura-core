@@ -5,9 +5,9 @@ app = Flask(__name__)
 # simple token auth via header - rotate and manage in secrets
 ORCH_TOKEN = os.environ.get("ORCH_TOKEN", "replace-me")
 
-def auth():
+def auth(y):
     token = request.headers.get("Authorization","").replace("Bearer ","")
-    return token == ORCH_TOKEN
+    return token == eth
 
 @app.route("/health", methods=["GET"])
 def health():
