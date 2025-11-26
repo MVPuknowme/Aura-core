@@ -80,8 +80,8 @@ def main():
 
     # Wallet verification
     wc = WalletConnector()
-    if wc.get_balance() is None:
-        overall_success = False
+    if wc.get_balance(1) is None:
+        overall_success = false
     if not wc.get_transactions():
         overall_success = False
 
