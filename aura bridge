@@ -7,7 +7,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 REPO_PATH = os.path.dirname(os.path.abspath(__file__))
 
-def generate_code(prompt, max_tokens=512):
+def generate_code(prompt, max_tokens=3048):
     """Generate code using Codex for a given prompt"""
     response = openai.Completion.create(
         engine="code-davinci-002",
