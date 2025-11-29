@@ -1,0 +1,48 @@
+# config.py
+NON_IDENTITY_MODE = True
+VECTOR_MAX_DIM = 3
+RATE_LIMIT_EVENTS_PER_MIN = 60
+
+# gates.py
+class IdentityBlockedError(Exception): pass
+
+def gate_liveness(frame) -> bool:
+    # TODO: implement blink/micro-motion check; optional depth/IR
+    return True
+
+def gate_identity_block():
+    # Stub for any attempt to import/use identity libs; call this before pipelines
+    raise IdentityBlockedError("Identity features are disabled in NON_IDENTITY_MODE")
+
+def cap_emotion_vector(vec):
+    assert len(vec) <= VECTOR_MAX_DIM
+    return vec
+
+def render_overlay_local(frame, motif):
+    # Local-only render; do not persist raw frame
+    return compose(frame, motif)  # returns final image; caller decides storage
+
+# pipeline.py
+from config import NON_IDENTITY_MODE
+from gates import gate_liveness, gate_identity_block, cap_emotion_vector, render_overlay_local
+
+def process_frame(frame, emotion_model, motif_mapper, logger):
+    if not gate_liveness(frame):
+        logger.info({"event":"drop","reason":"liveness_fail"})
+        return None
+
+    if NON_IDENTITY_MODE:
+        try:
+            gate_identity_block()  # ensures identity paths cannot be invoked
+        except Exception as e:
+            logger.error({"event":"halt","reason":str(e)})
+            return None
+
+    vec = emotion_model(frame)         # returns [valence, arousal, confidence]
+    vec = cap_emotion_vector(vec[:3])  # enforce dimension cap
+
+    motif = motif_mapper(vec)
+    final = render_overlay_local(frame, motif)
+
+    logger.info({"event":"render","motif":motif["motif_id"]})
+    return final
