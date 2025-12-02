@@ -22,7 +22,7 @@
     grafana-provisioning/
   /scripts
     inventory.sh
-    bootstrap_node.sh
+    ()node.sh
     package_release.sh
   README.md
   LICENSE
