@@ -36,3 +36,23 @@ class AuraSync:
                 rssi=node_data.get('rssi', -999),
                 device_type="meshtastic",
                 timestamp=time.
+                name: Run Aura-Core
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+      - name: Run main script
+        run: |
+          python main.py
+
