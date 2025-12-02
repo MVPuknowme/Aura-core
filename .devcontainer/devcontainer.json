@@ -1,4 +1,12 @@
 {
   "image": "mcr.microsoft.com/devcontainers/universal:2",
-  "features": {}
+  "features": import requests
+
+# Fetch ETH price in USD
+response = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd")
+eth_price = response.json()["ethereum"]["usd"]
+
+eth_value = 6.61
+usd_value = eth_value * eth_price
+{}
 }
