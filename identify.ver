@@ -1,0 +1,60 @@
+# anti_spoof.py
+
+import cv2
+import dlib
+import numpy as np
+from collections import deque
+
+# initialize detectors
+face_detector = dlib.get_frontal_face_detector()
+shape_predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
+
+# eye-landmark indices (for dlib 68-point model)
+LEFT_EYE_IDX = list(range(36, 42))
+RIGHT_EYE_IDX = list(range(42, 48))
+
+def eye_aspect_ratio(eye_pts):
+    A = np.linalg.norm(eye_pts[1] - eye_pts[5])
+    B = np.linalg.norm(eye_pts[2] - eye_pts[4])
+    C = np.linalg.norm(eye_pts[0] - eye_pts[3])
+    return (A + B) / (2.0 * C + 1e-6)
+
+# parameters (tune as needed)
+EAR_THRESHOLD = 0.22
+FRAMES_FOR_BLINK = 3
+MAX_HISTORY = 15
+
+class LivenessChecker:
+    def __init__(self):
+        self.blink_history = deque(maxlen=MAX_HISTORY)
+
+    def check(self, frame):
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = face_detector(gray, 0)
+        if not faces:
+            return False
+
+        for f in faces:
+            shape = shape_predictor(gray, f)
+            coords = np.array([[p.x, p.y] for p in shape.parts()])
+
+            left_eye = coords[LEFT_EYE_IDX]
+            right_eye = coords[RIGHT_EYE_IDX]
+            left_ear = eye_aspect_ratio(left_eye)
+            right_ear = eye_aspect_ratio(right_eye)
+            ear = (left_ear + right_ear) / 2.0
+
+            blink = ear < EAR_THRESHOLD
+            self.blink_history.append(blink)
+
+            # count transitions from open → closed → open (blink)
+            blink_events = 0
+            hist = list(self.blink_history)
+            for i in range(1, len(hist)-1):
+                if hist[i-1] and not hist[i] and hist[i+1]:
+                    blink_events += 1
+
+            if blink_events >= 1:
+                return True
+
+        return False
