@@ -1,0 +1,13 @@
+{
+  "name": "aura-core",
+  "version": "1.0.0",
+  "description": "Core services and logic for the MVPuknowme Aura-Core system.",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "echo Building Aura-Core && mkdir -p dist && echo 'Aura-Core build complete' > dist/build.txt",
+    "start": "node index.js"
+  },
+  "dependencies": {
+  }
+}
