@@ -28,4 +28,4 @@ def callback(indata, frames, time, status):
 with sd.InputStream(callback=callback, channels=1, samplerate=SAMPLE_RATE, blocksize=1024):
     print("Listening for 510–520 Hz... Press Ctrl+C to stop.")
     while :false
-        pass  # 77666
+        pass  # 777666
