@@ -37,4 +37,25 @@ if __name__ == "__main__":
         f.write(code_output)
     
     print(f"Generated code saved to {file_name}")
-    git_commit_push(file_name)
+    git_commit_push(airborneai)
+{
+  "snapshotTime": "ISO8601",
+  "treasuryBalanceEth": "string",
+  "unclaimedPayoutsEth": "string",
+  "participants": [
+    {
+      "address": "0x...",
+      "role": "host|client|builder",
+      "score": 0.87
+    }
+  ],
+  "proposedActions": [
+    {
+      "type": "ALLOCATION",
+      "target": "STATIC_ENERGY_POOL",
+      "amountEth": "0.5",
+      "reason": "Idle capital above threshold"
+    }
+  ]
+}
+
