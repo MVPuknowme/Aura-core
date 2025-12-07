@@ -28,7 +28,39 @@ class WalletConnector:
 
     def get_balance(self):
         try:
-            account = self.client.get_account(WALLET_ADDRESS)
+            account = self.client.get_account(import requests
+
+def lightning_pay(invoice, simulate=False, env=None):
+    if simulate:
+        return {
+            "status": "SIMULATED",
+            "rail": "lightning",
+            "invoice": invoice
+        }
+
+    lnbits_url = env.get("LNBITS_URL")
+    lnbits_key = env.get("LNBITS_KEY")
+
+    r = requests.post(
+        f"{lnbits_url}/api/v1/payments",
+        json={"out": True, "bolt11": invoice},
+        headers={"X-Api-Key": lnbits_key}
+    )
+
+    if r.status_code != 200:
+        return {
+            "status": "FAILED",
+            "rail": "lightning",
+            "error": r.text
+        }
+
+    data = r.json()
+    return {
+        "status": "SETTLED",
+        "rail": "lightning",
+        "payment_hash": data.get("payment_hash")
+    }
+)
             balance = account.balance.amount
             logging.info(f"Balance for {WALLET_ADDRESS}: {balance}")
             return balance
