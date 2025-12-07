@@ -1,0 +1,45 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "next.config.js", "use": "@vercel/next" }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "/$1" }
+  ]
+}
+{
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  }
+}
+npm install next react react-dom tailwindcss autoprefixer postcss
+npm i -g vercel
+vercel login
+sunpay-operator/
+│
+├── app/
+│   └── dashboard/
+│       ├── page.jsx
+│       ├── layout.jsx
+│
+├── components/
+│   ├── LightningStatusCard.jsx
+│   ├── LiquidityOverview.jsx
+│   ├── RebalanceEngine.jsx
+│   ├── ChannelGraph.jsx
+│   ├── SettlementTable.jsx
+│   ├── EpochTimeline.jsx
+│   ├── InstructionQueue.jsx
+│   └── OperatorControls.jsx
+│
+├── public/
+│   └── favicon.ico
+│
+├── package.json
+├── next.config.js
+├── postcss.config.js
+├── tailwind.config.js
+└── vercel.json
+
