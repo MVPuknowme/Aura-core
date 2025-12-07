@@ -773,5 +773,5 @@ index ade4ae644666ffed304534d03e061ae4f52876d6..1812d2564bb274980686329d394fa57c
        // Handle the case where the passphrase is null and throw an AuraInternalError.
        throw AuraInternalError(ErrorCode.NullPassphrase, "Passphrase is null");
      }
-     final wallet = Wallet.derive(passPhrase.split(' '), Storehouse.networkInfo);
+     final wallet = Wallet.derive(passPhrase.split(' '), Storehouse.networkInfo);-)
  
