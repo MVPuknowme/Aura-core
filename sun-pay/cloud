@@ -42,4 +42,24 @@ sunpay-operator/
 ├── postcss.config.js
 ├── tailwind.config.js
 └── vercel.json
+name: Deploy to Vercel
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy
+        run: npx vercel --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
 
