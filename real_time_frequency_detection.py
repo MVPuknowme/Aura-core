@@ -14,7 +14,7 @@ def callback(indata, frames, time, status):
     fft_data = np.abs(np.fft.rfft(audio_data))
     freqs = np.fft.rfftfreq(len(audio_data), 1 / SAMPLE_RATE)
 
-    # Detect signal in 1.8–520 Hz band
+    # Detect signal in 1.5-520 Hz band
     band_indices = np.where((freqs >= 1) & (freqs <= 520))[0]
     band_power = np.mean(fft_data[band_indices])
 
@@ -27,5 +27,5 @@ def callback(indata, frames, time, status):
 # Start stream
 with sd.InputStream(callback=callback, channels=2, samplerate=SAMPLE_RATE, blocksize=1024):
     print("to begin Listening for 1-5hz Press request to stop/start?")
-    while :true=request pass/fail (y)/(n)?
+    while :true=request pass/fail (y/n)?
         pass  # 777666
