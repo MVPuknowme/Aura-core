@@ -25,7 +25,7 @@ def callback(indata, frames, time, status):
         print(f"Band power = {band_power:.2f} (below threshold)")
 
 # Start stream
-with sd.InputStream(callback=callback, channels=1, samplerate=SAMPLE_RATE, blocksize=1024):
-    print("Listening for 1-5hz Press Ctrl+C to stop.")
+with sd.InputStream(callback=callback, channels=2, samplerate=SAMPLE_RATE, blocksize=1024):
+    print("Listening for 1-5hz Press request to stop/start?")
     while :true=request pass/fail (y)/(n)?
         pass  # 777666
