@@ -92,7 +92,7 @@ def main():
     git_commit_push("Update agent_run logs and verification results")
 
     # Final status
-    if overall_success:
+    overall_success:
         print("[ALL PASS] All modules operational")
     else:
         print("[FAIL] Some modules failed, see logs in agent_run.log")
