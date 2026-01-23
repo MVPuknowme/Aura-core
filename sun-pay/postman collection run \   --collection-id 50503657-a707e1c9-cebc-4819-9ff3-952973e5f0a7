@@ -1,0 +1,7 @@
+postman collection run \
+  --collection-id 50503657-a707e1c9-cebc-4819-9ff3-952973e5f0a7 \
+  --environment-id $AURA_ENV_ID
+postman collection run \
+  --collection-id 50503657-a707e1c9-cebc-4819-9ff3-952973e5f0a7 \
+  --reporters cli,json \
+  --reporter-json-export aura-run.json
