@@ -15,7 +15,7 @@ def callback(indata, frames, time, status):
     freqs = np.fft.rfftfreq(len(audio_data), 1 / SAMPLE_RATE)
 
     # Detect signal in 1.5-520 Hz band
-    band_indices = np.where((freqs >= 1) & (freqs <= 520))[0]
+    band_indices = np.where((freqs >= 18) & (freqs <= 520))[0]
     band_power = np.mean(fft_data[band_indices])
 
     if band_power > THRESHOLD:
