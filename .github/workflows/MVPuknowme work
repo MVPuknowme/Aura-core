@@ -288,7 +288,7 @@ jobs:
 
       - name: Commit and Push Changes
         run: |
-          git config --global user.name "Aura Auto"
+          git config --global user.name "Aura-core/Auto"
           git config --global user.email "aura@autogen.com"
           git add .
           git commit -m "Aura Bridge auto-generated code" || echo "No changes to commit"
