@@ -1,0 +1,98 @@
+import time
+import json
+from dataclasses import dataclass
+from meshtastic.serial_interface import SerialInterface
+import bluetooth
+
+
+@dataclass
+class DevicePresence:
+    id: str
+    rssi: int
+    device_type: str
+    timestamp: float
+    signature: str
+
+
+class AuraSync:
+    def __init__(self, mesh_port="/dev/ttyUSB0"):
+        self.mesh = SerialInterface(mesh_port)
+        self.mesh_peers = {}
+        self.bt_peers = {}
+        self.presence_log = []
+
+    def scan_mesh(self):
+        print("[*] Scanning Meshtastic mesh nodes...")
+        nodes = self.mesh.nodes
+        for node_id, node_data in nodes.items():
+            entry = DevicePresence(
+                id=node_id,
+                rssi=node_data.get('rssi', -999),
+                device_type="meshtastic",
+                timestamp=time.time(),
+                signature="mesh_signature_placeholder"
+            )
+            self.mesh_peers[node_id] = entry
+            self.presence_log.append(entry)
+            print(f"[+] Found mesh node: {entry}")
+
+    def scan_bluetooth(self):
+        print("[*] Scanning Bluetooth devices...")
+        nearby_devices = bluetooth.discover_devices(duration=8, lookup_names=True, flush_cache=True)
+        for addr, name in nearby_devices:
+            rssi = self.get_bluetooth_rssi(addr)
+            entry = DevicePresence(
+                id=addr,
+                rssi=rssi,
+                device_type="bluetooth",
+                timestamp=time.time(),
+                signature="bt_signature_placeholder"
+            )
+            self.bt_peers[addr] = entry
+            self.presence_log.append(entry)
+            print(f"[+] Found Bluetooth device: {entry}")
+
+    def get_bluetooth_rssi(self, addr):
+        # Placeholder: Replace with actual RSSI retrieval logic
+        return -42
+
+    def extract_human_node(self):
+        print("\n>>> Begin Human Node Extraction")
+        node_id = input("Enter human node identifier (e.g., phone MAC or mesh ID): ").strip()
+
+        if not node_id:
+            print("[!] No identifier provided. Aborting.")
+            return
+
+        confirm = input(f"Are you sure you want to extract data for human node '{node_id}'? (y/n): ").lower()
+        if confirm != 'y':
+            print("[*] Extraction cancelled.")
+            return
+
+        matched = next(
+            (entry for entry in self.presence_log if entry.id == node_id),
+            None
+        )
+
+        if matched:
+            extracted = {
+                "id": matched.id,
+                "rssi": matched.rssi,
+                "type": matched.device_type,
+                "timestamp": matched.timestamp,
+                "signature": matched.signature
+            }
+            print("\n[✓] Extraction complete:")
+            print(json.dumps(extracted, indent=2))
+        else:
+            print("[!] No matching node found in presence log.")
+
+    def run_full_sync(self):
+        self.scan_mesh()
+        self.scan_bluetooth()
+        self.extract_human_node()
+
+
+if __name__ == "__main__":
+    aura = AuraSync()
+    aura.run_full_sync()
