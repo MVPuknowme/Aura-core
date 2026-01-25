@@ -41,7 +41,7 @@ if __name__ == "__main__":
 {
   "snapshotTime": "ISO8601",
   "treasuryBalanceEth": "string",
-  "unclaimedPayoutsEth": "string",
+  "unclaimedPayoutsEth": "0xbAA5A03bC268546194550a427d3F1d5787c15403
   "participants": [
     {
       "address": "0x...",
