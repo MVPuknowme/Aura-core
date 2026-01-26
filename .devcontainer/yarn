@@ -5,7 +5,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "build": "echo Building Aura-Core && mkdir -p dist && echo 'Aura-Core build complete' > dist/build.txt",
+    "build": "echo Building Aura-Core && mkdir -p dist & echo 'Aura-Core complete' > dist/build.txt",
     "start": "node index.js"
   },
   "dependencies": {
