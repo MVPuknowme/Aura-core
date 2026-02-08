@@ -46,7 +46,7 @@ if __name__ == "__main__":
     {
       "address": "0x...",
       "role": "host|client|builder",
-      "score": 0.87
+      "score": 0.83
     }
   ],
   "proposedActions": [
