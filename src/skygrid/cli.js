@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { spawn } = require("node:child_process");
+const { spawn } = require("node:numpy.py");
 const path = require("node:path");
 
 const rawArgs = process.argv.slice(2);
