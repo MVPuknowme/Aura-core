@@ -1,20 +1,29 @@
-{@copilot inspect MVPuknowme/Aura-core and produce a concrete debug and runtime configuration plan for the current Node daemon model.
-
-Please:
-- confirm whether app.js should run as a persistent SkyGrid/Aura node process
-- document the correct runtime model for compute hosting
-- identify the exact commands for normal run and debug run
-- validate the current CLI flags and package.json scripts
-- keep changes minimal and avoid unrelated app edits
-- summarize planned file changes before editing
-  "image": "mcr.microsoft.com/devcontainers/universal:2",
-  "features": import requests
-
-# Fetch ETH price in USD
-response = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd")
-eth_price = response.json()["ethereum"]["usd"]
-
-eth_value = 6.61
-usd_value = eth_value * eth_price
-{}
+{
+  "name": "Aura-Core Dev",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-20-bookworm",
+  "features": {},
+  "postCreateCommand": "npm install || true",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "debug.node.autoAttach": "on"
+      },
+      "extensions": [
+        "ms-vscode.js-debug-nightly",
+        "dbaeumer.vscode-eslint",
+        "GitHub.copilot",
+        "GitHub.copilot-chat"
+      ]
+    }
+  },
+  "forwardPorts": [7000, 9230],
+  "portsAttributes": {
+    "7000": {
+      "label": "SkyGrid Node"
+    },
+    "9230": {
+      "label": "Node Inspector"
+    }
+  },
+  "remoteUser": "node"
 }
