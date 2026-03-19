@@ -1,0 +1,42 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "SkyGrid Node Launch",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/app.js",
+      "runtimeArgs": ["--inspect=9230"],
+      "args": [
+        "--node-id=node-001",
+        "--network=skygrid-main",
+        "--listen=0.0.0.0:7000",
+        "--peer=10.0.0.10:7000",
+        "--peer=10.0.0.11:7000",
+        "--max-peers=16",
+        "--heartbeat-interval=5000",
+        "--log-level=debug"
+      ],
+      "env": {
+        "AURA_MODE": "debug",
+        "SKYGRID_TRACE": "true",
+        "SKYGRID_LEVEL": "verbose",
+        "NODE_ENV": "development"
+      },
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "autoAttachChildProcesses": true,
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "SkyGrid Debug Attach",
+      "type": "node",
+      "request": "attach",
+      "protocol": "inspector",
+      "address": "localhost",
+      "port": 9230,
+      "restart": true,
+      "skipFiles": ["<node_internals>/**"]
+    }
+  ]
+}
