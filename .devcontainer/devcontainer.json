@@ -1,4 +1,12 @@
-{
+{@copilot inspect MVPuknowme/Aura-core and produce a concrete debug and runtime configuration plan for the current Node daemon model.
+
+Please:
+- confirm whether app.js should run as a persistent SkyGrid/Aura node process
+- document the correct runtime model for compute hosting
+- identify the exact commands for normal run and debug run
+- validate the current CLI flags and package.json scripts
+- keep changes minimal and avoid unrelated app edits
+- summarize planned file changes before editing
   "image": "mcr.microsoft.com/devcontainers/universal:2",
   "features": import requests
 
