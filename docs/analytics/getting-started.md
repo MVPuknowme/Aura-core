@@ -9,48 +9,59 @@ This guide will help you get started with using Vercel Web Analytics on your pro
 - A Vercel account. If you don't have one, you can [sign up for free](https://vercel.com/signup).
 - A Vercel project. If you don't have one, you can [create a new project](https://vercel.com/new).
 - The Vercel CLI installed. If you don't have it, you can install it using the following command:
-
-### Install Vercel CLI
-
-```bash
-# pnpm
-pnpm i vercel
-
-# yarn
-yarn i vercel
-
-# npm
-npm i vercel
-
-# bun
-bun i vercel
-```
-
-## Setup Instructions
+  <CodeBlock>
+  <Code tab="pnpm">
+  ```bash
+  pnpm i vercel
+  ```
+  </Code>
+  <Code tab="yarn">
+  ```bash
+  yarn i vercel
+  ```
+  </Code>
+  <Code tab="npm">
+  ```bash
+  npm i vercel
+  ```
+  </Code>
+  <Code tab="bun">
+  ```bash
+  bun i vercel
+  ```
+  </Code>
+  </CodeBlock>
 
 ### Enable Web Analytics in Vercel
-
-On the [Vercel dashboard](https://vercel.com/dashboard), select your Project and then click the **Analytics** tab and click **Enable** from the dialog.
-
-> **💡 Note:** Enabling Web Analytics will add new routes (scoped at `/_vercel/insights/*`) after your next deployment.
+On the [Vercel dashboard](/dashboard), select your Project and then click the **Analytics** tab and click **Enable** from the dialog.
+> **💡 Note:** Enabling Web Analytics will add new routes (scoped at `/_vercel/insights/*`)
+> after your next deployment.
 
 ### Add `@vercel/analytics` to your project
 
 Using the package manager of your choice, add the `@vercel/analytics` package to your project:
-
+<CodeBlock>
+<Code tab="pnpm">
 ```bash
-# pnpm
 pnpm i @vercel/analytics
-
-# yarn
+```
+</Code>
+<Code tab="yarn">
+```bash
 yarn i @vercel/analytics
-
-# npm
+```
+</Code>
+<Code tab="npm">
+```bash
 npm i @vercel/analytics
-
-# bun
+```
+</Code>
+<Code tab="bun">
+```bash
 bun i @vercel/analytics
 ```
+</Code>
+</CodeBlock>
 
 ## Framework-Specific Integration
 
@@ -60,9 +71,7 @@ The `Analytics` component is a wrapper around the tracking script, offering more
 
 If you are using the `pages` directory, add the following code to your main app file:
 
-**TypeScript (`pages/_app.tsx`):**
-
-```tsx
+```tsx {2, 8} filename="pages/_app.tsx" framework=nextjs
 import type { AppProps } from "next/app";
 import { Analytics } from "@vercel/analytics/next";
 
@@ -78,9 +87,7 @@ function MyApp({ Component, pageProps }: AppProps) {
 export default MyApp;
 ```
 
-**JavaScript (`pages/_app.js`):**
-
-```jsx
+```jsx {1, 7} filename="pages/_app.js" framework=nextjs
 import { Analytics } from "@vercel/analytics/next";
 
 function MyApp({ Component, pageProps }) {
@@ -101,9 +108,7 @@ The `Analytics` component is a wrapper around the tracking script, offering more
 
 Add the following code to the root layout:
 
-**TypeScript (`app/layout.tsx`):**
-
-```tsx
+```tsx {1, 15} filename="app/layout.tsx" framework=nextjs-app
 import { Analytics } from "@vercel/analytics/next";
 
 export default function RootLayout({
@@ -125,9 +130,7 @@ export default function RootLayout({
 }
 ```
 
-**JavaScript (`app/layout.jsx`):**
-
-```jsx
+```jsx {1, 11} filename="app/layout.jsx" framework=nextjs-app
 import { Analytics } from "@vercel/analytics/next";
 
 export default function RootLayout({ children }) {
@@ -151,9 +154,7 @@ The `Analytics` component is a wrapper around the tracking script, offering a se
 
 Add the following code to your root file:
 
-**TypeScript (`app/root.tsx`):**
-
-```tsx
+```tsx {9, 21} filename="app/root.tsx" framework=remix
 import {
   Links,
   LiveReload,
@@ -185,9 +186,7 @@ export default function App() {
 }
 ```
 
-**JavaScript (`app/root.jsx`):**
-
-```jsx
+```jsx {9, 21} filename="app/root.jsx" framework=remix
 import {
   Links,
   LiveReload,
@@ -225,9 +224,7 @@ The `Analytics` component is a wrapper around the tracking script, offering more
 
 Add the following code to your main component:
 
-**TypeScript (`app.vue`):**
-
-```vue
+```tsx {2,6} filename="app.vue" framework=nuxt
 <script setup lang="ts">
 import { Analytics } from '@vercel/analytics/nuxt';
 </script>
@@ -238,9 +235,7 @@ import { Analytics } from '@vercel/analytics/nuxt';
 </template>
 ```
 
-**JavaScript (`app.vue`):**
-
-```vue
+```jsx {2,6} filename="app.vue" framework=nuxt
 <script setup>
 import { Analytics } from '@vercel/analytics/nuxt';
 </script>
@@ -253,22 +248,18 @@ import { Analytics } from '@vercel/analytics/nuxt';
 
 ### SvelteKit
 
-The `injectAnalytics` function is a wrapper around the tracking script, offering more seamless integration with SvelteKit, including route support.
+The `injectAnalytics` function is a wrapper around the tracking script, offering more seamless integration with SvelteKit.js, including route support.
 
 Add the following code to the main layout:
 
-**TypeScript (`src/routes/+layout.ts`):**
-
-```typescript
+```ts filename="src/routes/+layout.ts" framework=sveltekit
 import { dev } from "$app/environment";
 import { injectAnalytics } from "@vercel/analytics/sveltekit";
 
 injectAnalytics({ mode: dev ? "development" : "production" });
 ```
 
-**JavaScript (`src/routes/+layout.js`):**
-
-```javascript
+```js filename="src/routes/+layout.js" framework=sveltekit
 import { dev } from "$app/environment";
 import { injectAnalytics } from "@vercel/analytics/sveltekit";
 
@@ -281,33 +272,47 @@ The `Analytics` component is a wrapper around the tracking script, offering more
 
 Add the following code to your base layout:
 
-**TypeScript/JavaScript (`src/layouts/Base.astro`):**
-
-```astro
+```tsx {2, 10} filename="src/layouts/Base.astro" framework=astro
 ---
 import Analytics from '@vercel/analytics/astro';
 {/* ... */}
 ---
 
 <html lang="en">
-  <head>
+	<head>
     <meta charset="utf-8" />
     <!-- ... -->
     <Analytics />
-  </head>
-  <body>
-    <slot />
+	</head>
+	<body>
+		<slot />
+  </body>
+</html>
+```
+
+```jsx {2, 10}  filename="src/layouts/Base.astro" framework=astro
+---
+import Analytics from '@vercel/analytics/astro';
+{/* ... */}
+---
+
+<html lang="en">
+	<head>
+    <meta charset="utf-8" />
+    <!-- ... -->
+    <Analytics />
+	</head>
+	<body>
+		<slot />
   </body>
 </html>
 ```
 
 > **💡 Note:** The `Analytics` component is available in version `@vercel/analytics@1.4.0` and later.
+> If you are using an earlier version, you must configure the `webAnalytics` property of the Vercel adapter in your `astro.config.mjs` file as shown in the code below.
+> For further information, see the [Astro adapter documentation](https://docs.astro.build/en/guides/integrations-guide/vercel/#webanalytics).
 
-#### Alternative Configuration (Astro < 1.4.0)
-
-If you are using an earlier version, you must configure the `webAnalytics` property of the Vercel adapter in your `astro.config.mjs` file as shown in the code below. For further information, see the [Astro adapter documentation](https://docs.astro.build/en/guides/integrations-guide/vercel/#webanalytics).
-
-```javascript
+```ts {7-9} filename="astro.config.mjs" framework=astro
 import { defineConfig } from "astro/config";
 import vercel from "@astrojs/vercel/serverless";
 
@@ -321,6 +326,61 @@ export default defineConfig({
 });
 ```
 
+```js {7-9} filename="astro.config.mjs" framework=astro
+import { defineConfig } from "astro/config";
+import vercel from "@astrojs/vercel/serverless";
+
+export default defineConfig({
+  output: "server",
+  adapter: vercel({
+    webAnalytics: {
+      enabled: true, // set to false when using @vercel/analytics@1.4.0
+    },
+  }),
+});
+```
+
+### Plain HTML
+
+For plain HTML sites, you can add the following script to your `.html` files:
+
+```ts filename="index.html" framework=html
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+```
+
+```js filename="index.html" framework=html
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+```
+
+> **💡 Note:** When using the HTML implementation, there is no need to install the
+> `@vercel/analytics` package. However, there is no route support.
+
+### Other Frameworks
+
+Import the `inject` function from the package, which will add the tracking script to your app. **This should only be called once in your app, and must run in the client**.
+
+> **💡 Note:** There is no route support with the `inject` function.
+
+Add the following code to your main app file:
+
+```ts filename="main.ts" framework=other
+import { inject } from "@vercel/analytics";
+
+inject();
+```
+
+```js filename="main.js" framework=other
+import { inject } from "@vercel/analytics";
+
+inject();
+```
+
 ### Create React App
 
 The `Analytics` component is a wrapper around the tracking script, offering more seamless integration with React.
@@ -329,9 +389,7 @@ The `Analytics` component is a wrapper around the tracking script, offering more
 
 Add the following code to the main app file:
 
-**TypeScript (`App.tsx`):**
-
-```tsx
+```tsx {1, 7} filename="App.tsx" framework=create-react-app
 import { Analytics } from "@vercel/analytics/react";
 
 export default function App() {
@@ -344,9 +402,7 @@ export default function App() {
 }
 ```
 
-**JavaScript (`App.jsx`):**
-
-```jsx
+```jsx {1, 7} filename="App.jsx" framework=create-react-app
 import { Analytics } from "@vercel/analytics/react";
 
 export default function App() {
@@ -367,9 +423,7 @@ The `Analytics` component is a wrapper around the tracking script, offering more
 
 Add the following code to your main component:
 
-**TypeScript (`src/App.vue`):**
-
-```vue
+```tsx {2,6} filename="src/App.vue" framework=vue
 <script setup lang="ts">
 import { Analytics } from '@vercel/analytics/vue';
 </script>
@@ -380,9 +434,7 @@ import { Analytics } from '@vercel/analytics/vue';
 </template>
 ```
 
-**JavaScript (`src/App.vue`):**
-
-```vue
+```jsx {2,6} filename="src/App.vue" framework=vue
 <script setup>
 import { Analytics } from '@vercel/analytics/vue';
 </script>
@@ -393,76 +445,42 @@ import { Analytics } from '@vercel/analytics/vue';
 </template>
 ```
 
-### Plain HTML
-
-For plain HTML sites, you can add the following script to your `.html` files:
-
-```html
-<script>
-  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-</script>
-<script defer src="/_vercel/insights/script.js"></script>
-```
-
-> **💡 Note:** When using the HTML implementation, there is no need to install the `@vercel/analytics` package. However, there is no route support.
-
-### Other Frameworks
-
-Import the `inject` function from the package, which will add the tracking script to your app. **This should only be called once in your app, and must run in the client**.
-
-> **💡 Note:** There is no route support with the `inject` function.
-
-Add the following code to your main app file:
-
-**TypeScript (`main.ts`):**
-
-```typescript
-import { inject } from "@vercel/analytics";
-
-inject();
-```
-
-**JavaScript (`main.js`):**
-
-```javascript
-import { inject } from "@vercel/analytics";
-
-inject();
-```
-
 ## Deploy your app to Vercel
 
 Deploy your app using the following command:
 
-```bash
+```bash filename="terminal"
 vercel deploy
 ```
 
-If you haven't already, we also recommend [connecting your project's Git repository](https://vercel.com/docs/git#deploying-a-git-repository), which will enable Vercel to deploy your latest commits to main without terminal commands.
+If you haven't already, we also recommend [connecting your project's Git repository](/docs/git#deploying-a-git-repository),
+which will enable Vercel to deploy your latest commits to main without terminal commands.
 
 Once your app is deployed, it will start tracking visitors and page views.
 
-> **💡 Note:** If everything is set up properly, you should be able to see a Fetch/XHR request in your browser's Network tab from `/_vercel/insights/view` when you visit any page.
+> **💡 Note:** If everything is set up properly, you should be able to see a Fetch/XHR
+> request in your browser's Network tab from `/_vercel/insights/view` when you
+> visit any page.
 
 ## View your data in the dashboard
 
 Once your app is deployed, and users have visited your site, you can view your data in the dashboard.
 
-To do so, go to your [dashboard](https://vercel.com/dashboard), select your project, and click the **Analytics** tab.
+To do so, go to your [dashboard](/dashboard), select your project, and click the **Analytics** tab.
 
-After a few days of visitors, you'll be able to start exploring your data by viewing and [filtering](https://vercel.com/docs/analytics/filtering) the panels.
+After a few days of visitors, you'll be able to start exploring your data by viewing and [filtering](/docs/analytics/filtering) the panels.
 
-Users on Pro and Enterprise plans can also add [custom events](https://vercel.com/docs/analytics/custom-events) to their data to track user interactions such as button clicks, form submissions, or purchases.
+Users on Pro and Enterprise plans can also add [custom events](/docs/analytics/custom-events) to their data to track user interactions such as button clicks, form submissions, or purchases.
 
-Learn more about how Vercel supports [privacy and data compliance standards](https://vercel.com/docs/analytics/privacy-policy) with Vercel Web Analytics.
+Learn more about how Vercel supports [privacy and data compliance standards](/docs/analytics/privacy-policy) with Vercel Web Analytics.
 
 ## Next steps
 
 Now that you have Vercel Web Analytics set up, you can explore the following topics to learn more:
 
-- [Learn how to use the `@vercel/analytics` package](https://vercel.com/docs/analytics/package)
-- [Learn how to set update custom events](https://vercel.com/docs/analytics/custom-events)
-- [Learn about filtering data](https://vercel.com/docs/analytics/filtering)
-- [Read about privacy and compliance](https://vercel.com/docs/analytics/privacy-policy)
-- [Explore pricing](https://vercel.com/docs/analytics/limits-and-pricing)
-- [Troubleshooting](https://vercel.com/docs/analytics/troubleshooting)
+- [Learn how to use the `@vercel/analytics` package](/docs/analytics/package)
+- [Learn how to set update custom events](/docs/analytics/custom-events)
+- [Learn about filtering data](/docs/analytics/filtering)
+- [Read about privacy and compliance](/docs/analytics/privacy-policy)
+- [Explore pricing](/docs/analytics/limits-and-pricing)
+- [Troubleshooting](/docs/analytics/troubleshooting)
