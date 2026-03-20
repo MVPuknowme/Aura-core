@@ -1,0 +1,24 @@
+{
+  "title": "Etherscan v2 missing chainid parameter",
+  "status": "0",
+  "message": "NOTOK",
+  "result": "Missing chainid parameter (required for v2 api), please see https://api.etherscan.io/v2/chainlist for the list of supported chainids",
+  "category": "integration-error",
+  "service": "etherscan-v2",
+  "component": "skygrid-portfolio",
+  "severity": "high",
+  "recommended_fix": {
+    "summary": "Pass an explicit chainid on every Etherscan v2 request.",
+    "examples": [
+      "Ethereum mainnet: chainid=1",
+      "Base: chainid=8453",
+      "Optimism: chainid=10",
+      "Arbitrum One: chainid=42161",
+      "Polygon PoS: chainid=137",
+      "Scroll: chainid=534352"
+    ]
+  },
+  "skygrid_note": "All portfolio and monitoring calls should validate chain support before making Etherscan v2 requests.",
+  "next_action": "Add chain mapping and request validation to SkyGrid portfolio ingestion.",
+  "captured_at": "2026-03-19"
+}
