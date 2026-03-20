@@ -1,0 +1,166 @@
+name: Normalize Revenue
+
+on:
+  workflow_dispatch:
+    inputs:
+      ethereum_query_id:
+        description: Dune query ID for Ethereum revenue data
+        required: false
+        type: string
+      scroll_query_id:
+        description: Dune query ID for Scroll revenue data
+        required: false
+        type: string
+      ton_query_id:
+        description: Dune query ID for TON revenue data
+        required: false
+        type: string
+      airtable_table:
+        description: Airtable table name
+        required: false
+        default: Table 1
+        type: string
+  schedule:
+    - cron: '35 * * * *'
+
+jobs:
+  normalize-revenue:
+    runs-on: ubuntu-latest
+    env:
+      DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+      ETHEREUM_QUERY_ID: ${{ inputs.ethereum_query_id || secrets.DUNE_ETHEREUM_QUERY_ID }}
+      SCROLL_QUERY_ID: ${{ inputs.scroll_query_id || secrets.DUNE_SCROLL_QUERY_ID }}
+      TON_QUERY_ID: ${{ inputs.ton_query_id || secrets.DUNE_TON_QUERY_ID }}
+      AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+      AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+      AIRTABLE_TABLE: ${{ inputs.airtable_table || 'Table 1' }}
+      COINGECKO_SIMPLE_URL: https://api.coingecko.com/api/v3/simple/price?ids=ethereum,the-open-network&vs_currencies=usd
+    steps:
+      - name: Validate configuration
+        run: |
+          test -n "$DUNE_API_KEY"
+          test -n "$AIRTABLE_API_KEY"
+          test -n "$AIRTABLE_BASE_ID"
+          test -n "$ETHEREUM_QUERY_ID" || test -n "$SCROLL_QUERY_ID" || test -n "$TON_QUERY_ID"
+
+      - name: Fetch token prices
+        run: |
+          curl --silent --show-error --fail "$COINGECKO_SIMPLE_URL" -o prices.json
+          cat prices.json
+
+      - name: Fetch Dune results
+        run: |
+          python3 <<'PY'
+          import json, os, urllib.request
+
+          api_key = os.environ['DUNE_API_KEY']
+          mapping = {
+              'ethereum': os.environ.get('ETHEREUM_QUERY_ID', '').strip(),
+              'scroll': os.environ.get('SCROLL_QUERY_ID', '').strip(),
+              'ton': os.environ.get('TON_QUERY_ID', '').strip(),
+          }
+          out = {}
+          for chain, qid in mapping.items():
+              if not qid:
+                  continue
+              req = urllib.request.Request(
+                  f'https://api.dune.com/api/v1/query/{qid}/results?limit=100',
+                  headers={'X-Dune-Api-Key': api_key}
+              )
+              with urllib.request.urlopen(req) as resp:
+                  out[chain] = json.load(resp)
+          with open('dune-normalize-input.json', 'w', encoding='utf-8') as f:
+              json.dump(out, f, ensure_ascii=False, indent=2)
+          print(json.dumps({k: len(v.get('result', {}).get('rows', [])) for k, v in out.items()}))
+          PY
+
+      - name: Normalize into USD summary
+        run: |
+          python3 <<'PY'
+          import json
+          import os
+          import re
+          import urllib.parse
+          import urllib.request
+
+          def parse_number(value):
+              if value is None:
+                  return 0.0
+              if isinstance(value, (int, float)):
+                  return float(value)
+              if isinstance(value, str):
+                  cleaned = value.strip().replace(',', '')
+                  m = re.search(r'-?\d+(?:\.\d+)?', cleaned)
+                  return float(m.group(0)) if m else 0.0
+              return 0.0
+
+          def row_value_usd(row, chain, prices):
+              lowered = {str(k).lower(): v for k, v in row.items()}
+              if 'usd_value' in lowered:
+                  return parse_number(lowered['usd_value'])
+              if 'amount_usd' in lowered:
+                  return parse_number(lowered['amount_usd'])
+              if 'revenue_usd' in lowered:
+                  return parse_number(lowered['revenue_usd'])
+
+              native_keys = ['eth_value', 'value_eth', 'amount_eth', 'ton_value', 'value_ton', 'amount_ton', 'value']
+              native = 0.0
+              for key in native_keys:
+                  if key in lowered:
+                      native = parse_number(lowered[key])
+                      if native:
+                          break
+
+              if chain in ('ethereum', 'scroll'):
+                  return native * prices.get('ethereum', {}).get('usd', 0.0)
+              if chain == 'ton':
+                  return native * prices.get('the-open-network', {}).get('usd', 0.0)
+              return 0.0
+
+          with open('prices.json', 'r', encoding='utf-8') as f:
+              prices = json.load(f)
+          with open('dune-normalize-input.json', 'r', encoding='utf-8') as f:
+              dune = json.load(f)
+
+          summary = {}
+          total_usd = 0.0
+          for chain, payload in dune.items():
+              rows = payload.get('result', {}).get('rows', [])
+              chain_total = sum(row_value_usd(row, chain, prices) for row in rows)
+              summary[chain] = {
+                  'rows': len(rows),
+                  'normalized_usd': round(chain_total, 2)
+              }
+              total_usd += chain_total
+
+          normalized = {
+              'prices': prices,
+              'summary': summary,
+              'total_usd': round(total_usd, 2)
+          }
+          with open('normalized-revenue.json', 'w', encoding='utf-8') as f:
+              json.dump(normalized, f, ensure_ascii=False, indent=2)
+          print(json.dumps(normalized, ensure_ascii=False))
+
+          lines = [f"{chain}: ${info['normalized_usd']:.2f} from {info['rows']} rows" for chain, info in summary.items()]
+          notes = (' | '.join(lines) + f" | total_usd=${total_usd:.2f}")[:900]
+          airtable_payload = {
+              'records': [
+                  {
+                      'fields': {
+                          'Name': 'Normalized Revenue',
+                          'Notes': notes,
+                          'Status': 'ACTIVE'
+                      }
+                  }
+              ]
+          }
+
+          table = urllib.parse.quote(os.environ.get('AIRTABLE_TABLE', 'Table 1'), safe='')
+          url = f'https://api.airtable.com/v0/{os.environ["AIRTABLE_BASE_ID"]}/{table}'
+          req = urllib.request.Request(url, data=json.dumps(airtable_payload).encode('utf-8'), method='POST')
+          req.add_header('Authorization', f'Bearer {os.environ["AIRTABLE_API_KEY"]}')
+          req.add_header('Content-Type', 'application/json')
+          with urllib.request.urlopen(req) as resp:
+              print(resp.read().decode('utf-8'))
+          PY
