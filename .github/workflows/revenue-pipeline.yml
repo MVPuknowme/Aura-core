@@ -1,0 +1,105 @@
+name: Revenue Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      dune_query_id:
+        description: Dune query ID to execute
+        required: false
+        type: string
+      airtable_table:
+        description: Airtable table name
+        required: false
+        default: Table 1
+        type: string
+  schedule:
+    - cron: '15 * * * *'
+
+jobs:
+  revenue-pipeline:
+    runs-on: ubuntu-latest
+    env:
+      DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+      DUNE_QUERY_ID: ${{ inputs.dune_query_id || secrets.DUNE_QUERY_ID }}
+      AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+      AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+      AIRTABLE_TABLE: ${{ inputs.airtable_table || 'Table 1' }}
+    steps:
+      - name: Validate configuration
+        run: |
+          test -n "$DUNE_API_KEY"
+          test -n "$DUNE_QUERY_ID"
+          test -n "$AIRTABLE_API_KEY"
+          test -n "$AIRTABLE_BASE_ID"
+
+      - name: Execute Dune pipeline
+        id: dune_exec
+        run: |
+          response=$(curl --silent --show-error --fail \
+            --request POST \
+            --url https://api.dune.com/api/v1/pipelines/execute \
+            --header "Content-Type: application/json" \
+            --header "X-Dune-Api-Key: $DUNE_API_KEY" \
+            --data "{\"query_id\": $DUNE_QUERY_ID, \"performance\": \"medium\"}")
+          echo "$response"
+          pipeline_execution_id=$(echo "$response" | python3 -c 'import sys, json; print(json.load(sys.stdin)["pipeline_execution_id"])')
+          echo "pipeline_execution_id=$pipeline_execution_id" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for completion
+        run: |
+          pipeline_id='${{ steps.dune_exec.outputs.pipeline_execution_id }}'
+          for i in $(seq 1 30); do
+            status=$(curl --silent --show-error --fail \
+              --url "https://api.dune.com/api/v1/pipelines/executions/$pipeline_id/status" \
+              --header "X-Dune-Api-Key: $DUNE_API_KEY")
+            echo "$status"
+            state=$(echo "$status" | python3 -c 'import sys, json; data=json.load(sys.stdin); print(data.get("state",""))')
+            if [ "$state" = "QUERY_STATE_COMPLETED" ] || [ "$state" = "PIPELINE_STATE_COMPLETED" ]; then
+              exit 0
+            fi
+            if echo "$state" | grep -Eq 'FAILED|CANCELLED|ERROR'; then
+              exit 1
+            fi
+            sleep 20
+          done
+          echo "Pipeline did not complete in time" >&2
+          exit 1
+
+      - name: Fetch latest Dune results
+        run: |
+          curl --silent --show-error --fail \
+            --url "https://api.dune.com/api/v1/query/$DUNE_QUERY_ID/results?limit=10" \
+            --header "X-Dune-Api-Key: $DUNE_API_KEY" \
+            -o dune-results.json
+          cat dune-results.json
+
+      - name: Post summary to Airtable
+        run: |
+          python3 <<'PY'
+          import json, os, urllib.parse, urllib.request
+
+          with open('dune-results.json', 'r', encoding='utf-8') as f:
+              data = json.load(f)
+
+          rows = data.get('result', {}).get('rows', [])
+          summary = json.dumps(rows[:3], ensure_ascii=False)[:900]
+          payload = {
+              'records': [
+                  {
+                      'fields': {
+                          'Name': 'Revenue Pipeline',
+                          'Notes': f'Dune query {os.environ["DUNE_QUERY_ID"]} latest rows: {summary}',
+                          'Status': 'ACTIVE'
+                      }
+                  }
+              ]
+          }
+
+          table = urllib.parse.quote(os.environ.get('AIRTABLE_TABLE', 'Table 1'), safe='')
+          url = f'https://api.airtable.com/v0/{os.environ["AIRTABLE_BASE_ID"]}/{table}'
+          req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), method='POST')
+          req.add_header('Authorization', f'Bearer {os.environ["AIRTABLE_API_KEY"]}')
+          req.add_header('Content-Type', 'application/json')
+          with urllib.request.urlopen(req) as resp:
+              print(resp.read().decode('utf-8'))
+          PY
