@@ -1,0 +1,105 @@
+name: Track Multi Chain
+
+on:
+  workflow_dispatch:
+    inputs:
+      ethereum_query_id:
+        description: Dune query ID for Ethereum
+        required: false
+        type: string
+      scroll_query_id:
+        description: Dune query ID for Scroll
+        required: false
+        type: string
+      ton_query_id:
+        description: Dune query ID for TON
+        required: false
+        type: string
+      airtable_table:
+        description: Airtable table name
+        required: false
+        default: Table 1
+        type: string
+  schedule:
+    - cron: '25 * * * *'
+
+jobs:
+  multi-chain:
+    runs-on: ubuntu-latest
+    env:
+      DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+      ETHEREUM_QUERY_ID: ${{ inputs.ethereum_query_id || secrets.DUNE_ETHEREUM_QUERY_ID }}
+      SCROLL_QUERY_ID: ${{ inputs.scroll_query_id || secrets.DUNE_SCROLL_QUERY_ID }}
+      TON_QUERY_ID: ${{ inputs.ton_query_id || secrets.DUNE_TON_QUERY_ID }}
+      AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+      AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+      AIRTABLE_TABLE: ${{ inputs.airtable_table || 'Table 1' }}
+    steps:
+      - name: Validate configuration
+        run: |
+          test -n "$DUNE_API_KEY"
+          test -n "$AIRTABLE_API_KEY"
+          test -n "$AIRTABLE_BASE_ID"
+          test -n "$ETHEREUM_QUERY_ID" || test -n "$SCROLL_QUERY_ID" || test -n "$TON_QUERY_ID"
+
+      - name: Fetch chain results
+        run: |
+          python3 <<'PY'
+          import json, os, urllib.request
+
+          api_key = os.environ['DUNE_API_KEY']
+          mapping = {
+              'ethereum': os.environ.get('ETHEREUM_QUERY_ID', '').strip(),
+              'scroll': os.environ.get('SCROLL_QUERY_ID', '').strip(),
+              'ton': os.environ.get('TON_QUERY_ID', '').strip(),
+          }
+          out = {}
+          for chain, qid in mapping.items():
+              if not qid:
+                  continue
+              req = urllib.request.Request(
+                  f'https://api.dune.com/api/v1/query/{qid}/results?limit=10',
+                  headers={'X-Dune-Api-Key': api_key}
+              )
+              with urllib.request.urlopen(req) as resp:
+                  out[chain] = json.load(resp)
+          with open('multi-chain-results.json', 'w', encoding='utf-8') as f:
+              json.dump(out, f, ensure_ascii=False, indent=2)
+          print(json.dumps({k: len(v.get('result', {}).get('rows', [])) for k, v in out.items()}))
+          PY
+
+      - name: Post consolidated summary to Airtable
+        run: |
+          python3 <<'PY'
+          import json, os, urllib.parse, urllib.request
+
+          with open('multi-chain-results.json', 'r', encoding='utf-8') as f:
+              data = json.load(f)
+
+          lines = []
+          for chain, payload in data.items():
+              rows = payload.get('result', {}).get('rows', [])
+              preview = json.dumps(rows[:2], ensure_ascii=False)
+              lines.append(f'{chain}: {len(rows)} rows | sample={preview[:250]}')
+
+          notes = ' || '.join(lines)[:900] if lines else 'No chain results available'
+          airtable_payload = {
+              'records': [
+                  {
+                      'fields': {
+                          'Name': 'Multi Chain Tracker',
+                          'Notes': notes,
+                          'Status': 'ACTIVE'
+                      }
+                  }
+              ]
+          }
+
+          table = urllib.parse.quote(os.environ.get('AIRTABLE_TABLE', 'Table 1'), safe='')
+          url = f'https://api.airtable.com/v0/{os.environ["AIRTABLE_BASE_ID"]}/{table}'
+          req = urllib.request.Request(url, data=json.dumps(airtable_payload).encode('utf-8'), method='POST')
+          req.add_header('Authorization', f'Bearer {os.environ["AIRTABLE_API_KEY"]}')
+          req.add_header('Content-Type', 'application/json')
+          with urllib.request.urlopen(req) as resp:
+              print(resp.read().decode('utf-8'))
+          PY
