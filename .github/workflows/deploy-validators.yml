@@ -1,0 +1,89 @@
+name: Deploy Validators
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["MVPuknowme"]
+    paths:
+      - "validator/**"
+      - "infra/**"
+      - ".github/workflows/deploy-validators.yml"
+
+jobs:
+  deploy-validators:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      VALIDATOR_S3_BUCKET: ${{ secrets.VALIDATOR_S3_BUCKET }}
+      ASG_NAME: ${{ secrets.VALIDATOR_ASG_NAME }}
+      LAUNCH_TEMPLATE_NAME: ${{ secrets.VALIDATOR_LAUNCH_TEMPLATE_NAME }}
+      VPC_SUBNETS: ${{ secrets.VALIDATOR_VPC_SUBNETS }}
+      MIN_SIZE: ${{ secrets.VALIDATOR_MIN_SIZE }}
+      MAX_SIZE: ${{ secrets.VALIDATOR_MAX_SIZE }}
+      DESIRED_CAPACITY: ${{ secrets.VALIDATOR_DESIRED_CAPACITY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Validate required settings
+        run: |
+          test -n "$AWS_REGION"
+          test -n "$VALIDATOR_S3_BUCKET"
+          test -n "$ASG_NAME"
+          test -n "$LAUNCH_TEMPLATE_NAME"
+          test -n "$VPC_SUBNETS"
+          : "${MIN_SIZE:=1}"
+          : "${MAX_SIZE:=5}"
+          : "${DESIRED_CAPACITY:=2}"
+          echo "AWS_REGION=$AWS_REGION"
+          echo "ASG_NAME=$ASG_NAME"
+          echo "LAUNCH_TEMPLATE_NAME=$LAUNCH_TEMPLATE_NAME"
+
+      - name: Sync validator bundle to S3
+        run: |
+          mkdir -p validator
+          if [ ! -f validator/README.md ]; then
+            echo "Validator bundle placeholder" > validator/README.md
+          fi
+          aws s3 sync validator/ s3://$VALIDATOR_S3_BUCKET/validator/ --delete
+
+      - name: Ensure autoscaling group exists
+        shell: bash
+        run: |
+          set -e
+          if aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names "$ASG_NAME" --query 'AutoScalingGroups[0].AutoScalingGroupName' --output text | grep -q "$ASG_NAME"; then
+            echo "ASG exists; updating capacity"
+            aws autoscaling update-auto-scaling-group \
+              --auto-scaling-group-name "$ASG_NAME" \
+              --min-size "${MIN_SIZE:-1}" \
+              --max-size "${MAX_SIZE:-5}" \
+              --desired-capacity "${DESIRED_CAPACITY:-2}"
+          else
+            echo "Creating ASG"
+            aws autoscaling create-auto-scaling-group \
+              --region "$AWS_REGION" \
+              --auto-scaling-group-name "$ASG_NAME" \
+              --launch-template LaunchTemplateName="$LAUNCH_TEMPLATE_NAME",Version='$Latest' \
+              --min-size "${MIN_SIZE:-1}" \
+              --max-size "${MAX_SIZE:-5}" \
+              --desired-capacity "${DESIRED_CAPACITY:-2}" \
+              --vpc-zone-identifier "$VPC_SUBNETS"
+          fi
+
+      - name: Start instance refresh
+        run: |
+          aws autoscaling start-instance-refresh \
+            --auto-scaling-group-name "$ASG_NAME" \
+            --preferences '{"MinHealthyPercentage":50,"InstanceWarmup":120}'
+
+      - name: Output status
+        run: |
+          aws autoscaling describe-auto-scaling-groups \
+            --auto-scaling-group-names "$ASG_NAME"
