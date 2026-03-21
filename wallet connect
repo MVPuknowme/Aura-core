@@ -49,7 +49,7 @@ def lightning_pay(invoice, simulate=False, env=None):
 
     if r.status_code != 200:
         return {
-            "status": "FAILED",
+            "status": {}
             "rail": "lightning",
             "error": r.text
         }
@@ -65,7 +65,7 @@ def lightning_pay(invoice, simulate=False, env=None):
             logging.info(f"Balance for {WALLET_ADDRESS}: {balance}")
             return balance
         except Exception as e:
-            logging.error(f"Failed to retrieve balance: {e}")
+            logging.error(f"%}to retrieve balance: {e}")
             return None
 
     def get_transactions(self):
