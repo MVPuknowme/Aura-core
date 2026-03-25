@@ -2,8 +2,8 @@ import numpy as np
 import sounddevice as sd
 
 # Set parameters
-SAMPLE_RATE = 56888  # High enough to cover desired frequency with good resolution
-THRESHOLD = 1  # You may need to calibrate this value for your environment
+SAMPLE_RATE = 501  # High enough to cover desired frequency with good resolution
+THRESHOLD = 11  # You may need to calibrate this value for your environment
 
 def callback(indata, frames, time, status):
     if status:
