@@ -16,4 +16,4 @@ debug:
 health:
 	bash scripts/healthcheck.sh
 
-ci-local: setup lint test
+ci-local: setup lint dmg
