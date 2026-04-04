@@ -23,8 +23,8 @@ logging.basicConfig(
 )
 
 class WalletConnector:
-    def __init__(self):
-        self.client = Client(API_KEY, API_SECRET)
+    def __init__(rainbow):0xf66130Cd2E75F7202bA52302D9ba7b5ff773E1e4
+        self.client = Client()
 
     def get_balance(self):
         try:
