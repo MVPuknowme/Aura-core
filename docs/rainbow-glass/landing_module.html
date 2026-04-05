@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rainbow Glass Funding Window</title>
+  <style>
+    :root { --bg:#0f0f12; --fg:#e8e8ee; --muted:#a6a6b3; --accent:#8b00ff; --card:#17171c; --card2:#1e1e25; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif; background: linear-gradient(180deg,var(--bg),#111217); color:var(--fg); }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 28px 16px 64px; }
+    .card { background: linear-gradient(180deg,var(--card),var(--card2)); border:1px solid #262634; border-radius:16px; padding:24px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    h1 { margin:0 0 8px; font-size: 32px; }
+    p.lede { color:var(--muted); margin-top:6px; }
+    .grid { display:grid; grid-template-columns: 1fr; gap:18px; margin-top:18px; }
+    @media(min-width: 840px){ .grid{ grid-template-columns:1.2fr 0.8fr; } }
+    .panel { border-radius:12px; border:1px solid #2a2a38; background:#141419; padding:18px; }
+    .cta { margin-top: 14px; display:flex; gap:10px; flex-wrap: wrap; }
+    .btn { padding:12px 16px; border-radius:10px; border:1px solid #2a2a38; background:#1b1b22; color:#fff; text-decoration:none; cursor:pointer; transition:.2s; }
+    .btn:hover { transform: translateY(-1px); border-color:#3a3a4f; }
+    .pill { display:inline-block; padding:6px 10px; border-radius:999px; background:rgba(139,0,255,.12); border:1px solid rgba(139,0,255,.35); color:#cfa7ff; font-size:12px; }
+    .wallet { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; word-break: break-all; }
+    .tiers { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+    .tier { padding:8px 10px; border-radius:8px; border:1px solid #2a2a38; background:#141419; font-size:12px; }
+    .rainbow { height:18px; border-radius:999px; background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff); }
+    footer { margin-top:22px; color: var(--muted); font-size:12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <span class="pill">Aura-Core • Switch-Bridge</span>
+      <h1>Rainbow Glass Funding Window</h1>
+      <p class="lede">Follow the rainbow… scan the code… fund the future. This module supports the Aura-Core AI Switch-Bridge: one-touch routing between in-mesh compute and GitHub Models.</p>
+      <div class="rainbow"></div>
+      <div class="grid">
+        <div class="panel">
+          <h3>What this funds</h3>
+          <ul>
+            <li>One-touch in/out AI switching</li>
+            <li>On-chain token metering and clean billing</li>
+            <li>DAO-governed revenue share for node operators</li>
+          </ul>
+          <div class="cta">
+            <a class="btn" href="https://etherscan.io/address/0x8e96734b4Fb612C1603B1a1968655677D2577D56" target="_blank" rel="noopener">View Wallet</a>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Funding Address</h3>
+          <p class="wallet">0x8e96734b4Fb612C1603B1a1968655677D2577D56</p>
+          <div class="tiers">
+            <span class="tier">🔴 Supporter</span>
+            <span class="tier">🟠 Builder</span>
+            <span class="tier">🟡 Partner</span>
+            <span class="tier">🟢 Operator</span>
+            <span class="tier">🔵 Innovator</span>
+            <span class="tier">🟣 Architect</span>
+            <span class="tier">💜 Visionary</span>
+          </div>
+        </div>
+      </div>
+      <footer>MVPuknowme • Aura-Core • Rainbow Glass</footer>
+    </div>
+  </div>
+</body>
+</html>
