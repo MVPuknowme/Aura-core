@@ -1,0 +1,35 @@
+name: codex.claude.opus
+
+on:
+  push:
+    branches:
+      - MVPuknowme
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Codex review banner
+        run: |
+          echo "codex.claude.opus review active"
+          echo "Aura Core validation gate enabled"
+
+      - name: Validate workflow context
+        run: |
+          test -f CODEX_REVIEW.md && echo "Found CODEX_REVIEW.md" || echo "No CODEX_REVIEW.md present"
+
+      - name: Reference-only rules
+        run: |
+          echo "Failure analytics must remain reference-only until user inputs are present."
+          echo "API fencing required before processing."
