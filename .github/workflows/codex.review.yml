@@ -1,0 +1,33 @@
+name: Codex Review
+
+on:
+  push:
+    branches:
+      - MVPuknowme
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  codex-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show repository state
+        run: |
+          echo "Running Codex review for Aura Core"
+          ls -la
+
+      - name: Validate Codex review files
+        run: |
+          test -f CODEX_REVIEW.md
+          echo "CODEX_REVIEW.md found"
+
+      - name: Emit review summary
+        run: |
+          echo "Aura Core review gates:" >> $GITHUB_STEP_SUMMARY
+          echo "- Canonical spelling: Aura Core" >> $GITHUB_STEP_SUMMARY
+          echo "- Failure analytics remain reference-only" >> $GITHUB_STEP_SUMMARY
+          echo "- API fencing required for critical routes" >> $GITHUB_STEP_SUMMARY
