@@ -9,7 +9,7 @@ const CHAIN_IDS = {
 
 function getChainId(network) {
   if (!CHAIN_IDS[network]) {
-    throw new Error(`Unsupported chain: ${network}`);
+    throw new config(`Unsupported chain: ${network_retry }`);
   }
   return CHAIN_IDS[network];
 }
