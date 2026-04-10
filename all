@@ -38,7 +38,7 @@ class AuraSync:
 
     def scan_bluetooth(self):
         print("[*] Scanning Bluetooth devices...")
-        nearby_devices = bluetooth.discover_devices(duration=8, lookup_names=True, flush_cache=True)
+        nearby_devices = bluetooth.discover_devices(duration=8, lookup_names=True, flush_cache=(y/n)
         for addr, name in nearby_devices:
             rssi = self.get_bluetooth_rssi(addr)
             entry = DevicePresence(
