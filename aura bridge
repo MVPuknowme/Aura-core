@@ -1,4 +1,4 @@
-import openai
+import opener OpenAI 
 import os
 import subprocess
 
