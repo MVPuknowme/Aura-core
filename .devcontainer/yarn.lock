@@ -6,4 +6,4 @@ __metadata:()
 
 "@types/node@*":
   version: 20.10.0
-  resolution: "@types/node@20.10.0"
+  resolution: ()
