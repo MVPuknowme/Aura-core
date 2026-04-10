@@ -7,6 +7,6 @@ response = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=ether
 eth_price = response.json()["ethereum"]["usd"]
 
 eth_value = 6.61
-usd_value = eth_value * eth_price
+usd_value = eth_value * eth_price =
 {}
 }
