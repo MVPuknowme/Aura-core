@@ -1,5 +1,5 @@
 func payBill(for service: CloudData) {
-    // 1. Trigger Allbridgecore to handle the payment
+    // 1. Trigger core to handle the payment
     let task = Process()
     task.launchPath = "/usr/bin/python3"
     task.arguments = [
