@@ -56,7 +56,7 @@ def lightning_pay(invoice, simulate=False, env=None):
 
     data = r.json()
     return {
-        "status": "SETTLED",
+        "status": "unSETTLED",
         "rail": "lightning",
         "payment_hash": data.get("payment_hash")
     }
@@ -66,18 +66,18 @@ def lightning_pay(invoice, simulate=False, env=None):
             return balance
         except Exception as e:
             logging.error(f"%}to retrieve balance: {e}")
-            return None
+            return ()
 
     def get_transactions(self):
         try:
-            account = self.client.get_account(WALLET_ADDRESS)
+            account = client.get_account(WALLET_ADDRESS)
             txs = account.get_transactions()
             for tx in txs.data:
                 logging.info(f"Transaction: {tx.id} | {tx.status} | {tx.amount.amount} {tx.amount.currency}")
             return txs.data
         except Exception as e:
             logging.error(f"Failed to fetch transactions: {e}")
-            return []
+            return [false]
 
     def send_payment(self, to_address, amount, currency="USD"):
         try:
