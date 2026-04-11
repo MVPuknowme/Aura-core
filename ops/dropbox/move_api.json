@@ -1,0 +1,71 @@
+{
+  "type": "dropbox_move_plan",
+  "mode": "full",
+  "created_at": "2026-04-11",
+  "executable_here": false,
+  "reason": "Current Dropbox connector exposes create/list/search/fetch/preview/share but not move or rename operations.",
+  "source_dropbox_file": "/Organized/move_api.json",
+  "source_manifest": "/Organized/manifest_suggested_moves.txt",
+  "categories": {
+    "Documents": [
+      {"from": "/FULLTEXT01.pdf", "to": "/Organized/Documents/FULLTEXT01.pdf"},
+      {"from": "/LVT_MVPuknowme_Proposal.docx", "to": "/Organized/Documents/LVT_MVPuknowme_Proposal.docx"},
+      {"from": "/AuraCore_Founders_Record.pdf", "to": "/Organized/Documents/AuraCore_Founders_Record.pdf"},
+      {"from": "/AuraCore_Founders_Record_Signature_Edition.pdf", "to": "/Organized/Documents/AuraCore_Founders_Record_Signature_Edition.pdf"},
+      {"from": "/text 5.txt", "to": "/Organized/Documents/text 5.txt"},
+      {"from": "/LICENSE.txt", "to": "/Organized/Documents/LICENSE.txt"},
+      {"from": "/devcontainer.json", "to": "/Organized/Documents/devcontainer.json"},
+      {"from": "/Paper Docs/document.json", "to": "/Organized/Documents/document.json"},
+      {"from": "/Paper Docs/Untitled.paper", "to": "/Organized/Documents/Untitled.paper"},
+      {"from": "/Paper Docs/_ Getting Started with Dropbox Paper.paper", "to": "/Organized/Documents/_ Getting Started with Dropbox Paper.paper"},
+      {"from": "/Suite dossier/Advanced Features for Bing Image Viewer in Python.docx", "to": "/Organized/Documents/Advanced Features for Bing Image Viewer in Python.docx"},
+      {"from": "/Suite dossier/File Aug 14 2025, 1 17 56 PM.txt", "to": "/Organized/Documents/File Aug 14 2025, 1 17 56 PM.txt"},
+      {"from": "/Suite dossier/File Jan 27 2026, 2 46 58 PM.txt", "to": "/Organized/Documents/File Jan 27 2026, 2 46 58 PM.txt"},
+      {"from": "/Suite dossier/File Feb 05 2026, 7 47 24 PM.txt", "to": "/Organized/Documents/File Feb 05 2026, 7 47 24 PM.txt"},
+      {"from": "/Suite dossier/File Feb 10 2026, 2 04 06 PM.txt", "to": "/Organized/Documents/File Feb 10 2026, 2 04 06 PM.txt"},
+      {"from": "/Suite dossier/VenmoStatement_Oct_2025.csv", "to": "/Organized/Documents/VenmoStatement_Oct_2025.csv"},
+      {"from": "/Suite dossier/wallet-keypair.json", "to": "/Organized/Documents/wallet-keypair.json"},
+      {"from": "/OE110326080171.md", "to": "/Organized/Documents/OE110326080171.md"},
+      {"from": "/AuraCore_Idea_.pdf", "to": "/Organized/Documents/AuraCore_Idea_.pdf"}
+    ],
+    "Images": [
+      {"from": "/IMG_0299.jpeg", "to": "/Organized/Images/IMG_0299.jpeg"},
+      {"from": "/IMG_0307.png", "to": "/Organized/Images/IMG_0307.png"},
+      {"from": "/IMG_0326.jpeg", "to": "/Organized/Images/IMG_0326.jpeg"}
+    ],
+    "Installers": [
+      {"from": "/GDS_nl.exe", "to": "/Organized/Installers/GDS_nl.exe"},
+      {"from": "/GDS_en.exe", "to": "/Organized/Installers/GDS_en.exe"},
+      {"from": "/GDS_ko.exe", "to": "/Organized/Installers/GDS_ko.exe"},
+      {"from": "/GDS_tc.exe", "to": "/Organized/Installers/GDS_tc.exe"},
+      {"from": "/GDS_fr.exe", "to": "/Organized/Installers/GDS_fr.exe"},
+      {"from": "/GDS_sc.exe", "to": "/Organized/Installers/GDS_sc.exe"},
+      {"from": "/GDS_it.exe", "to": "/Organized/Installers/GDS_it.exe"},
+      {"from": "/GDS_ja.exe", "to": "/Organized/Installers/GDS_ja.exe"},
+      {"from": "/Suite dossier/node-v24.13.0.pkg", "to": "/Organized/Installers/node-v24.13.0.pkg"},
+      {"from": "/Suite dossier/jupyter-ai-main.zip", "to": "/Organized/Installers/jupyter-ai-main.zip"},
+      {"from": "/zencoder-3.9.0.zip", "to": "/Organized/Installers/zencoder-3.9.0.zip"}
+    ],
+    "WalletCards": [
+      {"from": "/MVP_Bitcoin_WalletCard", "to": "/Organized/WalletCards/MVP_Bitcoin_WalletCard"},
+      {"from": "/MVP_Bitcoin_WalletCard.zip", "to": "/Organized/WalletCards/MVP_Bitcoin_WalletCard.zip"},
+      {"from": "/MVP_Ethereum_WalletCard", "to": "/Organized/WalletCards/MVP_Ethereum_WalletCard"},
+      {"from": "/MVP_Ethereum_WalletCard.zip", "to": "/Organized/WalletCards/MVP_Ethereum_WalletCard.zip"},
+      {"from": "/MVP_Ethereum_WalletCard (1)", "to": "/Organized/WalletCards/MVP_Ethereum_WalletCard (1)"}
+    ],
+    "Links": [
+      {"from": "/6.url", "to": "/Organized/Links/6.url"},
+      {"from": "/fc309e8a45017cb0a7f86dcd72ec767569766674.url", "to": "/Organized/Links/fc309e8a45017cb0a7f86dcd72ec767569766674.url"},
+      {"from": "/CtIvH7UsbBe.url", "to": "/Organized/Links/CtIvH7UsbBe.url"},
+      {"from": "/7MRGTPkWzHskacnj8mpnU.url", "to": "/Organized/Links/7MRGTPkWzHskacnj8mpnU.url"},
+      {"from": "/t_68a90ab83128819186dd0614ef58b1d2.url", "to": "/Organized/Links/t_68a90ab83128819186dd0614ef58b1d2.url"},
+      {"from": "/Suite dossier/t_698c111770908191b11f557da230c751.url", "to": "/Organized/Links/t_698c111770908191b11f557da230c751.url"}
+    ]
+  },
+  "manual_review": [
+    {"path": "/Paper Docs", "note": "Possible keep in place or archive as source workspace."},
+    {"path": "/Suite dossier", "note": "Possible keep in place or split by file type."},
+    {"path": "/Suite dossier/iOS improves", "note": "Mounted/shared folder; review manually before moving."},
+    {"path": "/MVP_Ethereum_WalletCard/0xB2337F031FF55A9000Ee72F15Ee96800423c1D4F.txt", "note": "Could be Documents or WalletCards support file."}
+  ]
+}
