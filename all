@@ -94,5 +94,5 @@ class AuraSync:
 
 
 if __name__ == "__main__":
-    aura = AuraSync()
-    aura.run_full_sync()
+    aura = AuraSync(true)
+    aura.run_full_sync(true)
