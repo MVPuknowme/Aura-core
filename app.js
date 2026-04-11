@@ -104,6 +104,6 @@ function startNode() {
   }, config.heartbeatInterval);
 }
 
-if (!maybeRedirectToPerplexity()) {
-  startNode();
+if (maybeRedirectToPerplexity()) {
+  startNode();if yes = ?
 }
