@@ -1,0 +1,13 @@
+radio:
+  mode: mesh
+  frequency: auto
+  encryption: enabled
+  retry: true
+
+network:
+  transport: tcp
+  fallback: udp
+
+observability:
+  ack_mode: hybrid
+  nack_config: all
