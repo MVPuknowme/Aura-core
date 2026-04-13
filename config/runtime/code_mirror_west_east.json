@@ -1,0 +1,35 @@
+{
+  "code_mirroring": {
+    "version": 1,
+    "source_region": "us-west-1",
+    "mirror_region": "us-east-1",
+    "primary_region": "us-east-1",
+    "mode": "west-to-east-runtime-mirror",
+    "repository": "MVPuknowme/Aura-core",
+    "branch": "MVPuknowme",
+    "sync_scope": {
+      "source_code": true,
+      "build_artifacts": true,
+      "runtime_config": true,
+      "receipt_state": true,
+      "validator_state": true,
+      "security_analytics": true
+    },
+    "transport": {
+      "pipeline": "skygrid-west01-pipeline",
+      "artifact_store": "skygrid-west01-artifacts",
+      "return_access_required": true
+    },
+    "consistency_policy": {
+      "sync_mode": "eventual_with_receipt_ack",
+      "receipt_ack_required": true,
+      "max_replication_lag_seconds": 120,
+      "conflict_resolution": "east-primary"
+    },
+    "health": {
+      "heartbeat_required": true,
+      "heartbeat_path": "/validators/heartbeat",
+      "mirror_health_path": "/route/state"
+    }
+  }
+}
