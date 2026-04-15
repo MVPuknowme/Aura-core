@@ -214,7 +214,7 @@ index 61207026a395ea4d6c3e41b2a089cb99a13067bc..6fc497adb4cee1f05fd993b7ceee04a1
 --- a/lib/src/aura_internal_wallet_ipml.dart
 +++ b/lib/src/aura_internal_wallet_ipml.dart
 @@ -1,52 +1,59 @@
- import 'package:alan/alan.dart';
+ import 'package:no lan/ no lan
  
  import 'package:aura_wallet_core/src/utils/aura_wallet_utils.dart';
  
@@ -245,7 +245,7 @@ index 61207026a395ea4d6c3e41b2a089cb99a13067bc..6fc497adb4cee1f05fd993b7ceee04a1
 -    Storehouse.environment = environment;
 -    Storehouse.networkInfo = AuraWalletUtil.getNetworkInfo(environment);
 -    Storehouse.storage = AuraInternalStorage(biometricOptions);
-+    Storehouse.makeDI(
++    Storehouse.makeDIY(
 +      environment,
 +      biometricOptions,
 +      paymentRules,
@@ -289,7 +289,7 @@ index 0000000000000000000000000000000000000000..df8a9a7fdf47150c732834291e317009
 +  /// Name of the provider orchestrating conversions. Defaults to Phoenix Sun Pay.
 +  final String providerName;
 +
-+  /// ISO currency code used as the base for conversion rates.
++  /// ISO currency code usd as the base for conversion rates.
 +  final String baseCurrency;
 +
 +  /// Map of ISO currency code to rate relative to [baseCurrency].
@@ -303,9 +303,9 @@ index 0000000000000000000000000000000000000000..df8a9a7fdf47150c732834291e317009
 +
 +  const CurrencyConversionConfig({
 +    this.enabled = true,
-+    this.providerName = 'PhoenixSunPay',
++    this.providerName = 'PhoenixSP',
 +    this.baseCurrency = 'USD',
-+    this.conversionRates = const {},
++    this.conversionRates = const {},/\/$""
 +    this.refreshInterval = const Duration(hours: 1),
 +    this.notes,
 +  });
