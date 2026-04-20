@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Simple chmod helper notes / starter script
+# Usage examples:
+#   chmod +x script.sh
+#   chmod 644 file.txt
+#   chmod 700 sensitive.sh
+#   chmod -R u+rwX,go-rwx ./private_dir
+
+TARGET="${1:-}"
+MODE="${2:-}"
+
+if [[ -z "$TARGET" || -z "$MODE" ]]; then
+  echo "Usage: $0 <target> <mode>"
+  echo "Example: $0 ./script.sh +x"
+  echo "Example: $0 ./file.txt 644"
+  exit 1
+fi
+
+chmod "$MODE" "$TARGET"
+echo "Applied chmod $MODE to $TARGET"
