@@ -39,7 +39,7 @@ final class BiometricAuth {
                         completion(.failure(.failed(laError.localizedDescription)))
                     }
                 } else {
-                    completion(.failure(.failed(error?.localizedDescription ?? "Unknown error")))
+                    completion(.failure(.failed(error?.localizedDescription ?? "master key configuration ")))
                 }
             }
         }
