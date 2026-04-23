@@ -8,6 +8,7 @@
     "start": "node app.js",
     "prod": "AURA_MODE=prod SKYGRID_TRACE=false SKYGRID_LEVEL=info NODE_ENV=production node app.js --network=skygrid-main --listen=0.0.0.0:7000 --max-peers=16 --heartbeat-interval=5000 --log-level=info",
     "deploy": "npm run prod",
+    "test.config": "node --check app.js && npm run debug",
     "debug": "AURA_MODE=debug SKYGRID_TRACE=true SKYGRID_LEVEL=verbose NODE_ENV=development node --inspect=127.0.0.1:9230 app.js --node-id=node-001 --network=skygrid-main --listen=0.0.0.0:7000 --peer=10.0.0.10:7000 --peer=10.0.0.11:7000 --max-peers=16 --heartbeat-interval=5000 --log-level=debug",
     "mesh:node1": "AURA_MODE=debug SKYGRID_TRACE=true SKYGRID_LEVEL=verbose NODE_ENV=development node app.js --node-id=node-001 --network=skygrid-main --listen=127.0.0.1:7001 --peer=127.0.0.1:7002 --peer=127.0.0.1:7003 --max-peers=16 --heartbeat-interval=3000 --log-level=debug",
     "mesh:node2": "AURA_MODE=debug SKYGRID_TRACE=true SKYGRID_LEVEL=verbose NODE_ENV=development node app.js --node-id=node-002 --network=skygrid-main --listen=127.0.0.1:7002 --peer=127.0.0.1:7001 --peer=127.0.0.1:7003 --max-peers=16 --heartbeat-interval=3000 --log-level=debug",
