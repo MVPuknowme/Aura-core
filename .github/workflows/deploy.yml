@@ -1,0 +1,62 @@
+name: Deploy Aura Core
+
+on:
+  workflow_dispatch:
+    inputs:
+      node_version:
+        description: Node.js version to use
+        required: false
+        default: '20'
+      install_command:
+        description: Install command override
+        required: false
+        default: ''
+      deploy_command:
+        description: Deploy command override
+        required: false
+        default: 'npm run deploy'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version }}
+          cache: npm
+
+      - name: Show runtime
+        run: |
+          node --version
+          npm --version
+
+      - name: Validate package.json scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e "const fs=require('fs'); const pkg=JSON.parse(fs.readFileSync('package.json','utf8')); if(!pkg.scripts || !pkg.scripts.deploy){console.error('Missing scripts.deploy in package.json'); process.exit(1)} if(!pkg.scripts.prod){console.error('Missing scripts.prod in package.json'); process.exit(1)} console.log('Found deploy script:', pkg.scripts.deploy); console.log('Found prod script:', pkg.scripts.prod);"
+
+      - name: Validate app syntax
+        run: node --check app.js
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -n "${{ inputs.install_command }}" ]; then
+            eval "${{ inputs.install_command }}"
+          elif [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      - name: Deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          eval "${{ inputs.deploy_command }}"
