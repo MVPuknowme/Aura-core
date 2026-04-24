@@ -1,11 +1,13 @@
 {
   "project": "Aura-Core",
   "command": "/deploy",
-  "version": "1.0.1",
-  "status": "deploy-staged",
+  "version": "1.0.2",
+  "status": "base-deploy-ready",
   "branch": "MVPuknowme",
   "created_at": "2026-04-23",
-  "default_network": "base-sepolia-or-scroll",
+  "selected_network": "baseSepolia",
+  "default_network": "baseSepolia",
+  "chain_family": "Base",
   "contract_stack": {
     "proxy_pattern": "TransparentUpgradeableProxy",
     "upgrade_authority": "ProxyAdmin",
@@ -17,16 +19,22 @@
     "proxy_contracts": "contracts/proxy/",
     "scripts": "scripts/",
     "deployments": "deployments/",
-    "workflow_device_svgs": ".github/workflows/sync_device_svgs.yml"
+    "workflow_device_svgs": ".github/workflows/sync_device_svgs.yml",
+    "workflow_contract_deploy": ".github/workflows/deploy_contracts.yml"
   },
   "required_files": [
     "scripts/deploy-proxy.js",
-    "deployments/aura-core.contracts.json"
+    "deployments/aura-core.contracts.json",
+    ".github/workflows/deploy_contracts.yml"
   ],
   "deployment_steps": [
     "npm install @openzeppelin/contracts @openzeppelin/hardhat-upgrades hardhat ethers dotenv",
     "npx hardhat compile",
     "npx hardhat run scripts/deploy-proxy.js --network baseSepolia"
+  ],
+  "required_github_secrets": [
+    "PRIVATE_KEY",
+    "BASE_SEPOLIA_RPC_URL"
   ],
   "safety_checks": {
     "dedicated_admin": true,
