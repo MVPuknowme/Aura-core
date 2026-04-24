@@ -1,0 +1,49 @@
+name: Deploy Aura-Core Contracts
+
+on:
+  workflow_dispatch:
+    inputs:
+      network:
+        description: "Hardhat network to deploy to"
+        required: true
+        default: "baseSepolia"
+        type: choice
+        options:
+          - baseSepolia
+          - scrollSepolia
+
+permissions:
+  contents: write
+
+jobs:
+  deploy-contracts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Compile contracts
+        run: npx hardhat compile
+
+      - name: Deploy proxy stack
+        env:
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          BASE_SEPOLIA_RPC_URL: ${{ secrets.BASE_SEPOLIA_RPC_URL }}
+          SCROLL_SEPOLIA_RPC_URL: ${{ secrets.SCROLL_SEPOLIA_RPC_URL }}
+        run: npx hardhat run scripts/deploy-proxy.js --network ${{ inputs.network }}
+
+      - name: Commit deployment registry
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update Aura-Core deployment registry"
+          file_pattern: "deployments/aura-core.contracts.json"
