@@ -1,0 +1,52 @@
+{
+  "project": "Aura-Core",
+  "command": "/deploy",
+  "version": "1.0.1",
+  "status": "deploy-staged",
+  "branch": "MVPuknowme",
+  "created_at": "2026-04-23",
+  "default_network": "base-sepolia-or-scroll",
+  "contract_stack": {
+    "proxy_pattern": "TransparentUpgradeableProxy",
+    "upgrade_authority": "ProxyAdmin",
+    "public_endpoint": "proxy_address",
+    "registry_path": "deployments/aura-core.contracts.json"
+  },
+  "paths": {
+    "contracts": "contracts/",
+    "proxy_contracts": "contracts/proxy/",
+    "scripts": "scripts/",
+    "deployments": "deployments/",
+    "workflow_device_svgs": ".github/workflows/sync_device_svgs.yml"
+  },
+  "required_files": [
+    "scripts/deploy-proxy.js",
+    "deployments/aura-core.contracts.json"
+  ],
+  "deployment_steps": [
+    "npm install @openzeppelin/contracts @openzeppelin/hardhat-upgrades hardhat ethers dotenv",
+    "npx hardhat compile",
+    "npx hardhat run scripts/deploy-proxy.js --network baseSepolia"
+  ],
+  "safety_checks": {
+    "dedicated_admin": true,
+    "initializer_guard": true,
+    "initialized_once": true,
+    "operator_wallet_not_proxy_admin": true,
+    "verify_proxy": true,
+    "verify_implementation": true,
+    "verify_proxy_admin": true
+  },
+  "outputs": {
+    "proxy_address": "0x...",
+    "implementation_address": "0x...",
+    "proxy_admin_address": "0x...",
+    "initializer_data_hash": "0x...",
+    "transaction_hash": "0x...",
+    "verification_urls": {
+      "proxy": "",
+      "implementation": "",
+      "admin": ""
+    }
+  }
+}
