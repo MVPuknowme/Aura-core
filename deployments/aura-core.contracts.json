@@ -1,0 +1,26 @@
+{
+  "project": "Aura-Core",
+  "contract_stack": "TransparentUpgradeableProxy",
+  "network": "base-sepolia-or-scroll",
+  "branch": "MVPuknowme",
+  "proxy_address": "0x...",
+  "implementation_address": "0x...",
+  "proxy_admin_address": "0x...",
+  "upgrade_authority": "ProxyAdmin",
+  "initializer_signature": "initialize(...)" ,
+  "initializer_data_hash": "0x...",
+  "abi_path": "artifacts/contracts/AuraCore.json",
+  "verified": false,
+  "transaction_hash": "0x...",
+  "verification_urls": {
+    "proxy": "",
+    "implementation": "",
+    "admin": ""
+  },
+  "safety_checks": {
+    "dedicated_admin": true,
+    "initializer_guard": true,
+    "initialized_once": true,
+    "operator_wallet_not_proxy_admin": true
+  }
+}
