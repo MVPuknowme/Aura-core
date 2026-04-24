@@ -1,7 +1,8 @@
 {
   "project": "Aura-Core",
   "contract_stack": "TransparentUpgradeableProxy",
-  "network": "base-sepolia-or-scroll",
+  "network": "baseSepolia",
+  "chain_family": "Base",
   "branch": "MVPuknowme",
   "proxy_address": "0x...",
   "implementation_address": "0x...",
@@ -9,7 +10,7 @@
   "upgrade_authority": "ProxyAdmin",
   "initializer_signature": "initialize(...)" ,
   "initializer_data_hash": "0x...",
-  "abi_path": "artifacts/contracts/AuraCore.json",
+  "abi_path": "artifacts/contracts/AuraCore.sol/AuraCore.json",
   "verified": false,
   "transaction_hash": "0x...",
   "verification_urls": {
