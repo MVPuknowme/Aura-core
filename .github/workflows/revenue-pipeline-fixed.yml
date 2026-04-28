@@ -1,0 +1,137 @@
+name: Revenue Pipeline Fixed
+
+on:
+  workflow_dispatch:
+    inputs:
+      dune_query_id:
+        description: Dune query ID to execute
+        required: false
+        type: string
+      airtable_table:
+        description: Airtable table name
+        required: false
+        default: Table 1
+        type: string
+      debug_mode:
+        description: Enable verbose validation output
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  revenue-pipeline:
+    runs-on: ubuntu-latest
+    env:
+      DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+      DUNE_QUERY_ID: ${{ inputs.dune_query_id || secrets.DUNE_QUERY_ID }}
+      AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+      AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+      AIRTABLE_TABLE: ${{ inputs.airtable_table || 'Table 1' }}
+      DEBUG_MODE: ${{ inputs.debug_mode || 'true' }}
+    steps:
+      - name: Validate configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          missing=()
+          [ -n "${DUNE_API_KEY:-}" ] || missing+=("DUNE_API_KEY")
+          [ -n "${DUNE_QUERY_ID:-}" ] || missing+=("DUNE_QUERY_ID")
+          [ -n "${AIRTABLE_API_KEY:-}" ] || missing+=("AIRTABLE_API_KEY")
+          [ -n "${AIRTABLE_BASE_ID:-}" ] || missing+=("AIRTABLE_BASE_ID")
+          [ -n "${AIRTABLE_TABLE:-}" ] || missing+=("AIRTABLE_TABLE")
+
+          if [ "${DEBUG_MODE:-true}" = "true" ]; then
+            echo "Workflow debug summary"
+            echo "- DUNE_API_KEY set: $([ -n "${DUNE_API_KEY:-}" ] && echo yes || echo no)"
+            echo "- DUNE_QUERY_ID set: $([ -n "${DUNE_QUERY_ID:-}" ] && echo yes || echo no)"
+            echo "- AIRTABLE_API_KEY set: $([ -n "${AIRTABLE_API_KEY:-}" ] && echo yes || echo no)"
+            echo "- AIRTABLE_BASE_ID set: $([ -n "${AIRTABLE_BASE_ID:-}" ] && echo yes || echo no)"
+            echo "- AIRTABLE_TABLE: ${AIRTABLE_TABLE:-missing}"
+          fi
+
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error title=Missing workflow configuration::Missing required values: ${missing[*]}"
+            echo "Add missing repository secrets in Settings > Secrets and variables > Actions, then rerun."
+            exit 1
+          fi
+
+      - name: Execute Dune pipeline
+        id: dune_exec
+        shell: bash
+        run: |
+          set -euo pipefail
+          response=$(curl --silent --show-error --fail \
+            --request POST \
+            --url https://api.dune.com/api/v1/pipelines/execute \
+            --header "Content-Type: application/json" \
+            --header "X-Dune-Api-Key: ${DUNE_API_KEY}" \
+            --data "{\"query_id\":\"${DUNE_QUERY_ID}\",\"performance\":\"medium\"}")
+          echo "$response"
+          pipeline_execution_id=$(echo "$response" | python3 -c 'import sys, json; data=json.load(sys.stdin); print(data.get("pipeline_execution_id") or data.get("execution_id") or "")')
+          test -n "$pipeline_execution_id" || { echo "Missing pipeline execution id" >&2; exit 1; }
+          echo "pipeline_execution_id=$pipeline_execution_id" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for completion
+        shell: bash
+        run: |
+          set -euo pipefail
+          pipeline_id='${{ steps.dune_exec.outputs.pipeline_execution_id }}'
+          for i in $(seq 1 30); do
+            status=$(curl --silent --show-error --fail \
+              --url "https://api.dune.com/api/v1/pipelines/executions/${pipeline_id}/status" \
+              --header "X-Dune-Api-Key: ${DUNE_API_KEY}")
+            echo "$status"
+            state=$(echo "$status" | python3 -c 'import sys, json; data=json.load(sys.stdin); print(data.get("state", data.get("status", "")))')
+            if echo "$state" | grep -Eq 'COMPLETED|SUCCESS|FINISHED'; then
+              exit 0
+            fi
+            if echo "$state" | grep -Eq 'FAILED|CANCELLED|ERROR'; then
+              exit 1
+            fi
+            sleep 20
+          done
+          echo "Pipeline did not complete in time" >&2
+          exit 1
+
+      - name: Fetch latest Dune results
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --silent --show-error --fail \
+            --url "https://api.dune.com/api/v1/query/${DUNE_QUERY_ID}/results?limit=10" \
+            --header "X-Dune-Api-Key: ${DUNE_API_KEY}" \
+            -o dune-results.json
+          cat dune-results.json
+
+      - name: Post summary to Airtable
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          import json, os, urllib.parse, urllib.request
+
+          with open('dune-results.json', 'r', encoding='utf-8') as f:
+              data = json.load(f)
+
+          rows = data.get('result', {}).get('rows', [])
+          summary = json.dumps(rows[:3], ensure_ascii=False)[:900]
+          payload = {
+              'records': [
+                  {
+                      'fields': {
+                          'Name': 'Revenue Pipeline',
+                          'Notes': f'Dune query {os.environ["DUNE_QUERY_ID"]} latest rows: {summary}',
+                          'Status': 'ACTIVE'
+                      }
+                  }
+              ]
+          }
+
+          table = urllib.parse.quote(os.environ.get('AIRTABLE_TABLE', 'Table 1'), safe='')
+          url = f'https://api.airtable.com/v0/{os.environ["AIRTABLE_BASE_ID"]}/{table}'
+          req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), method='POST')
+          req.add_header('Authorization', f'Bearer {os.environ["AIRTABLE_API_KEY"]}')
+          req.add_header('Content-Type', 'application/json')
+          with urllib.request.urlopen(req) as resp:
+              print(resp.read().decode('utf-8'))
+          PY
