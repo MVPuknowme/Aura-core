@@ -1,2 +1,3 @@
-Binding: Config.attach/ai (status: pending)
+Binding: Config.attach/ai 
+if completed = payments {};/
 Authority: 0xbAA5A03bC268546194550a427d3F1d5787c15403
