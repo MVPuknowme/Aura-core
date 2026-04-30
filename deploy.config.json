@@ -45,16 +45,6 @@
     "verify_implementation": true,
     "verify_proxy_admin": true
   },
-  "outputs": {
-    "proxy_address": "0x...",
-    "implementation_address": "0x...",
-    "proxy_admin_address": "0x...",
-    "initializer_data_hash": "0x...",
-    "transaction_hash": "0x...",
-    "verification_urls": {
-      "proxy": "",
-      "implementation": "",
-      "admin": ""
     }
   }
 }
