@@ -1,0 +1,30 @@
+{
+  "node_id": "42xa",
+  "profile": "skygrid-settlement-style",
+  "applies_to": [
+    "skygrid-l2-loop-proof",
+    "backend-l2-postman-api",
+    "validator-route-proof"
+  ],
+  "settlement": {
+    "style": "x402",
+    "payment_required": true,
+    "mode": "metered-route-proof",
+    "unit": "validated_loop_proof",
+    "route_id": "m9P4vJxjAhChxfLj0mtXF4fJwkEZ5cUg",
+    "expected_response": {
+      "status": "L2_AUTO_ROUTED",
+      "mode": "loop_trip_proof",
+      "latency_ms": 420,
+      "hops": 3,
+      "role": "mesh_full_loop_validated"
+    }
+  },
+  "routing": {
+    "mode": "L2_ONLY",
+    "route": "VA→CA→LOCAL",
+    "control_surface": "Postman API",
+    "fallback_role": "mesh_full_loop_validator"
+  },
+  "notes": "Settlement style applied to 42xa. This node profile treats SkyGrid backend L2 route proofs as metered X402-style validation events controlled through the Postman API surface. No secrets are stored in this config."
+}
