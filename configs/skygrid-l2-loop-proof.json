@@ -1,0 +1,16 @@
+{
+  "service": "skygrid-l2-loop-proof",
+  "mode": "L2_ONLY",
+  "route": "VA→CA→LOCAL",
+  "route_id": "m9P4vJxjAhChxfLj0mtXF4fJwkEZ5cUg",
+  "payment_required": true,
+  "settlement": "x402",
+  "expected_response": {
+    "status": "L2_AUTO_ROUTED",
+    "mode": "loop_trip_proof",
+    "latency_ms": 420,
+    "hops": 3,
+    "role": "mesh_full_loop_validated"
+  },
+  "notes": "SkyGrid backend L2 loop-proof service definition. Postman API control surface triggers VA to CA to LOCAL mesh-loop validation and expects proof metrics for latency, hop count, and validation role."
+}
