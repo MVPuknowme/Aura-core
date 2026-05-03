@@ -1,0 +1,17 @@
+{
+  "name": "discordbotlist-api",
+  "base_url": "https://discordbotlist.com/api/v1",
+  "status": "configured",
+  "operator": "MVP-19830312",
+  "node_tag": "42XA-0312",
+  "usage_note": "API base registered for Aura-Core/SkyGrid bot-list integration. Do not store API tokens in this file; use environment variables or secrets.",
+  "env": {
+    "DISCORDBOTLIST_API_BASE": "https://discordbotlist.com/api/v1",
+    "DISCORDBOTLIST_TOKEN": "set_in_secret_store_only"
+  },
+  "health_check": {
+    "method": "GET",
+    "url": "https://discordbotlist.com/api/v1",
+    "note": "Actual endpoints may require bot IDs or authentication; verify against current API documentation before production use."
+  }
+}
