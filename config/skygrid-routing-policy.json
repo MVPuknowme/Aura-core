@@ -1,0 +1,41 @@
+{
+  "mission": "Route traffic for optimized speed and package protection",
+  "operator": "MVP-19830312",
+  "node_tag": "42XA-0312",
+  "status": "configured",
+  "routing": {
+    "mode": "lowest_latency_health_gated",
+    "selection_order": [
+      "healthy",
+      "lowest_avg_latency_ms",
+      "lowest_packet_loss_percent",
+      "preferred_region_priority"
+    ],
+    "preferred_region_priority": [
+      "aws-us-east-1-virginia",
+      "aws-us-west-2-oregon",
+      "aws-us-west-1-california",
+      "local-mesh-lapine",
+      "meshtastic-lapine"
+    ],
+    "fallback": "local-mesh-safe-mode",
+    "fail_closed_on_integrity_error": true
+  },
+  "package_protection": {
+    "integrity": "sha256_manifest",
+    "transport": "https_or_authenticated_channel_required",
+    "retries": 3,
+    "retry_backoff_ms": [500, 1500, 3000],
+    "max_packet_loss_percent": 5,
+    "max_avg_latency_ms": 500,
+    "log_delivery_receipts": true,
+    "do_not_log_secrets": true
+  },
+  "boundaries": {
+    "lawful_control_only": true,
+    "no_packet_interception": true,
+    "no_bypass_of_access_controls": true,
+    "no_jamming_or_interference": true,
+    "privacy_preserving_logs": true
+  }
+}
