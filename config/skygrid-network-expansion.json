@@ -1,0 +1,75 @@
+{
+  "mission": "SkyGrid Network Expansion",
+  "operator": "MVP-19830312",
+  "node_tag": "42XA-0312",
+  "status": "expansion_planned",
+  "primary_region": "aws-us-east-1-virginia",
+  "regions": [
+    {
+      "id": "aws-us-east-1-virginia",
+      "provider": "aws",
+      "aws_region": "us-east-1",
+      "role": "primary",
+      "state": "active_claimed_pending_health_check"
+    },
+    {
+      "id": "aws-us-west-1-california",
+      "provider": "aws",
+      "aws_region": "us-west-1",
+      "role": "secondary",
+      "state": "planned"
+    },
+    {
+      "id": "aws-us-west-2-oregon",
+      "provider": "aws",
+      "aws_region": "us-west-2",
+      "role": "regional_edge",
+      "state": "planned"
+    },
+    {
+      "id": "local-mesh-lapine",
+      "provider": "local_mesh",
+      "role": "fallback_edge",
+      "state": "planned"
+    },
+    {
+      "id": "meshtastic-lapine",
+      "provider": "meshtastic",
+      "role": "low_bandwidth_resilience",
+      "state": "planned"
+    }
+  ],
+  "switching_policy": {
+    "mode": "health_gated",
+    "priority_order": [
+      "aws-us-east-1-virginia",
+      "aws-us-west-2-oregon",
+      "aws-us-west-1-california",
+      "local-mesh-lapine",
+      "meshtastic-lapine"
+    ],
+    "fallback": "local-mesh-safe-mode",
+    "checks": [
+      "aws_identity",
+      "vpc_count",
+      "instance_count",
+      "dashboard_health",
+      "discordbotlist_reachability",
+      "latency_ms",
+      "packet_loss_percent"
+    ]
+  },
+  "boundaries": {
+    "control": "credentialed systems only",
+    "public_claims": "evidence-based and auditable",
+    "human_autonomy": "non-negotiable",
+    "rf_policy": "passive detection unless licensed/certified authority exists"
+  },
+  "next_actions": [
+    "Add multi-region status endpoint",
+    "Add per-region AWS checks",
+    "Log route decisions to Airtable Route Map",
+    "Add packet latency test runner",
+    "Deploy public HTTPS endpoint after AWS auth and network config are verified"
+  ]
+}
