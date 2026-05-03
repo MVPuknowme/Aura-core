@@ -1,0 +1,69 @@
+{
+  "mission": "SkyGrid Live Dashboard Activation",
+  "operator": {
+    "name": "Michael Vincent Patrick",
+    "brand": "MVPuknowme",
+    "id": "MVP-19830312",
+    "node_tag": "42XA-0312",
+    "validation_phrase": "AURA LINK VERIFIED 42XA-0312"
+  },
+  "status": {
+    "state": "live",
+    "reported_at_utc": "2026-05-03T13:40:00Z",
+    "environment": "Google Cloud Shell + AWS Virginia",
+    "dashboard_runtime": "node skygrid-dashboard-live.js"
+  },
+  "cloud": {
+    "control_surface": "Google Cloud Shell",
+    "execution_layer": "AWS",
+    "aws_region": "us-east-1",
+    "region_label": "aws-us-east-1-virginia"
+  },
+  "repo": {
+    "repository": "MVPuknowme/Aura-core",
+    "dashboard_file": "skygrid-dashboard-live.js",
+    "status_script": "scripts/skygrid-status-aws.sh",
+    "safe_launcher": "scripts/skygrid-cloudshell-safe.sh",
+    "dockerfile": "Dockerfile"
+  },
+  "endpoints": {
+    "dashboard": "/",
+    "health": "/health",
+    "status_json": "/skygrid-status",
+    "local_port": 3000
+  },
+  "network_switching": {
+    "mode": "health-gated",
+    "active_route_preference": "aws-us-east-1-virginia",
+    "standby_route": "aws-us-east-1-virginia-standby",
+    "fallback_route": "local-mesh-safe-mode",
+    "switch_targets": [
+      "aws-us-east-1-virginia",
+      "aws-us-west-1-california",
+      "local-mesh",
+      "meshtastic-lapine"
+    ]
+  },
+  "verification": {
+    "required_checks": [
+      "aws sts get-caller-identity",
+      "aws ec2 describe-vpcs --region us-east-1",
+      "aws ec2 describe-instances --region us-east-1",
+      "GET /health",
+      "GET /skygrid-status"
+    ],
+    "proof_boundary": "Live status should be treated as verified only when the dashboard endpoints and AWS CLI checks return current successful output."
+  },
+  "governance": {
+    "public_bias": "avoid",
+    "claims": "evidence-based and auditable",
+    "control_boundary": "lawful, credentialed, consent-based systems only",
+    "human_autonomy": "non-negotiable"
+  },
+  "next_actions": [
+    "Capture /skygrid-status output from Cloud Shell preview",
+    "Sync live status snapshots into Airtable SkyGrid Packet Tests or Route Map",
+    "Add latency and packet-loss telemetry",
+    "Deploy public HTTPS endpoint on AWS when credentials and networking are ready"
+  ]
+}
