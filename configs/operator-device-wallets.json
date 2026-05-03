@@ -1,0 +1,23 @@
+{
+  "operator": {
+    "name": "Michael Vincent Patrick",
+    "brand": "MVPuknowme",
+    "role": "AuraCore / SkyGrid human operator"
+  },
+  "device_wallets": [
+    {
+      "wallet_tag": "577D56",
+      "device_role": "second_device",
+      "operator_identity": "self",
+      "status": "active",
+      "usage": [
+        "SkyGrid Dispatcher testing",
+        "AuraCore operator continuity",
+        "secondary-device identity reference",
+        "mobile failover demo context"
+      ],
+      "security_note": "This is stored as a short wallet/device tag only. Do not treat it as a private key, seed phrase, or full wallet address."
+    }
+  ],
+  "notes": "Second-device wallet tag 577D56 is associated with Michael Vincent Patrick / MVPuknowme as self for AuraCore and SkyGrid operator continuity."
+}
