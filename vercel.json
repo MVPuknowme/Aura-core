@@ -1,6 +1,15 @@
 {
   "version": 2,
-  "buildCommand": "npm run prod",
   "installCommand": "npm install --ignore-scripts",
-  "framework": null
+  "buildCommand": "echo 'SkyGrid static landing ready'",
+  "routes": [
+    {
+      "src": "/api/health",
+      "dest": "/api/health.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
 }
