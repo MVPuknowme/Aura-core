@@ -2,6 +2,7 @@
 'use strict';
 
 const http = require('http');
+const https = require('https');
 const { execFile } = require('child_process');
 
 const PORT = Number(process.env.PORT || 3000);
@@ -9,6 +10,8 @@ const NODE_ID = process.env.MVP_NODE || '42XA-0312';
 const OPERATOR = process.env.MVP_ID || 'MVP-19830312';
 const ACTIVE_REGION = process.env.SKYGRID_REGION || 'aws-us-east-1-virginia';
 const AWS_REGION = process.env.AWS_REGION || 'us-east-1';
+const DISCORDBOTLIST_API_BASE = process.env.DISCORDBOTLIST_API_BASE || 'https://discordbotlist.com/api/v1';
+const DISCORDBOTLIST_TOKEN = process.env.DISCORDBOTLIST_TOKEN || '';
 const SWITCH_TARGETS = (process.env.SKYGRID_SWITCH_TARGETS || 'aws-us-east-1-virginia,aws-us-west-1-california,local-mesh,meshtastic-lapine')
   .split(',')
   .map(s => s.trim())
@@ -25,6 +28,45 @@ function runAws(args, timeoutMs = 7000) {
     });
     child.on('error', (error) => resolve({ ok: false, error: error.message, stdout: '' }));
   });
+}
+
+function httpProbe(url, headers = {}, timeoutMs = 7000) {
+  return new Promise((resolve) => {
+    const started = Date.now();
+    const req = https.request(url, { method: 'GET', headers, timeout: timeoutMs }, (res) => {
+      res.resume();
+      res.on('end', () => {
+        const ms = Date.now() - started;
+        resolve({ ok: res.statusCode >= 200 && res.statusCode < 500, status_code: res.statusCode, response_time_ms: ms, error: null });
+      });
+    });
+    req.on('timeout', () => {
+      req.destroy(new Error('request_timeout'));
+    });
+    req.on('error', (err) => {
+      const ms = Date.now() - started;
+      resolve({ ok: false, status_code: null, response_time_ms: ms, error: err.message });
+    });
+    req.end();
+  });
+}
+
+async function discordBotListStatus() {
+  const headers = { 'User-Agent': 'Aura-Core-SkyGrid/1.0' };
+  if (DISCORDBOTLIST_TOKEN) headers.Authorization = DISCORDBOTLIST_TOKEN;
+  const probe = await httpProbe(DISCORDBOTLIST_API_BASE, headers);
+  return {
+    name: 'discordbotlist',
+    base_url: DISCORDBOTLIST_API_BASE,
+    configured: true,
+    token_present: Boolean(DISCORDBOTLIST_TOKEN),
+    reachable: probe.ok,
+    status_code: probe.status_code,
+    response_time_ms: probe.response_time_ms,
+    status: probe.ok ? 'ok' : 'degraded',
+    error: probe.error,
+    note: 'Uses API base probe only. Bot-specific endpoints may require bot ID and token. Token value is never returned.'
+  };
 }
 
 async function awsStatus() {
@@ -107,6 +149,13 @@ function html(payload) {
     <p><strong>Instance count:</strong> ${payload.aws.instance_count ?? 'unknown'}</p>
   </div>
   <div class="card">
+    <h2>DiscordBotList</h2>
+    <p><strong>Reachable:</strong> ${payload.integrations.discordbotlist.reachable}</p>
+    <p><strong>Status code:</strong> ${payload.integrations.discordbotlist.status_code ?? 'unknown'}</p>
+    <p><strong>Response time:</strong> ${payload.integrations.discordbotlist.response_time_ms} ms</p>
+    <p><strong>Token present:</strong> ${payload.integrations.discordbotlist.token_present}</p>
+  </div>
+  <div class="card">
     <h2>Switch Targets</h2>
     <pre>${JSON.stringify(payload.network.switch_targets, null, 2)}</pre>
   </div>
@@ -119,7 +168,7 @@ function html(payload) {
 }
 
 async function payload() {
-  const aws = await awsStatus();
+  const [aws, discordbotlist] = await Promise.all([awsStatus(), discordBotListStatus()]);
   const activeRoute = chooseRoute(aws);
   return {
     status: aws.authenticated ? 'ok' : 'degraded',
@@ -127,6 +176,9 @@ async function payload() {
     operator: OPERATOR,
     node: NODE_ID,
     aws,
+    integrations: {
+      discordbotlist
+    },
     network: {
       active_route: activeRoute,
       switch_targets: SWITCH_TARGETS,
@@ -141,7 +193,7 @@ const server = http.createServer(async (req, res) => {
     const data = await payload();
     if (req.url === '/health') {
       res.setHeader('content-type', 'application/json');
-      res.end(JSON.stringify({ status: data.status, route: data.network.active_route, timestamp: data.timestamp }, null, 2));
+      res.end(JSON.stringify({ status: data.status, route: data.network.active_route, discordbotlist: data.integrations.discordbotlist.status, timestamp: data.timestamp }, null, 2));
       return;
     }
     if (req.url === '/skygrid-status') {
