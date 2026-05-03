@@ -15,6 +15,6 @@
     "mesh:node3": "AURA_MODE=debug SKYGRID_TRACE=true SKYGRID_LEVEL=verbose NODE_ENV=development node app.js --node-id=node-003 --network=skygrid-main --listen=127.0.0.1:7003 --peer=127.0.0.1:7001 --peer=127.0.0.1:7002 --max-peers=16 --heartbeat-interval=3000 --log-level=debug"
   },
   "engines": {
-    "node": ">=18"
+    "node": "20.x"
   }
 }
