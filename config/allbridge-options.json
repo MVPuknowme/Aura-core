@@ -1,0 +1,18 @@
+{
+  "mission": "Allbridge Core Route Options",
+  "operator": "MVP-19830312",
+  "node_tag": "42XA-0312",
+  "status": "test_configured",
+  "safety_boundary": "Route health simulation and operator-owned integration planning only. Do not move funds or sign transactions from this config.",
+  "options": [
+    { "id": "allbridge-01-ethereum-solana", "source": "ethereum", "target": "solana", "mode": "token_bridge", "state": "test" },
+    { "id": "allbridge-02-solana-ethereum", "source": "solana", "target": "ethereum", "mode": "token_bridge", "state": "test" },
+    { "id": "allbridge-03-ethereum-base", "source": "ethereum", "target": "base", "mode": "l2_route", "state": "test" },
+    { "id": "allbridge-04-base-ethereum", "source": "base", "target": "ethereum", "mode": "l2_route", "state": "test" },
+    { "id": "allbridge-05-ethereum-arbitrum", "source": "ethereum", "target": "arbitrum", "mode": "l2_route", "state": "test" },
+    { "id": "allbridge-06-arbitrum-ethereum", "source": "arbitrum", "target": "ethereum", "mode": "l2_route", "state": "test" },
+    { "id": "allbridge-07-ethereum-polygon", "source": "ethereum", "target": "polygon", "mode": "token_bridge", "state": "test" },
+    { "id": "allbridge-08-polygon-ethereum", "source": "polygon", "target": "ethereum", "mode": "token_bridge", "state": "test" },
+    { "id": "allbridge-09-scroll-base", "source": "scroll", "target": "base", "mode": "experimental_route", "state": "test" }
+  ]
+}
