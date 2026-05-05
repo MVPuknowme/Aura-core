@@ -1,0 +1,15 @@
+body { margin:0; font-family: system-ui, sans-serif; background:#0b1020; color:#fff; }
+.shell { max-width:1100px; margin:0 auto; padding:20px; }
+.panel { background:#1a1f3b; padding:20px; border-radius:12px; margin-bottom:20px; }
+.metric { display:flex; flex-direction:column; }
+.metrics-grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap:16px; }
+.grid-two { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.pill { padding:6px 12px; border-radius:999px; }
+.pill.ok { background:green; }
+.pill.degraded { background:orange; }
+.pill.measuring { background:gray; }
+.chip { background:#2a1e4a; padding:6px 10px; margin:4px; display:inline-block; border-radius:6px; }
+.check { margin:4px 0; }
+.check.pass { color:#4caf50; }
+.check.fail { color:#f44336; }
+.check.pending { color:#ff9800; }
