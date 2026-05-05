@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SkyGrid Reliability Command</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="shell">
+    <section class="hero panel">
+      <p class="eyebrow">aura-skygrid.protocol</p>
+      <h1>SkyGrid Reliability Command</h1>
+      <p class="lede">Powered by Aura-Core. Built to reduce lost data and keep Web2/Web3 connectivity alive through ISP, grid, power, and route failures.</p>
+      <div class="status-strip">
+        <span id="statusPill" class="pill measuring">MEASURING</span>
+        <span id="lastUpdated">Waiting for health data…</span>
+      </div>
+    </section>
+
+    <section class="metrics-grid" aria-label="Reliability metrics">
+      <article class="metric panel"><span>Uptime</span><strong id="uptime">—</strong><small>Measured availability</small></article>
+      <article class="metric panel"><span>Deploy Success</span><strong id="deploySuccess">—</strong><small>Release confidence</small></article>
+      <article class="metric panel"><span>Browser Pass Rate</span><strong id="browserPass">—</strong><small>Edge/mobile/desktop checks</small></article>
+      <article class="metric panel"><span>Failover Events</span><strong id="failoverEvents">—</strong><small>Routes recovered</small></article>
+    </section>
+
+    <section class="grid-two">
+      <article class="panel">
+        <h2>Route Readiness</h2>
+        <div id="routes" class="chips"></div>
+      </article>
+      <article class="panel">
+        <h2>Health Checks</h2>
+        <div id="checks" class="checks"></div>
+      </article>
+    </section>
+
+    <section class="panel proof">
+      <h2>Reliability Claim Basis</h2>
+      <p>SkyGrid should only claim reliability that is measured. This dashboard is designed to make uptime, browser compatibility, offline cache behavior, Web3 socket recovery, and L2 failover visible.</p>
+      <pre id="rawPayload">Loading…</pre>
+    </section>
+  </main>
+
+  <script src="./skygrid-dashboard.js"></script>
+</body>
+</html>
