@@ -1,0 +1,57 @@
+name: SkyGrid Reliability
+
+on:
+  push:
+    paths:
+      - "config/l2/**"
+      - "skygrid/**"
+      - ".github/workflows/skygrid-reliability.yml"
+  pull_request:
+    paths:
+      - "config/l2/**"
+      - "skygrid/**"
+
+jobs:
+  validate-config:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install YAML tools
+        run: npm install -g yaml
+
+      - name: Validate aura-skygrid.protocol.yaml exists
+        run: |
+          if [ ! -f config/l2/aura-skygrid.protocol.yaml ]; then
+            echo "Missing config/l2/aura-skygrid.protocol.yaml" && exit 1
+          fi
+
+      - name: Parse YAML (syntax check)
+        run: |
+          node -e "const fs=require('fs');const yaml=require('yaml');const c=fs.readFileSync('config/l2/aura-skygrid.protocol.yaml','utf8');yaml.parse(c);console.log('YAML OK');"
+
+  smoke-health-module:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run health module smoke test
+        run: |
+          node - <<'NODE'
+          const { buildSkyGridHealth } = require('./skygrid/reliability/skygrid-health');
+          const h = buildSkyGridHealth({ checks: { chrome: 'pass', firefox: 'pass', edge: 'pass' } });
+          if (!h || !h.service || !h.metrics) { throw new Error('Invalid health payload'); }
+          console.log('Health module OK:', h.status);
+          NODE
