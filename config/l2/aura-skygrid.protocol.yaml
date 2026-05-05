@@ -1,0 +1,123 @@
+# aura-skygrid.protocol
+# Layer-2 and fallback-routing profile for Aura-Core / SkyGrid.
+# No private keys, RPC secrets, or wallet credentials belong in this file.
+
+protocol:
+  name: aura-skygrid.protocol
+  owner: Michael Vincent Patrick
+  brand: MVPuknowme
+  powered_by: Aura-Core
+  purpose:
+    - reduce_lost_data
+    - improve_uptime_during_isp_grid_power_failures
+    - make_web3_and_layer2_routing_mainstream_and_seamless
+    - maintain_backup_connectivity_across_edge_and_peripheral_environments
+
+l2:
+  mode: multi_chain_failover
+  settlement_policy: prefer_low_latency_verified_routes
+  health_check_interval_seconds: 30
+  failover_threshold:
+    max_latency_ms: 750
+    max_packet_loss_percent: 5
+    consecutive_failures: 3
+  chains:
+    - name: Base
+      chain_id: 8453
+      role: primary_l2
+      enabled: true
+      rpc_env: BASE_RPC_URL
+      explorer: https://basescan.org
+    - name: Scroll
+      chain_id: 534352
+      role: primary_l2
+      enabled: true
+      rpc_env: SCROLL_RPC_URL
+      explorer: https://scrollscan.com
+    - name: Optimism
+      chain_id: 10
+      role: fallback_l2
+      enabled: true
+      rpc_env: OPTIMISM_RPC_URL
+      explorer: https://optimistic.etherscan.io
+    - name: Arbitrum One
+      chain_id: 42161
+      role: fallback_l2
+      enabled: true
+      rpc_env: ARBITRUM_RPC_URL
+      explorer: https://arbiscan.io
+    - name: Polygon PoS
+      chain_id: 137
+      role: fallback_l2_or_sidechain
+      enabled: true
+      rpc_env: POLYGON_RPC_URL
+      explorer: https://polygonscan.com
+
+routing:
+  web2_fallback:
+    enabled: true
+    mechanisms:
+      - service_worker_cache
+      - static_site_snapshot
+      - cdn_edge_cache
+      - dns_failover
+  web3_socket:
+    enabled: true
+    reconnect:
+      strategy: exponential_backoff
+      initial_delay_ms: 500
+      max_delay_ms: 10000
+      max_attempts_before_route_switch: 5
+  peripheral_backup:
+    enabled: true
+    candidates:
+      - wifi
+      - ethernet
+      - cellular
+      - lora_meshtastic
+      - mqtt
+      - coaxial_ac_dc_carrier_concept
+      - satellite
+
+reliability:
+  target:
+    uptime_claim_basis: measured_not_assumed
+    browser_compatibility: broad_edge_mobile_desktop
+    test_matrix_required: true
+  checks:
+    - homepage_load
+    - navigation_buttons
+    - cta_buttons
+    - web3_provider_detection
+    - websocket_reconnect
+    - l2_rpc_health
+    - offline_cache_load
+    - mobile_safari
+    - chrome
+    - firefox
+    - edge
+
+security:
+  secrets_policy: env_only
+  private_key_policy: never_commit
+  rpc_key_policy: never_commit
+  audit_log: required
+  signature_verification: required_for_settlement_actions
+
+observability:
+  dashboard_name: Aura-Core Command / SkyGrid Reliability
+  metrics:
+    - uptime_percent
+    - deploy_success_percent
+    - route_latency_ms
+    - packet_loss_percent
+    - rpc_health_status
+    - websocket_reconnect_count
+    - browser_test_pass_rate
+    - offline_cache_success_rate
+    - failover_events
+
+status:
+  config_version: 1.0.0
+  command: /config.l2 update
+  state: active
