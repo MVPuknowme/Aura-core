@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  AWS_REGION: us-west-1
+  AWS_REGION: us-east-1
   ECR_REPOSITORY: aura-core
   ECS_SERVICE: aura-core-service
   ECS_CLUSTER: aura-core-cluster
