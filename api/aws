@@ -1,0 +1,91 @@
+      - name: Debug AWS secret visibility
+        run: |
+          echo "Branch: $GITHUB_REF_NAME"
+          echo "Environment should be: production"
+
+          if [ -z "${AWS_ACCESS_KEY_ID:-}" ]; then
+            echo "AWS_ACCESS_KEY_ID is MISSING"
+          else
+            echo "AWS_ACCESS_KEY_ID is PRESENT"
+          fi
+
+          if [ -z "${AWS_SECRET_ACCESS_KEY:-}" ]; then
+            echo "AWS_SECRET_ACCESS_KEY is MISSING"
+          else
+            echo "AWS_SECRET_ACCESS_KEY is PRESENT"
+          fi
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+Preparing your terminal...
+~ $ Preparing your terminal...
+~ $ cat > aura-github-actions-policy.json <<'JSON'
+> {
+>   "Version": "2012-10-17",
+>   "Statement": [
+>     {
+>       "Sid": "ECRPushPull",
+>       "Effect": "Allow",
+>       "Action": [
+>         "ecr:GetAuthorizationToken",
+>         "ecr:BatchCheckLayerAvailability",
+>         "ecr:CompleteLayerUpload",
+>         "ecr:UploadLayerPart",
+>         "ecr:InitiateLayerUpload",
+>         "ecr:PutImage",
+>         "ecr:BatchGetImage",
+>         "ecr:DescribeRepositories",
+>         "ecr:CreateRepository"
+>       ],
+>       "Resource": "*"
+>     },
+>     {
+>       "Sid": "ECSDeploy",
+>       "Effect": "Allow",
+>       "Action": [
+>         "ecs:DescribeServices",
+>         "ecs:DescribeTaskDefinition",
+>         "ecs:RegisterTaskDefinition",
+>         "ecs:UpdateService"
+>       ],
+>       "Resource": "*"
+>     },
+>     {
+>       "Sid": "PassTaskRoles",
+>       "Effect": "Allow",
+>       "Action": "iam:PassRole",
+>       "Resource": "*"
+>     }
+>   ]
+> }
+> JSON
+cat: write error: No space left on device
+~ $ 
+~ $ aws iam create-user --user-name aura-github-actions-deploy
+{
+    "User": {
+        "Path": "/",
+        "UserName": "aura-github-actions-deploy",
+        "UserId": "AIDA3WSIWZPNX2H7FUN32",
+        "Arn": "arn:aws:iam::804385115099:user/aura-github-actions-deploy",
+        "CreateDate": "2026-05-06T04:02:30+00:00"
+    }
+}
+~ $ 
+~ $ aws iam put-user-policy \
+>   --user-name aura-github-actions-deploy \
+>   --policy-name AuraGitHubActionsEcsDeployPolicy \
+>   --policy-document file://aura-github-actions-policy.json
+
+aws: [ERROR]: An error occurred (ParamValidation): Parameter validation failed:
+Invalid length for parameter PolicyDocument, value: 0, valid min length: 1
+~ $ 
+~ $ aws iam create-access-key --user-name aura-github-actions-deploy
+{
+    "AccessKey": {
+        "UserName": "aura-github-actions-deploy",
+        "AccessKeyId": "AKIA3WSIWZPN7D3XZG6P",
+        "Status": "Active",
+        "SecretAccessKey":
+ 
+~ $ 
