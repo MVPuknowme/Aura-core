@@ -1,0 +1,24 @@
+{
+  "mission": "AWS API Gateway CloudWatch Logs Policy Reference",
+  "operator": "MVP-19830312",
+  "node_tag": "42XA-0312",
+  "policy_arn": "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs",
+  "type": "aws_managed_policy",
+  "safe_to_store": true,
+  "purpose": "Allows Amazon API Gateway service role patterns to push execution/access logs to CloudWatch Logs when attached through the appropriate AWS role configuration.",
+  "usage_boundary": "This is a policy ARN reference only. It is not a credential and does not grant access by itself. Do not store AWS access keys or session tokens in repository files.",
+  "skygrid_context": {
+    "component": "api-gateway-observability",
+    "target": "CloudWatch Logs",
+    "recommended_env": {
+      "AWS_API_GATEWAY_CLOUDWATCH_POLICY_ARN": "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+    }
+  },
+  "next_steps": [
+    "Create or identify an IAM role for API Gateway logging.",
+    "Attach this AWS-managed policy to that role if required by the deployment pattern.",
+    "Set API Gateway account CloudWatch role ARN separately if using REST API logging.",
+    "Enable access logs/execution logs on the API stage.",
+    "Verify logs appear in CloudWatch Logs."
+  ]
+}
