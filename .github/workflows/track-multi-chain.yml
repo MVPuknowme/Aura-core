@@ -37,9 +37,9 @@ jobs:
       SCROLL_QUERY_ID: ${{ inputs.scroll_query_id || secrets.DUNE_SCROLL_QUERY_ID || secrets.SCROLL_QUERY_ID }}
       TON_QUERY_ID: ${{ inputs.ton_query_id || secrets.DUNE_TON_QUERY_ID || secrets.TON_QUERY_ID }}
       AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY || secrets.AIRTABLE_TOKEN }}
-      AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+      AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID || 'appUF24vYBBQnpeQl' }}
       AIRTABLE_TABLE: ${{ inputs.airtable_table || secrets.AIRTABLE_TABLE_NAME || 'Table 1' }}
-      DEBUG_MODE: ${{ inputs.debug_mode }}
+      DEBUG_MODE: ${{ inputs.debug_mode || 'true' }}
     steps:
       - name: Validate configuration
         shell: bash
