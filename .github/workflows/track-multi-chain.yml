@@ -41,6 +41,8 @@ jobs:
       AIRTABLE_TABLE: ${{ inputs.airtable_table || secrets.AIRTABLE_TABLE_NAME || 'Table 1' }}
       DEBUG_MODE: ${{ inputs.debug_mode || 'true' }}
     steps:
+      - uses: actions/checkout@v4
+
       - name: Validate configuration
         shell: bash
         run: |
@@ -55,7 +57,7 @@ jobs:
           [ -n "${ETHEREUM_QUERY_ID:-}" ] && chain_ids_present=1
           [ -n "${SCROLL_QUERY_ID:-}" ] && chain_ids_present=1
           [ -n "${TON_QUERY_ID:-}" ] && chain_ids_present=1
-          [ "$chain_ids_present" -eq 1 ] || missing+=("one of DUNE_ETHEREUM_QUERY_ID / DUNE_SCROLL_QUERY_ID / DUNE_TON_QUERY_ID or legacy ETHEREUM_QUERY_ID / SCROLL_QUERY_ID / TON_QUERY_ID")
+          [ "$chain_ids_present" -eq 1 ] || missing+=("one of DUNE_ETHEREUM_QUERY_ID / DUNE_SCROLL_QUERY_ID / DUNE_TON_QUERY_ID or workflow_dispatch query inputs")
 
           if [ "${DEBUG_MODE:-true}" = "true" ]; then
             echo "Workflow debug summary"
@@ -70,7 +72,9 @@ jobs:
 
           if [ ${#missing[@]} -gt 0 ]; then
             echo "::error title=Missing workflow configuration::Missing required values: ${missing[*]}"
-            echo "Add the missing repository secrets in Settings > Secrets and variables > Actions, or provide workflow_dispatch query ID inputs, then run this workflow again."
+            echo "Required repository secrets: DUNE_API_KEY and AIRTABLE_API_KEY or AIRTABLE_TOKEN."
+            echo "Also set at least one Dune query ID secret: DUNE_ETHEREUM_QUERY_ID, DUNE_SCROLL_QUERY_ID, or DUNE_TON_QUERY_ID."
+            echo "Alternative: run workflow_dispatch and provide ethereum_query_id, scroll_query_id, or ton_query_id input."
             exit 1
           fi
 
@@ -115,17 +119,7 @@ jobs:
               lines.append(f'{chain}: {len(rows)} rows | sample={preview[:250]}')
 
           notes = ' || '.join(lines)[:900] if lines else 'No chain results available'
-          airtable_payload = {
-              'records': [
-                  {
-                      'fields': {
-                          'Name': 'Multi Chain Tracker',
-                          'Notes': notes,
-                          'Status': 'ACTIVE'
-                      }
-                  }
-              ]
-          }
+          airtable_payload = {'records': [{'fields': {'Name': 'Multi Chain Tracker', 'Notes': notes, 'Status': 'ACTIVE'}}]}
 
           table = urllib.parse.quote(os.environ.get('AIRTABLE_TABLE', 'Table 1'), safe='')
           url = f'https://api.airtable.com/v0/{os.environ["AIRTABLE_BASE_ID"]}/{table}'
