@@ -20,6 +20,11 @@ on:
         required: false
         default: Table 1
         type: string
+      debug_mode:
+        description: Enable verbose validation output
+        required: false
+        default: true
+        type: boolean
   schedule:
     - cron: '35 * * * *'
 
@@ -28,20 +33,47 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
-      ETHEREUM_QUERY_ID: ${{ inputs.ethereum_query_id || secrets.DUNE_ETHEREUM_QUERY_ID }}
-      SCROLL_QUERY_ID: ${{ inputs.scroll_query_id || secrets.DUNE_SCROLL_QUERY_ID }}
-      TON_QUERY_ID: ${{ inputs.ton_query_id || secrets.DUNE_TON_QUERY_ID }}
-      AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
-      AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
-      AIRTABLE_TABLE: ${{ inputs.airtable_table || 'Table 1' }}
+      ETHEREUM_QUERY_ID: ${{ inputs.ethereum_query_id || secrets.DUNE_ETHEREUM_QUERY_ID || secrets.ETHEREUM_QUERY_ID }}
+      SCROLL_QUERY_ID: ${{ inputs.scroll_query_id || secrets.DUNE_SCROLL_QUERY_ID || secrets.SCROLL_QUERY_ID }}
+      TON_QUERY_ID: ${{ inputs.ton_query_id || secrets.DUNE_TON_QUERY_ID || secrets.TON_QUERY_ID }}
+      AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY || secrets.AIRTABLE_TOKEN }}
+      AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID || 'appUF24vYBBQnpeQl' }}
+      AIRTABLE_TABLE: ${{ inputs.airtable_table || secrets.AIRTABLE_TABLE_NAME || 'Table 1' }}
+      DEBUG_MODE: ${{ inputs.debug_mode || 'true' }}
       COINGECKO_SIMPLE_URL: https://api.coingecko.com/api/v3/simple/price?ids=ethereum,the-open-network&vs_currencies=usd
     steps:
       - name: Validate configuration
+        shell: bash
         run: |
-          test -n "$DUNE_API_KEY"
-          test -n "$AIRTABLE_API_KEY"
-          test -n "$AIRTABLE_BASE_ID"
-          test -n "$ETHEREUM_QUERY_ID" || test -n "$SCROLL_QUERY_ID" || test -n "$TON_QUERY_ID"
+          set -euo pipefail
+
+          missing=()
+          [ -n "${DUNE_API_KEY:-}" ] || missing+=("DUNE_API_KEY")
+          [ -n "${AIRTABLE_API_KEY:-}" ] || missing+=("AIRTABLE_API_KEY or AIRTABLE_TOKEN")
+          [ -n "${AIRTABLE_BASE_ID:-}" ] || missing+=("AIRTABLE_BASE_ID")
+
+          chain_ids_present=0
+          [ -n "${ETHEREUM_QUERY_ID:-}" ] && chain_ids_present=1
+          [ -n "${SCROLL_QUERY_ID:-}" ] && chain_ids_present=1
+          [ -n "${TON_QUERY_ID:-}" ] && chain_ids_present=1
+          [ "$chain_ids_present" -eq 1 ] || missing+=("one of DUNE_ETHEREUM_QUERY_ID / DUNE_SCROLL_QUERY_ID / DUNE_TON_QUERY_ID or legacy ETHEREUM_QUERY_ID / SCROLL_QUERY_ID / TON_QUERY_ID")
+
+          if [ "${DEBUG_MODE:-true}" = "true" ]; then
+            echo "Workflow debug summary"
+            echo "- DUNE_API_KEY set: $([ -n "${DUNE_API_KEY:-}" ] && echo yes || echo no)"
+            echo "- AIRTABLE_API_KEY/AIRTABLE_TOKEN set: $([ -n "${AIRTABLE_API_KEY:-}" ] && echo yes || echo no)"
+            echo "- AIRTABLE_BASE_ID set: $([ -n "${AIRTABLE_BASE_ID:-}" ] && echo yes || echo no)"
+            echo "- ETHEREUM_QUERY_ID set: $([ -n "${ETHEREUM_QUERY_ID:-}" ] && echo yes || echo no)"
+            echo "- SCROLL_QUERY_ID set: $([ -n "${SCROLL_QUERY_ID:-}" ] && echo yes || echo no)"
+            echo "- TON_QUERY_ID set: $([ -n "${TON_QUERY_ID:-}" ] && echo yes || echo no)"
+            echo "- AIRTABLE_TABLE: ${AIRTABLE_TABLE:-Table 1}"
+          fi
+
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error title=Missing workflow configuration::Missing required values: ${missing[*]}"
+            echo "Add the missing repository secrets in Settings > Secrets and variables > Actions, or provide workflow_dispatch query ID inputs, then run this workflow again."
+            exit 1
+          fi
 
       - name: Fetch token prices
         run: |
