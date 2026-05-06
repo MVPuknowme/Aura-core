@@ -41,3 +41,51 @@ def deploy():
     with open(f"/var/aura/jobs/{job_id}.json","w") as fh:
         json.dump(data, fh)
     return jsonify({"job_id": job_id})
+class AuraStateCore:
+    def __init__(self, openai_client, token_limit=45000):
+        self.client = openai_client
+        self.input_items = []
+        self.token_limit = token_limit
+        self.state_version = 0
+
+    def inject_identity(self):
+        # Always re-apply operator/system identity
+        self.input_items.insert(0, {
+            "role": "system",
+            "content": "Aura-Core Validator Identity Active"
+        })
+
+    def add_event(self, role, text):
+        self.input_items.append({
+            "type": "message",
+            "role": role,
+            "content": [{"type": "input_text", "text": text}]
+        })
+
+    def run_cycle(self):
+        resp = self.client.responses.create(
+            model="gpt-5.2",
+            input=self.input_items
+        )
+
+        usage = resp.usage.total_tokens
+
+        if usage > self.token_limit:
+            self.compact_context()
+
+        # append assistant output
+        self.input_items.extend(resp.output)
+
+        return resp
+
+    def compact_context(self):
+        compacted = self.client.responses.compact(
+            model="gpt-5.2",
+            input=self.input_items
+        )
+
+        # 🔥 CRITICAL STEP
+        self.input_items = compacted.output
+
+        self.state_version += 1
+        self.inject_identity()
