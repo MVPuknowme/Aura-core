@@ -1,0 +1,69 @@
+name: Sync Device SVGs
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "assets/devices/**/*.svg"
+      - "public/devices/**/*.svg"
+      - "scripts/sync-device-svgs.*"
+      - ".github/workflows/sync_device_svgs.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-device-svgs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            npm-shrinkwrap.json
+            yarn.lock
+
+      - name: Install dependencies when lockfile exists
+        run: |
+          if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
+            npm ci
+          elif [ -f package.json ]; then
+            npm install
+          else
+            echo "No Node package manifest found. Skipping dependency install."
+          fi
+
+      - name: Prepare SVG directories
+        run: |
+          mkdir -p assets/devices public/devices
+
+      - name: Sync device SVGs
+        run: |
+          if [ -f scripts/sync-device-svgs.js ]; then
+            node scripts/sync-device-svgs.js
+          elif [ -f scripts/sync-device-svgs.mjs ]; then
+            node scripts/sync-device-svgs.mjs
+          else
+            echo "No sync script found. Mirroring assets/devices/*.svg to public/devices/."
+            find assets/devices -type f -name "*.svg" -print0 | while IFS= read -r -d '' file; do
+              rel="${file#assets/devices/}"
+              mkdir -p "public/devices/$(dirname "$rel")"
+              cp "$file" "public/devices/$rel"
+            done
+          fi
+
+      - name: Commit synced SVGs
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: sync device svgs"
+          file_pattern: "assets/devices/**/*.svg public/devices/**/*.svg"
