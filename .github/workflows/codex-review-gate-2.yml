@@ -1,0 +1,112 @@
+name: Codex Review Gate 2.0
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: codex-review-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  codex:
+    name: Run Codex Review Gate 2.0
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+
+    outputs:
+      final_message: ${{ steps.run_codex.outputs.final-message }}
+
+    steps:
+      - name: Check out pull request merge ref
+        uses: actions/checkout@v5
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/merge
+          fetch-depth: 0
+
+      - name: Pre-fetch base and head refs
+        run: |
+          git fetch --no-tags origin \
+            ${{ github.event.pull_request.base.ref }} \
+            +refs/pull/${{ github.event.pull_request.number }}/head
+
+      - name: Run Codex review
+        id: run_codex
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          prompt-file: .github/codex/prompts/review.md
+          output-file: codex-review-output.md
+          safety-strategy: drop-sudo
+          sandbox: workspace-write
+          effort: high
+
+      - name: Save Codex review to job summary
+        if: always() && hashFiles('codex-review-output.md') != ''
+        run: |
+          {
+            echo '## Codex Review Gate 2.0'
+            echo
+            cat codex-review-output.md
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Codex review artifact
+        if: always() && hashFiles('codex-review-output.md') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: codex-review-gate-2-report
+          path: codex-review-output.md
+          if-no-files-found: warn
+
+  post-feedback:
+    name: Post Codex feedback
+    runs-on: ubuntu-latest
+    needs: codex
+    if: always() && needs.codex.outputs.final_message != ''
+    permissions:
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Post Codex feedback to PR
+        uses: actions/github-script@v7
+        env:
+          CODEX_FINAL_MESSAGE: ${{ needs.codex.outputs.final_message }}
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const body = process.env.CODEX_FINAL_MESSAGE;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body,
+            });
+
+  quality-gate:
+    name: Enforce Codex quality gate
+    runs-on: ubuntu-latest
+    needs: [codex, post-feedback]
+    if: always()
+
+    steps:
+      - name: Fail when Codex job failed
+        if: needs.codex.result != 'success'
+        run: |
+          echo "Codex review job did not complete successfully."
+          exit 1
+
+      - name: Fail on critical findings
+        if: contains(needs.codex.outputs.final_message, 'CRITICAL:') || contains(needs.codex.outputs.final_message, 'Final status: FAIL') || contains(needs.codex.outputs.final_message, 'FINAL STATUS: FAIL')
+        run: |
+          echo "Critical issues found by Codex Review Gate 2.0."
+          exit 1
+
+      - name: Pass gate
+        if: needs.codex.result == 'success' && !contains(needs.codex.outputs.final_message, 'CRITICAL:') && !contains(needs.codex.outputs.final_message, 'Final status: FAIL') && !contains(needs.codex.outputs.final_message, 'FINAL STATUS: FAIL')
+        run: echo "Codex Review Gate 2.0 passed."
