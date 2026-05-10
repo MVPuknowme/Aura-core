@@ -1,0 +1,60 @@
+{
+  "version": "1.2.0-phoenix",
+  "mode": "candidate-config",
+  "networkFocus": {
+    "name": "Scroll",
+    "chainId": 534352,
+    "currency": "ETH",
+    "explorer": "https://scrollscan.com"
+  },
+  "validators": {
+    "enabled": true,
+    "routingMode": "scroll-first-with-fallbacks",
+    "fallbackNetworks": [
+      {
+        "name": "Base",
+        "chainId": 8453
+      },
+      {
+        "name": "Arbitrum One",
+        "chainId": 42161
+      },
+      {
+        "name": "Optimism",
+        "chainId": 10
+      }
+    ],
+    "healthChecks": {
+      "rpcChainId": true,
+      "latencyMs": true,
+      "blockHeight": true,
+      "explorerProof": true,
+      "noPrivateKeysInLogs": true
+    }
+  },
+  "contracts": {
+    "creditContract": {
+      "status": "candidate-unverified",
+      "address": "0xea909c8da4251cd70e3cb9d4eb25d5ffe58b1ab5",
+      "assumedNetwork": "Scroll",
+      "chainId": 534352,
+      "purpose": "credit / support / validator accounting configuration candidate",
+      "requirementsBeforeProduction": [
+        "confirm deployed chain",
+        "confirm contract ABI",
+        "confirm explorer verification",
+        "confirm owner/admin permissions",
+        "confirm read-only methods",
+        "confirm write methods require explicit wallet signing",
+        "confirm no private keys or secrets enter GitHub, Airtable, Rovo, Linear, logs, or workflows"
+      ]
+    }
+  },
+  "safety": {
+    "noAutoSigning": true,
+    "noPrivateKeys": true,
+    "noSeedPhrases": true,
+    "readOnlyByDefault": true,
+    "liveTransactionsRequireOperatorWalletSignature": true
+  }
+}
