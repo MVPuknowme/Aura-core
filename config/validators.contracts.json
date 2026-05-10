@@ -10,6 +10,7 @@
   "validators": {
     "enabled": true,
     "routingMode": "scroll-first-with-fallbacks",
+    "activeContractKey": "validatorContract",
     "fallbackNetworks": [
       {
         "name": "Base",
@@ -29,16 +30,38 @@
       "latencyMs": true,
       "blockHeight": true,
       "explorerProof": true,
+      "contractCodeExists": true,
+      "abiAvailable": true,
       "noPrivateKeysInLogs": true
     }
   },
   "contracts": {
+    "validatorContract": {
+      "status": "candidate-unverified",
+      "address": "0x8e96734b4Fb612C1603B1a1968655677D2577D56",
+      "assumedNetwork": "Scroll",
+      "chainId": 534352,
+      "purpose": "validator operations / staking-accounting / route verification configuration candidate",
+      "allowedDefaultMode": "read-only",
+      "requirementsBeforeProduction": [
+        "confirm deployed chain",
+        "confirm contract bytecode exists",
+        "confirm contract ABI",
+        "confirm explorer verification",
+        "confirm owner/admin permissions",
+        "confirm validator read methods",
+        "confirm staking/accounting write methods",
+        "confirm write methods require explicit operator wallet signing",
+        "confirm no private keys or secrets enter GitHub, Airtable, Rovo, Linear, logs, or workflows"
+      ]
+    },
     "creditContract": {
       "status": "candidate-unverified",
       "address": "0xea909c8da4251cd70e3cb9d4eb25d5ffe58b1ab5",
       "assumedNetwork": "Scroll",
       "chainId": 534352,
       "purpose": "credit / support / validator accounting configuration candidate",
+      "allowedDefaultMode": "read-only",
       "requirementsBeforeProduction": [
         "confirm deployed chain",
         "confirm contract ABI",
