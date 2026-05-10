@@ -162,6 +162,7 @@
         <a class="button secondary" href="#support">Support / Donate</a>
         <a class="button" href="#nodes">Lease your node</a>
         <a class="button" href="#connectors">Connector bridge</a>
+        <a class="button" href="#quorum">Quorum safety</a>
         <a class="button" href="#phoenix">Sun-Pay 1.2.0</a>
         <a class="button" href="#latency">Run latency proof</a>
         <a class="button" href="https://github.com/MVPuknowme/Aura-core" target="_blank" rel="noopener noreferrer">View GitHub</a>
@@ -214,6 +215,23 @@
         </div>
         <div class="actions">
           <a class="button" href="https://github.com/MVPuknowme/Aura-core/issues/64" target="_blank" rel="noopener noreferrer">View bridge runner</a>
+        </div>
+      </section>
+
+      <section id="quorum" aria-label="Quorum-based operations">
+        <h2>Quorum-based operations</h2>
+        <p class="small">
+          SkyGrid can require read and write quorums before accepting operational state. During network partitions, quorum checks help prevent split-brain behavior, stale reads, unsafe writes, and conflicting recovery decisions.
+        </p>
+        <div class="grid">
+          <div class="card"><strong>Read quorum</strong><p>Multiple nodes must agree before SkyGrid trusts status, health, route, or validator readings.</p></div>
+          <div class="card"><strong>Write quorum</strong><p>State changes require enough trusted confirmations before updates are promoted or acted on.</p></div>
+          <div class="card"><strong>Partition safety</strong><p>If the network splits, unsafe minority routes fail closed instead of forcing conflicting writes.</p></div>
+          <div class="card"><strong>Recovery proof</strong><p>Consensus decisions should leave logs, hashes, commits, records, or dashboard artifacts.</p></div>
+        </div>
+        <div class="actions">
+          <a class="button" href="#latency">Measure quorum routes</a>
+          <a class="button" href="https://github.com/MVPuknowme/Aura-core/issues/64" target="_blank" rel="noopener noreferrer">Open bridge proof</a>
         </div>
       </section>
 
