@@ -1,0 +1,32 @@
+{
+  "system": "Aura-Core",
+  "environment": "production",
+  "snapshot_type": "system-memory-state",
+  "timestamp": "2026-02-15T02:25:00Z",
+  "operator": "Michael Patrick",
+  "repository": "MVPuknowme/Aura-core",
+  "state": "synced-to-github",
+  "controls": {
+    "eip712_enforced": true,
+    "chain_id_validation": true,
+    "dynamodb_nonce_replay_protection": true,
+    "wallet_boundary_lock": true,
+    "reinvestment_enabled": false,
+    "append_only_audit_stream": true
+  },
+  "wallet_boundaries": {
+    "read_only": true,
+    "signing_requires_operator_wallet": true,
+    "treasury_separation_required": true,
+    "admin_separation_required": true,
+    "private_keys_allowed_in_repo": false,
+    "seed_phrases_allowed_in_repo": false
+  },
+  "production_rules": [
+    "Reject mismatched chain IDs before accepting signed intent.",
+    "Require EIP-712 typed-data signatures for operator-authorized production actions.",
+    "Consume nonces exactly once through DynamoDB replay protection before write execution.",
+    "Keep reinvestment disabled until accounting, telemetry, and audit controls are reconciled.",
+    "Append audit events only; never rewrite production audit history."
+  ]
+}
