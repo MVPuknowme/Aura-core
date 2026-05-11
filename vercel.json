@@ -1,0 +1,34 @@
+{
+  "version": 2,
+  "framework": null,
+  "installCommand": "npm install --ignore-scripts",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/api/health",
+      "destination": "/api/health.js"
+    },
+    {
+      "source": "/",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-SkyGrid-Network",
+          "value": "Aura-Core"
+        },
+        {
+          "key": "X-Phoenix-Version",
+          "value": "1.2.0"
+        }
+      ]
+    }
+  ]
+}
