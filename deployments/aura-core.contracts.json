@@ -22,6 +22,6 @@
     "dedicated_admin": true,
     "initializer_guard": true,
     "initialized_once": true,
-    "operator_wallet_not_proxy_admin": true
+    "operator_wallet_not_proxy_admin": 
   }
 }
