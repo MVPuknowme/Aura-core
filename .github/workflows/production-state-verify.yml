@@ -1,0 +1,36 @@
+name: Production State Verify
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'config/snapshots/production-state.json'
+      - 'scripts/verify-production-state.mjs'
+      - '.github/workflows/production-state-verify.yml'
+      - 'vercel.json'
+      - 'package.json'
+
+permissions:
+  contents: read
+
+jobs:
+  verify-production-state:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Verify production state snapshot
+        run: node scripts/verify-production-state.mjs
+
+      - name: Validate Vercel config JSON
+        run: node -e "JSON.parse(require('fs').readFileSync('vercel.json','utf8')); console.log('vercel.json valid')"
+
+      - name: Validate package build scripts
+        run: npm run build
