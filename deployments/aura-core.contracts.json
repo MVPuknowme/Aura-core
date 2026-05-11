@@ -4,24 +4,30 @@
   "network": "baseSepolia",
   "chain_family": "Base",
   "branch": "MVPuknowme",
-  "proxy_address": "0x...",
-  "implementation_address": "0x...",
-  "proxy_admin_address": "0x...",
+  "status": "template-unverified",
+  "proxy_address": null,
+  "implementation_address": null,
+  "proxy_admin_address": null,
   "upgrade_authority": "ProxyAdmin",
-  "initializer_signature": "initialize(...)" ,
-  "initializer_data_hash": "0x...",
+  "initializer_signature": "initialize(...)",
+  "initializer_data_hash": null,
   "abi_path": "artifacts/contracts/AuraCore.sol/AuraCore.json",
   "verified": false,
-  "transaction_hash": "0x...",
+  "transaction_hash": null,
   "verification_urls": {
-    "proxy": "",
-    "implementation": "",
-    "admin": ""
+    "proxy": null,
+    "implementation": null,
+    "admin": null
   },
   "safety_checks": {
     "dedicated_admin": true,
     "initializer_guard": true,
     "initialized_once": true,
-    "operator_wallet_not_proxy_admin": 
-  }
+    "operator_wallet_not_proxy_admin": null
+  },
+  "notes": [
+    "This deployment record is a template until real addresses, transaction hash, explorer URLs, and admin separation proof are added.",
+    "Do not treat placeholder/null addresses as production deployment proof.",
+    "Live deployment or upgrade actions require explicit operator wallet signing."
+  ]
 }
