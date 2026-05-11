@@ -1,0 +1,54 @@
+name: SKYGRID Health Check
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/30 * * * *'
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check SKYGRID B12 site
+        id: health
+        run: |
+          set -euo pipefail
+
+          URL="https://skygrid-gs3e.b12sites.com/"
+
+          code=$(curl -L -o /tmp/skygrid.html -s -w '%{http_code}' "$URL")
+
+          echo "HTTP status: $code"
+
+          if [ "$code" != "200" ]; then
+            echo "Health check failed"
+            exit 1
+          fi
+
+          echo "Health check passed"
+
+      - name: Generate status artifact
+        run: |
+          mkdir -p status
+
+          cat > status/health-check.json <<EOF
+          {
+            "service": "SKYGRID / Aura-Core",
+            "status": "pilot",
+            "ok": true,
+            "siteUrl": "https://skygrid-gs3e.b12sites.com/",
+            "checkedAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "source": "GitHub Actions",
+            "notes": "Pilot/demo status only."
+          }
+          EOF
+
+      - name: Upload health artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: skygrid-health-check
+          path: status/health-check.json
