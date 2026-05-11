@@ -1,16 +1,35 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
+  "framework": null,
   "installCommand": "npm install --ignore-scripts",
-  "buildCommand": "echo 'SkyGrid static landing ready'",
+  "buildCommand": "npm run build",
   "outputDirectory": ".",
-  "routes": [
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
     {
-      "src": "/api/health",
-      "dest": "/api/health.js"
+      "source": "/api/health",
+      "destination": "/api/health.js"
     },
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-SkyGrid-Network",
+          "value": "Aura-Core"
+        },
+        {
+          "key": "X-Phoenix-Version",
+          "value": "1.2.0"
+        }
+      ]
     }
   ]
 }
