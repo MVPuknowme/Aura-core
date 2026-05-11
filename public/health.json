@@ -1,0 +1,9 @@
+{
+  "service": "SKYGRID / Aura-Core",
+  "status": "pilot",
+  "ok": true,
+  "siteUrl": "https://skygrid-gs3e.b12sites.com/",
+  "lastChecked": "manual-bootstrap",
+  "source": "MVPuknowme/Aura-core public/health.json",
+  "notes": "Pilot/demo status only. This file is public-safe and does not expose secrets or production uptime guarantees."
+}
