@@ -1,0 +1,15 @@
+{
+  "name": "skygrid-site-launch",
+  "version": "1.2.0-phoenix",
+  "private": true,
+  "description": "SkyGrid / Aura-Core static site deployment for Vercel",
+  "scripts": {
+    "build": "echo 'SkyGrid static site ready'",
+    "vercel-build": "npm run build",
+    "start": "echo 'Static Vercel deployment'"
+  },
+  "engines": {
+    "node": "20.x"
+  },
+  "dependencies": {}
+}
