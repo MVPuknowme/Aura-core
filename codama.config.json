@@ -1,0 +1,17 @@
+{
+  "project": "SkyGrid Aura-Core",
+  "mode": "sandbox",
+  "network": "Scroll",
+  "idl": null,
+  "notes": [
+    "Codama sandbox initialization branch.",
+    "No production deployment logic enabled.",
+    "No wallet signing enabled.",
+    "No Vercel production routing modified."
+  ],
+  "safety": {
+    "read_only_default": true,
+    "production_locked": true,
+    "auto_signing": false
+  }
+}
