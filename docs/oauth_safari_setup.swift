@@ -17,8 +17,10 @@
 //  silent telemetry, or persistent web tracking.
 //
 
-import AuthenticationServices
 import Foundation
+
+#if canImport(AuthenticationServices) && canImport(UIKit)
+import AuthenticationServices
 import UIKit
 
 // MARK: - Privacy Policy For This Flow
@@ -171,7 +173,7 @@ final class OAuthSafariSetup: NSObject, ASWebAuthenticationPresentationContextPr
         session.prefersEphemeralWebBrowserSession = OAuthSafariPrivacyPolicy.preferEphemeralSession
 
         currentSession = session
-        session.start()
+        _ = session.start()
     }
 
     func cancel() {
@@ -186,6 +188,10 @@ final class OAuthSafariSetup: NSObject, ASWebAuthenticationPresentationContextPr
         return presentationAnchor
     }
 }
+#else
+// This source file is intentionally safe to parse on non-Apple CI runners.
+// The OAuth implementation requires iOS/macOS AuthenticationServices + UIKit.
+#endif
 
 // MARK: - Example Usage
 
