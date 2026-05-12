@@ -1,0 +1,59 @@
+{
+  "name": "bnb-staking-validation-lane",
+  "system": "SkyGrid powered by Aura-Core",
+  "operator": "Michael Vincent Patrick / MVPuknowme",
+  "status": "research-and-validation-staged",
+  "source": "https://www.bnbchain.org/en/bnb-staking",
+  "network": {
+    "chain": "BNB Smart Chain / BNB Chain staking ecosystem",
+    "asset": "BNB",
+    "purpose": "Add BNB staking validation as an optional validator research lane for SkyGrid telemetry and proof checks."
+  },
+  "safetyPolicy": {
+    "noPrivateKeys": true,
+    "noSeedPhrases": true,
+    "noAutoStake": true,
+    "noAutoTransfer": true,
+    "noCustody": true,
+    "manualOperatorApprovalRequired": true,
+    "validatorSelectionRequiresReview": true,
+    "stakingRewardsAreNotGuaranteed": true
+  },
+  "validationChecks": [
+    "Confirm official BNB staking documentation and supported wallet flow.",
+    "Confirm chain ID and RPC endpoint before any wallet interaction.",
+    "Confirm validator identity, commission, voting power, uptime, and slashing/unstake rules.",
+    "Confirm minimum delegation and lock/unbonding period.",
+    "Confirm whether staking is liquid, native, custodial, or delegated.",
+    "Confirm all transactions are prepared unsigned first.",
+    "Require Rainbow/connected wallet manual signature for any live transaction.",
+    "Record tx hash only after operator signs and explorer confirms success."
+  ],
+  "integrationTargets": {
+    "github": [
+      "docs/skygrid-stack.md",
+      "config/deploy/skygrid-deploy.config.json",
+      "scripts/cloudshell-run-eth-validators.sh"
+    ],
+    "futureScripts": [
+      "scripts/verify-bnb-staking-validation.mjs",
+      "scripts/bnb-validator-candidate-report.mjs"
+    ],
+    "dashboard": "Add BNB staking lane as read-only candidate validator panel before any staking action."
+  },
+  "ledgerPolicy": {
+    "postingStatus": "do-not-post-until-explorer-confirmed",
+    "requiredFields": [
+      "chain",
+      "validator",
+      "delegatorWallet",
+      "amountBNB",
+      "txHash",
+      "status",
+      "timestamp",
+      "explorerUrl",
+      "operatorApproval"
+    ]
+  },
+  "notes": "This config stages BNB staking validation research only. It does not stake BNB, move funds, approve tokens, or create custody."
+}
