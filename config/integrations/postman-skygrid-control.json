@@ -1,0 +1,33 @@
+{
+  "name": "Postman ASG Aura Sky Grid Control Layer",
+  "type": "postman-request-reference",
+  "status": "linked-reference-pending-review",
+  "workspace": "ASG — Aura-Sky-Grid-Control-Lay",
+  "requestId": "50503657-eed0d5ae-2825-425a-b8e1-2cc1437badcd",
+  "sourceUrl": "https://mvpuknowme-9183059.postman.co/workspace/ASG-%E2%80%94-Aura-Sky-Grid-Control-Lay~904ef332-cd01-4354-aacd-50dc8170122f/request/50503657-eed0d5ae-2825-425a-b8e1-2cc1437badcd?action=share&creator=50503657",
+  "purpose": "SkyGrid / Aura-Core control-layer API testing, route validation, health checks, and proof workflow integration.",
+  "safeDefaults": {
+    "noSecretsInRepo": true,
+    "noPrivateKeys": true,
+    "noSeedPhrases": true,
+    "readOnlyFirst": true,
+    "operatorApprovalRequiredForWrites": true,
+    "productionActionsRequireExplicitReview": true
+  },
+  "recommendedBindings": {
+    "siteHealth": "/api/health",
+    "revStatus": "/api/rev/status",
+    "validatorHealth": "scripts/validator-health-check.mjs",
+    "productionStateVerify": "scripts/verify-production-state.mjs",
+    "proofSource": "https://github.com/MVPuknowme/Aura-core/actions"
+  },
+  "reviewChecklist": [
+    "Export the Postman request or collection as JSON before automated integration.",
+    "Confirm method, URL, headers, body schema, and auth type.",
+    "Move any tokens to GitHub Actions or Vercel environment variables, never committed files.",
+    "Create a mock/sandbox response before production calls.",
+    "Confirm CORS and origin requirements if called from the site.",
+    "Add redaction for Authorization, cookies, wallet signatures, and API keys.",
+    "Log only request IDs, status codes, latency, and safe metadata."
+  ]
+}
