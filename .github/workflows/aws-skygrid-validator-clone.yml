@@ -1,0 +1,139 @@
+name: AWS SkyGrid Validator Clone
+
+on:
+  workflow_dispatch:
+    inputs:
+      aws_region:
+        description: AWS region for validator staging
+        required: false
+        default: us-west-2
+      repo_clone_url:
+        description: Aura-Core clone URL
+        required: false
+        default: https://github.com/MVPuknowme/Aura-core.git
+      branch:
+        description: Branch to clone and verify
+        required: false
+        default: main
+      run_mode:
+        description: dry-run or aws-ready
+        required: false
+        default: dry-run
+
+permissions:
+  contents: read
+
+jobs:
+  aws-validator-clone:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: ${{ inputs.aws_region }}
+      REPO_CLONE_URL: ${{ inputs.repo_clone_url }}
+      TARGET_BRANCH: ${{ inputs.branch }}
+      RUN_MODE: ${{ inputs.run_mode }}
+
+    steps:
+      - name: Checkout control repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Show runner context
+        run: |
+          set -euo pipefail
+          pwd
+          node -v
+          npm -v
+          git --version
+          echo "AWS_REGION=$AWS_REGION"
+          echo "TARGET_BRANCH=$TARGET_BRANCH"
+          echo "RUN_MODE=$RUN_MODE"
+
+      - name: Clone Aura-Core for AWS validator staging
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/aura-core-skygrid
+          git clone --branch "$TARGET_BRANCH" --depth 1 "$REPO_CLONE_URL" /tmp/aura-core-skygrid
+          cd /tmp/aura-core-skygrid
+          git rev-parse --short HEAD
+          ls -la
+
+      - name: Install dependencies with safe fallback
+        run: |
+          set -euo pipefail
+          cd /tmp/aura-core-skygrid
+          if [ -f package-lock.json ]; then
+            npm ci
+          elif [ -f package.json ]; then
+            npm install
+          else
+            echo "No package.json found. Static-only branch; skipping npm install."
+          fi
+
+      - name: Verify validator and production scripts when present
+        run: |
+          set -euo pipefail
+          cd /tmp/aura-core-skygrid
+          if [ -f scripts/validator-health-check.mjs ]; then
+            node scripts/validator-health-check.mjs || echo "Validator health check returned non-zero; review RPC/config before production."
+          else
+            echo "scripts/validator-health-check.mjs not present on this branch."
+          fi
+          if [ -f scripts/verify-production-state.mjs ]; then
+            node scripts/verify-production-state.mjs
+          else
+            echo "scripts/verify-production-state.mjs not present on this branch."
+          fi
+          if [ -f scripts/verify-postman-integration.mjs ]; then
+            node scripts/verify-postman-integration.mjs
+          else
+            echo "scripts/verify-postman-integration.mjs not present on this branch."
+          fi
+
+      - name: Check AWS CLI availability
+        run: |
+          set -euo pipefail
+          aws --version
+          if [ -n "${AWS_ACCESS_KEY_ID:-}" ] && [ -n "${AWS_SECRET_ACCESS_KEY:-}" ]; then
+            echo "AWS credentials detected in runner environment."
+            aws sts get-caller-identity
+          else
+            echo "No AWS credentials detected. This is dry-run safe."
+          fi
+
+      - name: Prepare AWS validator deployment plan
+        run: |
+          set -euo pipefail
+          cat > /tmp/aura-core-skygrid/aws-validator-plan.json << JSON
+          {
+            "project": "SkyGrid / Aura-Core",
+            "mode": "$RUN_MODE",
+            "region": "$AWS_REGION",
+            "clone": "$REPO_CLONE_URL",
+            "branch": "$TARGET_BRANCH",
+            "services": [
+              "EC2 or ECS for validator runner",
+              "SSM for remote command execution",
+              "CloudWatch for logs and metrics",
+              "DynamoDB for nonce/state replay protection",
+              "S3 for append-only reports and artifacts",
+              "IAM least-privilege roles"
+            ],
+            "safety": {
+              "noPrivateKeysInGitHub": true,
+              "noSeedPhrases": true,
+              "dryRunDefault": true,
+              "operatorApprovalRequiredForWrites": true
+            }
+          }
+          JSON
+          cat /tmp/aura-core-skygrid/aws-validator-plan.json
+
+      - name: Upload validator plan artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aws-skygrid-validator-plan
+          path: /tmp/aura-core-skygrid/aws-validator-plan.json
