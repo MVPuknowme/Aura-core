@@ -1,0 +1,120 @@
+{
+  "name": "skygrid-deploy-config",
+  "system": "SkyGrid powered by Aura-Core",
+  "operator": "Michael Vincent Patrick / MVPuknowme",
+  "version": "1.0.0",
+  "mode": "staged-deploy",
+  "environment": {
+    "node": "20.x",
+    "primaryRegion": "us-east-1",
+    "secondaryRegion": "us-west-2",
+    "publicSite": "vercel-static",
+    "validatorLane": "aws-cloudshell",
+    "dashboard": "local-eth-dashboard"
+  },
+  "repository": {
+    "fullName": "MVPuknowme/Aura-core",
+    "branch": "main",
+    "requiredFiles": [
+      "package.json",
+      "scripts/cloudshell-run-eth-validators.sh",
+      "scripts/validator-health-check.mjs",
+      "scripts/verify-postman-integration.mjs",
+      "config/wallets/rainbow-connect.json",
+      "config/payouts/aws-validator-rainbow-wallet.json",
+      "dashboard/eth-dashboard-local.js"
+    ]
+  },
+  "commands": {
+    "localSafeDeploy": [
+      "git pull origin main",
+      "npm install",
+      "npm run build",
+      "node scripts/verify-postman-integration.mjs",
+      "node scripts/validator-health-check.mjs"
+    ],
+    "awsCloudShellValidatorLane": [
+      "git clone https://github.com/MVPuknowme/Aura-core.git",
+      "cd Aura-core",
+      "chmod +x scripts/cloudshell-run-eth-validators.sh",
+      "./scripts/cloudshell-run-eth-validators.sh"
+    ],
+    "dashboard": [
+      "node dashboard/eth-dashboard-local.js"
+    ]
+  },
+  "wallet": {
+    "configuredDestination": "0xbAA5A03bC268546194550a427d3F1d5787c15403",
+    "policy": "manual-signing-only",
+    "autoTransfer": false,
+    "autoApprove": false,
+    "custody": false,
+    "requiresOperatorSignature": true,
+    "supportedChains": [
+      "ethereum",
+      "scroll",
+      "base",
+      "arbitrum",
+      "optimism"
+    ]
+  },
+  "sentinel": {
+    "enabled": true,
+    "rules": [
+      "no-private-keys-in-repo",
+      "no-seed-phrases",
+      "no-auto-transfer",
+      "no-blind-signing",
+      "verify-chain-id-before-transaction",
+      "verify-token-contract-before-transfer",
+      "verify-transaction-hash-before-ledger-posting",
+      "confirm-destination-wallet-before-payout-routing",
+      "hold-ledger-posting-on-hash-mismatch",
+      "regulated-services-require-licensing-before-production"
+    ],
+    "linkedIssues": [
+      78,
+      80,
+      81
+    ]
+  },
+  "ledger": {
+    "status": "hold-on-mismatch",
+    "knownOpenReview": {
+      "issue": 78,
+      "reason": "operator-requested hash differs from JSON-RPC result hash",
+      "postToLedger": false
+    },
+    "postingRequirements": [
+      "confirmed-chain",
+      "confirmed-transaction-hash",
+      "confirmed-status-success",
+      "confirmed-from-address",
+      "confirmed-to-address",
+      "confirmed-token-or-native-asset",
+      "confirmed-amount",
+      "confirmed-timestamp",
+      "operator-approval"
+    ]
+  },
+  "deploymentGate": {
+    "issue": 81,
+    "status": "safe-checks-only",
+    "allowedActions": [
+      "install-dependencies",
+      "run-build",
+      "run-static-verifiers",
+      "run-validator-health-checks",
+      "start-local-dashboard",
+      "generate-artifacts"
+    ],
+    "blockedActions": [
+      "wallet-transfer",
+      "token-approval",
+      "blind-signature-request",
+      "ledger-posting-with-unresolved-hash-mismatch",
+      "regulated-service-launch-without-licensing-review"
+    ]
+  },
+  "status": "configured-not-executed"
+}
