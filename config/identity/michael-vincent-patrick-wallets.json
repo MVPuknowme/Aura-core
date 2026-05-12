@@ -1,0 +1,41 @@
+{
+  "name": "michael-vincent-patrick-wallet-identity-registry",
+  "operator": "Michael Vincent Patrick / MVPuknowme",
+  "status": "operator-asserted-pending-signature-proof",
+  "wallets": [
+    {
+      "address": "0xbAA5A03bC268546194550a427d3F1d5787c15403",
+      "role": "primary-configured-rainbow-destination",
+      "identity": "Michael Vincent Patrick / MVPuknowme",
+      "proofStatus": "operator-asserted"
+    },
+    {
+      "address": "0x8e96734b4Fb612C1603B1a1968655677D2577D56",
+      "role": "secondary-operator-wallet-browser-route",
+      "identity": "Michael Vincent Patrick / MVPuknowme",
+      "proofStatus": "operator-asserted"
+    }
+  ],
+  "recognitionPolicy": {
+    "treatBothWalletsAsSameOperatorForPlanning": true,
+    "requireSignatureProofForHighTrustActions": true,
+    "manualSigningOnly": true,
+    "noPrivateKeys": true,
+    "noSeedPhrases": true,
+    "noAutoTransfer": true,
+    "noCustody": true
+  },
+  "workflowReliabilityPolicy": {
+    "goal": "no avoidable workflow failures",
+    "requiredBeforeMergeOrDeploy": [
+      "validate workflow syntax",
+      "verify required action inputs",
+      "separate deploy actions from summarization or AI tasks",
+      "confirm Node 20.x where package engines require it",
+      "check referenced scripts exist",
+      "preserve Sentinel manual-signing boundaries",
+      "block ledger posting when tx hash mismatch exists"
+    ]
+  },
+  "notes": "This registry records the operator assertion that both wallet addresses belong to Michael Vincent Patrick / MVPuknowme. For high-trust actions, production ledgers, payouts, or ownership claims, require cryptographic signature proof from each wallet."
+}
