@@ -1,0 +1,40 @@
+{
+  "name": "AWS Validator Rainbow Wallet Payout Destination",
+  "status": "configured-destination-only",
+  "mode": "manual-signing-required",
+  "operator": "Michael Vincent Patrick / MVPuknowme",
+  "source": {
+    "system": "SkyGrid / Aura-Core",
+    "lane": "AWS validators",
+    "workflow": ".github/workflows/aws-skygrid-validator-clone.yml"
+  },
+  "destination": {
+    "walletType": "Rainbow Wallet",
+    "address": "0xbAA5A03bC268546194550a427d3F1d5787c15403",
+    "chainPolicy": "EVM-compatible only unless explicitly mapped",
+    "supportedSettlement": [
+      "ETH",
+      "USDC"
+    ]
+  },
+  "safety": {
+    "noPrivateKeysInRepo": true,
+    "noSeedPhrases": true,
+    "noAutoTransfer": true,
+    "noCustodyByAutomation": true,
+    "operatorWalletSignatureRequired": true,
+    "dryRunDefault": true,
+    "verifyChainIdBeforeTransfer": true,
+    "verifyTokenContractBeforeTransfer": true,
+    "recordTxHashAfterManualTransfer": true
+  },
+  "reviewChecklist": [
+    "Confirm Rainbow wallet controls this address before any transfer.",
+    "Confirm chain/network selected in Rainbow matches source chain.",
+    "Send a small test transaction first.",
+    "Verify receipt on explorer before larger movement.",
+    "Record transaction hash in the ledger after manual signing.",
+    "Never paste seed phrase, private key, or wallet recovery material into GitHub, AWS, Postman, Airtable, Linear, or chat."
+  ],
+  "accountingStatus": "destination-configured-transfer-not-executed"
+}
