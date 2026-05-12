@@ -1,0 +1,49 @@
+{
+  "name": "Rainbow Wallet Connect Configuration",
+  "status": "connect-configured-not-custodial",
+  "operator": "Michael Vincent Patrick / MVPuknowme",
+  "wallet": {
+    "type": "Rainbow Wallet",
+    "address": "0xbAA5A03bC268546194550a427d3F1d5787c15403",
+    "role": "operator-controlled-destination-and-signing-wallet",
+    "supportedChains": [
+      "Ethereum",
+      "Scroll",
+      "Base",
+      "Arbitrum",
+      "Optimism"
+    ]
+  },
+  "connectionPolicy": {
+    "connectionMethod": "walletconnect-or-browser-wallet",
+    "readOnlyBeforeSignature": true,
+    "manualSignatureRequired": true,
+    "noAutomaticTransfers": true,
+    "noCustody": true,
+    "noSeedPhraseCollection": true,
+    "noPrivateKeyCollection": true,
+    "verifyAddressBeforeUse": true,
+    "verifyChainIdBeforeUse": true,
+    "recordSignatureProofOnlyWhenUserApproves": true
+  },
+  "allowedOperations": [
+    "read wallet address",
+    "verify selected network",
+    "request manual signature for login/proof",
+    "display balances using public RPC or wallet provider",
+    "prepare unsigned transaction payloads for operator review"
+  ],
+  "blockedOperations": [
+    "auto-transfer",
+    "auto-approve",
+    "seed phrase request",
+    "private key request",
+    "blind signing",
+    "unverified chain switching",
+    "custodial control by automation"
+  ],
+  "qRequest": {
+    "source": "Q asked operator to connect wallet",
+    "response": "Wallet connection configuration staged with safety gates. Operator must connect and sign from Rainbow Wallet directly."
+  }
+}
