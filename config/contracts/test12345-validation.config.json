@@ -1,0 +1,80 @@
+{
+  "name": "test12345-contract-validation",
+  "system": "SkyGrid powered by Aura-Core",
+  "operator": "Michael Vincent Patrick / MVPuknowme",
+  "status": "validation-metadata-staged",
+  "contract": {
+    "contractName": "Test12345",
+    "similarMatch": "0x60810f4d8a618edb533a168e790ab6c09b0e7707",
+    "compilerType": "solc",
+    "compilerVersion": "v0.4.26+commit.4563c3fc",
+    "optimizationUsed": true,
+    "runs": 200,
+    "evmVersion": "Default",
+    "licenseType": "None",
+    "proxy": false,
+    "implementation": "",
+    "constructorArguments": "",
+    "swarmSource": "bzzr://f6b932198e10e83a6c872406a4252cf5eea48f37bac9a33085eba887820370cf"
+  },
+  "sourceCode": "pragma solidity 0.4.26;\n\ncontract Test12345 {\n    string public test;\n    \n    function enterValue(string _c) {\n        test = _c;\n    }\n}",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_c",
+          "type": "string"
+        }
+      ],
+      "name": "enterValue",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "test",
+      "outputs": [
+        {
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "riskReview": {
+    "solidityVersion": "0.4.26 is legacy Solidity and should be treated as audit-required before production use.",
+    "visibility": "enterValue has no explicit visibility in legacy Solidity; defaults should be reviewed and modernized before reuse.",
+    "accessControl": "enterValue is public/open and allows any caller to overwrite the stored string.",
+    "payability": "nonpayable; no ETH receiving path in ABI.",
+    "storage": "single public string variable named test.",
+    "proxyRisk": "not a proxy according to supplied metadata.",
+    "licenseRisk": "license type is None; reuse requires legal/license review."
+  },
+  "validationChecks": [
+    "Confirm target chain and contract address before explorer verification.",
+    "Confirm bytecode matches supplied SourceCode, CompilerVersion, OptimizationUsed, Runs, ConstructorArguments, and EVMVersion.",
+    "Confirm ABI read method test() returns expected value.",
+    "Confirm enterValue(string) is intentionally public and nonpayable.",
+    "Confirm no value transfer is required or allowed.",
+    "Confirm no private keys, seed phrases, or auto-signing are used during testing.",
+    "Prepare unsigned write transaction only after operator review.",
+    "Require manual wallet signature for enterValue writes.",
+    "Record tx hash only after explorer confirms success."
+  ],
+  "skygridPolicy": {
+    "readOnlyFirst": true,
+    "manualSigningOnly": true,
+    "autoTransfer": false,
+    "autoApprove": false,
+    "custody": false,
+    "ledgerPosting": "only after chain, address, tx hash, method, caller, status, and timestamp are verified"
+  },
+  "notes": "This file stores validation metadata only. It does not deploy, call, approve, transfer, or sign any transaction."
+}
