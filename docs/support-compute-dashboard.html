@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SkyGrid Support Compute Metrics</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #08111f;
+      --panel: #101b31;
+      --panel-2: #13243f;
+      --text: #edf7ff;
+      --muted: #9eb7ce;
+      --cyan: #67e8f9;
+      --violet: #a78bfa;
+      --green: #86efac;
+      --amber: #fcd34d;
+      --red: #fca5a5;
+      --line: rgba(255,255,255,.12);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, rgba(103,232,249,.18), transparent 28%),
+                  radial-gradient(circle at top right, rgba(167,139,250,.18), transparent 30%),
+                  var(--bg);
+      color: var(--text);
+      padding: 28px;
+    }
+
+    header {
+      max-width: 1180px;
+      margin: 0 auto 24px;
+    }
+
+    h1 { margin: 0 0 8px; font-size: clamp(2rem, 4vw, 4rem); letter-spacing: -.04em; }
+    p { color: var(--muted); line-height: 1.55; }
+
+    .grid {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 18px;
+    }
+
+    .card {
+      grid-column: span 6;
+      background: linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.025));
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: 0 24px 70px rgba(0,0,0,.28);
+      min-height: 320px;
+    }
+
+    .wide { grid-column: span 12; }
+    h2 { margin: 0 0 14px; font-size: 1.15rem; }
+    .metric-row { display: grid; gap: 10px; }
+    .bar-wrap { display: grid; grid-template-columns: 180px 1fr 42px; gap: 10px; align-items: center; }
+    .label { color: var(--muted); font-size: .9rem; }
+    .bar { height: 14px; background: rgba(255,255,255,.08); border-radius: 999px; overflow: hidden; }
+    .fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--cyan), var(--violet)); }
+    .num { color: var(--text); font-variant-numeric: tabular-nums; text-align: right; }
+
+    .thresholds { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .threshold { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 14px; }
+    .threshold strong { display: block; margin-bottom: 10px; }
+    .pill { display: inline-block; padding: 5px 9px; border-radius: 999px; font-size: .78rem; margin: 3px 3px 3px 0; }
+    .healthy { background: rgba(134,239,172,.16); color: var(--green); }
+    .degraded { background: rgba(252,211,77,.16); color: var(--amber); }
+    .down { background: rgba(252,165,165,.16); color: var(--red); }
+
+    .economics { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; align-items: end; min-height: 245px; }
+    .money-col { display: grid; gap: 8px; justify-items: center; }
+    .gross, .net { width: 100%; border-radius: 12px 12px 4px 4px; background: linear-gradient(180deg, var(--cyan), rgba(103,232,249,.35)); }
+    .fee { width: 54%; border-radius: 12px 12px 4px 4px; background: linear-gradient(180deg, var(--violet), rgba(167,139,250,.35)); }
+    .money-label { font-size: .82rem; color: var(--muted); text-align: center; }
+
+    .score-grid { display: grid; gap: 12px; }
+    .score-item { display: grid; grid-template-columns: 1fr 64px; gap: 10px; align-items: center; }
+    .score-track { height: 10px; background: rgba(255,255,255,.08); border-radius: 999px; overflow: hidden; }
+    .score-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--cyan)); }
+
+    .proof-loop { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+    .step { background: var(--panel-2); border: 1px solid var(--line); border-radius: 18px; padding: 14px; min-height: 112px; }
+    .step b { color: var(--cyan); }
+
+    footer { max-width: 1180px; margin: 24px auto 0; color: var(--muted); font-size: .9rem; }
+
+    @media (max-width: 860px) {
+      body { padding: 18px; }
+      .card, .wide { grid-column: span 12; }
+      .bar-wrap { grid-template-columns: 1fr; }
+      .thresholds, .economics, .proof-loop { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SkyGrid Support Compute Metrics</h1>
+    <p>Aura-Core dashboard concept for measuring where compute power is needed, how nodes earn trust, and how failover drills become visible proof.</p>
+  </header>
+
+  <main class="grid">
+    <section class="card">
+      <h2>Where Compute Support Is Needed</h2>
+      <div class="metric-row">
+        <div class="bar-wrap"><span class="label">Hosted demo capacity</span><div class="bar"><div class="fill" style="width:95%"></div></div><span class="num">95</span></div>
+        <div class="bar-wrap"><span class="label">Validator / testnet capacity</span><div class="bar"><div class="fill" style="width:92%"></div></div><span class="num">92</span></div>
+        <div class="bar-wrap"><span class="label">RPC / edge fallback</span><div class="bar"><div class="fill" style="width:90%"></div></div><span class="num">90</span></div>
+        <div class="bar-wrap"><span class="label">Uptime / failover testing</span><div class="bar"><div class="fill" style="width:88%"></div></div><span class="num">88</span></div>
+        <div class="bar-wrap"><span class="label">Device lease marketplace</span><div class="bar"><div class="fill" style="width:78%"></div></div><span class="num">78</span></div>
+        <div class="bar-wrap"><span class="label">Storage / cache support</span><div class="bar"><div class="fill" style="width:68%"></div></div><span class="num">68</span></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>How Nodes Earn Trust</h2>
+      <div class="score-grid">
+        <div class="score-item"><div><span class="label">Uptime weight</span><div class="score-track"><div class="score-fill" style="width:30%"></div></div></div><span class="num">30</span></div>
+        <div class="score-item"><div><span class="label">Latency weight</span><div class="score-track"><div class="score-fill" style="width:20%"></div></div></div><span class="num">20</span></div>
+        <div class="score-item"><div><span class="label">Successful probes</span><div class="score-track"><div class="score-fill" style="width:20%"></div></div></div><span class="num">20</span></div>
+        <div class="score-item"><div><span class="label">Bandwidth availability</span><div class="score-track"><div class="score-fill" style="width:15%"></div></div></div><span class="num">15</span></div>
+        <div class="score-item"><div><span class="label">Compute availability</span><div class="score-track"><div class="score-fill" style="width:10%"></div></div></div><span class="num">10</span></div>
+        <div class="score-item"><div><span class="label">Error penalty</span><div class="score-track"><div class="score-fill" style="width:15%; background: linear-gradient(90deg, var(--red), var(--amber));"></div></div></div><span class="num">-15</span></div>
+      </div>
+      <p><code>node_score = uptime + latency + probes + bandwidth + compute - error_penalty</code></p>
+    </section>
+
+    <section class="card wide">
+      <h2>Failover Readiness Thresholds</h2>
+      <div class="thresholds">
+        <div class="threshold"><strong>Latency</strong><span class="pill healthy">Healthy &lt;300ms</span><span class="pill degraded">300–800ms</span><span class="pill down">Down &gt;800ms</span></div>
+        <div class="threshold"><strong>Packet Loss</strong><span class="pill healthy">Healthy &lt;5%</span><span class="pill degraded">5–20%</span><span class="pill down">Down &gt;20%</span></div>
+        <div class="threshold"><strong>Recovery Time</strong><span class="pill healthy">Healthy &lt;30s</span><span class="pill degraded">30–120s</span><span class="pill down">Down &gt;120s</span></div>
+        <div class="threshold"><strong>Probe Success</strong><span class="pill healthy">Healthy &gt;95%</span><span class="pill degraded">80–95%</span><span class="pill down">Down &lt;80%</span></div>
+      </div>
+    </section>
+
+    <section class="card wide">
+      <h2>Lease Economics: Gross → Aura-Core 3% → Provider Net</h2>
+      <div class="economics">
+        <div class="money-col"><div class="gross" style="height:28px"></div><div class="fee" style="height:10px"></div><div class="net" style="height:27px"></div><span class="money-label">$100 gross<br>$3 fee / $97 net</span></div>
+        <div class="money-col"><div class="gross" style="height:60px"></div><div class="fee" style="height:10px"></div><div class="net" style="height:58px"></div><span class="money-label">$250 gross<br>$7.50 fee / $242.50 net</span></div>
+        <div class="money-col"><div class="gross" style="height:100px"></div><div class="fee" style="height:10px"></div><div class="net" style="height:97px"></div><span class="money-label">$500 gross<br>$15 fee / $485 net</span></div>
+        <div class="money-col"><div class="gross" style="height:150px"></div><div class="fee" style="height:12px"></div><div class="net" style="height:145px"></div><span class="money-label">$1,000 gross<br>$30 fee / $970 net</span></div>
+        <div class="money-col"><div class="gross" style="height:205px"></div><div class="fee" style="height:16px"></div><div class="net" style="height:198px"></div><span class="money-label">$2,500 gross<br>$75 fee / $2,425 net</span></div>
+      </div>
+    </section>
+
+    <section class="card wide">
+      <h2>Auto Drill Proof Loop</h2>
+      <div class="proof-loop">
+        <div class="step"><b>1. Probe</b><p>Measure primary and fallback response time.</p></div>
+        <div class="step"><b>2. Simulate</b><p>Trigger controlled degradation safely.</p></div>
+        <div class="step"><b>3. Decide</b><p>Select primary, fallback, degraded hold, or manual review.</p></div>
+        <div class="step"><b>4. Report</b><p>Export JSON and Markdown drill reports.</p></div>
+        <div class="step"><b>5. Improve</b><p>Compare nightly results and tune thresholds.</p></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    SkyGrid support compute is opt-in and consent-based. Metrics are planning estimates until backed by verified customer demand, signed service agreements, or live runner telemetry.
+  </footer>
+</body>
+</html>
