@@ -1,0 +1,144 @@
+name: AWS Bucket Connect
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_path:
+        description: "Local path to validate/sync to S3"
+        required: false
+        default: "public"
+      s3_prefix:
+        description: "Optional S3 prefix under the bucket"
+        required: false
+        default: "skygrid"
+      publish:
+        description: "Set to true to perform the sync. Default is dry-run only."
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION || 'us-east-1' }}
+  AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+
+jobs:
+  bucket-connect:
+    name: Verify and optionally sync S3 bucket
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate bucket configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          has_role="no"
+          has_static_keys="no"
+
+          if [ -n "${AWS_ROLE_ARN:-}" ]; then
+            has_role="yes"
+          fi
+
+          if [ -n "${AWS_ACCESS_KEY_ID:-}" ] && [ -n "${AWS_SECRET_ACCESS_KEY:-}" ]; then
+            has_static_keys="yes"
+          fi
+
+          echo "AWS bucket connection preflight"
+          echo "- AWS_REGION: ${AWS_REGION}"
+          echo "- AWS_ROLE_ARN configured: ${has_role}"
+          echo "- Static AWS key pair configured: ${has_static_keys}"
+          echo "- AWS_S3_BUCKET configured: $([ -n "${AWS_S3_BUCKET:-}" ] && echo yes || echo no)"
+
+          if [ "${has_role}" != "yes" ] && [ "${has_static_keys}" != "yes" ]; then
+            echo "::error title=Missing AWS credential provider::Configure AWS_ROLE_ARN for OIDC, or configure both AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY."
+            exit 1
+          fi
+
+          if [ -z "${AWS_S3_BUCKET:-}" ]; then
+            echo "::error title=Missing S3 bucket::Configure repository secret AWS_S3_BUCKET with the bucket name."
+            exit 1
+          fi
+
+      - name: Configure AWS credentials using OIDC role
+        if: env.AWS_ROLE_ARN != ''
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: aura-core-s3-${{ github.run_id }}
+
+      - name: Configure AWS credentials using static keys
+        if: env.AWS_ROLE_ARN == '' && env.AWS_ACCESS_KEY_ID != '' && env.AWS_SECRET_ACCESS_KEY != ''
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Verify AWS identity
+        run: |
+          set -euo pipefail
+          aws sts get-caller-identity
+
+      - name: Verify S3 bucket access
+        run: |
+          set -euo pipefail
+          aws s3api head-bucket --bucket "$AWS_S3_BUCKET"
+          aws s3 ls "s3://${AWS_S3_BUCKET}/" --max-items 5 || true
+
+      - name: Validate source path
+        run: |
+          set -euo pipefail
+          SOURCE_PATH="${{ github.event.inputs.source_path }}"
+          if [ ! -e "$SOURCE_PATH" ]; then
+            echo "::error title=Missing source path::$SOURCE_PATH does not exist in the repository checkout."
+            exit 1
+          fi
+          echo "Source path exists: $SOURCE_PATH"
+
+      - name: Dry-run S3 sync
+        if: github.event.inputs.publish != 'true'
+        run: |
+          set -euo pipefail
+          SOURCE_PATH="${{ github.event.inputs.source_path }}"
+          S3_PREFIX="${{ github.event.inputs.s3_prefix }}"
+          TARGET="s3://${AWS_S3_BUCKET}/${S3_PREFIX}"
+          echo "Dry-run only. No files will be uploaded."
+          aws s3 sync "$SOURCE_PATH" "$TARGET" --dryrun --only-show-errors
+
+      - name: Publish S3 sync
+        if: github.event.inputs.publish == 'true'
+        run: |
+          set -euo pipefail
+          SOURCE_PATH="${{ github.event.inputs.source_path }}"
+          S3_PREFIX="${{ github.event.inputs.s3_prefix }}"
+          TARGET="s3://${AWS_S3_BUCKET}/${S3_PREFIX}"
+          echo "Publishing $SOURCE_PATH to $TARGET"
+          aws s3 sync "$SOURCE_PATH" "$TARGET" --only-show-errors
+
+      - name: Write bucket connection summary
+        run: |
+          set -euo pipefail
+          {
+            echo "## AWS Bucket Connect"
+            echo ""
+            echo "- Region: ${AWS_REGION}"
+            echo "- Bucket configured: yes"
+            echo "- Source path: ${{ github.event.inputs.source_path }}"
+            echo "- S3 prefix: ${{ github.event.inputs.s3_prefix }}"
+            echo "- Publish mode: ${{ github.event.inputs.publish }}"
+            echo "- Safety: dry-run unless publish == true"
+          } >> "$GITHUB_STEP_SUMMARY"
