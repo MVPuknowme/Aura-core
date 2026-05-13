@@ -1,0 +1,42 @@
+{
+  "updated_at": "2026-05-13T05:45:00Z",
+  "summary": {
+    "active_nodes": 6,
+    "avg_uptime_percent": 96.8,
+    "avg_latency_ms": 242,
+    "drills_last_7_days": 7,
+    "fallback_recommendations": 3
+  },
+  "demand": [
+    { "label": "Hosted demo capacity", "score": 95 },
+    { "label": "Validator / testnet capacity", "score": 92 },
+    { "label": "RPC / edge fallback", "score": 90 },
+    { "label": "Uptime / failover testing", "score": 88 },
+    { "label": "Device lease marketplace", "score": 78 },
+    { "label": "Storage / cache support", "score": 68 }
+  ],
+  "node_health_weights": [
+    { "label": "Uptime", "weight": 30 },
+    { "label": "Latency", "weight": 20 },
+    { "label": "Successful probes", "weight": 20 },
+    { "label": "Bandwidth availability", "weight": 15 },
+    { "label": "Compute availability", "weight": 10 },
+    { "label": "Error penalty", "weight": -15 }
+  ],
+  "drill_history": [
+    { "date": "2026-05-07", "latency_ms": 280, "status": "healthy", "selected_route": "primary" },
+    { "date": "2026-05-08", "latency_ms": 335, "status": "degraded", "selected_route": "fallback" },
+    { "date": "2026-05-09", "latency_ms": 248, "status": "healthy", "selected_route": "primary" },
+    { "date": "2026-05-10", "latency_ms": 410, "status": "degraded", "selected_route": "fallback" },
+    { "date": "2026-05-11", "latency_ms": 221, "status": "healthy", "selected_route": "primary" },
+    { "date": "2026-05-12", "latency_ms": 260, "status": "healthy", "selected_route": "primary" },
+    { "date": "2026-05-13", "latency_ms": 390, "status": "degraded", "selected_route": "fallback" }
+  ],
+  "lease_economics": [
+    { "gross": 100, "aura_fee": 3, "provider_net": 97 },
+    { "gross": 250, "aura_fee": 7.5, "provider_net": 242.5 },
+    { "gross": 500, "aura_fee": 15, "provider_net": 485 },
+    { "gross": 1000, "aura_fee": 30, "provider_net": 970 },
+    { "gross": 2500, "aura_fee": 75, "provider_net": 2425 }
+  ]
+}
