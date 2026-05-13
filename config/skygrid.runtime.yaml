@@ -1,0 +1,114 @@
+skygrid_runtime:
+  version: "1.0"
+  mode: "local-first-cloud-reserve"
+  claim_policy: "proof-before-live-claims"
+
+  website_frontdoor:
+    b12_site: "https://aura-sky-skygrid-protocol.b12sites.com/"
+    primary_health_path: "/health.json"
+    proof_anchor: "#proof"
+    architecture_anchor: "#reliability-architecture"
+    contact_anchor: "#contact"
+    allowed_roles:
+      - public_status
+      - onboarding
+      - proof_surface
+      - architecture_explainer
+    forbidden_roles:
+      - secret_display
+      - wallet_execution
+      - exchange_execution
+      - private_key_collection
+
+  validator_capacity:
+    min_local_validators: 3
+    reserve_enabled: true
+    shortage_action: "activate_dc_skygrid_reserve"
+    capacity_modes:
+      local_first:
+        description: "Use local validator nodes when minimum local capacity is available."
+      dc_skygrid_reserve:
+        description: "Use AWS/DC SKYGRID reserve compute when local validator capacity is below threshold."
+
+  auto_drill:
+    role: "route_decision_controller"
+    default_objective: "balanced"
+    supported_objectives:
+      - balanced
+      - lowest-latency
+      - lowest-cost
+      - grants
+      - reliability
+    validation_scope_default:
+      - route-health
+      - token-metadata
+      - exchange-reference
+    outputs:
+      - route_decision_event
+      - validator_capacity_event
+      - compute_plan_event
+      - validation_proof_event
+    forbidden_actions:
+      - wallet_movement
+      - token_swap
+      - bridge_transfer
+      - staking
+      - hidden_mining
+      - exchange_trade
+
+  aws_reserve:
+    default_provider: "batch"
+    providers:
+      batch:
+        purpose: "queued validation jobs and high-volume reference checks"
+        queue_secret: "AUTO_DRILL_BATCH_JOB_QUEUE"
+        job_definition_secret: "AUTO_DRILL_BATCH_JOB_DEFINITION"
+      ecs:
+        purpose: "containerized reserve validators and always-ready proof workers"
+        cluster_secret: "AUTO_DRILL_ECS_CLUSTER"
+        task_definition_secret: "AUTO_DRILL_ECS_TASK_DEFINITION"
+        subnets_secret: "AUTO_DRILL_ECS_SUBNETS"
+        security_groups_secret: "AUTO_DRILL_ECS_SECURITY_GROUPS"
+        container_name_secret: "AUTO_DRILL_CONTAINER_NAME"
+    credential_policy:
+      preferred: "AWS_ROLE_ARN via GitHub OIDC"
+      fallback: "AWS_ACCESS_KEY_ID plus AWS_SECRET_ACCESS_KEY"
+      region_secret: "AWS_REGION"
+
+  web3_reference:
+    mode: "read_only_validation"
+    supported_networks:
+      - ethereum
+      - base
+      - optimism
+      - arbitrum
+      - scroll
+      - covalent
+    allowed_roles:
+      - route_health_reference
+      - token_metadata_reference
+      - explorer_reference
+      - exchange_quote_reference
+      - proof_artifact_reference
+    forbidden_roles:
+      - private_key_access
+      - wallet_custody
+      - swap_execution
+      - bridge_transfer
+      - staking_execution
+      - exchange_trade_execution
+
+  event_contract:
+    schema: "skygrid.validation.event.v1"
+    schema_path: "schemas/skygrid.validation.event.v1.json"
+    principle: "Different runtimes, same event schema. Different code styles, same proof contract."
+
+  safety:
+    wallet_movement: false
+    swaps: false
+    bridge_transfers: false
+    staking: false
+    hidden_mining: false
+    exchange_execution: false
+    private_key_collection: false
+    proof_required: true
