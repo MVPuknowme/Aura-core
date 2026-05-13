@@ -1,0 +1,60 @@
+name: SkyGrid Auto Drill
+
+on:
+  workflow_dispatch:
+    inputs:
+      primary_url:
+        description: Primary URL to probe
+        required: false
+        default: https://skygrid-gs3e.b12sites.com/
+      fallback_url:
+        description: Fallback URL to probe
+        required: false
+        default: https://github.com/MVPuknowme/Aura-core
+      simulate_failure:
+        description: Force simulated fallback recommendation
+        required: false
+        default: "true"
+  schedule:
+    - cron: "17 9 * * *"
+  pull_request:
+    paths:
+      - scripts/auto-drill.sh
+      - .github/workflows/auto-drill.yml
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  auto-drill:
+    name: Run safe failover auto drill
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Prepare drill script
+        run: chmod +x scripts/auto-drill.sh
+
+      - name: Run auto drill
+        env:
+          PRIMARY_URL: ${{ github.event.inputs.primary_url || 'https://skygrid-gs3e.b12sites.com/' }}
+          FALLBACK_URL: ${{ github.event.inputs.fallback_url || 'https://github.com/MVPuknowme/Aura-core' }}
+          SIMULATE_FAILURE: ${{ github.event.inputs.simulate_failure || 'true' }}
+          SAMPLES: "3"
+          TIMEOUT_SECONDS: "10"
+        run: ./scripts/auto-drill.sh
+
+      - name: Upload drill reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: skygrid-auto-drill-reports
+          path: drill-reports/
+          if-no-files-found: warn
