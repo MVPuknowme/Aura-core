@@ -14,7 +14,7 @@ on:
       objective:
         description: "Auto Drill objective"
         required: true
-        default: "balanced"
+        default: "reliability"
         type: choice
         options:
           - "balanced"
@@ -50,15 +50,20 @@ env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   AUTO_DRILL_AWS_PROVIDER: ${{ github.event.inputs.provider || 'batch' }}
-  AUTO_DRILL_OBJECTIVE: ${{ github.event.inputs.objective || 'balanced' }}
+  AUTO_DRILL_OBJECTIVE: ${{ github.event.inputs.objective || 'reliability' }}
   AUTO_DRILL_AWS_DRY_RUN: ${{ github.event.inputs.dry_run || 'true' }}
-  AUTO_DRILL_BATCH_JOB_QUEUE: ${{ secrets.AUTO_DRILL_BATCH_JOB_QUEUE }}
-  AUTO_DRILL_BATCH_JOB_DEFINITION: ${{ secrets.AUTO_DRILL_BATCH_JOB_DEFINITION }}
-  AUTO_DRILL_ECS_CLUSTER: ${{ secrets.AUTO_DRILL_ECS_CLUSTER }}
-  AUTO_DRILL_ECS_TASK_DEFINITION: ${{ secrets.AUTO_DRILL_ECS_TASK_DEFINITION }}
-  AUTO_DRILL_ECS_SUBNETS: ${{ secrets.AUTO_DRILL_ECS_SUBNETS }}
-  AUTO_DRILL_ECS_SECURITY_GROUPS: ${{ secrets.AUTO_DRILL_ECS_SECURITY_GROUPS }}
+  AUTO_DRILL_BATCH_JOB_QUEUE: ${{ secrets.AUTO_DRILL_BATCH_JOB_QUEUE || 'dc-skygrid-reserve-queue' }}
+  AUTO_DRILL_BATCH_JOB_DEFINITION: ${{ secrets.AUTO_DRILL_BATCH_JOB_DEFINITION || 'dc-skygrid-validator:1' }}
+  AUTO_DRILL_ECS_CLUSTER: ${{ secrets.AUTO_DRILL_ECS_CLUSTER || 'dc-skygrid-reserve-cluster' }}
+  AUTO_DRILL_ECS_TASK_DEFINITION: ${{ secrets.AUTO_DRILL_ECS_TASK_DEFINITION || 'dc-skygrid-validator-task:1' }}
+  AUTO_DRILL_ECS_SUBNETS: ${{ secrets.AUTO_DRILL_ECS_SUBNETS || 'subnet-dryrun-a,subnet-dryrun-b' }}
+  AUTO_DRILL_ECS_SECURITY_GROUPS: ${{ secrets.AUTO_DRILL_ECS_SECURITY_GROUPS || 'sg-dryrun' }}
   AUTO_DRILL_CONTAINER_NAME: ${{ secrets.AUTO_DRILL_CONTAINER_NAME || 'auto-drill' }}
+  AUTO_DRILL_LOCAL_VALIDATOR_COUNT: ${{ vars.AUTO_DRILL_LOCAL_VALIDATOR_COUNT || '1' }}
+  AUTO_DRILL_MIN_LOCAL_VALIDATORS: ${{ vars.AUTO_DRILL_MIN_LOCAL_VALIDATORS || '3' }}
+  AUTO_DRILL_DC_RESERVE_ENABLED: ${{ vars.AUTO_DRILL_DC_RESERVE_ENABLED || 'true' }}
+  AUTO_DRILL_DC_RESERVE_LABEL: ${{ vars.AUTO_DRILL_DC_RESERVE_LABEL || 'dc-skygrid-reserve' }}
+  AUTO_DRILL_VALIDATION_SCOPE: ${{ vars.AUTO_DRILL_VALIDATION_SCOPE || 'route-health,token-metadata,exchange-reference' }}
 
 jobs:
   compute-plan:
@@ -110,9 +115,10 @@ jobs:
           echo "- Provider: ${AUTO_DRILL_AWS_PROVIDER}"
           echo "- Objective: ${AUTO_DRILL_OBJECTIVE}"
           echo "- Dry run: ${AUTO_DRILL_AWS_DRY_RUN}"
+          echo "- Local validators: ${AUTO_DRILL_LOCAL_VALIDATOR_COUNT}/${AUTO_DRILL_MIN_LOCAL_VALIDATORS}"
 
           if [ "${has_role}" != "yes" ] && [ "${has_static_keys}" != "yes" ]; then
-            echo "::warning title=No AWS credential provider::AWS identity proof will be skipped until AWS_ROLE_ARN or static key pair is configured."
+            echo "::warning title=No AWS credential provider::AWS identity proof will be skipped until AWS_ROLE_ARN or static key pair is configured. Dry-run compute-plan generation can still proceed."
           fi
 
       - name: Configure AWS credentials using OIDC role
@@ -197,6 +203,9 @@ jobs:
             echo "- Objective: ${AUTO_DRILL_OBJECTIVE}"
             echo "- Dry run: ${AUTO_DRILL_AWS_DRY_RUN}"
             echo "- AWS region: ${AWS_REGION}"
+            echo "- Local validators: ${AUTO_DRILL_LOCAL_VALIDATOR_COUNT}/${AUTO_DRILL_MIN_LOCAL_VALIDATORS}"
+            echo "- Reserve enabled: ${AUTO_DRILL_DC_RESERVE_ENABLED}"
+            echo "- Validation scope: ${AUTO_DRILL_VALIDATION_SCOPE}"
             echo "- Tests: pytest -q"
             echo "- Safety: compute-only, no wallet, no swap, no bridge transfer, no staking"
             echo "- Artifact: auto-drill-aws-compute-plan"
