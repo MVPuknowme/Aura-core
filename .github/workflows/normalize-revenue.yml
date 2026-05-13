@@ -48,7 +48,6 @@ jobs:
           set -euo pipefail
 
           missing=()
-          [ -n "${DUNE_API_KEY:-}" ] || missing+=("DUNE_API_KEY")
           [ -n "${AIRTABLE_API_KEY:-}" ] || missing+=("AIRTABLE_API_KEY or AIRTABLE_TOKEN")
           [ -n "${AIRTABLE_BASE_ID:-}" ] || missing+=("AIRTABLE_BASE_ID")
 
@@ -56,11 +55,18 @@ jobs:
           [ -n "${ETHEREUM_QUERY_ID:-}" ] && chain_ids_present=1
           [ -n "${SCROLL_QUERY_ID:-}" ] && chain_ids_present=1
           [ -n "${TON_QUERY_ID:-}" ] && chain_ids_present=1
-          [ "$chain_ids_present" -eq 1 ] || missing+=("one of DUNE_ETHEREUM_QUERY_ID / DUNE_SCROLL_QUERY_ID / DUNE_TON_QUERY_ID or legacy ETHEREUM_QUERY_ID / SCROLL_QUERY_ID / TON_QUERY_ID")
+
+          if [ -z "${DUNE_API_KEY:-}" ] || [ "$chain_ids_present" -ne 1 ]; then
+            echo "SKIP_DUNE=true" >> "$GITHUB_ENV"
+          else
+            echo "SKIP_DUNE=false" >> "$GITHUB_ENV"
+          fi
 
           if [ "${DEBUG_MODE:-true}" = "true" ]; then
             echo "Workflow debug summary"
             echo "- DUNE_API_KEY set: $([ -n "${DUNE_API_KEY:-}" ] && echo yes || echo no)"
+            echo "- Dune query ID present: $([ "$chain_ids_present" -eq 1 ] && echo yes || echo no)"
+            echo "- Dune mode: $([ -z "${DUNE_API_KEY:-}" ] || [ "$chain_ids_present" -ne 1 ] && echo skipped || echo enabled)"
             echo "- AIRTABLE_API_KEY/AIRTABLE_TOKEN set: $([ -n "${AIRTABLE_API_KEY:-}" ] && echo yes || echo no)"
             echo "- AIRTABLE_BASE_ID set: $([ -n "${AIRTABLE_BASE_ID:-}" ] && echo yes || echo no)"
             echo "- ETHEREUM_QUERY_ID set: $([ -n "${ETHEREUM_QUERY_ID:-}" ] && echo yes || echo no)"
@@ -71,7 +77,7 @@ jobs:
 
           if [ ${#missing[@]} -gt 0 ]; then
             echo "::error title=Missing workflow configuration::Missing required values: ${missing[*]}"
-            echo "Add the missing repository secrets in Settings > Secrets and variables > Actions, or provide workflow_dispatch query ID inputs, then run this workflow again."
+            echo "Add AIRTABLE_API_KEY or AIRTABLE_TOKEN in Settings > Secrets and variables > Actions, then run this workflow again."
             exit 1
           fi
 
@@ -81,6 +87,7 @@ jobs:
           cat prices.json
 
       - name: Fetch Dune results
+        if: env.SKIP_DUNE != 'true'
         run: |
           python3 <<'PY'
           import json, os, urllib.request
@@ -105,6 +112,14 @@ jobs:
               json.dump(out, f, ensure_ascii=False, indent=2)
           print(json.dumps({k: len(v.get('result', {}).get('rows', [])) for k, v in out.items()}))
           PY
+
+      - name: Create empty Dune input when analytics is skipped
+        if: env.SKIP_DUNE == 'true'
+        run: |
+          cat > dune-normalize-input.json <<'JSON'
+          {}
+          JSON
+          echo "::warning::Dune normalization skipped because DUNE_API_KEY or a Dune query ID is not configured"
 
       - name: Normalize into USD summary
         run: |
@@ -168,14 +183,19 @@ jobs:
           normalized = {
               'prices': prices,
               'summary': summary,
-              'total_usd': round(total_usd, 2)
+              'total_usd': round(total_usd, 2),
+              'dune_mode': os.environ.get('SKIP_DUNE', 'false')
           }
           with open('normalized-revenue.json', 'w', encoding='utf-8') as f:
               json.dump(normalized, f, ensure_ascii=False, indent=2)
           print(json.dumps(normalized, ensure_ascii=False))
 
-          lines = [f"{chain}: ${info['normalized_usd']:.2f} from {info['rows']} rows" for chain, info in summary.items()]
-          notes = (' | '.join(lines) + f" | total_usd=${total_usd:.2f}")[:900]
+          if summary:
+              lines = [f"{chain}: ${info['normalized_usd']:.2f} from {info['rows']} rows" for chain, info in summary.items()]
+              notes = (' | '.join(lines) + f" | total_usd=${total_usd:.2f}")[:900]
+          else:
+              notes = 'Dune skipped: configure DUNE_API_KEY and one Dune query ID to enable normalized revenue rows.'
+
           airtable_payload = {
               'records': [
                   {
