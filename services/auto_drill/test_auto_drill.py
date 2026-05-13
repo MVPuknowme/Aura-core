@@ -94,6 +94,57 @@ def test_auto_drill_aws_ecs_plan_is_compute_only():
     assert plan['safety']['hiddenMining'] is False
 
 
+def test_dc_skygrid_reserve_activates_when_local_capacity_is_low():
+    env = {
+        'AUTO_DRILL_AWS_PROVIDER': 'batch',
+        'AUTO_DRILL_BATCH_JOB_QUEUE': 'dc-skygrid-reserve-queue',
+        'AUTO_DRILL_BATCH_JOB_DEFINITION': 'dc-skygrid-validator:1',
+        'AUTO_DRILL_LOCAL_VALIDATOR_COUNT': '1',
+        'AUTO_DRILL_MIN_LOCAL_VALIDATORS': '3',
+        'AUTO_DRILL_DC_RESERVE_ENABLED': 'true',
+        'AUTO_DRILL_DC_RESERVE_LABEL': 'dc-skygrid-reserve',
+        'AUTO_DRILL_VALIDATION_SCOPE': 'route-health,token-metadata,exchange-reference',
+        'AUTO_DRILL_AWS_DRY_RUN': 'true',
+    }
+    with patch.dict('os.environ', env, clear=True):
+        config, errors = load_config()
+        assert errors == []
+        plan = build_plan(config)
+
+    assert plan['capacityMode'] == 'dc_reserve'
+    assert plan['reserveActive'] is True
+    assert plan['reserveLabel'] == 'dc-skygrid-reserve'
+    assert plan['localValidatorCount'] == 1
+    assert plan['minLocalValidators'] == 3
+    assert plan['validationScope'] == 'route-health,token-metadata,exchange-reference'
+    assert plan['awsPlan']['jobName'] == 'skygrid-auto-drill-reserve'
+    assert plan['safety']['referenceValidationOnly'] is True
+    assert plan['safety']['exchangeExecution'] is False
+    assert plan['safety']['walletActions'] is False
+    assert plan['safety']['bridgeTransfers'] is False
+    assert plan['safety']['swaps'] is False
+
+
+def test_dc_skygrid_reserve_holds_when_local_capacity_is_sufficient():
+    env = {
+        'AUTO_DRILL_AWS_PROVIDER': 'batch',
+        'AUTO_DRILL_BATCH_JOB_QUEUE': 'dc-skygrid-reserve-queue',
+        'AUTO_DRILL_BATCH_JOB_DEFINITION': 'dc-skygrid-validator:1',
+        'AUTO_DRILL_LOCAL_VALIDATOR_COUNT': '4',
+        'AUTO_DRILL_MIN_LOCAL_VALIDATORS': '3',
+        'AUTO_DRILL_DC_RESERVE_ENABLED': 'true',
+        'AUTO_DRILL_AWS_DRY_RUN': 'true',
+    }
+    with patch.dict('os.environ', env, clear=True):
+        config, errors = load_config()
+        assert errors == []
+        plan = build_plan(config)
+
+    assert plan['capacityMode'] == 'local_first'
+    assert plan['reserveActive'] is False
+    assert plan['awsPlan']['jobName'] == 'skygrid-auto-drill'
+
+
 def test_validation_config_disallows_unsafe_actions():
     client = app.test_client()
     response = client.get('/validation/config')
