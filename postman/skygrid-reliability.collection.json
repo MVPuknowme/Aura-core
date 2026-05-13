@@ -1,0 +1,127 @@
+{
+  "info": {
+    "name": "Aura-Core / SkyGrid Reliability Checks",
+    "description": "Baseline Postman/Newman checks for Aura-Core and SkyGrid web/API availability.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "SkyGrid B12 Site Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{site_url}}",
+          "host": ["{{site_url}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is successful', function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 204, 301, 302]);",
+              "});",
+              "",
+              "pm.test('Response time is under 3000ms', function () {",
+              "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+              "});",
+              "",
+              "pm.test('Response body is not empty', function () {",
+              "    pm.expect(pm.response.text()).to.be.a('string').and.to.have.length.above(0);",
+              "});",
+              "",
+              "pm.test('Response looks like HTML or SkyGrid/Aura content', function () {",
+              "    const body = pm.response.text().toLowerCase();",
+              "    pm.expect(",
+              "        body.includes('<!doctype html') ||",
+              "        body.includes('<html') ||",
+              "        body.includes('<title') ||",
+              "        body.includes('skygrid') ||",
+              "        body.includes('aura')",
+              "    ).to.equal(true);",
+              "});",
+              "",
+              "pm.collectionVariables.set('last_status_code', pm.response.code);",
+              "pm.collectionVariables.set('last_response_time_ms', pm.response.responseTime);",
+              "pm.collectionVariables.set('last_checked_at', new Date().toISOString());",
+              "pm.collectionVariables.set('last_url', pm.request.url.toString());"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Primary Health Endpoint",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/health",
+          "host": ["{{base_url}}"],
+          "path": ["health"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Health status is successful or unavailable during setup', function () {",
+              "    pm.expect([200, 204, 404, 503]).to.include(pm.response.code);",
+              "});",
+              "pm.test('Health response time is under 5000ms', function () {",
+              "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "AWS Service Health Endpoint",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{aws_service_url}}/health",
+          "host": ["{{aws_service_url}}"],
+          "path": ["health"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('AWS service status is successful or not yet deployed', function () {",
+              "    pm.expect([200, 204, 404, 503]).to.include(pm.response.code);",
+              "});",
+              "pm.test('AWS service response time is under 5000ms', function () {",
+              "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "site_url",
+      "value": "https://aura-sky-skygrid-protocol.b12sites.com/"
+    },
+    {
+      "key": "base_url",
+      "value": "https://aura-sky-skygrid-protocol.b12sites.com"
+    },
+    {
+      "key": "aws_service_url",
+      "value": "https://aura-sky-skygrid-protocol.b12sites.com"
+    }
+  ]
+}
