@@ -1,0 +1,203 @@
+name: Auto Drill AWS Compute
+
+on:
+  workflow_dispatch:
+    inputs:
+      provider:
+        description: "AWS compute provider"
+        required: true
+        default: "batch"
+        type: choice
+        options:
+          - "batch"
+          - "ecs"
+      objective:
+        description: "Auto Drill objective"
+        required: true
+        default: "balanced"
+        type: choice
+        options:
+          - "balanced"
+          - "lowest-latency"
+          - "lowest-cost"
+          - "grants"
+          - "reliability"
+      dry_run:
+        description: "Keep true until AWS Batch/ECS config is proven"
+        required: true
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+  push:
+    branches: ["MVPuknowme"]
+    paths:
+      - "services/auto_drill/**"
+      - ".github/workflows/auto-drill-aws-compute.yml"
+  pull_request:
+    paths:
+      - "services/auto_drill/**"
+      - ".github/workflows/auto-drill-aws-compute.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION || 'us-east-1' }}
+  AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AUTO_DRILL_AWS_PROVIDER: ${{ github.event.inputs.provider || 'batch' }}
+  AUTO_DRILL_OBJECTIVE: ${{ github.event.inputs.objective || 'balanced' }}
+  AUTO_DRILL_AWS_DRY_RUN: ${{ github.event.inputs.dry_run || 'true' }}
+  AUTO_DRILL_BATCH_JOB_QUEUE: ${{ secrets.AUTO_DRILL_BATCH_JOB_QUEUE }}
+  AUTO_DRILL_BATCH_JOB_DEFINITION: ${{ secrets.AUTO_DRILL_BATCH_JOB_DEFINITION }}
+  AUTO_DRILL_ECS_CLUSTER: ${{ secrets.AUTO_DRILL_ECS_CLUSTER }}
+  AUTO_DRILL_ECS_TASK_DEFINITION: ${{ secrets.AUTO_DRILL_ECS_TASK_DEFINITION }}
+  AUTO_DRILL_ECS_SUBNETS: ${{ secrets.AUTO_DRILL_ECS_SUBNETS }}
+  AUTO_DRILL_ECS_SECURITY_GROUPS: ${{ secrets.AUTO_DRILL_ECS_SECURITY_GROUPS }}
+  AUTO_DRILL_CONTAINER_NAME: ${{ secrets.AUTO_DRILL_CONTAINER_NAME || 'auto-drill' }}
+
+jobs:
+  compute-plan:
+    name: Validate Auto Drill AWS compute bridge
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: "pip"
+          cache-dependency-path: services/auto_drill/requirements.txt
+
+      - name: Install Auto Drill dependencies
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          pip install -r services/auto_drill/requirements.txt pytest
+
+      - name: Run Auto Drill tests
+        run: |
+          set -euo pipefail
+          cd services/auto_drill
+          pytest -q
+
+      - name: Validate AWS credential path
+        shell: bash
+        run: |
+          set -euo pipefail
+          has_role="no"
+          has_static_keys="no"
+
+          if [ -n "${AWS_ROLE_ARN:-}" ]; then
+            has_role="yes"
+          fi
+
+          if [ -n "${AWS_ACCESS_KEY_ID:-}" ] && [ -n "${AWS_SECRET_ACCESS_KEY:-}" ]; then
+            has_static_keys="yes"
+          fi
+
+          echo "Auto Drill AWS compute preflight"
+          echo "- AWS_REGION: ${AWS_REGION}"
+          echo "- AWS_ROLE_ARN configured: ${has_role}"
+          echo "- Static AWS key pair configured: ${has_static_keys}"
+          echo "- Provider: ${AUTO_DRILL_AWS_PROVIDER}"
+          echo "- Objective: ${AUTO_DRILL_OBJECTIVE}"
+          echo "- Dry run: ${AUTO_DRILL_AWS_DRY_RUN}"
+
+          if [ "${has_role}" != "yes" ] && [ "${has_static_keys}" != "yes" ]; then
+            echo "::warning title=No AWS credential provider::AWS identity proof will be skipped until AWS_ROLE_ARN or static key pair is configured."
+          fi
+
+      - name: Configure AWS credentials using OIDC role
+        if: env.AWS_ROLE_ARN != ''
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: auto-drill-compute-${{ github.run_id }}
+
+      - name: Configure AWS credentials using static keys
+        if: env.AWS_ROLE_ARN == '' && env.AWS_ACCESS_KEY_ID != '' && env.AWS_SECRET_ACCESS_KEY != ''
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Verify AWS identity when credentials exist
+        if: env.AWS_ROLE_ARN != '' || (env.AWS_ACCESS_KEY_ID != '' && env.AWS_SECRET_ACCESS_KEY != '')
+        run: |
+          set -euo pipefail
+          aws sts get-caller-identity
+
+      - name: Build compute plan
+        run: |
+          set -euo pipefail
+          cd services/auto_drill
+          python aws_compute_bridge.py | tee compute-plan.json
+
+      - name: Submit AWS Batch job when requested
+        if: env.AUTO_DRILL_AWS_DRY_RUN == 'false' && env.AUTO_DRILL_AWS_PROVIDER == 'batch'
+        run: |
+          set -euo pipefail
+          cd services/auto_drill
+          python - <<'PY' > batch-submit.json
+          import json
+          plan = json.load(open('compute-plan.json'))
+          aws_plan = plan['awsPlan']
+          print(json.dumps({
+              'jobName': aws_plan['jobName'],
+              'jobQueue': aws_plan['jobQueue'],
+              'jobDefinition': aws_plan['jobDefinition'],
+              'containerOverrides': aws_plan['containerOverrides'],
+          }))
+          PY
+          aws batch submit-job --cli-input-json file://batch-submit.json
+
+      - name: Submit AWS ECS task when requested
+        if: env.AUTO_DRILL_AWS_DRY_RUN == 'false' && env.AUTO_DRILL_AWS_PROVIDER == 'ecs'
+        run: |
+          set -euo pipefail
+          cd services/auto_drill
+          python - <<'PY' > ecs-run-task.json
+          import json
+          plan = json.load(open('compute-plan.json'))
+          aws_plan = plan['awsPlan']
+          print(json.dumps({
+              'cluster': aws_plan['cluster'],
+              'taskDefinition': aws_plan['taskDefinition'],
+              'launchType': aws_plan['launchType'],
+              'networkConfiguration': aws_plan['networkConfiguration'],
+              'overrides': aws_plan['overrides'],
+          }))
+          PY
+          aws ecs run-task --cli-input-json file://ecs-run-task.json
+
+      - name: Upload compute plan artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: auto-drill-aws-compute-plan
+          path: services/auto_drill/compute-plan.json
+
+      - name: Write compute bridge summary
+        if: always()
+        run: |
+          set -euo pipefail
+          {
+            echo "## Auto Drill AWS Compute"
+            echo ""
+            echo "- Provider: ${AUTO_DRILL_AWS_PROVIDER}"
+            echo "- Objective: ${AUTO_DRILL_OBJECTIVE}"
+            echo "- Dry run: ${AUTO_DRILL_AWS_DRY_RUN}"
+            echo "- AWS region: ${AWS_REGION}"
+            echo "- Tests: pytest -q"
+            echo "- Safety: compute-only, no wallet, no swap, no bridge transfer, no staking"
+            echo "- Artifact: auto-drill-aws-compute-plan"
+          } >> "$GITHUB_STEP_SUMMARY"
