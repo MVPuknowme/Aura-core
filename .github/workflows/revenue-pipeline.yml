@@ -27,9 +27,9 @@ jobs:
       DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
       DUNE_QUERY_ID: ${{ inputs.dune_query_id || secrets.DUNE_QUERY_ID }}
       AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
-      AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
-      AIRTABLE_TABLE: ${{ inputs.airtable_table || 'Projects' }}
-      DEBUG_MODE: ${{ inputs.debug_mode }}
+      AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID || 'appg4cfKNcNqOtOdd' }}
+      AIRTABLE_TABLE: ${{ inputs.airtable_table || secrets.AIRTABLE_TABLE || 'Projects' }}
+      DEBUG_MODE: ${{ inputs.debug_mode || 'true' }}
     steps:
       - name: Validate configuration
         shell: bash
@@ -127,9 +127,9 @@ jobs:
               'records': [
                   {
                       'fields': {
-                          'Name': 'Revenue Pipeline',
-                          'Notes': f'Dune query {query_id} latest rows: {summary}',
-                          'Status': 'ACTIVE'
+                          'Project Name': 'Revenue Pipeline',
+                          'Description': f'Dune query {query_id} latest rows: {summary}',
+                          'Status': 'In progress'
                       }
                   }
               ]
