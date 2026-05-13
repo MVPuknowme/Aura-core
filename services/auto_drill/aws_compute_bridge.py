@@ -27,6 +27,11 @@ class AwsComputeBridgeConfig:
     ecs_security_groups: list[str]
     container_name: str | None
     dry_run: bool
+    local_validator_count: int
+    min_local_validators: int
+    reserve_enabled: bool
+    reserve_label: str
+    validation_scope: str
 
 
 def _split_csv(value: str | None) -> list[str]:
@@ -50,6 +55,31 @@ def _float_env(name: str, default: float) -> float:
         return default
 
 
+def _int_env(name: str, default: int) -> int:
+    raw = os.getenv(name, "").strip()
+    if not raw:
+        return default
+    try:
+        return int(raw)
+    except ValueError:
+        return default
+
+
+def _bool_env(name: str, default: bool) -> bool:
+    raw = os.getenv(name, "").strip().lower()
+    if not raw:
+        return default
+    return raw in {"1", "true", "yes", "y", "on"}
+
+
+def local_capacity_is_sufficient(config: AwsComputeBridgeConfig) -> bool:
+    return config.local_validator_count >= config.min_local_validators
+
+
+def reserve_compute_should_activate(config: AwsComputeBridgeConfig) -> bool:
+    return config.reserve_enabled and not local_capacity_is_sufficient(config)
+
+
 def load_config() -> tuple[AwsComputeBridgeConfig, list[str]]:
     errors: list[str] = []
 
@@ -70,6 +100,12 @@ def load_config() -> tuple[AwsComputeBridgeConfig, list[str]]:
     ecs_security_groups = _split_csv(os.getenv("AUTO_DRILL_ECS_SECURITY_GROUPS"))
     container_name = os.getenv("AUTO_DRILL_CONTAINER_NAME", "auto-drill").strip() or "auto-drill"
 
+    local_validator_count = max(0, _int_env("AUTO_DRILL_LOCAL_VALIDATOR_COUNT", 0))
+    min_local_validators = max(0, _int_env("AUTO_DRILL_MIN_LOCAL_VALIDATORS", 3))
+    reserve_enabled = _bool_env("AUTO_DRILL_DC_RESERVE_ENABLED", True)
+    reserve_label = os.getenv("AUTO_DRILL_DC_RESERVE_LABEL", "dc-skygrid-reserve").strip() or "dc-skygrid-reserve"
+    validation_scope = os.getenv("AUTO_DRILL_VALIDATION_SCOPE", "route-health,token-metadata,exchange-reference").strip()
+
     for field, value in {
         "AWS_REGION": region,
         "AUTO_DRILL_BATCH_JOB_QUEUE": batch_job_queue,
@@ -77,6 +113,8 @@ def load_config() -> tuple[AwsComputeBridgeConfig, list[str]]:
         "AUTO_DRILL_ECS_CLUSTER": ecs_cluster,
         "AUTO_DRILL_ECS_TASK_DEFINITION": ecs_task_definition,
         "AUTO_DRILL_CONTAINER_NAME": container_name,
+        "AUTO_DRILL_DC_RESERVE_LABEL": reserve_label,
+        "AUTO_DRILL_VALIDATION_SCOPE": validation_scope,
     }.items():
         _safe_name(value, field, errors)
 
@@ -110,6 +148,11 @@ def load_config() -> tuple[AwsComputeBridgeConfig, list[str]]:
         ecs_security_groups=ecs_security_groups,
         container_name=container_name,
         dry_run=dry_run,
+        local_validator_count=local_validator_count,
+        min_local_validators=min_local_validators,
+        reserve_enabled=reserve_enabled,
+        reserve_label=reserve_label,
+        validation_scope=validation_scope,
     )
     return config, errors
 
@@ -118,6 +161,8 @@ def build_plan(config: AwsComputeBridgeConfig) -> dict[str, Any]:
     decision = make_auto_switch_decision(objective=config.objective, threshold=config.threshold)
     decision_payload = serialize_switch_decision(decision, config.objective)
     active_route = decision_payload.get("activeRoute") or {}
+    reserve_active = reserve_compute_should_activate(config)
+    capacity_mode = "dc_reserve" if reserve_active else "local_first"
 
     command = [
         "python",
@@ -126,6 +171,10 @@ def build_plan(config: AwsComputeBridgeConfig) -> dict[str, Any]:
         str(active_route.get("network", "unknown")),
         "--objective",
         config.objective,
+        "--capacity-mode",
+        capacity_mode,
+        "--validation-scope",
+        config.validation_scope,
     ]
 
     environment = [
@@ -133,13 +182,16 @@ def build_plan(config: AwsComputeBridgeConfig) -> dict[str, Any]:
         {"name": "AUTO_DRILL_OBJECTIVE", "value": config.objective},
         {"name": "AUTO_DRILL_ACTION_TYPE", "value": "compute_only"},
         {"name": "AUTO_DRILL_PUBLIC_SAFE", "value": "true"},
+        {"name": "AUTO_DRILL_CAPACITY_MODE", "value": capacity_mode},
+        {"name": "AUTO_DRILL_DC_RESERVE_LABEL", "value": config.reserve_label},
+        {"name": "AUTO_DRILL_VALIDATION_SCOPE", "value": config.validation_scope},
     ]
 
     if config.provider == "batch":
         aws_plan = {
             "service": "aws-batch",
             "submitCommand": "aws batch submit-job",
-            "jobName": "skygrid-auto-drill",
+            "jobName": "skygrid-auto-drill-reserve" if reserve_active else "skygrid-auto-drill",
             "jobQueue": config.batch_job_queue,
             "jobDefinition": config.batch_job_definition,
             "containerOverrides": {
@@ -175,6 +227,12 @@ def build_plan(config: AwsComputeBridgeConfig) -> dict[str, Any]:
     return {
         "ok": True,
         "mode": config.mode,
+        "capacityMode": capacity_mode,
+        "reserveActive": reserve_active,
+        "reserveLabel": config.reserve_label,
+        "localValidatorCount": config.local_validator_count,
+        "minLocalValidators": config.min_local_validators,
+        "validationScope": config.validation_scope,
         "dryRun": config.dry_run,
         "provider": config.provider,
         "region": config.region,
@@ -182,11 +240,14 @@ def build_plan(config: AwsComputeBridgeConfig) -> dict[str, Any]:
         "awsPlan": aws_plan,
         "safety": {
             "computeOnly": True,
+            "nonCustodial": True,
+            "referenceValidationOnly": True,
             "walletActions": False,
             "bridgeTransfers": False,
             "swaps": False,
             "staking": False,
             "hiddenMining": False,
+            "exchangeExecution": False,
             "secretsPrinted": False,
         },
     }
