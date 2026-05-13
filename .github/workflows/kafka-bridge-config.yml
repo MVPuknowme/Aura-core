@@ -1,0 +1,119 @@
+name: Kafka Bridge Config
+
+on:
+  push:
+    branches: ["MVPuknowme"]
+    paths:
+      - "services/kafka_bridge/**"
+      - ".github/workflows/kafka-bridge-config.yml"
+  pull_request:
+    paths:
+      - "services/kafka_bridge/**"
+      - ".github/workflows/kafka-bridge-config.yml"
+  workflow_dispatch:
+    inputs:
+      run_live_metadata_check:
+        description: "Reserved for future broker metadata check. Current workflow validates config only."
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION || 'us-east-1' }}
+  AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  KAFKA_BOOTSTRAP_SERVERS: ${{ secrets.KAFKA_BOOTSTRAP_SERVERS }}
+  KAFKA_CLIENT_ID: ${{ secrets.KAFKA_CLIENT_ID || 'aura-core-kafka-bridge' }}
+  KAFKA_TOPIC_HEALTH: ${{ secrets.KAFKA_TOPIC_HEALTH || 'aura-core.health' }}
+  KAFKA_SECURITY_PROTOCOL: ${{ secrets.KAFKA_SECURITY_PROTOCOL || 'SASL_SSL' }}
+  KAFKA_SASL_MECHANISM: ${{ secrets.KAFKA_SASL_MECHANISM }}
+  KAFKA_GROUP_ID: ${{ secrets.KAFKA_GROUP_ID }}
+
+jobs:
+  validate-kafka-bridge:
+    name: Validate Kafka bridge config
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate AWS credential path
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          has_role="no"
+          has_static_keys="no"
+
+          if [ -n "${AWS_ROLE_ARN:-}" ]; then
+            has_role="yes"
+          fi
+
+          if [ -n "${AWS_ACCESS_KEY_ID:-}" ] && [ -n "${AWS_SECRET_ACCESS_KEY:-}" ]; then
+            has_static_keys="yes"
+          fi
+
+          echo "Kafka bridge AWS preflight"
+          echo "- AWS_REGION: ${AWS_REGION}"
+          echo "- AWS_ROLE_ARN configured: ${has_role}"
+          echo "- Static AWS key pair configured: ${has_static_keys}"
+          echo "- Kafka bootstrap configured: $([ -n "${KAFKA_BOOTSTRAP_SERVERS:-}" ] && echo yes || echo no)"
+
+          if [ "${has_role}" != "yes" ] && [ "${has_static_keys}" != "yes" ]; then
+            echo "::warning title=No AWS credential provider::Config validation can still run, but AWS identity proof needs AWS_ROLE_ARN or static key pair."
+          fi
+
+      - name: Configure AWS credentials using OIDC role
+        if: env.AWS_ROLE_ARN != ''
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: aura-core-kafka-${{ github.run_id }}
+
+      - name: Configure AWS credentials using static keys
+        if: env.AWS_ROLE_ARN == '' && env.AWS_ACCESS_KEY_ID != '' && env.AWS_SECRET_ACCESS_KEY != ''
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Verify AWS identity when credentials exist
+        if: env.AWS_ROLE_ARN != '' || (env.AWS_ACCESS_KEY_ID != '' && env.AWS_SECRET_ACCESS_KEY != '')
+        run: |
+          set -euo pipefail
+          aws sts get-caller-identity
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Validate Kafka bridge config
+        run: |
+          set -euo pipefail
+          python services/kafka_bridge/validate_config.py
+
+      - name: Write Kafka bridge summary
+        if: always()
+        run: |
+          set -euo pipefail
+          {
+            echo "## Kafka Bridge Config"
+            echo ""
+            echo "- Region: ${AWS_REGION}"
+            echo "- Config validation only: yes"
+            echo "- Live metadata check requested: ${{ github.event.inputs.run_live_metadata_check || 'false' }}"
+            echo "- Secrets printed: no"
+            echo "- Wallet/bridge/swap actions: none"
+          } >> "$GITHUB_STEP_SUMMARY"
