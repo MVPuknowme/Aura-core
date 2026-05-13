@@ -12,9 +12,13 @@ env:
   ECS_CLUSTER: aura-core-cluster
   ECS_TASK_DEFINITION: .aws/task-definition.json
   CONTAINER_NAME: aura-core
+  AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   deploy:
@@ -26,12 +30,55 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
+      - name: Validate AWS credential configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          has_role="no"
+          has_static_keys="no"
+
+          if [ -n "${AWS_ROLE_ARN:-}" ]; then
+            has_role="yes"
+          fi
+
+          if [ -n "${AWS_ACCESS_KEY_ID:-}" ] && [ -n "${AWS_SECRET_ACCESS_KEY:-}" ]; then
+            has_static_keys="yes"
+          fi
+
+          echo "AWS credential preflight"
+          echo "- AWS_REGION: ${AWS_REGION}"
+          echo "- AWS_ROLE_ARN configured: ${has_role}"
+          echo "- Static AWS key pair configured: ${has_static_keys}"
+          echo "- Preferred path: OIDC role assumption"
+
+          if [ "${has_role}" != "yes" ] && [ "${has_static_keys}" != "yes" ]; then
+            echo "::error title=Missing AWS credential provider::Configure AWS_ROLE_ARN for OIDC, or configure both AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY."
+            echo "Required preferred secret: AWS_ROLE_ARN"
+            echo "Fallback secrets: AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY"
+            exit 1
+          fi
+
+      - name: Configure AWS credentials using OIDC role
+        if: env.AWS_ROLE_ARN != ''
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
+          role-session-name: aura-core-ecs-${{ github.run_id }}
+
+      - name: Configure AWS credentials using static keys
+        if: env.AWS_ROLE_ARN == '' && env.AWS_ACCESS_KEY_ID != '' && env.AWS_SECRET_ACCESS_KEY != ''
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Verify AWS identity
+        run: |
+          set -euo pipefail
+          aws sts get-caller-identity
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -43,9 +90,10 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          set -euo pipefail
+          docker build -t "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" .
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
