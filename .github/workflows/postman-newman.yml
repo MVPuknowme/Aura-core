@@ -18,6 +18,12 @@ on:
         required: false
         default: https://aura-sky-skygrid-protocol.b12sites.com
         type: string
+  push:
+    branches:
+      - MVPuknowme
+    paths:
+      - postman/**
+      - .github/workflows/postman-newman.yml
   schedule:
     - cron: '23 */6 * * *'
 
