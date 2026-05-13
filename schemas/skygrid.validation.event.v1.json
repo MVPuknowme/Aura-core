@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "skygrid.validation.event.v1",
+  "title": "SKYGRID Validation Event",
+  "type": "object",
+  "required": [
+    "schema",
+    "eventType",
+    "source",
+    "capacityMode",
+    "validationScope",
+    "safety"
+  ],
+  "properties": {
+    "schema": {
+      "type": "string",
+      "const": "skygrid.validation.event.v1"
+    },
+    "eventType": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    },
+    "capacityMode": {
+      "type": "string",
+      "enum": [
+        "local_first",
+        "dc_skygrid_reserve"
+      ]
+    },
+    "route": {
+      "type": "string"
+    },
+    "localValidatorCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "minimumRequired": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "validationScope": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "execution": {
+      "type": "object",
+      "properties": {
+        "provider": {
+          "type": "string"
+        },
+        "dryRun": {
+          "type": "boolean"
+        },
+        "jobQueue": {
+          "type": "string"
+        }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "properties": {
+        "artifactUri": {
+          "type": "string"
+        },
+        "proofId": {
+          "type": "string"
+        }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "required": [
+        "walletMovement",
+        "swaps",
+        "hiddenMining",
+        "exchangeExecution"
+      ],
+      "properties": {
+        "walletMovement": {
+          "type": "boolean",
+          "const": false
+        },
+        "swaps": {
+          "type": "boolean",
+          "const": false
+        },
+        "hiddenMining": {
+          "type": "boolean",
+          "const": false
+        },
+        "exchangeExecution": {
+          "type": "boolean",
+          "const": false
+        }
+      }
+    }
+  }
+}
