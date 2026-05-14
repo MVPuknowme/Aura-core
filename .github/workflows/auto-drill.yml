@@ -1,0 +1,91 @@
+name: SkyGrid Auto Drill
+
+on:
+  workflow_dispatch:
+    inputs:
+      primary_url:
+        description: Primary URL to probe
+        required: false
+        default: https://skygrid-gs3e.b12sites.com/
+      fallback_url:
+        description: Fallback URL to probe
+        required: false
+        default: https://github.com/MVPuknowme/Aura-core
+      simulate_failure:
+        description: Force simulated fallback recommendation
+        required: false
+        default: "true"
+  schedule:
+    - cron: "17 * * * *"
+  pull_request:
+    paths:
+      - scripts/auto-drill.sh
+      - scripts/build-drill-dashboard.py
+      - .github/workflows/auto-drill.yml
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: auto-drill-pages
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  auto-drill:
+    name: Run safe failover auto drill
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Prepare drill script
+        run: chmod +x scripts/auto-drill.sh
+
+      - name: Run auto drill
+        env:
+          PRIMARY_URL: ${{ github.event.inputs.primary_url || 'https://skygrid-gs3e.b12sites.com/' }}
+          FALLBACK_URL: ${{ github.event.inputs.fallback_url || 'https://github.com/MVPuknowme/Aura-core' }}
+          SIMULATE_FAILURE: ${{ github.event.inputs.simulate_failure || 'true' }}
+          SAMPLES: '3'
+          TIMEOUT_SECONDS: '10'
+        run: ./scripts/auto-drill.sh
+
+      - name: Build dashboard HTML
+        run: python3 scripts/build-drill-dashboard.py
+
+      - name: Upload telemetry artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: skygrid-auto-drill-reports
+          path: |
+            drill-reports/
+            public/
+          if-no-files-found: warn
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
