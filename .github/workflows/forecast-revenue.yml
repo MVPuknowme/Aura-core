@@ -2,6 +2,15 @@ name: Forecast Revenue
 
 on:
   workflow_dispatch:
+    inputs:
+      airtable_base_id:
+        description: Optional Airtable base ID override, for example appXXXXXXXXXXXXXX
+        required: false
+        default: ""
+      airtable_table:
+        description: Optional Airtable table override
+        required: false
+        default: ""
   schedule:
     - cron: '45 * * * *'
 
@@ -10,22 +19,49 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
-      AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
-      AIRTABLE_TABLE: Table 1
+      AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY || secrets.AIRTABLE_TOKEN }}
+      AIRTABLE_BASE_ID: ${{ inputs.airtable_base_id || secrets.AIRTABLE_BASE_ID }}
+      AIRTABLE_TABLE: ${{ inputs.airtable_table || secrets.AIRTABLE_TABLE_NAME || 'Table 1' }}
 
     steps:
+      - name: Validate Airtable configuration
+        run: |
+          set -euo pipefail
+          missing=()
+
+          [ -n "${AIRTABLE_API_KEY:-}" ] || missing+=("AIRTABLE_API_KEY or AIRTABLE_TOKEN")
+          [ -n "${AIRTABLE_BASE_ID:-}" ] || missing+=("AIRTABLE_BASE_ID")
+          [ -n "${AIRTABLE_TABLE:-}" ] || missing+=("AIRTABLE_TABLE or AIRTABLE_TABLE_NAME")
+
+          echo "Airtable forecast preflight"
+          echo "- AIRTABLE_API_KEY configured: $([ -n "${AIRTABLE_API_KEY:-}" ] && echo yes || echo no)"
+          echo "- AIRTABLE_BASE_ID configured: $([ -n "${AIRTABLE_BASE_ID:-}" ] && echo yes || echo no)"
+          echo "- AIRTABLE_TABLE: ${AIRTABLE_TABLE:-missing}"
+
+          if [ "${#missing[@]}" -gt 0 ]; then
+            printf '::error title=Missing Airtable configuration::Configure %s in MVPuknowme/Aura-core repository secrets, or provide workflow_dispatch inputs where available.\n' "${missing[*]}"
+            exit 1
+          fi
+
+          if [[ ! "${AIRTABLE_BASE_ID}" =~ ^app[A-Za-z0-9]+$ ]]; then
+            echo "::warning title=Unexpected Airtable base ID format::Airtable base IDs usually start with app. Current value is masked by GitHub if it is a secret."
+          fi
+
       - name: Fetch Airtable data
         run: |
           python3 <<'PY'
-          import json, os, urllib.parse, urllib.request
+          import json, os, urllib.error, urllib.parse, urllib.request
 
           table = urllib.parse.quote(os.environ['AIRTABLE_TABLE'], safe='')
           url = f"https://api.airtable.com/v0/{os.environ['AIRTABLE_BASE_ID']}/{table}"
           req = urllib.request.Request(url)
           req.add_header('Authorization', f"Bearer {os.environ['AIRTABLE_API_KEY']}")
-          with urllib.request.urlopen(req) as resp:
-              data = json.load(resp)
+          try:
+              with urllib.request.urlopen(req) as resp:
+                  data = json.load(resp)
+          except urllib.error.HTTPError as exc:
+              body = exc.read().decode('utf-8', errors='replace')
+              raise SystemExit(f"Airtable fetch failed: HTTP {exc.code}. Check AIRTABLE_BASE_ID, AIRTABLE_TABLE, token permissions, and table name. Body: {body[:500]}")
           with open('airtable.json', 'w', encoding='utf-8') as f:
               json.dump(data, f)
           print(json.dumps({'records': len(data.get('records', []))}))
@@ -67,7 +103,7 @@ jobs:
       - name: Log forecast to Airtable
         run: |
           python3 <<'PY'
-          import json, os, urllib.parse, urllib.request
+          import json, os, urllib.error, urllib.parse, urllib.request
 
           with open('forecast.json', encoding='utf-8') as f:
               forecast = json.load(f)
@@ -99,6 +135,10 @@ jobs:
           )
           req.add_header('Authorization', f"Bearer {os.environ['AIRTABLE_API_KEY']}")
           req.add_header('Content-Type', 'application/json')
-          with urllib.request.urlopen(req) as resp:
-              print(resp.read().decode('utf-8'))
+          try:
+              with urllib.request.urlopen(req) as resp:
+                  print(resp.read().decode('utf-8'))
+          except urllib.error.HTTPError as exc:
+              body = exc.read().decode('utf-8', errors='replace')
+              raise SystemExit(f"Airtable write failed: HTTP {exc.code}. Check field names Name/Notes/Status, table permissions, and token scopes. Body: {body[:500]}")
           PY
