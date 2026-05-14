@@ -1,0 +1,68 @@
+name: Deploy to Amazon ECS Runtime Diagnostics
+
+on:
+  workflow_dispatch:
+
+jobs:
+  diagnostics:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate deploy runtime prerequisites
+        run: |
+          set -euo pipefail
+
+          echo "Checking runtime deployment prerequisites..."
+
+          test -f Dockerfile || {
+            echo "::error::Missing Dockerfile"
+            exit 1
+          }
+
+          test -f .aws/task-definition.json || {
+            echo "::error::Missing .aws/task-definition.json"
+            exit 1
+          }
+
+          echo "Dockerfile found"
+          echo "Task definition found"
+
+      - name: Print ECS task definition container names
+        run: |
+          set -euo pipefail
+
+          jq -r '.containerDefinitions[].name' .aws/task-definition.json
+
+      - name: Validate AWS secret presence
+        env:
+          AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          set -euo pipefail
+
+          echo "Checking credential strategy..."
+
+          if [ -n "${AWS_ROLE_ARN:-}" ]; then
+            echo "OIDC role configured"
+          fi
+
+          if [ -n "${AWS_ACCESS_KEY_ID:-}" ] && [ -n "${AWS_SECRET_ACCESS_KEY:-}" ]; then
+            echo "Static AWS credentials configured"
+          fi
+
+          if [ -z "${AWS_ROLE_ARN:-}" ] && [ -z "${AWS_ACCESS_KEY_ID:-}" ]; then
+            echo "::error::No AWS authentication configured"
+            exit 1
+          fi
+
+      - name: Print deployment targets
+        run: |
+          echo "Region: us-east-1"
+          echo "Repository: aura-core"
+          echo "Cluster: aura-core-cluster"
+          echo "Service: aura-core-service"
+          echo "Container: aura-core"
