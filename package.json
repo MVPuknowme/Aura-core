@@ -8,7 +8,7 @@
     "start": "node app.js",
     "dev": "node app.js",
     "build": "node -e \"const fs=require('fs'); const files=['app.js','scripts/validator-health-check.mjs']; let checked=0; for (const file of files) { if (fs.existsSync(file)) { require('child_process').execFileSync(process.execPath, ['--check', file], {stdio:'inherit'}); checked++; } else { console.log('Skipping missing build check:', file); } } console.log('SkyGrid Vercel build ready; checked files:', checked);\"",
-    "vercel-build": "npm run build",
+    "vercel-build": ""build": "node -e \"const fs=require('fs'); fs.mkdirSync('public',{recursive:true}); if(fs.existsSync('index.html')) fs.copyFileSync('index.html','public/index.html'); console.log('SkyGrid Vercel build ready');\"",
     "prod": "AURA_MODE=prod SKYGRID_TRACE=false SKYGRID_LEVEL=info NODE_ENV=production node app.js --network=skygrid-main --listen=0.0.0.0:7000 --max-peers=16 --heartbeat-interval=5000 --log-level=info",
     "deploy": "npm run prod",
     "validator:health": "node scripts/validator-health-check.mjs",
