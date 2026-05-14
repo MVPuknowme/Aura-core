@@ -5,6 +5,12 @@
 //  A transparent pull-from-corner acronym reference marker for coding agents,
 //  operators, and iPad-based development dashboards.
 //
+//  Compact mode goal:
+//  - live in a small corner space, roughly 1/16 of the screen face
+//  - show one acronym at a time
+//  - tap the little window to flip between acronym and meaning
+//  - use bottom arrows to move through the acronym deck
+//
 //  Drop this view on top of any SwiftUI screen with:
 //
 //      .overlay(alignment: .bottomTrailing) {
@@ -16,37 +22,41 @@ import SwiftUI
 
 public struct AuraAcronymHUD: View {
     @State private var isOpen = false
-    @State private var searchText = ""
+    @State private var selectedIndex = 0
+    @State private var isFlipped = false
 
     private let acronyms: [AcronymEntry] = AcronymEntry.defaultEntries
 
     public init() {}
 
-    private var filteredEntries: [AcronymEntry] {
-        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        guard !query.isEmpty else { return acronyms }
-
-        return acronyms.filter { entry in
-            entry.short.lowercased().contains(query) ||
-            entry.long.lowercased().contains(query) ||
-            entry.context.lowercased().contains(query)
-        }
+    private var currentEntry: AcronymEntry {
+        acronyms[min(max(selectedIndex, 0), acronyms.count - 1)]
     }
 
     public var body: some View {
-        ZStack(alignment: .bottomTrailing) {
-            if isOpen {
-                hudPanel
-                    .transition(.move(edge: .trailing).combined(with: .opacity))
-                    .padding(.trailing, 18)
-                    .padding(.bottom, 82)
-            }
+        GeometryReader { proxy in
+            ZStack(alignment: .bottomTrailing) {
+                if isOpen {
+                    hudMiniPanel
+                        .frame(
+                            width: max(176, proxy.size.width / 4.15),
+                            height: max(126, proxy.size.height / 4.25)
+                        )
+                        .transition(.scale(scale: 0.72, anchor: .bottomTrailing).combined(with: .opacity))
+                        .padding(.trailing, 18)
+                        .padding(.bottom, 82)
+                }
 
-            pullMarker
-                .padding(.trailing, 10)
-                .padding(.bottom, 18)
+                pullMarker
+                    .padding(.trailing, 10)
+                    .padding(.bottom, 18)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
         }
         .animation(.spring(response: 0.32, dampingFraction: 0.86), value: isOpen)
+        .animation(.spring(response: 0.28, dampingFraction: 0.82), value: selectedIndex)
+        .animation(.easeInOut(duration: 0.22), value: isFlipped)
+        .allowsHitTesting(true)
     }
 
     private var pullMarker: some View {
@@ -54,7 +64,7 @@ public struct AuraAcronymHUD: View {
             isOpen.toggle()
         } label: {
             HStack(spacing: 6) {
-                Image(systemName: isOpen ? "chevron.down" : "text.magnifyingglass")
+                Image(systemName: isOpen ? "chevron.down" : "rectangle.on.rectangle.angled")
                     .font(.system(size: 15, weight: .semibold))
 
                 Text("ABC")
@@ -74,53 +84,71 @@ public struct AuraAcronymHUD: View {
         .buttonStyle(.plain)
     }
 
-    private var hudPanel: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            header
-            searchField
-            acronymList
+    private var hudMiniPanel: some View {
+        VStack(spacing: 8) {
+            miniHeader
+
+            Button {
+                isFlipped.toggle()
+            } label: {
+                ZStack {
+                    AcronymFlipFace(entry: currentEntry, mode: .front)
+                        .opacity(isFlipped ? 0 : 1)
+                        .rotation3DEffect(
+                            .degrees(isFlipped ? 180 : 0),
+                            axis: (x: 0, y: 1, z: 0),
+                            perspective: 0.65
+                        )
+
+                    AcronymFlipFace(entry: currentEntry, mode: .back)
+                        .opacity(isFlipped ? 1 : 0)
+                        .rotation3DEffect(
+                            .degrees(isFlipped ? 0 : -180),
+                            axis: (x: 0, y: 1, z: 0),
+                            perspective: 0.65
+                        )
+                }
+                .contentShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Flip acronym card")
+
+            bottomArrows
         }
-        .frame(width: 360, height: 430)
-        .padding(14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 26, style: .continuous))
+        .padding(10)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 26, style: .continuous)
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .stroke(.white.opacity(0.18), lineWidth: 1)
         )
-        .shadow(color: .black.opacity(0.34), radius: 30, x: 0, y: 16)
+        .shadow(color: .black.opacity(0.34), radius: 24, x: 0, y: 12)
     }
 
-    private var header: some View {
-        HStack(spacing: 10) {
-            ZStack {
-                Circle()
-                    .fill(.white.opacity(0.12))
-                    .frame(width: 34, height: 34)
+    private var miniHeader: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "sparkles.rectangle.stack")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(.white.opacity(0.9))
 
-                Image(systemName: "sparkles.rectangle.stack")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.95))
-            }
+            Text("Acronym Lens")
+                .font(.system(size: 12, weight: .bold, design: .rounded))
+                .foregroundStyle(.white.opacity(0.92))
+                .lineLimit(1)
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Aura Acronym Lens")
-                    .font(.system(size: 17, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+            Spacer(minLength: 4)
 
-                Text("Quick coding-agent reference")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.62))
-            }
-
-            Spacer()
+            Text("\(selectedIndex + 1)/\(acronyms.count)")
+                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                .foregroundStyle(.white.opacity(0.55))
+                .lineLimit(1)
 
             Button {
                 isOpen = false
             } label: {
                 Image(systemName: "xmark")
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundStyle(.white.opacity(0.8))
-                    .padding(8)
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(.white.opacity(0.75))
+                    .padding(6)
                     .background(.white.opacity(0.08), in: Circle())
             }
             .buttonStyle(.plain)
@@ -128,67 +156,100 @@ public struct AuraAcronymHUD: View {
         }
     }
 
-    private var searchField: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "magnifyingglass")
-                .foregroundStyle(.white.opacity(0.55))
+    private var bottomArrows: some View {
+        HStack(spacing: 10) {
+            Button {
+                moveCard(-1)
+            } label: {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 14, weight: .black))
+                    .frame(width: 38, height: 28)
+                    .background(.white.opacity(0.08), in: Capsule())
+                    .overlay(Capsule().stroke(.white.opacity(0.10), lineWidth: 1))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Previous acronym")
 
-            TextField("Search NVM, RPC, YAML...", text: $searchText)
-                .textInputAutocapitalization(.characters)
-                .autocorrectionDisabled()
-                .foregroundStyle(.white)
+            Spacer(minLength: 6)
+
+            Text(isFlipped ? "meaning" : "tap to flip")
+                .font(.system(size: 10, weight: .semibold, design: .rounded))
+                .foregroundStyle(.white.opacity(0.52))
+                .lineLimit(1)
+
+            Spacer(minLength: 6)
+
+            Button {
+                moveCard(1)
+            } label: {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .black))
+                    .frame(width: 38, height: 28)
+                    .background(.white.opacity(0.08), in: Capsule())
+                    .overlay(Capsule().stroke(.white.opacity(0.10), lineWidth: 1))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Next acronym")
         }
-        .font(.system(size: 14, weight: .medium))
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .background(.black.opacity(0.18), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(.white.opacity(0.10), lineWidth: 1)
-        )
+        .foregroundStyle(.white.opacity(0.88))
     }
 
-    private var acronymList: some View {
-        ScrollView(showsIndicators: true) {
-            LazyVStack(alignment: .leading, spacing: 9) {
-                ForEach(filteredEntries) { entry in
-                    AcronymRow(entry: entry)
-                }
-            }
-            .padding(.vertical, 2)
-        }
+    private func moveCard(_ delta: Int) {
+        guard !acronyms.isEmpty else { return }
+        selectedIndex = (selectedIndex + delta + acronyms.count) % acronyms.count
+        isFlipped = false
     }
 }
 
-private struct AcronymRow: View {
+private struct AcronymFlipFace: View {
+    enum Mode {
+        case front
+        case back
+    }
+
     let entry: AcronymEntry
+    let mode: Mode
 
     var body: some View {
-        HStack(alignment: .top, spacing: 10) {
-            Text(entry.short)
-                .font(.system(size: 13, weight: .black, design: .rounded))
-                .foregroundStyle(.white)
-                .frame(width: 54, alignment: .leading)
-                .padding(.top, 2)
+        VStack(alignment: .leading, spacing: 8) {
+            switch mode {
+            case .front:
+                Spacer(minLength: 0)
 
-            VStack(alignment: .leading, spacing: 3) {
+                Text(entry.short)
+                    .font(.system(size: 34, weight: .black, design: .rounded))
+                    .foregroundStyle(.white)
+                    .minimumScaleFactor(0.5)
+                    .lineLimit(1)
+
+                Text(entry.context)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(.white.opacity(0.58))
+                    .lineLimit(2)
+
+                Spacer(minLength: 0)
+
+            case .back:
                 Text(entry.long)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.92))
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.96))
+                    .lineLimit(3)
+                    .minimumScaleFactor(0.74)
 
                 Text(entry.context)
                     .font(.system(size: 11, weight: .regular))
-                    .foregroundStyle(.white.opacity(0.58))
-                    .lineLimit(2)
-            }
+                    .foregroundStyle(.white.opacity(0.62))
+                    .lineLimit(3)
 
-            Spacer(minLength: 0)
+                Spacer(minLength: 0)
+            }
         }
-        .padding(10)
-        .background(.white.opacity(0.065), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .padding(12)
+        .background(.black.opacity(0.16), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(.white.opacity(0.07), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(.white.opacity(0.10), lineWidth: 1)
         )
     }
 }
@@ -233,7 +294,7 @@ private struct AcronymEntry: Identifiable, Hashable {
     ]
 }
 
-#Preview("Aura Acronym HUD") {
+#Preview("Aura Acronym HUD — Compact Flip Window") {
     ZStack {
         LinearGradient(
             colors: [.black, .indigo.opacity(0.72), .purple.opacity(0.62)],
