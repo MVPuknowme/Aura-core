@@ -1,5 +1,6 @@
 name: Forecast Revenue
 
+# Trigger note: run patched Airtable preflight instead of rerunning an old failed workflow snapshot.
 on:
   workflow_dispatch:
     inputs:
@@ -11,6 +12,11 @@ on:
         description: Optional Airtable table override
         required: false
         default: ""
+  push:
+    branches:
+      - MVPuknowme
+    paths:
+      - .github/workflows/forecast-revenue.yml
   schedule:
     - cron: '45 * * * *'
 
