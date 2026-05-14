@@ -1,0 +1,132 @@
+name: Forecast Revenue
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '45 * * * *'
+
+jobs:
+  forecast:
+    runs-on: ubuntu-latest
+
+    env:
+      AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+      AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+      AIRTABLE_TABLE: Table 1
+
+    steps:
+      - name: Fetch Airtable data
+        run: |
+          python3 <<'PY'
+          import json, os, sys, urllib.parse, urllib.request
+
+          api_key = os.environ.get('AIRTABLE_API_KEY', '').strip()
+          base_id = os.environ.get('AIRTABLE_BASE_ID', '').strip()
+          table_name = os.environ.get('AIRTABLE_TABLE', 'Table 1').strip()
+
+          if not api_key or not base_id:
+              print('Airtable not configured; writing empty airtable.json and continuing.')
+              with open('airtable.json', 'w', encoding='utf-8') as f:
+                  json.dump({'records': [], 'warning': 'Airtable secrets not configured'}, f)
+              sys.exit(0)
+
+          table = urllib.parse.quote(table_name, safe='')
+          url = f"https://api.airtable.com/v0/{base_id}/{table}"
+          req = urllib.request.Request(url)
+          req.add_header('Authorization', f"Bearer {api_key}")
+
+          try:
+              with urllib.request.urlopen(req, timeout=20) as resp:
+                  data = json.load(resp)
+          except Exception as exc:
+              print(f'Airtable fetch failed; writing empty airtable.json and continuing: {exc}')
+              data = {'records': [], 'warning': str(exc)}
+
+          with open('airtable.json', 'w', encoding='utf-8') as f:
+              json.dump(data, f)
+          print(json.dumps({'records': len(data.get('records', []))}))
+          PY
+
+      - name: Forecast revenue
+        run: |
+          python3 <<'PY'
+          import json, re
+
+          with open('airtable.json', encoding='utf-8') as f:
+              data = json.load(f)
+
+          values = []
+          for rec in data.get('records', []):
+              notes = rec.get('fields', {}).get('Notes', '')
+              match = re.search(r'total_usd=\$?([0-9.]+)', notes)
+              if match:
+                  values.append(float(match.group(1)))
+
+          avg = sum(values[-24:]) / len(values[-24:]) if values else 0.0
+          daily = avg * 24
+          weekly = daily * 7
+          monthly = daily * 30
+
+          forecast = {
+              'hourly_avg': round(avg, 2),
+              'daily_estimate': round(daily, 2),
+              'weekly_estimate': round(weekly, 2),
+              'monthly_estimate': round(monthly, 2),
+              'sample_size': len(values[-24:])
+          }
+
+          print(json.dumps(forecast))
+          with open('forecast.json', 'w', encoding='utf-8') as f:
+              json.dump(forecast, f)
+          PY
+
+      - name: Log forecast to Airtable
+        run: |
+          python3 <<'PY'
+          import json, os, sys, urllib.parse, urllib.request
+
+          api_key = os.environ.get('AIRTABLE_API_KEY', '').strip()
+          base_id = os.environ.get('AIRTABLE_BASE_ID', '').strip()
+          table_name = os.environ.get('AIRTABLE_TABLE', 'Table 1').strip()
+
+          if not api_key or not base_id:
+              print('Airtable not configured; skipping forecast write-back.')
+              sys.exit(0)
+
+          with open('forecast.json', encoding='utf-8') as f:
+              forecast = json.load(f)
+
+          notes = (
+              f"Hourly Avg: ${forecast['hourly_avg']}\n"
+              f"Daily: ${forecast['daily_estimate']}\n"
+              f"Weekly: ${forecast['weekly_estimate']}\n"
+              f"Monthly: ${forecast['monthly_estimate']}\n"
+              f"Sample Size: {forecast['sample_size']}"
+          )
+
+          payload = {
+              'records': [{
+                  'fields': {
+                      'Name': 'Revenue Forecast',
+                      'Notes': notes,
+                      'Status': 'ACTIVE'
+                  }
+              }]
+          }
+
+          table = urllib.parse.quote(table_name, safe='')
+          url = f"https://api.airtable.com/v0/{base_id}/{table}"
+          req = urllib.request.Request(
+              url,
+              data=json.dumps(payload).encode('utf-8'),
+              method='POST'
+          )
+          req.add_header('Authorization', f"Bearer {api_key}")
+          req.add_header('Content-Type', 'application/json')
+
+          try:
+              with urllib.request.urlopen(req, timeout=20) as resp:
+                  print(resp.read().decode('utf-8'))
+          except Exception as exc:
+              print(f'Airtable write-back failed; continuing without blocking workflow: {exc}')
+          PY
