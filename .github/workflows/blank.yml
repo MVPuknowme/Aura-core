@@ -1,37 +1,41 @@
-# This is a basic workflow to help you get started with Actions
+name: Michael Smoke Check
 
-name: michael
-
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
-    branches: [ default]
-
-  # Allows you to run this workflow manually from the Actions tab
+    branches:
+      - main
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+permissions:
+  contents: read
+
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  smoke:
+    name: Repository smoke check
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4.5
-      
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: wget -O - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      - name: Show runner context
         run: |
-          add new ferari,
-          echo test, and deploy your project.
+          set -euo pipefail
+          echo "Repository: $GITHUB_REPOSITORY"
+          echo "Branch/ref: $GITHUB_REF"
+          echo "Commit: $GITHUB_SHA"
+          uname -a
+
+      - name: Validate repository files
+        run: |
+          set -euo pipefail
+          ls -la
+          test -f package.json && cat package.json | jq -r '.name, .version' || echo "No package.json found; skipping package metadata."
+
+      - name: Confirm workflow health
+        run: |
+          set -euo pipefail
+          echo "Smoke check passed. Aura-Core workflow runner is healthy."
