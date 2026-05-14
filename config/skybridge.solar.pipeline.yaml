@@ -1,0 +1,146 @@
+skybridge_solar_pipeline:
+  version: "1.0"
+  mode: "installer-saas-partner-kit"
+  purpose: "Turn solar installations into consent-based SKYGRID resilience adoption opportunities."
+  claim_policy: "support, route, prove; do not promise energy savings or guaranteed uptime without data"
+
+  actors:
+    solar_installer:
+      role: "primary customer relationship owner"
+      receives:
+        - referral_dashboard
+        - co_branded_signup_page
+        - customer_thank_you_automation
+        - site_resilience_checklist
+    homeowner_or_site_owner:
+      role: "opt-in participant"
+      receives:
+        - resilience_status_card
+        - opt_in_node_invite
+        - local_first_explainer
+        - privacy_and_consent_notice
+    skybridge:
+      role: "SaaS coordination and proof layer"
+      provides:
+        - signup_pipeline
+        - node_interest_capture
+        - validator_readiness_scoring
+        - proof_artifact_generation
+        - partner_reporting
+
+  funnel:
+    lead_sources:
+      - b12_solar_partner_page
+      - installer_qr_card
+      - post_install_email
+      - job_site_leave_behind
+      - community_resilience_referral
+    stages:
+      - installer_signup
+      - partner_verification
+      - co_branded_landing_page
+      - customer_opt_in
+      - site_readiness_check
+      - optional_node_onboarding
+      - proof_dashboard_link
+      - monthly_partner_report
+
+  opt_in_required: true
+
+  signup_fields:
+    installer:
+      - company_name
+      - contact_name
+      - email
+      - phone
+      - service_area
+      - license_or_registration_optional
+      - average_monthly_installs
+      - battery_storage_offered
+      - preferred_referral_model
+    site_owner:
+      - name
+      - email
+      - city
+      - state
+      - solar_install_date_optional
+      - battery_or_backup_power
+      - internet_provider_optional
+      - opt_in_to_resilience_updates
+      - opt_in_to_node_interest
+
+  partner_offers:
+    installer_saas_tiers:
+      starter:
+        monthly_price_usd: 49
+        includes:
+          - co_branded_signup_page
+          - qr_code_invite
+          - basic_partner_report
+      growth:
+        monthly_price_usd: 149
+        includes:
+          - everything_in_starter
+          - automated_customer_thank_you
+          - readiness_score_export
+          - proof_dashboard_link
+      pro:
+        monthly_price_usd: 399
+        includes:
+          - everything_in_growth
+          - api_webhook
+          - postman_collection
+          - priority_onboarding
+          - custom_partner_fields
+    referral_fee:
+      default: "3% of SKYBRIDGE SaaS revenue attributable to installer channel, subject to written agreement"
+      cash_claim_policy: "recordable only after signed agreement and received payment"
+
+  integrations:
+    b12:
+      role: "public partner signup page and marketing front door"
+      target_url: "https://aura-sky-skygrid-protocol.b12sites.com/"
+    vercel:
+      role: "proof dashboard and health manifest"
+      paths:
+        - "/health.json"
+        - "/proof"
+    postman:
+      role: "partner API test collection and webhook validation"
+    aws:
+      role: "reserve compute and proof artifact storage"
+      services:
+        - batch
+        - ecs
+        - s3
+        - cloudwatch
+    web3_reference:
+      role: "read-only proof references and tokenized partner records where legally appropriate"
+      forbidden:
+        - wallet_movement_without_signature
+        - automatic_swaps
+        - hidden_mining
+        - exchange_execution
+
+  events:
+    schema_prefix: "skybridge.solar"
+    emits:
+      - installer.signup.v1
+      - site.opt_in.v1
+      - site.readiness_score.v1
+      - partner.thank_you.v1
+      - node.interest.v1
+      - proof.packet.created.v1
+
+  thank_you_message:
+    subject: "Thank you for supporting SKYBRIDGE local-first resilience"
+    body: "Thank you for supporting SKYBRIDGE local-first infrastructure. Your opt-in helps us build a more resilient, community-aware proof network around solar, backup power, and local connectivity."
+
+  safety:
+    opt_in_required: true
+    no_hidden_surveillance: true
+    no_energy_savings_guarantee_without_audit: true
+    no_grid_service_claim_without_agreement: true
+    no_wallet_movement: true
+    no_hidden_mining: true
+    no_medical_or_emergency_guarantee: true
