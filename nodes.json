@@ -1,0 +1,43 @@
+{
+  "schema": "skygrid.node.registry.v0.1",
+  "mode": "pilot_proof_safe",
+  "updated_at": "2026-05-14T00:00:00Z",
+  "notes": "Initial one-person SkyGrid lease loop. Payouts are estimates until verified workloads, usage, and revenue are active.",
+  "nodes": [
+    {
+      "node_id": "skygrid-pilot-001",
+      "node_name": "LincolnCity-01",
+      "operator": "MVPuknowme",
+      "region": "Oregon Coast",
+      "node_type": "household_pc_or_tablet_assist",
+      "primary_url": "https://skygrid-gs3e.b12sites.com/",
+      "fallback_url": "https://github.com/MVPuknowme/Aura-core",
+      "available_for": [
+        "redundancy_monitoring",
+        "failover_readiness",
+        "validation_telemetry",
+        "tokenized_analytics"
+      ],
+      "hardware": {
+        "cpu_cores": null,
+        "ram_gb": null,
+        "storage_gb": null,
+        "network_type": "unknown_pending_measurement",
+        "upload_mbps": null,
+        "download_mbps": null
+      },
+      "targets": {
+        "uptime_target": 0.98,
+        "latency_target_ms": 500,
+        "drill_cadence": "hourly_target"
+      },
+      "ledger": {
+        "verified_revenue_usd": 0.0,
+        "estimated_daily_value_usd_low": 0.25,
+        "estimated_daily_value_usd_high": 2.0,
+        "payout_status": "estimate_only_pending_verified_workloads"
+      },
+      "status": "pilot_registered"
+    }
+  ]
+}
