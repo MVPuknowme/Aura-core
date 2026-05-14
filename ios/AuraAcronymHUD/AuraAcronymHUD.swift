@@ -5,12 +5,13 @@
 //  Transparent draggable pull-from-corner acronym HUD for coding agents,
 //  operators, and iPad-based development dashboards.
 //
-//  Behavior:
-//  - compact mini window, roughly 1/16 of the iPad face
+//  Transparent text-first mode:
+//  - no visible panel/card background by default
+//  - only writing, icons, and tiny touch controls remain visible
+//  - color themes change text/accent color, not the background
 //  - drag by the handle when unlocked
 //  - lock button prevents accidental movement
-//  - only the HUD controls receive touch input; surrounding app remains usable
-//  - tap the card to flip between acronym and meaning
+//  - tap the acronym text to flip between acronym and meaning
 //  - bottom arrows move through the acronym deck
 //
 //  iPadOS note:
@@ -35,13 +36,19 @@ public struct AuraAcronymHUD: View {
     @AppStorage("AuraAcronymHUD.offsetX") private var offsetX = 0.0
     @AppStorage("AuraAcronymHUD.offsetY") private var offsetY = 0.0
     @AppStorage("AuraAcronymHUD.isLocked") private var isLocked = false
+    @AppStorage("AuraAcronymHUD.textThemeIndex") private var textThemeIndex = 0
 
     private let acronyms: [AcronymEntry] = AcronymEntry.defaultEntries
+    private let themes: [AuraHUDTextTheme] = AuraHUDTextTheme.presets
 
     public init() {}
 
     private var currentEntry: AcronymEntry {
         acronyms[min(max(selectedIndex, 0), acronyms.count - 1)]
+    }
+
+    private var theme: AuraHUDTextTheme {
+        themes[min(max(textThemeIndex, 0), themes.count - 1)]
     }
 
     public var body: some View {
@@ -104,15 +111,12 @@ public struct AuraAcronymHUD: View {
                 Text("ABC")
                     .font(.system(size: 12, weight: .bold, design: .rounded))
             }
-            .foregroundStyle(.white.opacity(0.92))
+            .foregroundStyle(theme.primary.opacity(0.96))
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
-            .background(.ultraThinMaterial, in: Capsule())
-            .overlay(
-                Capsule()
-                    .stroke(.white.opacity(0.22), lineWidth: 1)
-            )
-            .shadow(color: .black.opacity(0.28), radius: 14, x: 0, y: 8)
+            .background(Color.clear, in: Capsule())
+            .contentShape(Capsule())
+            .shadow(color: theme.shadow.opacity(0.70), radius: 3, x: 0, y: 1)
             .accessibilityLabel(isOpen ? "Close acronym helper" : "Open acronym helper")
         }
         .buttonStyle(.plain)
@@ -126,7 +130,7 @@ public struct AuraAcronymHUD: View {
                 isFlipped.toggle()
             } label: {
                 ZStack {
-                    AcronymFlipFace(entry: currentEntry, mode: .front)
+                    AcronymFlipFace(entry: currentEntry, mode: .front, theme: theme)
                         .opacity(isFlipped ? 0 : 1)
                         .rotation3DEffect(
                             .degrees(isFlipped ? 180 : 0),
@@ -134,7 +138,7 @@ public struct AuraAcronymHUD: View {
                             perspective: 0.65
                         )
 
-                    AcronymFlipFace(entry: currentEntry, mode: .back)
+                    AcronymFlipFace(entry: currentEntry, mode: .back, theme: theme)
                         .opacity(isFlipped ? 1 : 0)
                         .rotation3DEffect(
                             .degrees(isFlipped ? 0 : -180),
@@ -142,7 +146,7 @@ public struct AuraAcronymHUD: View {
                             perspective: 0.65
                         )
                 }
-                .contentShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Flip acronym card")
@@ -150,20 +154,15 @@ public struct AuraAcronymHUD: View {
             bottomArrows
         }
         .padding(10)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .stroke(isLocked ? .yellow.opacity(0.30) : .white.opacity(0.18), lineWidth: 1)
-        )
-        .shadow(color: .black.opacity(0.34), radius: 24, x: 0, y: 12)
-        .contentShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .background(Color.clear)
+        .contentShape(Rectangle())
     }
 
     private var miniHeader: some View {
         HStack(spacing: 8) {
             Image(systemName: isLocked ? "lock.fill" : "arrow.up.left.and.arrow.down.right")
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(isLocked ? .yellow.opacity(0.9) : .white.opacity(0.9))
+                .foregroundStyle(isLocked ? .yellow.opacity(0.95) : theme.secondary.opacity(0.92))
                 .frame(width: 18, height: 18)
                 .contentShape(Rectangle())
                 .gesture(dragHandleGesture)
@@ -171,7 +170,7 @@ public struct AuraAcronymHUD: View {
 
             Text("Acronym Lens")
                 .font(.system(size: 12, weight: .bold, design: .rounded))
-                .foregroundStyle(.white.opacity(0.92))
+                .foregroundStyle(theme.primary.opacity(0.94))
                 .lineLimit(1)
                 .contentShape(Rectangle())
                 .gesture(dragHandleGesture)
@@ -180,17 +179,31 @@ public struct AuraAcronymHUD: View {
 
             Text("\(selectedIndex + 1)/\(acronyms.count)")
                 .font(.system(size: 10, weight: .bold, design: .monospaced))
-                .foregroundStyle(.white.opacity(0.55))
+                .foregroundStyle(theme.secondary.opacity(0.60))
                 .lineLimit(1)
+
+            Button {
+                cycleTheme()
+            } label: {
+                Image(systemName: "paintpalette.fill")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(theme.primary.opacity(0.95))
+                    .padding(6)
+                    .background(Color.clear, in: Circle())
+                    .contentShape(Circle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Change text color scheme")
 
             Button {
                 isLocked.toggle()
             } label: {
                 Image(systemName: isLocked ? "lock.fill" : "lock.open")
                     .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(isLocked ? .yellow.opacity(0.95) : .white.opacity(0.78))
+                    .foregroundStyle(isLocked ? .yellow.opacity(0.95) : theme.secondary.opacity(0.82))
                     .padding(6)
-                    .background(.white.opacity(0.08), in: Circle())
+                    .background(Color.clear, in: Circle())
+                    .contentShape(Circle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel(isLocked ? "Unlock HUD position" : "Lock HUD position")
@@ -200,13 +213,15 @@ public struct AuraAcronymHUD: View {
             } label: {
                 Image(systemName: "xmark")
                     .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(.white.opacity(0.75))
+                    .foregroundStyle(theme.secondary.opacity(0.78))
                     .padding(6)
-                    .background(.white.opacity(0.08), in: Circle())
+                    .background(Color.clear, in: Circle())
+                    .contentShape(Circle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Close")
         }
+        .shadow(color: theme.shadow.opacity(0.70), radius: 2, x: 0, y: 1)
     }
 
     private var bottomArrows: some View {
@@ -217,17 +232,17 @@ public struct AuraAcronymHUD: View {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 14, weight: .black))
                     .frame(width: 38, height: 28)
-                    .background(.white.opacity(0.08), in: Capsule())
-                    .overlay(Capsule().stroke(.white.opacity(0.10), lineWidth: 1))
+                    .background(Color.clear, in: Capsule())
+                    .contentShape(Capsule())
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Previous acronym")
 
             Spacer(minLength: 6)
 
-            Text(isLocked ? "locked" : (isFlipped ? "meaning" : "tap to flip"))
+            Text(statusText)
                 .font(.system(size: 10, weight: .semibold, design: .rounded))
-                .foregroundStyle(isLocked ? .yellow.opacity(0.7) : .white.opacity(0.52))
+                .foregroundStyle(statusColor)
                 .lineLimit(1)
 
             Spacer(minLength: 6)
@@ -238,19 +253,35 @@ public struct AuraAcronymHUD: View {
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14, weight: .black))
                     .frame(width: 38, height: 28)
-                    .background(.white.opacity(0.08), in: Capsule())
-                    .overlay(Capsule().stroke(.white.opacity(0.10), lineWidth: 1))
+                    .background(Color.clear, in: Capsule())
+                    .contentShape(Capsule())
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Next acronym")
         }
-        .foregroundStyle(.white.opacity(0.88))
+        .foregroundStyle(theme.primary.opacity(0.90))
+        .shadow(color: theme.shadow.opacity(0.70), radius: 2, x: 0, y: 1)
+    }
+
+    private var statusText: String {
+        if isLocked { return "locked" }
+        if isFlipped { return "meaning" }
+        return theme.name
+    }
+
+    private var statusColor: Color {
+        isLocked ? .yellow.opacity(0.78) : theme.secondary.opacity(0.72)
     }
 
     private func moveCard(_ delta: Int) {
         guard !acronyms.isEmpty else { return }
         selectedIndex = (selectedIndex + delta + acronyms.count) % acronyms.count
         isFlipped = false
+    }
+
+    private func cycleTheme() {
+        guard !themes.isEmpty else { return }
+        textThemeIndex = (textThemeIndex + 1) % themes.count
     }
 }
 
@@ -262,6 +293,7 @@ private struct AcronymFlipFace: View {
 
     let entry: AcronymEntry
     let mode: Mode
+    let theme: AuraHUDTextTheme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -271,13 +303,13 @@ private struct AcronymFlipFace: View {
 
                 Text(entry.short)
                     .font(.system(size: 34, weight: .black, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(theme.primary)
                     .minimumScaleFactor(0.5)
                     .lineLimit(1)
 
                 Text(entry.context)
                     .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.58))
+                    .foregroundStyle(theme.secondary.opacity(0.78))
                     .lineLimit(2)
 
                 Spacer(minLength: 0)
@@ -285,13 +317,13 @@ private struct AcronymFlipFace: View {
             case .back:
                 Text(entry.long)
                     .font(.system(size: 15, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.96))
+                    .foregroundStyle(theme.primary.opacity(0.96))
                     .lineLimit(3)
                     .minimumScaleFactor(0.74)
 
                 Text(entry.context)
                     .font(.system(size: 11, weight: .regular))
-                    .foregroundStyle(.white.opacity(0.62))
+                    .foregroundStyle(theme.secondary.opacity(0.78))
                     .lineLimit(3)
 
                 Spacer(minLength: 0)
@@ -299,12 +331,25 @@ private struct AcronymFlipFace: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .padding(12)
-        .background(.black.opacity(0.16), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(.white.opacity(0.10), lineWidth: 1)
-        )
+        .background(Color.clear)
+        .shadow(color: theme.shadow.opacity(0.85), radius: 3, x: 0, y: 1)
     }
+}
+
+private struct AuraHUDTextTheme: Hashable {
+    let name: String
+    let primary: Color
+    let secondary: Color
+    let shadow: Color
+
+    static let presets: [AuraHUDTextTheme] = [
+        .init(name: "violet", primary: .purple, secondary: .cyan, shadow: .black),
+        .init(name: "cyan", primary: .cyan, secondary: .white, shadow: .black),
+        .init(name: "amber", primary: .orange, secondary: .yellow, shadow: .black),
+        .init(name: "white", primary: .white, secondary: .gray, shadow: .black),
+        .init(name: "green", primary: .green, secondary: .mint, shadow: .black),
+        .init(name: "pink", primary: .pink, secondary: .purple, shadow: .black)
+    ]
 }
 
 private struct AcronymEntry: Identifiable, Hashable {
@@ -347,7 +392,7 @@ private struct AcronymEntry: Identifiable, Hashable {
     ]
 }
 
-#Preview("Aura Acronym HUD — Draggable Locked Mini Window") {
+#Preview("Aura Acronym HUD — Transparent Text Only") {
     ZStack {
         LinearGradient(
             colors: [.black, .indigo.opacity(0.72), .purple.opacity(0.62)],
