@@ -2,18 +2,24 @@
 //  AuraAcronymHUD.swift
 //  Aura-Core / SkyGrid iPad Utility
 //
-//  A transparent pull-from-corner acronym reference marker for coding agents,
+//  Transparent draggable pull-from-corner acronym HUD for coding agents,
 //  operators, and iPad-based development dashboards.
 //
-//  Compact mode goal:
-//  - live in a small corner space, roughly 1/16 of the screen face
-//  - show one acronym at a time
-//  - tap the little window to flip between acronym and meaning
-//  - use bottom arrows to move through the acronym deck
+//  Behavior:
+//  - compact mini window, roughly 1/16 of the iPad face
+//  - drag by the handle when unlocked
+//  - lock button prevents accidental movement
+//  - only the HUD controls receive touch input; surrounding app remains usable
+//  - tap the card to flip between acronym and meaning
+//  - bottom arrows move through the acronym deck
 //
-//  Drop this view on top of any SwiftUI screen with:
+//  iPadOS note:
+//  A normal app cannot draw above other apps system-wide. To keep this visible
+//  across Aura-Core screens, mount it near the root Scene/WindowGroup level.
 //
-//      .overlay(alignment: .bottomTrailing) {
+//  Usage:
+//
+//      .overlay {
 //          AuraAcronymHUD()
 //      }
 //
@@ -24,6 +30,11 @@ public struct AuraAcronymHUD: View {
     @State private var isOpen = false
     @State private var selectedIndex = 0
     @State private var isFlipped = false
+    @State private var dragStart = CGSize.zero
+
+    @AppStorage("AuraAcronymHUD.offsetX") private var offsetX = 0.0
+    @AppStorage("AuraAcronymHUD.offsetY") private var offsetY = 0.0
+    @AppStorage("AuraAcronymHUD.isLocked") private var isLocked = false
 
     private let acronyms: [AcronymEntry] = AcronymEntry.defaultEntries
 
@@ -42,12 +53,14 @@ public struct AuraAcronymHUD: View {
                             width: max(176, proxy.size.width / 4.15),
                             height: max(126, proxy.size.height / 4.25)
                         )
+                        .offset(currentOffset)
                         .transition(.scale(scale: 0.72, anchor: .bottomTrailing).combined(with: .opacity))
                         .padding(.trailing, 18)
                         .padding(.bottom, 82)
                 }
 
                 pullMarker
+                    .offset(isOpen ? .zero : currentOffset)
                     .padding(.trailing, 10)
                     .padding(.bottom, 18)
             }
@@ -56,7 +69,28 @@ public struct AuraAcronymHUD: View {
         .animation(.spring(response: 0.32, dampingFraction: 0.86), value: isOpen)
         .animation(.spring(response: 0.28, dampingFraction: 0.82), value: selectedIndex)
         .animation(.easeInOut(duration: 0.22), value: isFlipped)
-        .allowsHitTesting(true)
+        .accessibilityElement(children: .contain)
+    }
+
+    private var currentOffset: CGSize {
+        CGSize(width: offsetX, height: offsetY)
+    }
+
+    private var dragHandleGesture: some Gesture {
+        DragGesture(minimumDistance: 4)
+            .onChanged { value in
+                guard !isLocked else { return }
+
+                if dragStart == .zero {
+                    dragStart = currentOffset
+                }
+
+                offsetX = dragStart.width + value.translation.width
+                offsetY = dragStart.height + value.translation.height
+            }
+            .onEnded { _ in
+                dragStart = .zero
+            }
     }
 
     private var pullMarker: some View {
@@ -119,21 +153,28 @@ public struct AuraAcronymHUD: View {
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .stroke(.white.opacity(0.18), lineWidth: 1)
+                .stroke(isLocked ? .yellow.opacity(0.30) : .white.opacity(0.18), lineWidth: 1)
         )
         .shadow(color: .black.opacity(0.34), radius: 24, x: 0, y: 12)
+        .contentShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
     }
 
     private var miniHeader: some View {
         HStack(spacing: 8) {
-            Image(systemName: "sparkles.rectangle.stack")
+            Image(systemName: isLocked ? "lock.fill" : "arrow.up.left.and.arrow.down.right")
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(.white.opacity(0.9))
+                .foregroundStyle(isLocked ? .yellow.opacity(0.9) : .white.opacity(0.9))
+                .frame(width: 18, height: 18)
+                .contentShape(Rectangle())
+                .gesture(dragHandleGesture)
+                .accessibilityLabel(isLocked ? "HUD locked" : "HUD drag handle")
 
             Text("Acronym Lens")
                 .font(.system(size: 12, weight: .bold, design: .rounded))
                 .foregroundStyle(.white.opacity(0.92))
                 .lineLimit(1)
+                .contentShape(Rectangle())
+                .gesture(dragHandleGesture)
 
             Spacer(minLength: 4)
 
@@ -141,6 +182,18 @@ public struct AuraAcronymHUD: View {
                 .font(.system(size: 10, weight: .bold, design: .monospaced))
                 .foregroundStyle(.white.opacity(0.55))
                 .lineLimit(1)
+
+            Button {
+                isLocked.toggle()
+            } label: {
+                Image(systemName: isLocked ? "lock.fill" : "lock.open")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(isLocked ? .yellow.opacity(0.95) : .white.opacity(0.78))
+                    .padding(6)
+                    .background(.white.opacity(0.08), in: Circle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(isLocked ? "Unlock HUD position" : "Lock HUD position")
 
             Button {
                 isOpen = false
@@ -172,9 +225,9 @@ public struct AuraAcronymHUD: View {
 
             Spacer(minLength: 6)
 
-            Text(isFlipped ? "meaning" : "tap to flip")
+            Text(isLocked ? "locked" : (isFlipped ? "meaning" : "tap to flip"))
                 .font(.system(size: 10, weight: .semibold, design: .rounded))
-                .foregroundStyle(.white.opacity(0.52))
+                .foregroundStyle(isLocked ? .yellow.opacity(0.7) : .white.opacity(0.52))
                 .lineLimit(1)
 
             Spacer(minLength: 6)
@@ -294,7 +347,7 @@ private struct AcronymEntry: Identifiable, Hashable {
     ]
 }
 
-#Preview("Aura Acronym HUD — Compact Flip Window") {
+#Preview("Aura Acronym HUD — Draggable Locked Mini Window") {
     ZStack {
         LinearGradient(
             colors: [.black, .indigo.opacity(0.72), .purple.opacity(0.62)],
@@ -311,7 +364,7 @@ private struct AcronymEntry: Identifiable, Hashable {
                 .foregroundStyle(.white.opacity(0.62))
         }
     }
-    .overlay(alignment: .bottomTrailing) {
+    .overlay {
         AuraAcronymHUD()
     }
 }
