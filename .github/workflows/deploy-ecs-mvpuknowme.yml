@@ -1,8 +1,6 @@
 name: Deploy to Amazon ECS (MVPuknowme)
 
 on:
-  push:
-    branches: ["MVPuknowme"]
   workflow_dispatch:
 
 env:
@@ -51,6 +49,7 @@ jobs:
           echo "- AWS_ROLE_ARN configured: ${has_role}"
           echo "- Static AWS key pair configured: ${has_static_keys}"
           echo "- Preferred path: OIDC role assumption"
+          echo "- Trigger policy: manual only for Aura-Core protocol repo"
 
           if [ "${has_role}" != "yes" ] && [ "${has_static_keys}" != "yes" ]; then
             echo "::error title=Missing AWS credential provider::Configure AWS_ROLE_ARN for OIDC, or configure both AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY."
