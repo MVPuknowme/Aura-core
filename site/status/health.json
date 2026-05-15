@@ -5,6 +5,7 @@
   "environment": "github_pages_static",
   "claims_mode": "pilot_demo_only",
   "last_updated": "2026-05-15",
+  "workflow_trigger": "refresh_2026_05_15_001",
   "routes": {
     "home": "../index.html",
     "pilot_intake": "../index.html#pilot-intake",
