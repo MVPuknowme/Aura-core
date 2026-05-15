@@ -4,25 +4,26 @@ on:
   workflow_dispatch:
     inputs:
       site_url:
-        description: Public SkyGrid/B12 site URL
+        description: Public Aura Sky / SKYGRID site URL
         required: false
-        default: https://aura-sky-skygrid-protocol.b12sites.com/
+        default: https://mvpuknowme.github.io/Aura-core/
         type: string
       base_url:
-        description: Primary API/base URL
+        description: Primary static site base URL
         required: false
-        default: https://aura-sky-skygrid-protocol.b12sites.com
+        default: https://mvpuknowme.github.io/Aura-core
         type: string
       aws_service_url:
-        description: AWS service URL after deploy
+        description: Optional AWS service URL after deploy
         required: false
-        default: https://aura-sky-skygrid-protocol.b12sites.com
+        default: https://mvpuknowme.github.io/Aura-core
         type: string
   push:
     branches:
       - MVPuknowme
     paths:
       - postman/**
+      - site/**
       - .github/workflows/postman-newman.yml
   schedule:
     - cron: '23 */6 * * *'
@@ -37,9 +38,9 @@ jobs:
     timeout-minutes: 10
 
     env:
-      SITE_URL: ${{ inputs.site_url || 'https://aura-sky-skygrid-protocol.b12sites.com/' }}
-      BASE_URL: ${{ inputs.base_url || 'https://aura-sky-skygrid-protocol.b12sites.com' }}
-      AWS_SERVICE_URL: ${{ inputs.aws_service_url || 'https://aura-sky-skygrid-protocol.b12sites.com' }}
+      SITE_URL: ${{ inputs.site_url || 'https://mvpuknowme.github.io/Aura-core/' }}
+      BASE_URL: ${{ inputs.base_url || 'https://mvpuknowme.github.io/Aura-core' }}
+      AWS_SERVICE_URL: ${{ inputs.aws_service_url || 'https://mvpuknowme.github.io/Aura-core' }}
 
     steps:
       - name: Check out repository
