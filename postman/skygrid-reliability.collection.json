@@ -1,12 +1,12 @@
 {
   "info": {
-    "name": "Aura-Core / SkyGrid Reliability Checks",
-    "description": "Baseline Postman/Newman checks for Aura-Core and SkyGrid web/API availability.",
+    "name": "Aura Sky / SKYGRID Reliability Checks",
+    "description": "Baseline Postman/Newman checks for the Aura Sky / SKYGRID by Aura-Core static launch site and public status JSON.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "SkyGrid B12 Site Health",
+      "name": "Aura Sky SKYGRID Site Health",
       "request": {
         "method": "GET",
         "header": [],
@@ -33,15 +33,11 @@
               "    pm.expect(pm.response.text()).to.be.a('string').and.to.have.length.above(0);",
               "});",
               "",
-              "pm.test('Response looks like HTML or SkyGrid/Aura content', function () {",
+              "pm.test('Response contains Aura Sky / SKYGRID launch copy', function () {",
               "    const body = pm.response.text().toLowerCase();",
-              "    pm.expect(",
-              "        body.includes('<!doctype html') ||",
-              "        body.includes('<html') ||",
-              "        body.includes('<title') ||",
-              "        body.includes('skygrid') ||",
-              "        body.includes('aura')",
-              "    ).to.equal(true);",
+              "    pm.expect(body.includes('skygrid')).to.equal(true);",
+              "    pm.expect(body.includes('aura-core')).to.equal(true);",
+              "    pm.expect(body.includes('pilot')).to.equal(true);",
               "});",
               "",
               "pm.collectionVariables.set('last_status_code', pm.response.code);",
@@ -54,14 +50,14 @@
       ]
     },
     {
-      "name": "Primary Health Endpoint",
+      "name": "Public Status JSON",
       "request": {
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{base_url}}/health",
+          "raw": "{{base_url}}/status/health.json",
           "host": ["{{base_url}}"],
-          "path": ["health"]
+          "path": ["status", "health.json"]
         }
       },
       "event": [
@@ -70,11 +66,16 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test('Health status is successful or unavailable during setup', function () {",
-              "    pm.expect([200, 204, 404, 503]).to.include(pm.response.code);",
+              "pm.test('Status JSON loads successfully', function () {",
+              "    pm.expect(pm.response.code).to.equal(200);",
               "});",
-              "pm.test('Health response time is under 5000ms', function () {",
-              "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+              "pm.test('Status JSON is fast', function () {",
+              "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+              "});",
+              "pm.test('Status JSON confirms pilot/demo mode', function () {",
+              "    const data = pm.response.json();",
+              "    pm.expect(data.project).to.include('SKYGRID');",
+              "    pm.expect(data.claims_mode).to.equal('pilot_demo_only');",
               "});"
             ]
           }
@@ -82,14 +83,14 @@
       ]
     },
     {
-      "name": "AWS Service Health Endpoint",
+      "name": "Optional AWS Service Health Endpoint",
       "request": {
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{aws_service_url}}/health",
+          "raw": "{{aws_service_url}}/status/health.json",
           "host": ["{{aws_service_url}}"],
-          "path": ["health"]
+          "path": ["status", "health.json"]
         }
       },
       "event": [
@@ -98,10 +99,10 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test('AWS service status is successful or not yet deployed', function () {",
+              "pm.test('Optional AWS/static mirror status is acceptable', function () {",
               "    pm.expect([200, 204, 404, 503]).to.include(pm.response.code);",
               "});",
-              "pm.test('AWS service response time is under 5000ms', function () {",
+              "pm.test('Optional AWS/static mirror response time is under 5000ms', function () {",
               "    pm.expect(pm.response.responseTime).to.be.below(5000);",
               "});"
             ]
@@ -113,15 +114,15 @@
   "variable": [
     {
       "key": "site_url",
-      "value": "https://aura-sky-skygrid-protocol.b12sites.com/"
+      "value": "https://mvpuknowme.github.io/Aura-core/"
     },
     {
       "key": "base_url",
-      "value": "https://aura-sky-skygrid-protocol.b12sites.com"
+      "value": "https://mvpuknowme.github.io/Aura-core"
     },
     {
       "key": "aws_service_url",
-      "value": "https://aura-sky-skygrid-protocol.b12sites.com"
+      "value": "https://mvpuknowme.github.io/Aura-core"
     }
   ]
 }
