@@ -1,0 +1,22 @@
+{
+  "project": "Aura Sky / SKYGRID by Aura-Core",
+  "owner": "Michael Vincent Patrick / MVPuknowme",
+  "status": "pilot_launch_ready_static_site",
+  "environment": "github_pages_static",
+  "claims_mode": "pilot_demo_only",
+  "last_updated": "2026-05-15",
+  "routes": {
+    "home": "../index.html",
+    "pilot_intake": "../index.html#pilot-intake",
+    "node_interest": "../index.html#lease",
+    "feedback": "../index.html#feedback",
+    "proof": "https://github.com/MVPuknowme/Aura-core",
+    "brand_record": "https://github.com/MVPuknowme/Aura-core/blob/MVPuknowme/docs/brand-origin/aura-sky-skygrid-brand-record.md"
+  },
+  "guardrails": [
+    "No guaranteed revenue claims",
+    "No guaranteed uptime claims without monitoring evidence",
+    "Node leasing remains pilot/demo only until contracts and monitoring are verified",
+    "Public claims should connect to auditable proof"
+  ]
+}
