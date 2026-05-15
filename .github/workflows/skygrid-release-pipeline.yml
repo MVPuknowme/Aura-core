@@ -1,0 +1,220 @@
+name: SKYGRID Release Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - MVPuknowme
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: skygrid-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_ENV: production
+  SKYGRID_ENV: production
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci --no-audit --fund=false
+      - run: npm run lint --if-present
+
+  unit-tests:
+    needs: preflight
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci --no-audit --fund=false
+      - run: npm test -- --passWithNoTests
+
+  build:
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci --no-audit --fund=false
+      - run: npm run build --if-present
+
+      - name: Verify build output
+        run: |
+          if [ ! -d dist ] && [ ! -d build ]; then
+            echo "No build output found"
+            exit 1
+          fi
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: skygrid-build
+          path: |
+            dist
+            build
+          if-no-files-found: error
+
+  staging-deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: skygrid-build
+
+      - run: npm ci --no-audit --fund=false
+
+      - name: Validate required secrets
+        run: |
+          missing=()
+
+          [ -n "${AURA_ENV:-}" ] || missing+=("AURA_ENV")
+          [ -n "${PEER_SECRET:-}" ] || missing+=("PEER_SECRET")
+          [ -n "${CHAIN_KEY:-}" ] || missing+=("CHAIN_KEY")
+
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "Missing secrets: ${missing[*]}"
+            exit 1
+          fi
+        env:
+          AURA_ENV: ${{ secrets.AURA_ENV }}
+          PEER_SECRET: ${{ secrets.PEER_SECRET }}
+          CHAIN_KEY: ${{ secrets.CHAIN_KEY }}
+
+      - name: Deploy staging
+        run: node deploy.sky.js
+        env:
+          SKYGRID_ENV: staging
+          AURA_ENV: ${{ secrets.AURA_ENV }}
+          PEER_SECRET: ${{ secrets.PEER_SECRET }}
+          CHAIN_KEY: ${{ secrets.CHAIN_KEY }}
+
+  health-check:
+    needs: staging-deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check staging health
+        run: |
+          if [ -z "${STAGING_HEALTH_URL:-}" ]; then
+            echo "STAGING_HEALTH_URL is not set"
+            exit 1
+          fi
+          curl -fsS "$STAGING_HEALTH_URL"
+        env:
+          STAGING_HEALTH_URL: ${{ secrets.STAGING_HEALTH_URL }}
+
+  smoke-test:
+    needs: health-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci --no-audit --fund=false
+      - run: npm run test:smoke --if-present
+
+  production-deploy:
+    needs: smoke-test
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: skygrid-build
+
+      - run: npm ci --no-audit --fund=false
+
+      - name: Deploy production
+        run: node deploy.sky.js
+        env:
+          SKYGRID_ENV: production
+          AURA_ENV: ${{ secrets.AURA_ENV }}
+          PEER_SECRET: ${{ secrets.PEER_SECRET }}
+          CHAIN_KEY: ${{ secrets.CHAIN_KEY }}
+
+      - name: Verify production health
+        run: |
+          if [ -z "${PRODUCTION_HEALTH_URL:-}" ]; then
+            echo "PRODUCTION_HEALTH_URL is not set"
+            exit 1
+          fi
+          curl -fsS "$PRODUCTION_HEALTH_URL"
+        env:
+          PRODUCTION_HEALTH_URL: ${{ secrets.PRODUCTION_HEALTH_URL }}
+
+  post-deploy-audit:
+    needs: production-deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci --no-audit --fund=false
+      - run: npm audit --audit-level=critical || true
+
+  rollback-on-failure:
+    needs:
+      - staging-deploy
+      - health-check
+      - smoke-test
+      - production-deploy
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci --no-audit --fund=false
+
+      - name: Rollback
+        run: npm run rollback --if-present
