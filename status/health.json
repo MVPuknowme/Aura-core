@@ -1,7 +1,9 @@
 {
   "status": "ok",
+  "project": "Aura Sky / SKYGRID by Aura-Core",
   "service": "Aura Sky / SKYGRID",
   "mode": "pilot",
+  "claims_mode": "pilot_demo_only",
   "demo": true,
   "edge": "github-pages",
   "sentinel": "fail-closed",
