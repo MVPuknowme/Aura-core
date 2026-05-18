@@ -1,0 +1,29 @@
+SkyGrid Noodle Control has been installed.
+
+Release: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+Mode: {{ .Values.env.NOODLE_CONTROL_MODE }}
+Sentinel policy: {{ .Values.env.SENTINEL_POLICY_MODE }}
+
+Service:
+  {{ include "noodle-control.fullname" . }}:{{ .Values.service.port }}
+
+Health checks:
+  Liveness: {{ .Values.config.health.path }}
+  Readiness: {{ .Values.config.health.readinessPath }}
+
+Safety boundary:
+  - Consent is required.
+  - Private data access is disabled.
+  - Packet interception is disabled.
+  - Wallet key access is disabled.
+  - Network route modification is disabled.
+  - Proof events are required.
+
+Useful commands:
+  kubectl get pods -l app.kubernetes.io/instance={{ .Release.Name }} -n {{ .Release.Namespace }}
+  kubectl logs deploy/{{ include "noodle-control.fullname" . }} -n {{ .Release.Namespace }}
+  kubectl port-forward svc/{{ include "noodle-control.fullname" . }} {{ .Values.service.port }}:{{ .Values.service.port }} -n {{ .Release.Namespace }}
+
+Install example:
+  helm upgrade --install noodle-control ./charts/noodle-control -n skygrid --create-namespace
