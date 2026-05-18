@@ -124,6 +124,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     environment: staging
+    outputs:
+      deploy_ready: ${{ steps.validate.outputs.deploy_ready }}
     steps:
       - uses: actions/checkout@v4
 
@@ -146,8 +148,11 @@ jobs:
             npm install --no-audit --fund=false
           fi
 
-      - name: Validate required secrets
+      - name: Validate required staging secrets
+        id: validate
+        shell: bash
         run: |
+          set -euo pipefail
           missing=()
 
           [ -n "${AURA_ENV:-}" ] || missing+=("AURA_ENV")
@@ -155,15 +160,32 @@ jobs:
           [ -n "${CHAIN_KEY:-}" ] || missing+=("CHAIN_KEY")
 
           if [ ${#missing[@]} -gt 0 ]; then
-            echo "Missing secrets: ${missing[*]}"
-            exit 1
+            echo "::warning title=Staging deploy blocked::Missing secrets: ${missing[*]}"
+            echo "deploy_ready=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "# SKYGRID staging deploy blocked"
+              echo
+              echo "Build artifact is valid, but live staging deploy was skipped because required secrets are missing."
+              echo
+              echo "Missing secrets: ${missing[*]}"
+              echo
+              echo "Add these under repo or staging environment secrets:"
+              echo "- AURA_ENV"
+              echo "- PEER_SECRET"
+              echo "- CHAIN_KEY"
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
           fi
+
+          echo "deploy_ready=true" >> "$GITHUB_OUTPUT"
+          echo "Staging deploy configuration ready." >> "$GITHUB_STEP_SUMMARY"
         env:
           AURA_ENV: ${{ secrets.AURA_ENV }}
           PEER_SECRET: ${{ secrets.PEER_SECRET }}
           CHAIN_KEY: ${{ secrets.CHAIN_KEY }}
 
       - name: Deploy staging
+        if: steps.validate.outputs.deploy_ready == 'true'
         run: node deploy.sky.js
         env:
           SKYGRID_ENV: staging
@@ -173,6 +195,7 @@ jobs:
 
   health-check:
     needs: staging-deploy
+    if: needs.staging-deploy.outputs.deploy_ready == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Check staging health
@@ -187,6 +210,7 @@ jobs:
 
   smoke-test:
     needs: health-check
+    if: needs.health-check.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -210,6 +234,7 @@ jobs:
 
   production-deploy:
     needs: smoke-test
+    if: needs.smoke-test.result == 'success'
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -254,6 +279,7 @@ jobs:
 
   post-deploy-audit:
     needs: production-deploy
+    if: needs.production-deploy.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
