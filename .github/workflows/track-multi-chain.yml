@@ -44,6 +44,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Validate configuration
+        id: validate
         shell: bash
         run: |
           set -euo pipefail
@@ -71,14 +72,31 @@ jobs:
           fi
 
           if [ ${#missing[@]} -gt 0 ]; then
-            echo "::error title=Missing workflow configuration::Missing required values: ${missing[*]}"
-            echo "Required repository secrets: DUNE_API_KEY and AIRTABLE_API_KEY or AIRTABLE_TOKEN."
-            echo "Also set at least one Dune query ID secret: DUNE_ETHEREUM_QUERY_ID, DUNE_SCROLL_QUERY_ID, or DUNE_TON_QUERY_ID."
-            echo "Alternative: run workflow_dispatch and provide ethereum_query_id, scroll_query_id, or ton_query_id input."
-            exit 1
+            echo "::warning title=Missing workflow configuration::Missing required values: ${missing[*]}"
+            echo "config_ready=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "# Track Multi Chain blocked"
+              echo
+              echo "The workflow is valid, but external execution is blocked until required GitHub Actions secrets or dispatch inputs are provided."
+              echo
+              echo "Missing values: ${missing[*]}"
+              echo
+              echo "Required repository secrets:"
+              echo "- DUNE_API_KEY"
+              echo "- AIRTABLE_API_KEY or AIRTABLE_TOKEN"
+              echo "- at least one of DUNE_ETHEREUM_QUERY_ID, DUNE_SCROLL_QUERY_ID, or DUNE_TON_QUERY_ID"
+              echo
+              echo "Base ID currently resolved as: ${AIRTABLE_BASE_ID:-unset}"
+              echo "Airtable table currently resolved as: ${AIRTABLE_TABLE:-Table 1}"
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
           fi
 
+          echo "config_ready=true" >> "$GITHUB_OUTPUT"
+          echo "Configuration ready. Proceeding with Dune fetch and Airtable post." >> "$GITHUB_STEP_SUMMARY"
+
       - name: Fetch chain results
+        if: steps.validate.outputs.config_ready == 'true'
         run: |
           python3 <<'PY'
           import json, os, urllib.request
@@ -105,6 +123,7 @@ jobs:
           PY
 
       - name: Post consolidated summary to Airtable
+        if: steps.validate.outputs.config_ready == 'true'
         run: |
           python3 <<'PY'
           import json, os, urllib.parse, urllib.request
