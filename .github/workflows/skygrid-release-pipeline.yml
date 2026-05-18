@@ -89,17 +89,26 @@ jobs:
       - run: npm run build --if-present
 
       - name: Verify build output
+        shell: bash
         run: |
-          if [ ! -d dist ] && [ ! -d build ]; then
-            echo "No build output found"
+          set -euo pipefail
+          if [ ! -d public ] && [ ! -d dist ] && [ ! -d build ]; then
+            echo "No build output found. Expected one of: public, dist, build"
+            echo "Repository root contents:"
+            ls -la
             exit 1
           fi
+          echo "Build output found:"
+          [ -d public ] && echo "- public"
+          [ -d dist ] && echo "- dist"
+          [ -d build ] && echo "- build"
 
       - name: Upload release artifact
         uses: actions/upload-artifact@v4
         with:
           name: skygrid-build
           path: |
+            public
             dist
             build
           if-no-files-found: error
