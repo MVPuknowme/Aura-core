@@ -1,0 +1,26 @@
+name = "aura-core-skygrid"
+main = "src/worker.js"
+compatibility_date = "2026-05-17"
+compatibility_flags = ["nodejs_compat"]
+
+# SKYGRID / Aura-Core Cloudflare Worker configuration
+# Owner: Michael Vincent Patrick / MVPuknowme
+# Purpose: safe edge health and routing test harness for SkyGrid endpoints.
+
+[vars]
+SKYGRID_ENV = "production"
+SKYGRID_SITE = "west01"
+SKYGRID_PRIMARY_REGION = "us-west-1"
+SKYGRID_PIPELINE_REGION = "us-east-1"
+SKYGRID_HEALTH_STANDARD = "skygrid-best-range-health-standard"
+
+[observability]
+enabled = true
+
+[env.staging]
+name = "aura-core-skygrid-staging"
+vars = { SKYGRID_ENV = "staging", SKYGRID_SITE = "west01", SKYGRID_PRIMARY_REGION = "us-west-1", SKYGRID_PIPELINE_REGION = "us-east-1" }
+
+[env.production]
+name = "aura-core-skygrid-production"
+vars = { SKYGRID_ENV = "production", SKYGRID_SITE = "west01", SKYGRID_PRIMARY_REGION = "us-west-1", SKYGRID_PIPELINE_REGION = "us-east-1" }
