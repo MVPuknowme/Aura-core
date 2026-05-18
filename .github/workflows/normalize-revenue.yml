@@ -28,6 +28,10 @@ on:
   schedule:
     - cron: '35 * * * *'
 
+permissions:
+  contents: read
+  actions: read
+
 jobs:
   normalize-revenue:
     runs-on: ubuntu-latest
@@ -41,15 +45,15 @@ jobs:
       AIRTABLE_TABLE: ${{ inputs.airtable_table || secrets.AIRTABLE_TABLE_NAME || 'Table 1' }}
       DEBUG_MODE: ${{ inputs.debug_mode || 'true' }}
       COINGECKO_SIMPLE_URL: https://api.coingecko.com/api/v3/simple/price?ids=ethereum,the-open-network&vs_currencies=usd
+
     steps:
       - name: Validate configuration
         shell: bash
         run: |
           set -euo pipefail
 
-          missing=()
-          [ -n "${AIRTABLE_API_KEY:-}" ] || missing+=("AIRTABLE_API_KEY or AIRTABLE_TOKEN")
-          [ -n "${AIRTABLE_BASE_ID:-}" ] || missing+=("AIRTABLE_BASE_ID")
+          hard_missing=()
+          [ -n "${AIRTABLE_BASE_ID:-}" ] || hard_missing+=("AIRTABLE_BASE_ID")
 
           chain_ids_present=0
           [ -n "${ETHEREUM_QUERY_ID:-}" ] && chain_ids_present=1
@@ -62,12 +66,20 @@ jobs:
             echo "SKIP_DUNE=false" >> "$GITHUB_ENV"
           fi
 
+          if [ -z "${AIRTABLE_API_KEY:-}" ]; then
+            echo "SKIP_AIRTABLE=true" >> "$GITHUB_ENV"
+            echo "::warning title=Airtable write skipped::Missing AIRTABLE_API_KEY or AIRTABLE_TOKEN. Normalized revenue JSON will still be generated."
+          else
+            echo "SKIP_AIRTABLE=false" >> "$GITHUB_ENV"
+          fi
+
           if [ "${DEBUG_MODE:-true}" = "true" ]; then
             echo "Workflow debug summary"
             echo "- DUNE_API_KEY set: $([ -n "${DUNE_API_KEY:-}" ] && echo yes || echo no)"
             echo "- Dune query ID present: $([ "$chain_ids_present" -eq 1 ] && echo yes || echo no)"
             echo "- Dune mode: $([ -z "${DUNE_API_KEY:-}" ] || [ "$chain_ids_present" -ne 1 ] && echo skipped || echo enabled)"
             echo "- AIRTABLE_API_KEY/AIRTABLE_TOKEN set: $([ -n "${AIRTABLE_API_KEY:-}" ] && echo yes || echo no)"
+            echo "- Airtable mode: $([ -n "${AIRTABLE_API_KEY:-}" ] && echo enabled || echo skipped)"
             echo "- AIRTABLE_BASE_ID set: $([ -n "${AIRTABLE_BASE_ID:-}" ] && echo yes || echo no)"
             echo "- ETHEREUM_QUERY_ID set: $([ -n "${ETHEREUM_QUERY_ID:-}" ] && echo yes || echo no)"
             echo "- SCROLL_QUERY_ID set: $([ -n "${SCROLL_QUERY_ID:-}" ] && echo yes || echo no)"
@@ -75,9 +87,8 @@ jobs:
             echo "- AIRTABLE_TABLE: ${AIRTABLE_TABLE:-Table 1}"
           fi
 
-          if [ ${#missing[@]} -gt 0 ]; then
-            echo "::error title=Missing workflow configuration::Missing required values: ${missing[*]}"
-            echo "Add AIRTABLE_API_KEY or AIRTABLE_TOKEN in Settings > Secrets and variables > Actions, then run this workflow again."
+          if [ ${#hard_missing[@]} -gt 0 ]; then
+            echo "::error title=Missing workflow configuration::Missing required values: ${hard_missing[*]}"
             exit 1
           fi
 
@@ -184,11 +195,16 @@ jobs:
               'prices': prices,
               'summary': summary,
               'total_usd': round(total_usd, 2),
-              'dune_mode': os.environ.get('SKIP_DUNE', 'false')
+              'dune_skipped': os.environ.get('SKIP_DUNE', 'false') == 'true',
+              'airtable_skipped': os.environ.get('SKIP_AIRTABLE', 'false') == 'true'
           }
           with open('normalized-revenue.json', 'w', encoding='utf-8') as f:
               json.dump(normalized, f, ensure_ascii=False, indent=2)
           print(json.dumps(normalized, ensure_ascii=False))
+
+          if os.environ.get('SKIP_AIRTABLE', 'false') == 'true':
+              print('Airtable write skipped: configure AIRTABLE_API_KEY or AIRTABLE_TOKEN to enable record creation.')
+              raise SystemExit(0)
 
           if summary:
               lines = [f"{chain}: ${info['normalized_usd']:.2f} from {info['rows']} rows" for chain, info in summary.items()]
@@ -216,3 +232,9 @@ jobs:
           with urllib.request.urlopen(req) as resp:
               print(resp.read().decode('utf-8'))
           PY
+
+      - name: Upload normalized revenue artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: normalized-revenue
+          path: normalized-revenue.json
