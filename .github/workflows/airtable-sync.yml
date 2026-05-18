@@ -1,0 +1,88 @@
+name: Airtable Sync Connection Test
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 */6 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: airtable-sync-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "24"
+  AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID || 'appg4cfKNcNqOtOdd' }}
+  AIRTABLE_TABLE_NAME: ${{ secrets.AIRTABLE_TABLE_NAME || 'Health Reports' }}
+
+jobs:
+  connection-test:
+    name: Test Airtable Connection
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Validate required secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${{ secrets.AIRTABLE_TOKEN }}" ]; then
+            echo "❌ Missing required GitHub secret: AIRTABLE_TOKEN"
+            exit 1
+          fi
+          echo "✅ Required Airtable token secret is present"
+          echo "Base ID: ${AIRTABLE_BASE_ID}"
+          echo "Table: ${AIRTABLE_TABLE_NAME}"
+
+      - name: Test Airtable API reachability
+        shell: bash
+        env:
+          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          node <<'NODE'
+          const baseId = process.env.AIRTABLE_BASE_ID;
+          const token = process.env.AIRTABLE_TOKEN;
+          const tableName = process.env.AIRTABLE_TABLE_NAME;
+
+          if (!baseId || !baseId.startsWith('app')) {
+            console.error('❌ AIRTABLE_BASE_ID is missing or invalid:', baseId || '(empty)');
+            process.exit(1);
+          }
+
+          const url = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableName)}?maxRecords=1`;
+
+          const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          const body = await response.text();
+
+          if (response.ok) {
+            console.log('✅ Airtable connection passed');
+            console.log(`Status: ${response.status}`);
+            console.log(`Base: ${baseId}`);
+            console.log(`Table: ${tableName}`);
+            process.exit(0);
+          }
+
+          console.error('❌ Airtable connection failed');
+          console.error(`Status: ${response.status}`);
+          console.error(body.slice(0, 1000));
+          process.exit(1);
+          NODE
