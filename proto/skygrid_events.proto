@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+package skygrid.v1;
+
+// SkyGrid / Aura-Core protobuf event contract.
+// This schema is consent-first and proof-oriented.
+// It must not carry private files, wallet keys, seed phrases, raw credentials,
+// packet captures, or unauthorized device data.
+
+option go_package = "github.com/MVPuknowme/Aura-core/proto/skygrid/v1;skygridv1";
+
+message DeviceIdentity {
+  string device_id = 1;
+  string user_id = 2;
+  string device_role = 3;
+  string consent_status = 4;
+  string privacy_boundary = 5;
+  string agent_version = 6;
+}
+
+message EndpointProbe {
+  string endpoint_id = 1;
+  string url = 2;
+  int32 http_code = 3;
+  double response_time_ms = 4;
+  bool ack = 5;
+  bool nack = 6;
+  string status = 7;
+}
+
+message DeviceHeartbeat {
+  DeviceIdentity identity = 1;
+  string timestamp = 2;
+  string connectivity_status = 3;
+  string battery_band = 4;
+  string storage_band = 5;
+  string backup_checkpoint_status = 6;
+  bool private_data_accessed = 7;
+  bool network_routes_modified = 8;
+}
+
+message FailoverNeedDetected {
+  DeviceIdentity identity = 1;
+  EndpointProbe endpoint = 2;
+  string timestamp = 3;
+  string signal = 4;
+  string severity = 5;
+  string data_saving_state = 6;
+  string fallback_recommendation = 7;
+  string sentinel_policy = 8;
+  bool proof_required = 9;
+  bool private_data_accessed = 10;
+  bool network_routes_modified = 11;
+}
+
+message DataSavingCheckpoint {
+  DeviceIdentity identity = 1;
+  string timestamp = 2;
+  string checkpoint_id = 3;
+  string approved_scope = 4;
+  string checksum = 5;
+  string storage_target_ref = 6;
+  string status = 7;
+  bool private_data_excluded = 8;
+}
+
+message ProofLogEvent {
+  string proof_id = 1;
+  string event_type = 2;
+  string project = 3;
+  string timestamp = 4;
+  string device_id = 5;
+  string endpoint_id = 6;
+  string consent_status = 7;
+  string severity = 8;
+  string result = 9;
+  string source_ref = 10;
+  bool private_data_accessed = 11;
+  bool network_routes_modified = 12;
+}
+
+message SkyGridEnvelope {
+  string envelope_id = 1;
+  string project = 2;
+  string protocol_version = 3;
+  string created_at = 4;
+  oneof payload {
+    DeviceHeartbeat device_heartbeat = 10;
+    FailoverNeedDetected failover_need_detected = 11;
+    DataSavingCheckpoint data_saving_checkpoint = 12;
+    ProofLogEvent proof_log_event = 13;
+  }
+}
