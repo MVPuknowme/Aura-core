@@ -36,8 +36,12 @@ jobs:
           grep -q 'SKYGRID by Aura-Core' site/index.html
           grep -q 'pilot_demo_only' site/status/health.json
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
+      - name: Configure Pages metadata
+        uses: actions/configure-pages@v6
+        with:
+          # Do not try to create/enable the Pages site with GITHUB_TOKEN.
+          # One-time setup must be done in repo Settings → Pages → Source: GitHub Actions.
+          enablement: false
 
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
