@@ -1,0 +1,16 @@
+apiVersion: v2
+name: noodle-control
+description: SkyGrid / Aura-Core Noodle Helm control plane for consent-first device health, failover signal classification, and proof event routing.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+home: https://github.com/MVPuknowme/Aura-core
+keywords:
+  - skygrid
+  - aura-core
+  - noodle
+  - sentinel
+  - failover
+  - protobuf
+maintainers:
+  - name: Michael Vincent Patrick / MVPuknowme
