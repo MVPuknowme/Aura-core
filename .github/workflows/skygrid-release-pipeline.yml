@@ -98,10 +98,17 @@ jobs:
             ls -la
             exit 1
           fi
+
           echo "Build output found:"
-          [ -d public ] && echo "- public"
-          [ -d dist ] && echo "- dist"
-          [ -d build ] && echo "- build"
+          if [ -d public ]; then
+            echo "- public"
+          fi
+          if [ -d dist ]; then
+            echo "- dist"
+          fi
+          if [ -d build ]; then
+            echo "- build"
+          fi
 
       - name: Upload release artifact
         uses: actions/upload-artifact@v4
