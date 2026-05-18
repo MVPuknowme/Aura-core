@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "noodle-control.fullname" . }}-config
+  labels:
+    {{- include "noodle-control.labels" . | nindent 4 }}
+data:
+  noodle-policy.yaml: |
+    project: SkyGrid / Aura-Core
+    component: Noodle Helm Control
+    mode: {{ .Values.env.NOODLE_CONTROL_MODE | quote }}
+    sentinel_policy_mode: {{ .Values.env.SENTINEL_POLICY_MODE | quote }}
+    consent_required: {{ .Values.config.consentRequired }}
+    protobuf_schema: {{ .Values.env.PROTOBUF_SCHEMA | quote }}
+    health:
+      path: {{ .Values.config.health.path | quote }}
+      readiness_path: {{ .Values.config.health.readinessPath | quote }}
+    allowed_events:
+{{- range .Values.config.allowedEvents }}
+      - {{ . | quote }}
+{{- end }}
+    allowed_actions:
+{{- range .Values.config.allowedActions }}
+      - {{ . | quote }}
+{{- end }}
+    blocked_actions:
+{{- range .Values.config.blockedActions }}
+      - {{ . | quote }}
+{{- end }}
+    proof:
+      sink: {{ .Values.config.proof.sink | quote }}
+      redact_private_data: {{ .Values.config.proof.redactPrivateData }}
+    boundaries:
+      private_data_access: {{ .Values.env.PRIVATE_DATA_ACCESS | quote }}
+      network_route_modification: {{ .Values.env.NETWORK_ROUTE_MODIFICATION | quote }}
+      packet_interception: {{ .Values.env.PACKET_INTERCEPTION | quote }}
+      wallet_key_access: {{ .Values.env.WALLET_KEY_ACCESS | quote }}
