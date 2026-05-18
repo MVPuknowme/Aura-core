@@ -1,0 +1,81 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/mvpuknowme/noodle-control
+  pullPolicy: IfNotPresent
+  tag: "0.1.0"
+
+serviceAccount:
+  create: true
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+podSecurityContext:
+  fsGroup: 10001
+
+service:
+  type: ClusterIP
+  port: 8080
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 96Mi
+  limits:
+    cpu: 250m
+    memory: 256Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+env:
+  SKYGRID_MODE: pilot
+  NOODLE_CONTROL_MODE: classify_only
+  SENTINEL_POLICY_MODE: fail_closed
+  PROTOBUF_SCHEMA: proto/skygrid_events.proto
+  PRIVATE_DATA_ACCESS: "false"
+  NETWORK_ROUTE_MODIFICATION: "false"
+  PACKET_INTERCEPTION: "false"
+  WALLET_KEY_ACCESS: "false"
+  PROOF_REQUIRED: "true"
+  LOG_LEVEL: info
+
+config:
+  consentRequired: true
+  allowedEvents:
+    - DeviceHeartbeat
+    - FailoverNeedDetected
+    - DataSavingCheckpoint
+    - ProofLogEvent
+  allowedActions:
+    - receive_opted_in_heartbeat
+    - classify_failover_need
+    - create_data_saving_checkpoint_metadata
+    - write_proof_event
+    - recommend_fallback
+  blockedActions:
+    - access_private_files
+    - access_wallet_keys
+    - sign_transactions
+    - intercept_packets
+    - modify_router_settings
+    - modify_isp_routes
+    - route_live_third_party_traffic
+  health:
+    path: /healthz
+    readinessPath: /readyz
+  proof:
+    sink: stdout
+    redactPrivateData: true
