@@ -1,0 +1,131 @@
+name: Stripe Expansion Test Flight
+
+on:
+  workflow_dispatch:
+    inputs:
+      amount_usd:
+        description: Whole-dollar test amount for the checkout session
+        required: false
+        default: "25"
+        type: string
+      funding_bucket:
+        description: SkyGrid funding bucket metadata
+        required: false
+        default: expansion_general
+        type: choice
+        options:
+          - expansion_general
+          - building_lease
+          - hiring_assistance
+          - device_onboarding
+          - emergency_memory_window
+          - compliance_reporting
+          - reserve
+      payment_description:
+        description: Checkout line item description
+        required: false
+        default: SkyGrid / Aura-Core expansion funding test flight
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  NODE_ENV: production
+  SKYGRID_SUCCESS_URL: https://mvpuknowme.github.io/Aura-core/?stripe=success
+  SKYGRID_CANCEL_URL: https://mvpuknowme.github.io/Aura-core/?stripe=cancel
+
+jobs:
+  create-checkout-session:
+    name: Create Stripe checkout session
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
+            npm ci --no-audit --fund=false
+          else
+            echo "::warning title=No npm lockfile::Using npm install fallback for test flight. Commit a lockfile later for reproducible CI."
+            npm install --no-audit --fund=false
+          fi
+
+      - name: Validate Stripe test flight config
+        id: validate
+        shell: bash
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+        run: |
+          set -euo pipefail
+          missing=()
+          [ -n "${STRIPE_SECRET_KEY:-}" ] || missing+=("STRIPE_SECRET_KEY")
+          [ -n "${SKYGRID_SUCCESS_URL:-}" ] || missing+=("SKYGRID_SUCCESS_URL")
+          [ -n "${SKYGRID_CANCEL_URL:-}" ] || missing+=("SKYGRID_CANCEL_URL")
+
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::warning title=Stripe test flight blocked::Missing required config: ${missing[*]}"
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "# Stripe Expansion Test Flight blocked"
+              echo
+              echo "Missing required config: ${missing[*]}"
+              echo
+              echo "Add STRIPE_SECRET_KEY under GitHub Actions secrets, then rerun this workflow."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+          echo "Stripe test flight config ready." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Create test checkout session
+        if: steps.validate.outputs.ready == 'true'
+        id: checkout
+        shell: bash
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          SKYGRID_EXPANSION_AMOUNT_USD: ${{ inputs.amount_usd }}
+          SKYGRID_FUNDING_BUCKET: ${{ inputs.funding_bucket }}
+          SKYGRID_PAYMENT_DESCRIPTION: ${{ inputs.payment_description }}
+        run: |
+          set -euo pipefail
+          npm run stripe:expansion-session | tee stripe-session.json
+
+      - name: Publish test flight summary
+        if: steps.validate.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE' >> "$GITHUB_STEP_SUMMARY"
+          const fs = require('fs');
+          const raw = fs.readFileSync('stripe-session.json', 'utf8');
+          const data = JSON.parse(raw);
+          console.log('# Stripe Expansion Test Flight');
+          console.log('');
+          console.log(`Project: ${data.project}`);
+          console.log(`Funding bucket: ${data.funding_bucket}`);
+          console.log(`Amount USD: $${data.amount_usd}`);
+          console.log(`Session ID: ${data.id}`);
+          console.log('');
+          console.log(`[Open Stripe Checkout Session](${data.url})`);
+          console.log('');
+          console.log('No Stripe secret values were printed or committed.');
+          NODE
+
+      - name: Upload checkout session artifact
+        if: steps.validate.outputs.ready == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: stripe-expansion-test-flight-session
+          path: stripe-session.json
+          if-no-files-found: error
