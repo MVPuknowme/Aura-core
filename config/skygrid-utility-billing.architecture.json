@@ -1,0 +1,94 @@
+{
+  "project": "aura-core/skygrid",
+  "model": "utility_billing_with_fixed_tiers_and_adaptive_riders",
+  "mode": "debug_architecture",
+  "tier_anchors": [
+    {
+      "id": "residential_base",
+      "description": "Household or device-owner account",
+      "billing": "fixed_monthly_base_plus_usage_riders"
+    },
+    {
+      "id": "household_plus",
+      "description": "Multiple devices with recurring checks and emergency memory readiness",
+      "billing": "higher_fixed_base_plus_usage_riders"
+    },
+    {
+      "id": "small_business",
+      "description": "Shop, studio, office, or local business continuity account",
+      "billing": "fixed_business_base_plus_device_and_event_riders"
+    },
+    {
+      "id": "resilience_hub",
+      "description": "Community site or local partner continuity hub",
+      "billing": "negotiated_base_plus_reports_and_event_riders"
+    },
+    {
+      "id": "infrastructure_partner",
+      "description": "ISP, Web3, server bank, edge node, or local infrastructure partner",
+      "billing": "negotiated_base_plus_bridge_and_support_riders"
+    }
+  ],
+  "adaptive_riders": [
+    {
+      "id": "two_way_bridge_rider",
+      "trigger": "two_way_bridge_used",
+      "rate_basis": ["bridge_sessions", "data_pack_size_band", "verified_relay_events", "service_priority"],
+      "safety": "charge_only_when_bridge_is_used_or_reserved"
+    },
+    {
+      "id": "web3_infrastructure_backup_rider",
+      "trigger": "web3_backup_used",
+      "rate_basis": ["eth_reference_rate", "gas_or_execution_conditions", "validator_or_node_support_window", "proof_log_volume"],
+      "safety": "no_automatic_asset_movement"
+    },
+    {
+      "id": "isp_condition_rider",
+      "trigger": "isp_condition_affects_route",
+      "rate_basis": ["isp_up", "isp_down", "degraded_trend", "failover_need", "recovery_window"],
+      "safety": "proof_required_for_condition_change"
+    },
+    {
+      "id": "crisis_emergency_data_pack_rider",
+      "trigger": "crisis_or_emergency_window",
+      "rate_basis": ["local_supply", "local_demand_pressure", "data_pack_size_band", "preservation_window_minutes", "support_priority"],
+      "safety": "approved_scope_only"
+    },
+    {
+      "id": "infrastructure_support_insurance_rider",
+      "trigger": "support_coverage_requested",
+      "rate_basis": ["covered_device_or_node_count", "support_window", "proof_log_requirement", "recovery_scope"],
+      "safety": "support_coverage_not_guaranteed_emergency_outcome"
+    }
+  ],
+  "invoice_lines": [
+    "tier_anchor_base_rate",
+    "active_device_band",
+    "heartbeat_check_band",
+    "two_way_bridge_rider",
+    "web3_infrastructure_backup_rider",
+    "isp_condition_rider",
+    "emergency_memory_window_events",
+    "crisis_data_pack_rider",
+    "storage_checkpoint_band",
+    "infrastructure_support_insurance_rider",
+    "node_host_credit",
+    "reserve_or_reporting_line"
+  ],
+  "ledger_targets": {
+    "airtable_income_dashboard": "monthly recurring revenue lines and projections",
+    "airtable_payout_logs": "payment events, credits, invoice references, and reconciliation",
+    "airtable_node_ledger": "host/device contribution credits",
+    "route_map": "integration route status and proof references"
+  },
+  "debug_assertions": [
+    "tier_anchors_present",
+    "adaptive_riders_present",
+    "invoice_lines_present",
+    "web3_rider_uses_eth_reference",
+    "isp_rider_uses_up_down_degraded_trend",
+    "crisis_rider_uses_local_supply_and_scope",
+    "insurance_rider_is_support_not_guarantee",
+    "no_secret_values_in_config"
+  ]
+}
