@@ -3,8 +3,30 @@
   "version": 2,
   "framework": null,
   "installCommand": "npm install --ignore-scripts",
-  "buildCommand": "npm run build",
-  "outputDirectory": "public",
+  "buildCommand": null,
+  "functions": {
+    "app.js": {
+      "runtime": "nodejs24.x"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/health.json",
+      "destination": "/app.js"
+    },
+    {
+      "source": "/api/health",
+      "destination": "/app.js"
+    },
+    {
+      "source": "/api/device-status",
+      "destination": "/app.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/app.js"
+    }
+  ],
   "cleanUrls": true,
   "trailingSlash": false,
   "headers": [
@@ -17,7 +39,7 @@
         },
         {
           "key": "X-Phoenix-Version",
-          "value": "1.2.0"
+          "value": "1.3.0-runtime"
         }
       ]
     }
