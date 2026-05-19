@@ -111,6 +111,7 @@
         <a class="brand" href="#top" aria-label="Aura Sky SKYGRID home"><span class="mark" aria-hidden="true"></span><span>Aura Sky / SKYGRID</span></a>
         <div class="navlinks">
           <a href="#skygrid">SKYGRID</a>
+          <a href="#aura-core-power">Powered by Aura-Core</a>
           <a href="#device-check">Device Check</a>
           <a href="#lease">Lease Your Node</a>
           <a href="#proof">Proof</a>
@@ -130,9 +131,24 @@
         <a class="btn primary" href="#pilot-intake">Start a Pilot</a>
         <a class="btn" href="#lease">Register Node Interest</a>
         <a class="btn" href="#device-check">Run Device Check</a>
+        <a class="btn" href="#aura-core-power">Powered by Aura-Core</a>
         <a class="btn" href="status/health.json">Check Status JSON</a>
         <a class="btn" href="https://github.com/MVPuknowme/Aura-core/blob/MVPuknowme/docs/brand-origin/aura-sky-skygrid-brand-record.md">View Brand Record</a>
       </div>
+    </section>
+
+    <section class="wrap section" id="aura-core-power">
+      <article class="card">
+        <span class="status-pill">Powered by Aura-Core · functional proof route</span>
+        <h2>Aura-Core Power Status</h2>
+        <p>The public SKYGRID page is powered by Aura-Core through a working static proof path: site health JSON, GitHub-backed source history, and the local device-connected scan. Until the Vercel app is live, this page routes the powered-by claim to proof that works from the deployed site.</p>
+        <p>The external Aura-Core app target is staged separately. If that endpoint returns unavailable, the public claim still resolves to the same-origin status file below instead of sending visitors to a dead route.</p>
+        <div class="actions">
+          <a class="btn primary" href="status/health.json">Open Aura-Core Status JSON</a>
+          <a class="btn" href="#device-check">Run Local Device Check</a>
+          <a class="btn" href="https://github.com/MVPuknowme/Aura-core">View Aura-Core Source</a>
+        </div>
+      </article>
     </section>
 
     <section class="wrap section" id="device-check">
@@ -178,7 +194,7 @@
       <div class="card">
         <h2>Status and Proof</h2>
         <p>Use these links to verify current project state and public artifacts.</p>
-        <div class="route-list"><a href="status/health.json">Health JSON</a><a href="https://github.com/MVPuknowme/Aura-core/issues/102">Migration control issue</a><a href="https://github.com/MVPuknowme/Aura-core/blob/MVPuknowme/docs/brand-origin/aura-sky-skygrid-brand-record.md">Aura Sky / SKYGRID brand record</a><a href="https://github.com/MVPuknowme/Aura-core">Aura-core GitHub repository</a></div>
+        <div class="route-list"><a href="status/health.json">Health JSON</a><a href="#aura-core-power">Powered by Aura-Core status</a><a href="https://github.com/MVPuknowme/Aura-core/issues/102">Migration control issue</a><a href="https://github.com/MVPuknowme/Aura-core/blob/MVPuknowme/docs/brand-origin/aura-sky-skygrid-brand-record.md">Aura Sky / SKYGRID brand record</a><a href="https://github.com/MVPuknowme/Aura-core">Aura-core GitHub repository</a></div>
       </div>
       <div class="card"><h2>Button reliability standard</h2><ul><li>Every visible button must route to a working page, proof link, JSON file, or safe fallback.</li><li>No broken B12 links should remain in public launch materials.</li><li>Forms must clearly state consent and pilot/demo status.</li><li>Proof links should load without private authentication.</li></ul></div>
     </section>
