@@ -77,17 +77,37 @@ jobs:
           if-no-files-found: warn
 
       - name: Configure Pages metadata
+        id: pages_config
         uses: actions/configure-pages@v6
+        continue-on-error: true
         with:
           # Do not try to create/enable the Pages site with GITHUB_TOKEN.
           # One-time setup must be done in repo Settings → Pages → Source: GitHub Actions.
           enablement: false
 
+      - name: Record Pages not enabled
+        if: steps.pages_config.outcome != 'success'
+        run: |
+          {
+            echo "# Auto drill dashboard deploy skipped"
+            echo
+            echo "Auto drill completed and telemetry artifacts were uploaded, but GitHub Pages is not enabled yet."
+            echo
+            echo "Manual one-time setup required:"
+            echo "1. Open repo Settings."
+            echo "2. Open Pages."
+            echo "3. Set Build and deployment Source to GitHub Actions."
+            echo "4. Rerun this workflow."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::warning title=Pages not enabled::Auto drill reports were preserved as artifacts. Enable Pages to publish dashboard."
+
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        if: steps.pages_config.outcome == 'success'
+        uses: actions/upload-pages-artifact@v4
         with:
           path: public
 
       - name: Deploy to GitHub Pages
+        if: steps.pages_config.outcome == 'success'
         id: deployment
         uses: actions/deploy-pages@v4
