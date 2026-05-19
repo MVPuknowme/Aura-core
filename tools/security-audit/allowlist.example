@@ -1,0 +1,31 @@
+# SKYGRID / Aura-Core Security Audit Allowlist Template
+# Copy to allowlist.local and track expected/approved items during manual review.
+# This file is documentation only; the v1 audit script does not automatically suppress findings.
+
+[expected_global_npm_packages]
+# Example:
+# npm
+# corepack
+# newman
+
+[expected_package_lifecycle_scripts]
+# Example:
+# ~/projects/trusted-app/package.json postinstall builds native dependency
+
+[expected_aws_profiles]
+# Example:
+# default read-only dev profile
+# skygrid-ci deploy profile
+
+[expected_ssh_keys]
+# Example:
+# ~/.ssh/id_ed25519 GitHub deploy key fingerprint SHA256:...
+
+[expected_cron_or_launch_jobs]
+# Example:
+# hourly local backup job
+
+[expected_listening_ports]
+# Example:
+# 3000 local dev server
+# 5432 local postgres
