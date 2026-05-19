@@ -16,7 +16,7 @@ function fail(message) {
 }
 
 function pass(message) {
-  notes.push(`✅ ${message}`);
+  notes.push(`OK: ${message}`);
 }
 
 function checkFile(path, label) {
