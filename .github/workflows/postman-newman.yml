@@ -4,19 +4,19 @@ on:
   workflow_dispatch:
     inputs:
       site_url:
-        description: Public Aura Sky / SKYGRID site URL
+        description: Public Aura-Core / SKYGRID Vercel runtime URL
         required: false
-        default: https://mvpuknowme.github.io/Aura-core/
+        default: https://aura-core.vercel.app/
         type: string
       base_url:
-        description: Primary static site base URL
+        description: Primary Vercel API base URL
         required: false
-        default: https://mvpuknowme.github.io/Aura-core
+        default: https://aura-core.vercel.app
         type: string
       aws_service_url:
-        description: Optional AWS service URL after deploy
+        description: Optional AWS/SKYGRID service URL after deploy
         required: false
-        default: https://mvpuknowme.github.io/Aura-core
+        default: https://aura-core.vercel.app
         type: string
   push:
     branches:
@@ -24,6 +24,8 @@ on:
     paths:
       - postman/**
       - site/**
+      - api/**
+      - vercel.json
       - .github/workflows/postman-newman.yml
   schedule:
     - cron: '23 */6 * * *'
@@ -38,9 +40,9 @@ jobs:
     timeout-minutes: 10
 
     env:
-      SITE_URL: ${{ inputs.site_url || 'https://mvpuknowme.github.io/Aura-core/' }}
-      BASE_URL: ${{ inputs.base_url || 'https://mvpuknowme.github.io/Aura-core' }}
-      AWS_SERVICE_URL: ${{ inputs.aws_service_url || 'https://mvpuknowme.github.io/Aura-core' }}
+      SITE_URL: ${{ inputs.site_url || 'https://aura-core.vercel.app/' }}
+      BASE_URL: ${{ inputs.base_url || 'https://aura-core.vercel.app' }}
+      AWS_SERVICE_URL: ${{ inputs.aws_service_url || 'https://aura-core.vercel.app' }}
 
     steps:
       - name: Check out repository
