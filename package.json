@@ -14,11 +14,13 @@
     "deploy": "npm run prod",
     "validator:health": "node scripts/validator-health-check.mjs",
     "node:ledger": "node scripts/build-node-ledger.mjs",
+    "stripe:expansion-session": "node scripts/create-stripe-expansion-session.mjs",
     "test.config": "npm run build"
   },
   "dependencies": {
     "@rainbow-me/rainbowkit": "latest",
     "ethers": "latest",
+    "stripe": "latest",
     "viem": "latest",
     "wagmi": "latest"
   },
