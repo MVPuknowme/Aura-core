@@ -2,6 +2,16 @@
 
 This file documents the configuration names required by the SkyGrid release pipeline. It does not contain secret values.
 
+## Release identity
+
+Use this project namespace for the SkyGrid release path:
+
+```text
+AURA_ENV=aura-core/skygrid
+```
+
+This value identifies the release family as Aura-Core / SkyGrid. It is not a private credential.
+
 ## Required GitHub Actions secrets for staging
 
 Add these in GitHub under repository secrets or the `staging` environment secrets:
@@ -13,6 +23,12 @@ CHAIN_KEY
 STAGING_HEALTH_URL
 ```
 
+Recommended non-secret identity value:
+
+```text
+AURA_ENV=aura-core/skygrid
+```
+
 ## Required GitHub Actions secrets for production
 
 Add these in GitHub under the `production` environment secrets:
@@ -22,6 +38,12 @@ AURA_ENV
 PEER_SECRET
 CHAIN_KEY
 PRODUCTION_HEALTH_URL
+```
+
+Recommended non-secret identity value:
+
+```text
+AURA_ENV=aura-core/skygrid
 ```
 
 ## Optional tracker secrets
@@ -52,6 +74,7 @@ safe_config_rules:
     - example URLs using placeholders
     - non-sensitive defaults
     - status check commands
+    - project namespace values such as aura-core/skygrid
 ```
 
 ## Recommended setup path
@@ -60,8 +83,9 @@ safe_config_rules:
 2. Open `Secrets and variables`.
 3. Open `Actions`.
 4. Add required repository secrets or environment secrets.
-5. Rerun `SKYGRID Release Pipeline`.
-6. Confirm the staging deploy summary says configuration is ready.
+5. Set `AURA_ENV` to `aura-core/skygrid`.
+6. Rerun `SKYGRID Release Pipeline`.
+7. Confirm the staging deploy summary says configuration is ready.
 
 ## Expected pipeline behavior
 
