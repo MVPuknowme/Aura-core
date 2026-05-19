@@ -64,6 +64,44 @@ message DataSavingCheckpoint {
   bool private_data_excluded = 8;
 }
 
+message EmergencyMemoryWindowRequest {
+  string request_id = 1;
+  DeviceIdentity identity = 2;
+  string timestamp = 3;
+  string trigger_type = 4;
+  string incident_ref = 5;
+  string requested_scope = 6;
+  string window_status = 7;
+  int32 requested_window_minutes = 8;
+  bool asset_action_requested = 9;
+  bool proof_required = 10;
+}
+
+message EmergencyMemoryWindowDecision {
+  string request_id = 1;
+  DeviceIdentity identity = 2;
+  string timestamp = 3;
+  string decision = 4;
+  string approved_scope = 5;
+  string sentinel_policy = 6;
+  int32 approved_window_minutes = 7;
+  bool asset_action_allowed = 8;
+  bool private_data_accessed = 9;
+  bool network_routes_modified = 10;
+}
+
+message EmergencyMemoryWindowReceipt {
+  string request_id = 1;
+  DeviceIdentity identity = 2;
+  string timestamp = 3;
+  string result = 4;
+  string checkpoint_id = 5;
+  string proof_id = 6;
+  string receipt_ref = 7;
+  bool private_data_excluded = 8;
+  bool asset_transfer_performed = 9;
+}
+
 message ProofLogEvent {
   string proof_id = 1;
   string event_type = 2;
@@ -89,5 +127,8 @@ message SkyGridEnvelope {
     FailoverNeedDetected failover_need_detected = 11;
     DataSavingCheckpoint data_saving_checkpoint = 12;
     ProofLogEvent proof_log_event = 13;
+    EmergencyMemoryWindowRequest emergency_memory_window_request = 14;
+    EmergencyMemoryWindowDecision emergency_memory_window_decision = 15;
+    EmergencyMemoryWindowReceipt emergency_memory_window_receipt = 16;
   }
 }
