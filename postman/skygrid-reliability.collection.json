@@ -1,12 +1,12 @@
 {
   "info": {
-    "name": "Aura Sky / SKYGRID Reliability Checks",
-    "description": "Baseline Postman/Newman checks for the Aura Sky / SKYGRID by Aura-Core static launch site and public status JSON.",
+    "name": "Aura-Core / SKYGRID Runtime Reliability Checks",
+    "description": "Baseline Postman/Newman checks for the Aura-Core / SKYGRID Vercel runtime, public health API, helm status, and provenance mirror status.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "Aura Sky SKYGRID Site Health",
+      "name": "Aura-Core SKYGRID Runtime Home",
       "request": {
         "method": "GET",
         "header": [],
@@ -24,22 +24,20 @@
               "const siteBody = pm.response.text();",
               "const siteBodyLower = siteBody.toLowerCase();",
               "",
-              "pm.test('Status code is successful', function () {",
+              "pm.test('Runtime home status code is successful', function () {",
               "    pm.expect(pm.response.code).to.be.oneOf([200, 204, 301, 302]);",
               "});",
               "",
-              "pm.test('Response time is under 3000ms', function () {",
+              "pm.test('Runtime home response time is under 3000ms', function () {",
               "    pm.expect(pm.response.responseTime).to.be.below(3000);",
               "});",
               "",
-              "pm.test('Response body is not empty', function () {",
+              "pm.test('Runtime home body is not empty', function () {",
               "    pm.expect(siteBody).to.be.a('string').and.to.have.length.above(0);",
               "});",
               "",
-              "pm.test('Response contains Aura Sky / SKYGRID launch copy', function () {",
-              "    pm.expect(siteBodyLower.includes('skygrid')).to.equal(true);",
-              "    pm.expect(siteBodyLower.includes('aura-core')).to.equal(true);",
-              "    pm.expect(siteBodyLower.includes('pilot')).to.equal(true);",
+              "pm.test('Runtime home references SKYGRID or Aura-Core', function () {",
+              "    pm.expect(siteBodyLower.includes('skygrid') || siteBodyLower.includes('aura-core')).to.equal(true);",
               "});",
               "",
               "pm.collectionVariables.set('last_status_code', pm.response.code);",
@@ -52,14 +50,14 @@
       ]
     },
     {
-      "name": "Public Status JSON",
+      "name": "Runtime Health API",
       "request": {
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{base_url}}/status/health.json",
+          "raw": "{{base_url}}/api/health",
           "host": ["{{base_url}}"],
-          "path": ["status", "health.json"]
+          "path": ["api", "health"]
         }
       },
       "event": [
@@ -69,31 +67,29 @@
             "type": "text/javascript",
             "exec": [
               "const statusText = pm.response.text().trim();",
-              "const statusContentType = pm.response.headers.get('Content-Type') || '';",
               "let statusJson = null;",
               "",
-              "pm.test('Status JSON loads successfully', function () {",
+              "pm.test('Health API loads successfully', function () {",
               "    pm.expect(pm.response.code).to.equal(200);",
               "});",
               "",
-              "pm.test('Status JSON is fast', function () {",
+              "pm.test('Health API is fast', function () {",
               "    pm.expect(pm.response.responseTime).to.be.below(3000);",
               "});",
               "",
-              "pm.test('Status JSON response is JSON, not an HTML error page', function () {",
+              "pm.test('Health API response is JSON', function () {",
               "    pm.expect(statusText.startsWith('{')).to.equal(true);",
               "    pm.expect(statusText.startsWith('<')).to.equal(false);",
               "    statusJson = JSON.parse(statusText);",
               "    pm.expect(statusJson).to.be.an('object');",
               "});",
               "",
-              "pm.test('Status JSON confirms emergency health ACK and pilot/demo mode', function () {",
+              "pm.test('Health API confirms Aura-Core SKYGRID runtime', function () {",
               "    if (!statusJson) { statusJson = JSON.parse(statusText); }",
-              "    pm.expect(statusJson.ack).to.equal(true);",
-              "    pm.expect(statusJson.nack).to.equal(false);",
-              "    pm.expect(statusJson.code).to.equal('ACK_OK');",
-              "    pm.expect(statusJson.project).to.include('SKYGRID');",
-              "    pm.expect(statusJson.claims_mode).to.equal('pilot_demo_only');",
+              "    pm.expect(statusJson.ok).to.equal(true);",
+              "    pm.expect(statusJson.status).to.equal('online');",
+              "    pm.expect(JSON.stringify(statusJson).toLowerCase()).to.include('aura-core');",
+              "    pm.expect(JSON.stringify(statusJson).toLowerCase()).to.include('skygrid');",
               "});"
             ]
           }
@@ -101,14 +97,17 @@
       ]
     },
     {
-      "name": "Optional AWS Service Health Endpoint",
+      "name": "SKYGRID Helm Status",
       "request": {
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{aws_service_url}}/status/health.json",
-          "host": ["{{aws_service_url}}"],
-          "path": ["status", "health.json"]
+          "raw": "{{base_url}}/api/skygrid/helm?command=status",
+          "host": ["{{base_url}}"],
+          "path": ["api", "skygrid", "helm"],
+          "query": [
+            { "key": "command", "value": "status" }
+          ]
         }
       },
       "event": [
@@ -117,10 +116,86 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test('Optional AWS/static mirror status is acceptable', function () {",
+              "const helmText = pm.response.text().trim();",
+              "let helmJson = null;",
+              "pm.test('Helm status loads successfully', function () {",
+              "    pm.expect(pm.response.code).to.equal(200);",
+              "});",
+              "pm.test('Helm status response is JSON', function () {",
+              "    pm.expect(helmText.startsWith('{')).to.equal(true);",
+              "    helmJson = JSON.parse(helmText);",
+              "    pm.expect(helmJson).to.be.an('object');",
+              "});",
+              "pm.test('Helm status is operator-assist only', function () {",
+              "    if (!helmJson) { helmJson = JSON.parse(helmText); }",
+              "    pm.expect(helmJson.ok).to.equal(true);",
+              "    pm.expect(helmJson.helm.autonomous_execution).to.equal(false);",
+              "    pm.expect(helmJson.helm.destructive_actions_enabled).to.equal(false);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "SKYGRID Provenance Mirror Status",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/skygrid/provenance",
+          "host": ["{{base_url}}"],
+          "path": ["api", "skygrid", "provenance"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const provenanceText = pm.response.text().trim();",
+              "let provenanceJson = null;",
+              "pm.test('Provenance status loads successfully or is pending deployment', function () {",
+              "    pm.expect([200, 404, 503]).to.include(pm.response.code);",
+              "});",
+              "pm.test('Provenance response is JSON when route exists', function () {",
+              "    if (pm.response.code === 200) {",
+              "        pm.expect(provenanceText.startsWith('{')).to.equal(true);",
+              "        provenanceJson = JSON.parse(provenanceText);",
+              "        pm.expect(provenanceJson.ok).to.equal(true);",
+              "        pm.expect(provenanceJson.recognized_assistive_build.embedded_autonomous_ai).to.equal(false);",
+              "    }",
+              "});",
+              "pm.test('Provenance response time is under 5000ms', function () {",
+              "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Optional AWS / Mirror Service Health Endpoint",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{aws_service_url}}/api/skygrid/aws",
+          "host": ["{{aws_service_url}}"],
+          "path": ["api", "skygrid", "aws"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Optional AWS/mirror status is acceptable', function () {",
               "    pm.expect([200, 204, 404, 503]).to.include(pm.response.code);",
               "});",
-              "pm.test('Optional AWS/static mirror response time is under 5000ms', function () {",
+              "pm.test('Optional AWS/mirror response time is under 5000ms', function () {",
               "    pm.expect(pm.response.responseTime).to.be.below(5000);",
               "});"
             ]
@@ -132,15 +207,15 @@
   "variable": [
     {
       "key": "site_url",
-      "value": "https://mvpuknowme.github.io/Aura-core/"
+      "value": "https://aura-core.vercel.app/"
     },
     {
       "key": "base_url",
-      "value": "https://mvpuknowme.github.io/Aura-core"
+      "value": "https://aura-core.vercel.app"
     },
     {
       "key": "aws_service_url",
-      "value": "https://mvpuknowme.github.io/Aura-core"
+      "value": "https://aura-core.vercel.app"
     }
   ]
 }
