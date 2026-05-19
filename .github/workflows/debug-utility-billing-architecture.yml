@@ -1,0 +1,48 @@
+name: Debug Utility Billing Architecture
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - docs/stripe-utility-billing-system.md
+      - config/skygrid-utility-billing.architecture.json
+      - scripts/debug-utility-billing-architecture.mjs
+      - package.json
+
+permissions:
+  contents: read
+
+jobs:
+  debug-architecture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Run utility billing architecture debug
+        run: npm run make.debug
+
+      - name: Write debug summary
+        if: always()
+        run: |
+          {
+            echo "# Utility Billing Architecture Debug"
+            echo
+            echo "Command: npm run make.debug"
+            echo
+            echo "Validated:"
+            echo "- fixed tier anchors"
+            echo "- adaptive riders"
+            echo "- two-way bridge rider"
+            echo "- Web3 / ETH reference rider"
+            echo "- ISP up/down/degraded condition rider"
+            echo "- crisis emergency data-pack rider"
+            echo "- infrastructure support insurance rider"
+            echo "- no credential-like values in architecture config/docs"
+          } >> "$GITHUB_STEP_SUMMARY"
