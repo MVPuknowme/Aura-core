@@ -16,8 +16,8 @@ if [ "${SKYGRID_ENV:-}" = "production" ]; then
 fi
 
 if [ ${#missing[@]} -gt 0 ]; then
-  echo "SkyGrid release config blocked. Missing: ${missing[*]}"
+  echo "SkyGrid release config blocked for aura-core/skygrid. Missing: ${missing[*]}"
   exit 2
 fi
 
-echo "SkyGrid release config ready for ${SKYGRID_ENV:-staging}."
+echo "SkyGrid release config ready for aura-core/skygrid in ${SKYGRID_ENV:-staging}."
