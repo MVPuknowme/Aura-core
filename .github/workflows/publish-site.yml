@@ -46,18 +46,38 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      # Do not let the workflow token try to create/enable the Pages site.
-      # One-time setup required: Settings → Pages → Source: GitHub Actions.
       - name: Configure Pages metadata
+        id: pages_config
         uses: actions/configure-pages@v6
+        continue-on-error: true
         with:
+          # Do not let the workflow token try to create/enable the Pages site.
+          # One-time setup required: Settings → Pages → Source: GitHub Actions.
           enablement: false
 
+      - name: Record Pages not enabled
+        if: steps.pages_config.outcome != 'success'
+        run: |
+          {
+            echo "# GitHub Pages deploy skipped"
+            echo
+            echo "The site audit passed, but GitHub Pages is not enabled for this repository yet."
+            echo
+            echo "Manual one-time setup required:"
+            echo "1. Open repo Settings."
+            echo "2. Open Pages."
+            echo "3. Set Build and deployment Source to GitHub Actions."
+            echo "4. Rerun this workflow."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::warning title=Pages not enabled::Enable Settings → Pages → Source: GitHub Actions, then rerun."
+
       - name: Upload site artifact
+        if: steps.pages_config.outcome == 'success'
         uses: actions/upload-pages-artifact@v4
         with:
           path: site
 
       - name: Deploy to GitHub Pages
+        if: steps.pages_config.outcome == 'success'
         id: deployment
         uses: actions/deploy-pages@v4
