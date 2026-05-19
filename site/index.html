@@ -44,13 +44,7 @@
       background: rgba(8,20,38,0.74);
       border-bottom: 1px solid var(--line);
     }
-    nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 18px;
-      padding: 14px 0;
-    }
+    nav { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 14px 0; }
     .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: .04em; }
     .mark {
       width: 34px; height: 34px; border-radius: 12px;
@@ -61,19 +55,10 @@
     .hero { padding: 76px 0 42px; }
     .badge {
       display: inline-flex; gap: 8px; align-items: center;
-      padding: 8px 12px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      color: var(--muted);
-      background: rgba(255,255,255,0.05);
-      font-size: .92rem;
+      padding: 8px 12px; border: 1px solid var(--line); border-radius: 999px;
+      color: var(--muted); background: rgba(255,255,255,0.05); font-size: .92rem;
     }
-    h1 {
-      font-size: clamp(2.25rem, 7vw, 5.6rem);
-      line-height: .95;
-      margin: 18px 0 20px;
-      letter-spacing: -0.07em;
-    }
+    h1 { font-size: clamp(2.25rem, 7vw, 5.6rem); line-height: .95; margin: 18px 0 20px; letter-spacing: -0.07em; }
     h1 span { color: var(--cyan); text-shadow: 0 0 30px rgba(109,234,255,.38); }
     h2 { font-size: clamp(1.45rem, 4vw, 2.4rem); line-height: 1.05; margin: 0 0 14px; letter-spacing: -0.035em; }
     h3 { margin: 0 0 8px; }
@@ -82,50 +67,38 @@
     .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 28px; }
     .btn {
       display: inline-flex; align-items: center; justify-content: center;
-      min-height: 46px; padding: 12px 16px;
-      border-radius: 14px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.07);
-      color: var(--white);
-      font-weight: 700;
-      box-shadow: none;
+      min-height: 46px; padding: 12px 16px; border-radius: 14px;
+      border: 1px solid var(--line); background: rgba(255,255,255,0.07);
+      color: var(--white); font-weight: 700; box-shadow: none; cursor: pointer;
     }
     .btn.primary { background: linear-gradient(135deg, rgba(109,234,255,.95), rgba(155,124,255,.95)); color: #06101f; border: none; }
     .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 34px; }
-    .card {
-      padding: 22px;
-      border-radius: 24px;
-      background: var(--panel);
-      border: 1px solid var(--line);
-      box-shadow: var(--shadow);
-    }
+    .card { padding: 22px; border-radius: 24px; background: var(--panel); border: 1px solid var(--line); box-shadow: var(--shadow); }
     .section { padding: 42px 0; }
     .two { display: grid; grid-template-columns: 1.05fr .95fr; gap: 18px; align-items: stretch; }
     ul { margin: 12px 0 0; padding-left: 20px; color: var(--muted); }
     li { margin: 7px 0; }
     .status-pill {
-      display: inline-flex;
-      padding: 7px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(124,255,199,.4);
-      background: rgba(124,255,199,.09);
-      color: var(--ok);
-      font-weight: 700;
-      font-size: .88rem;
-      margin-bottom: 12px;
+      display: inline-flex; padding: 7px 10px; border-radius: 999px;
+      border: 1px solid rgba(124,255,199,.4); background: rgba(124,255,199,.09);
+      color: var(--ok); font-weight: 700; font-size: .88rem; margin-bottom: 12px;
     }
-    .warning {
-      border-color: rgba(255,209,102,.38);
-      background: rgba(255,209,102,.08);
-    }
+    .warning { border-color: rgba(255,209,102,.38); background: rgba(255,209,102,.08); }
     .warning strong { color: var(--warn); }
     .route-list a { display: block; padding: 12px 0; border-bottom: 1px solid var(--line); }
+    #device-status { margin-top: 14px; padding: 14px; border: 1px solid rgba(109,234,255,.28); border-radius: 18px; background: rgba(109,234,255,.07); color: var(--white); }
+    .device-status-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 14px 0 0; }
+    .device-status-grid div { padding: 10px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,.05); }
+    .device-status-grid dt { color: var(--muted); font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; }
+    .device-status-grid dd { margin: 3px 0 0; color: var(--white); font-weight: 800; }
+    .timestamp { color: var(--muted); font-size: .9rem; margin-top: 10px; display: block; }
+    noscript { display: block; color: var(--warn); margin-top: 12px; }
     footer { padding: 44px 0 70px; color: var(--muted); border-top: 1px solid var(--line); margin-top: 36px; }
     code { color: var(--white); background: rgba(255,255,255,.08); padding: 2px 6px; border-radius: 8px; }
     @media (max-width: 800px) {
       nav { align-items: flex-start; flex-direction: column; }
       .navlinks { justify-content: flex-start; }
-      .grid, .two { grid-template-columns: 1fr; }
+      .grid, .two, .device-status-grid { grid-template-columns: 1fr; }
       .hero { padding-top: 42px; }
       .card { border-radius: 20px; }
     }
@@ -138,6 +111,7 @@
         <a class="brand" href="#top" aria-label="Aura Sky SKYGRID home"><span class="mark" aria-hidden="true"></span><span>Aura Sky / SKYGRID</span></a>
         <div class="navlinks">
           <a href="#skygrid">SKYGRID</a>
+          <a href="#device-check">Device Check</a>
           <a href="#lease">Lease Your Node</a>
           <a href="#proof">Proof</a>
           <a href="#pilot-intake">Pilot Intake</a>
@@ -155,25 +129,33 @@
       <div class="actions">
         <a class="btn primary" href="#pilot-intake">Start a Pilot</a>
         <a class="btn" href="#lease">Register Node Interest</a>
+        <a class="btn" href="#device-check">Run Device Check</a>
         <a class="btn" href="status/health.json">Check Status JSON</a>
         <a class="btn" href="https://github.com/MVPuknowme/Aura-core/blob/MVPuknowme/docs/brand-origin/aura-sky-skygrid-brand-record.md">View Brand Record</a>
       </div>
     </section>
 
+    <section class="wrap section" id="device-check">
+      <article class="card">
+        <span class="status-pill">Safe browser-side check</span>
+        <h2>Device Connected Status</h2>
+        <p>This scan uses non-invasive browser signals only: online state, device class, local storage availability, viewport behavior, and a same-origin health JSON ping. It does not collect MAC addresses, IMEI, serial numbers, precise location, wallet keys, or private network identifiers.</p>
+        <div id="device-status" role="status" aria-live="polite">
+          <strong>Checking device connection…</strong>
+        </div>
+        <time class="timestamp" id="device-last-checked">Last checked: pending</time>
+        <noscript>Device detected, but JavaScript is disabled. Enable JavaScript to run the live connection check.</noscript>
+        <div class="actions">
+          <button class="btn" id="device-status-refresh" type="button">Refresh Device Check</button>
+        </div>
+      </article>
+    </section>
+
     <section class="wrap section" id="skygrid">
       <div class="grid">
-        <article class="card">
-          <h3>Backup connectivity</h3>
-          <p>Designed around fallback planning for ISP outages, grid instability, device failure, and local power disruption. The goal is practical recovery, not unsupported hype.</p>
-        </article>
-        <article class="card">
-          <h3>Local node model</h3>
-          <p>Homes, offices, and community sites may eventually provide compute, storage, connectivity, or proof presence through consent-based onboarding.</p>
-        </article>
-        <article class="card">
-          <h3>Proof-first operations</h3>
-          <p>Every public claim should connect to a proof trail: GitHub commits, health JSON, button routes, pilot records, and transparent changelogs.</p>
-        </article>
+        <article class="card"><h3>Backup connectivity</h3><p>Designed around fallback planning for ISP outages, grid instability, device failure, and local power disruption. The goal is practical recovery, not unsupported hype.</p></article>
+        <article class="card"><h3>Local node model</h3><p>Homes, offices, and community sites may eventually provide compute, storage, connectivity, or proof presence through consent-based onboarding.</p></article>
+        <article class="card"><h3>Proof-first operations</h3><p>Every public claim should connect to a proof trail: GitHub commits, health JSON, button routes, pilot records, and transparent changelogs.</p></article>
       </div>
     </section>
 
@@ -183,12 +165,7 @@
         <h2>Lease Your Node</h2>
         <p>SKYGRID is exploring a model where approved participants can provide compute space, storage, and backup network presence from local devices or sites.</p>
         <p>This is not a guaranteed payout program yet. Paid participation requires verified monitoring, contracts, consent, compliance review, and clear operator approval.</p>
-        <ul>
-          <li>Device-owner opt-in tracking</li>
-          <li>Solar / backup power readiness</li>
-          <li>Connectivity options: Ethernet, Wi-Fi, cellular, satellite, LoRa, MQTT, and other safe fallbacks</li>
-          <li>Proof packet review before public claims</li>
-        </ul>
+        <ul><li>Device-owner opt-in tracking</li><li>Solar / backup power readiness</li><li>Connectivity options: Ethernet, Wi-Fi, cellular, satellite, LoRa, MQTT, and other safe fallbacks</li><li>Proof packet review before public claims</li></ul>
       </div>
       <div class="card warning">
         <h2>Launch guardrails</h2>
@@ -201,22 +178,9 @@
       <div class="card">
         <h2>Status and Proof</h2>
         <p>Use these links to verify current project state and public artifacts.</p>
-        <div class="route-list">
-          <a href="status/health.json">Health JSON</a>
-          <a href="https://github.com/MVPuknowme/Aura-core/issues/102">Migration control issue</a>
-          <a href="https://github.com/MVPuknowme/Aura-core/blob/MVPuknowme/docs/brand-origin/aura-sky-skygrid-brand-record.md">Aura Sky / SKYGRID brand record</a>
-          <a href="https://github.com/MVPuknowme/Aura-core">Aura-core GitHub repository</a>
-        </div>
+        <div class="route-list"><a href="status/health.json">Health JSON</a><a href="https://github.com/MVPuknowme/Aura-core/issues/102">Migration control issue</a><a href="https://github.com/MVPuknowme/Aura-core/blob/MVPuknowme/docs/brand-origin/aura-sky-skygrid-brand-record.md">Aura Sky / SKYGRID brand record</a><a href="https://github.com/MVPuknowme/Aura-core">Aura-core GitHub repository</a></div>
       </div>
-      <div class="card">
-        <h2>Button reliability standard</h2>
-        <ul>
-          <li>Every visible button must route to a working page, proof link, JSON file, or safe fallback.</li>
-          <li>No broken B12 links should remain in public launch materials.</li>
-          <li>Forms must clearly state consent and pilot/demo status.</li>
-          <li>Proof links should load without private authentication.</li>
-        </ul>
-      </div>
+      <div class="card"><h2>Button reliability standard</h2><ul><li>Every visible button must route to a working page, proof link, JSON file, or safe fallback.</li><li>No broken B12 links should remain in public launch materials.</li><li>Forms must clearly state consent and pilot/demo status.</li><li>Proof links should load without private authentication.</li></ul></div>
     </section>
 
     <section class="wrap section two" id="pilot-intake">
@@ -224,25 +188,17 @@
         <h2>Pilot Intake</h2>
         <p>Interested partners can open a GitHub intake issue for solar installer leads, device-owner opt-ins, community partners, investors, sponsors, and pilot candidates.</p>
         <p>By submitting pilot interest, participants should understand this is exploratory and subject to consent, verification, monitoring, and written agreements.</p>
-        <div class="actions">
-          <a class="btn primary" href="https://github.com/MVPuknowme/Aura-core/issues/new?title=SKYGRID%20Pilot%20Intake&body=Name%3A%0AEmail%20or%20preferred%20contact%3A%0ACity%20%2F%20State%3A%0ALead%20Type%3A%20Solar%20Installer%20%2F%20Homeowner%20%2F%20Device%20Owner%20%2F%20Community%20Partner%20%2F%20Investor%20%2F%20Other%0ASolar%20%2F%20Backup%20Setup%3A%0ADevice%20Type%3A%0AConsent%20Confirmed%3A%20Yes%20%2F%20No%0ANotes%3A">Open Pilot Intake</a>
-        </div>
+        <div class="actions"><a class="btn primary" href="https://github.com/MVPuknowme/Aura-core/issues/new?title=SKYGRID%20Pilot%20Intake&body=Name%3A%0AEmail%20or%20preferred%20contact%3A%0ACity%20%2F%20State%3A%0ALead%20Type%3A%20Solar%20Installer%20%2F%20Homeowner%20%2F%20Device%20Owner%20%2F%20Community%20Partner%20%2F%20Investor%20%2F%20Other%0ASolar%20%2F%20Backup%20Setup%3A%0ADevice%20Type%3A%0AConsent%20Confirmed%3A%20Yes%20%2F%20No%0ANotes%3A">Open Pilot Intake</a></div>
       </div>
       <div class="card" id="feedback">
         <h2>Feedback</h2>
         <p>Report broken links, unclear copy, deployment issues, or pilot questions. Feedback should be specific and tied to a visible route or claim when possible.</p>
-        <div class="actions">
-          <a class="btn" href="https://github.com/MVPuknowme/Aura-core/issues/new?title=SKYGRID%20Feedback&body=What%20worked%3A%0AWhat%20broke%3A%0ADevice%20%2F%20browser%3A%0ALink%20or%20route%3A%0ANotes%3A">Send Feedback</a>
-        </div>
+        <div class="actions"><a class="btn" href="https://github.com/MVPuknowme/Aura-core/issues/new?title=SKYGRID%20Feedback&body=What%20worked%3A%0AWhat%20broke%3A%0ADevice%20%2F%20browser%3A%0ALink%20or%20route%3A%0ANotes%3A">Send Feedback</a></div>
       </div>
     </section>
   </main>
 
-  <footer>
-    <div class="wrap">
-      <p><strong>MVPuknowme / Aura-Core™ / Aura Sky / SKYGRID</strong></p>
-      <p>Tokenize everything. Empower everyone. Build reliable proof before making production claims.</p>
-    </div>
-  </footer>
+  <footer><div class="wrap"><p><strong>MVPuknowme / Aura-Core™ / Aura Sky / SKYGRID</strong></p><p>Tokenize everything. Empower everyone. Build reliable proof before making production claims.</p></div></footer>
+  <script src="device-status.js" defer></script>
 </body>
 </html>
