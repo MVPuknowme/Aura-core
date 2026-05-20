@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-BRANCH="mvpuknowme/mvp-12-build-skygrid-auto-drill-preflight"
+BRANCH="mvp-12-build-skygrid-auto-drill-preflight"
 LOG_DIR="deploy-logs"
 STAMP="$(date +"%Y%m%d-%H%M%S")"
 LOG_FILE="$LOG_DIR/run-deploy-$STAMP.log"
