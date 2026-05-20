@@ -5,7 +5,7 @@
   "description": "Aura-Core SKYGRID runtime with live health and device status routes.",
   "main": "app.js",
   "type": "module",
-  "packageManager": "pnpm@10.23.0",
+  "packageManager": "pnpm@11.1.3",
   "scripts": {
     "start": "node app.js",
     "dev": "node app.js",
@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@rainbow-me/rainbowkit": "latest",
+    "@vercel/analytics": "latest",
     "ethers": "latest",
     "stripe": "latest",
     "viem": "latest",
