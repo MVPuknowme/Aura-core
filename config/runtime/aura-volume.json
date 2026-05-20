@@ -1,0 +1,21 @@
+{
+  "aura_volume": {
+    "version": 1,
+    "owner": "Michael Vincent Patrick / MVPuknowme",
+    "state": null,
+    "mode": "null_volume",
+    "effective_volume": null,
+    "audio_output_enabled": false,
+    "interpretation": "Aura volume intentionally set to null. No audible output level is asserted by this config.",
+    "safety": {
+      "does_not_modify_device_hardware": true,
+      "does_not_change_system_volume": true,
+      "does_not_delete_audio_assets": true,
+      "preserve_logs": true
+    },
+    "status": {
+      "configured": true,
+      "last_updated": "2026-05-19"
+    }
+  }
+}
