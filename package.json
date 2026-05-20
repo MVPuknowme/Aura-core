@@ -13,13 +13,15 @@
     "vercel-build": "pnpm run build",
     "prod": "AURA_MODE=prod SKYGRID_TRACE=false SKYGRID_LEVEL=info NODE_ENV=production node app.js",
     "deploy": "pnpm run prod",
+    "run.config": "node scripts/skygrid-run-config.mjs",
+    "preflight:ai-build": "pnpm run run.config && pnpm run preflight:interference && pnpm run build",
     "preflight:interference": "node scripts/build-interference-preflight.mjs",
     "validator:health": "node scripts/validator-health-check.mjs",
     "node:ledger": "node scripts/build-node-ledger.mjs",
     "stripe:expansion-session": "node scripts/create-stripe-expansion-session.mjs",
     "debug:utility-billing": "node scripts/debug-utility-billing-architecture.mjs",
     "make.debug": "pnpm run debug:utility-billing",
-    "test.config": "pnpm run build"
+    "test.config": "pnpm run run.config"
   },
   "dependencies": {
     "@rainbow-me/rainbowkit": "latest",
