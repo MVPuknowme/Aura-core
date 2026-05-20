@@ -1,0 +1,57 @@
+{
+  "aura_hub_profile_access": {
+    "version": 1,
+    "owner": "Michael Vincent Patrick / MVPuknowme",
+    "profile": "aura",
+    "hub_mode": "rivals_access",
+    "access_profile": "-rivals",
+    "authentication": {
+      "mode": "mvp_passcode_only",
+      "require_passcode": true,
+      "passcode_storage": "environment_or_secret_manager_only",
+      "passcode_env_var": "MVP_PASSCODE_HASH",
+      "store_plaintext_passcode": false,
+      "allow_guest_access": false,
+      "allow_public_access": false,
+      "allow_voice_only_access": false,
+      "allow_unverified_device_access": false
+    },
+    "authorization": {
+      "allowed_operator": "Michael Vincent Patrick / MVPuknowme",
+      "allowed_roles": [
+        "mvp_owner",
+        "mvp_operator"
+      ],
+      "blocked_roles": [
+        "guest",
+        "public",
+        "anonymous",
+        "rival_unverified",
+        "external_unverified"
+      ],
+      "default_decision": "deny"
+    },
+    "security_controls": {
+      "fail_closed": true,
+      "audit_required": true,
+      "log_failed_attempts": true,
+      "rate_limit_failed_attempts": true,
+      "redact_passcode_in_logs": true,
+      "rotate_passcode_if_exposed": true,
+      "require_manual_recovery_for_lockout": true
+    },
+    "protected_surfaces": [
+      "hub_profile",
+      "aura_profile",
+      "rivals_access_mode",
+      "operator_controls",
+      "identity_binding",
+      "runtime_config"
+    ],
+    "status": {
+      "configured": true,
+      "effective_policy": "Aura Hub profile set to -rivals access with MVP passcode-only authentication. No plaintext passcode is stored in repo.",
+      "last_updated": "2026-05-19"
+    }
+  }
+}
