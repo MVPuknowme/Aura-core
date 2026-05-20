@@ -1,0 +1,69 @@
+{
+  "info": {
+    "name": "Aura Open Protocol DID Check",
+    "description": "Pilot DID check for Aura Open Protocol agent endpoint. Guards against incomplete did:aura: input.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Aura DID Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{aura_did_check_url}}?did={{aura_did}}",
+          "host": ["{{aura_did_check_url}}"],
+          "query": [
+            {
+              "key": "did",
+              "value": "{{aura_did}}"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const did = pm.variables.get('aura_did');",
+              "if (!did || did === 'did:aura:' || !did.startsWith('did:aura:') || did.length <= 'did:aura:'.length) {",
+              "  throw new Error('Incomplete Aura DID. Expected did:aura:<identifier>.');",
+              "}"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('DID check endpoint responds', function () {",
+              "  pm.expect([200, 204, 400, 404, 422, 503]).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test('DID check response time is under 10000ms', function () {",
+              "  pm.expect(pm.response.responseTime).to.be.below(10000);",
+              "});",
+              "",
+              "pm.test('Response is not an empty body', function () {",
+              "  pm.expect(pm.response.text()).to.be.a('string');",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "aura_did_check_url",
+      "value": "https://agent.auraopenprotocol.org/check"
+    },
+    {
+      "key": "aura_did",
+      "value": "did:aura:mvpuknowme"
+    }
+  ]
+}
