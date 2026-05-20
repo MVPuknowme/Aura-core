@@ -1,0 +1,12 @@
+# Aura / SkyGrid safety-critical ownership
+# GitHub branch protection must enable required CODEOWNERS review for this to enforce merges.
+
+/config/runtime/aura-failsafe-lock.json @MVPuknowme
+/hub/config/aura-profile-access.json @MVPuknowme
+/tools/frequency/ @MVPuknowme
+/tools/did/ @MVPuknowme
+/commands/ @MVPuknowme
+/postman/ @MVPuknowme
+
+# Sensitive categories: frequency detection, voice interfaces, DID identity binding,
+# passcode/auth policy, human/mental-health-impacting utilities, and sync/runtime commands.
