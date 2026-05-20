@@ -2,8 +2,8 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
   "framework": null,
-  "installCommand": "npm install --ignore-scripts",
-  "buildCommand": "npm run build",
+  "installCommand": "corepack enable && corepack prepare pnpm@9.15.0 --activate && pnpm install --frozen-lockfile=false",
+  "buildCommand": "corepack enable && corepack prepare pnpm@9.15.0 --activate && pnpm run build",
   "rewrites": [
     {
       "source": "/health.json",
