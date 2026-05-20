@@ -1,0 +1,23 @@
+{
+  "aura_frequency_detection": {
+    "version": 1,
+    "owner": "Michael Vincent Patrick / MVPuknowme",
+    "state": "disabled_zero_range",
+    "enabled": false,
+    "min_hz": 0,
+    "max_hz": 0,
+    "effective_range_hz": [0, 0],
+    "interpretation": "Aura frequency detection is intentionally set to a zero-Hz range. No active frequency scanning, classification, or alerting is asserted by this config.",
+    "safety": {
+      "does_not_modify_device_hardware": true,
+      "does_not_transmit_rf": true,
+      "does_not_scan_rf": true,
+      "does_not_capture_audio": true,
+      "preserve_logs": true
+    },
+    "status": {
+      "configured": true,
+      "last_updated": "2026-05-19"
+    }
+  }
+}
