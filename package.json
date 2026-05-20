@@ -5,19 +5,20 @@
   "description": "Aura-Core SKYGRID runtime with live health and device status routes.",
   "main": "app.js",
   "type": "module",
+  "packageManager": "pnpm@9.15.0",
   "scripts": {
     "start": "node app.js",
     "dev": "node app.js",
     "build": "node -e \"console.log('Aura-Core runtime deployment: no static build required')\"",
-    "vercel-build": "npm run build",
+    "vercel-build": "pnpm run build",
     "prod": "AURA_MODE=prod SKYGRID_TRACE=false SKYGRID_LEVEL=info NODE_ENV=production node app.js",
-    "deploy": "npm run prod",
+    "deploy": "pnpm run prod",
     "validator:health": "node scripts/validator-health-check.mjs",
     "node:ledger": "node scripts/build-node-ledger.mjs",
     "stripe:expansion-session": "node scripts/create-stripe-expansion-session.mjs",
     "debug:utility-billing": "node scripts/debug-utility-billing-architecture.mjs",
-    "make.debug": "npm run debug:utility-billing",
-    "test.config": "npm run build"
+    "make.debug": "pnpm run debug:utility-billing",
+    "test.config": "pnpm run build"
   },
   "dependencies": {
     "@rainbow-me/rainbowkit": "latest",
