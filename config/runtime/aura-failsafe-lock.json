@@ -1,0 +1,81 @@
+{
+  "aura_failsafe_lock": {
+    "version": 1,
+    "owner": "Michael Vincent Patrick / MVPuknowme",
+    "status": "active",
+    "mode": "fail_closed_no_unreviewed_modifications",
+    "reason": "Safety lock requested by owner after concern that related utility behavior could be used in a harmful mental-health-impacting way.",
+    "default_decision": "deny",
+    "protected_categories": [
+      "frequency_detection",
+      "voice_interfaces",
+      "recorded_voices",
+      "aura_sync_python",
+      "numpy_signal_processing",
+      "profile_access",
+      "passcode_authentication",
+      "human_trait_mapping",
+      "neuro_assistive_or_translation_claims",
+      "mental_health_impacting_features",
+      "identity_binding",
+      "external_control_interfaces",
+      "unverified_device_access"
+    ],
+    "blocked_without_owner_review": [
+      "create",
+      "modify",
+      "enable",
+      "re-enable",
+      "deploy",
+      "schedule",
+      "run_automation",
+      "publish_public_interface",
+      "collect_audio",
+      "classify_voice",
+      "scan_frequency",
+      "infer_mental_state",
+      "change_passcode_policy",
+      "weaken_access_control"
+    ],
+    "allowed_safe_actions": [
+      "delete_or_disable_harmful_utility",
+      "preserve_audit_logs",
+      "document_safety_rationale",
+      "rotate_or_remove_exposed_secrets",
+      "add_guardrails",
+      "add_manual_review_requirements",
+      "keep_health_check_read_only"
+    ],
+    "manual_review_required": {
+      "required": true,
+      "reviewer": "Michael Vincent Patrick / MVPuknowme",
+      "approval_phrase_required": true,
+      "approval_phrase": "MVP explicit safety approval",
+      "require_written_scope": true,
+      "require_rollback_plan": true,
+      "require_no_plaintext_secrets": true
+    },
+    "runtime_controls": {
+      "fail_closed": true,
+      "no_voice_only_authorization": true,
+      "no_unverified_device_authorization": true,
+      "no_mental_health_claims_without_clinical_review": true,
+      "no_frequency_detection_by_default": true,
+      "no_audio_capture_by_default": true,
+      "no_behavioral_or_trait_inference_by_default": true,
+      "preserve_logs": true,
+      "redact_sensitive_data_in_logs": true
+    },
+    "incident_response": {
+      "if_unreviewed_change_detected": "block_and_log",
+      "if_harmful_interface_detected": "disable_and_quarantine",
+      "if_secret_or_passcode_exposed": "rotate_immediately",
+      "if_user_safety_concern_reported": "pause_feature_and_require_manual_review"
+    },
+    "status_record": {
+      "configured": true,
+      "last_updated": "2026-05-19",
+      "note": "This lock is a policy/config safety layer. Repository branch protection and required reviews should also be enabled in GitHub settings for enforcement."
+    }
+  }
+}
