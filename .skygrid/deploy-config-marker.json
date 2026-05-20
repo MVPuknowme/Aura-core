@@ -1,0 +1,14 @@
+{
+  "system": "Aura-Core / SkyGrid",
+  "purpose": "Force Vercel to build latest Node 24 pnpm 11 config instead of stale deployment pointer.",
+  "runtime": {
+    "node": "24.x",
+    "packageManager": "pnpm@11.1.3"
+  },
+  "preflight": {
+    "interferenceDetector": "scripts/build-interference-preflight.mjs",
+    "cleanNodeModulesBeforeInstall": true,
+    "registry": "https://registry.npmjs.org/"
+  },
+  "updatedAt": "2026-05-20T19:00:00Z"
+}
