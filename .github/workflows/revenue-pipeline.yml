@@ -36,28 +36,33 @@ jobs:
         run: |
           set -euo pipefail
 
-          missing=()
-          [ -n "${AIRTABLE_API_KEY:-}" ] || missing+=("AIRTABLE_API_KEY")
-          [ -n "${AIRTABLE_BASE_ID:-}" ] || missing+=("AIRTABLE_BASE_ID")
-
           if [ -z "${DUNE_API_KEY:-}" ] || [ -z "${DUNE_QUERY_ID:-}" ]; then
             echo "SKIP_DUNE=true" >> "$GITHUB_ENV"
           else
             echo "SKIP_DUNE=false" >> "$GITHUB_ENV"
           fi
 
+          if [ -z "${AIRTABLE_API_KEY:-}" ] || [ -z "${AIRTABLE_BASE_ID:-}" ]; then
+            echo "SKIP_AIRTABLE=true" >> "$GITHUB_ENV"
+          else
+            echo "SKIP_AIRTABLE=false" >> "$GITHUB_ENV"
+          fi
+
           if [ "${DEBUG_MODE:-true}" = "true" ]; then
             echo "Workflow debug summary"
             echo "- DUNE analytics: $([ -z "${DUNE_API_KEY:-}" ] || [ -z "${DUNE_QUERY_ID:-}" ] && echo skipped || echo enabled)"
+            echo "- AIRTABLE writeback: $([ -z "${AIRTABLE_API_KEY:-}" ] || [ -z "${AIRTABLE_BASE_ID:-}" ] && echo skipped || echo enabled)"
             echo "- AIRTABLE_API_KEY set: $([ -n "${AIRTABLE_API_KEY:-}" ] && echo yes || echo no)"
             echo "- AIRTABLE_BASE_ID set: $([ -n "${AIRTABLE_BASE_ID:-}" ] && echo yes || echo no)"
             echo "- AIRTABLE_TABLE: ${AIRTABLE_TABLE:-Projects}"
           fi
 
-          if [ ${#missing[@]} -gt 0 ]; then
-            echo "::error title=Missing workflow configuration::Missing required values: ${missing[*]}"
-            echo "Add the missing repository secrets in Settings > Secrets and variables > Actions, then rerun this workflow."
-            exit 1
+          if [ -z "${AIRTABLE_API_KEY:-}" ]; then
+            echo "::warning title=Airtable writeback skipped::AIRTABLE_API_KEY is not configured. Add it in Settings > Secrets and variables > Actions to enable Airtable posting."
+          fi
+
+          if [ -z "${AIRTABLE_BASE_ID:-}" ]; then
+            echo "::warning title=Airtable writeback skipped::AIRTABLE_BASE_ID is not configured."
           fi
 
       - name: Execute Dune pipeline
@@ -113,6 +118,7 @@ jobs:
           echo "::warning::Dune analytics skipped because DUNE_API_KEY or DUNE_QUERY_ID is not configured"
 
       - name: Post summary to Airtable
+        if: env.SKIP_AIRTABLE != 'true'
         run: |
           python3 <<'PY'
           import json, os, urllib.parse, urllib.request
@@ -143,3 +149,11 @@ jobs:
           with urllib.request.urlopen(req) as resp:
               print(resp.read().decode('utf-8'))
           PY
+
+      - name: Create skip summary when Airtable is disabled
+        if: env.SKIP_AIRTABLE == 'true'
+        run: |
+          echo "## Revenue Pipeline Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Airtable writeback was skipped because AIRTABLE_API_KEY or AIRTABLE_BASE_ID is not configured." >> "$GITHUB_STEP_SUMMARY"
+          echo "Dune skip status: ${SKIP_DUNE}" >> "$GITHUB_STEP_SUMMARY"
