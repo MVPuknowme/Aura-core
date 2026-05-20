@@ -2,8 +2,8 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
   "framework": null,
-  "installCommand": "corepack enable && corepack prepare pnpm@9.15.0 --activate && pnpm install --frozen-lockfile=false",
-  "buildCommand": "corepack enable && corepack prepare pnpm@9.15.0 --activate && pnpm run build",
+  "installCommand": "rm -rf node_modules && corepack enable && corepack prepare pnpm@11.1.3 --activate && pnpm config set registry https://registry.npmjs.org/ && pnpm run preflight:interference && pnpm install --frozen-lockfile=false",
+  "buildCommand": "corepack enable && corepack prepare pnpm@11.1.3 --activate && pnpm run build",
   "rewrites": [
     {
       "source": "/health.json",
