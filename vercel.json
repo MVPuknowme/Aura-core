@@ -11,7 +11,7 @@
     },
     {
       "source": "/",
-      "destination": "/api/index"
+      "destination": "/api/home"
     }
   ],
   "cleanUrls": true,
@@ -26,7 +26,7 @@
         },
         {
           "key": "X-Phoenix-Version",
-          "value": "1.3.6-b12-ingress"
+          "value": "1.3.9-vercel-home"
         }
       ]
     }
