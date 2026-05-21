@@ -1,8 +1,8 @@
 {
   "name": "aura-core",
-  "version": "1.3.0-runtime",
+  "version": "1.3.1-base-rate-demo",
   "private": true,
-  "description": "Aura-Core SKYGRID runtime with live health and device status routes.",
+  "description": "Aura-Core SKYGRID runtime with public demo routes and Base rate utilization bands.",
   "main": "app.js",
   "type": "module",
   "packageManager": "pnpm@10.23.0",
@@ -23,14 +23,7 @@
     "make.debug": "pnpm run debug:utility-billing",
     "test.config": "pnpm run run.config"
   },
-  "dependencies": {
-    "@rainbow-me/rainbowkit": "latest",
-    "@vercel/analytics": "latest",
-    "ethers": "latest",
-    "stripe": "latest",
-    "viem": "latest",
-    "wagmi": "latest"
-  },
+  "dependencies": {},
   "engines": {
     "node": ">=24 <25"
   }
