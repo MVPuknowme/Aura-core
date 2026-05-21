@@ -1,0 +1,90 @@
+{
+  "info": {
+    "name": "SkyGrid Onboarding Gateway",
+    "description": "Postman tests for the Flask API gate in front of the B12 SkyGrid node onboarding page.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8787"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/health",
+          "host": ["{{base_url}}"],
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "Preflight - Web3 Builder Base/USDC",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Demo Web3 Builder\",\n  \"email\": \"builder@example.com\",\n  \"organization\": \"Demo Lab\",\n  \"partnerType\": \"web3_builder\",\n  \"networkInterest\": [\"base\", \"usdc\", \"cloudflare\"],\n  \"locationRegion\": \"Oregon / Washington\",\n  \"currentInfrastructure\": \"staging API + dashboard\",\n  \"desiredUseCase\": \"preflight route and onboarding validation\",\n  \"proofPacketNeeded\": true,\n  \"proofRequired\": true,\n  \"notes\": \"Postman preflight test for SkyGrid onboarding gate.\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/onboarding/preflight",
+          "host": ["{{base_url}}"],
+          "path": ["api", "onboarding", "preflight"]
+        }
+      }
+    },
+    {
+      "name": "Intake - Community Node LoRa",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Demo Community Node\",\n  \"email\": \"node@example.com\",\n  \"organization\": \"Community Pilot\",\n  \"partnerType\": \"community_node\",\n  \"networkInterest\": [\"local_wifi\", \"lora\"],\n  \"locationRegion\": \"Central Oregon\",\n  \"currentInfrastructure\": \"home internet + spare device\",\n  \"desiredUseCase\": \"local readiness pilot\",\n  \"proofPacketNeeded\": true,\n  \"proofRequired\": true,\n  \"notes\": \"Postman intake test for node onboarding.\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/onboarding/intake",
+          "host": ["{{base_url}}"],
+          "path": ["api", "onboarding", "intake"]
+        }
+      }
+    },
+    {
+      "name": "Reject - Active Node Direct Request",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Unsafe Direct Activation\",\n  \"email\": \"unsafe@example.com\",\n  \"partnerType\": \"community_node\",\n  \"networkInterest\": [\"local_wifi\"],\n  \"onboardingStatus\": \"active_node\",\n  \"proofRequired\": false\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/onboarding/preflight",
+          "host": ["{{base_url}}"],
+          "path": ["api", "onboarding", "preflight"]
+        }
+      }
+    }
+  ]
+}
