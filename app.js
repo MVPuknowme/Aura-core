@@ -1,4 +1,4 @@
-const VERSION = '1.3.1-base-rate-demo';
+const VERSION = '1.3.2-sunpay-quote';
 
 const env = {
   AURA_MODE: process.env.AURA_MODE || 'vercel-runtime',
@@ -13,10 +13,12 @@ const PUBLIC_ROUTES = [
   '/scenarios',
   '/rates',
   '/base',
+  '/pay',
   '/health.json',
   '/api/health',
   '/api/device-status',
-  '/api/rates/base'
+  '/api/rates/base',
+  '/api/pay/quote'
 ];
 
 function json(res, statusCode, body) {
@@ -44,6 +46,10 @@ function escapeHtml(value) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+function usd(value) {
+  return Number(value).toFixed(2);
 }
 
 function classifyBaseRate(input = {}) {
@@ -104,6 +110,73 @@ function classifyBaseRate(input = {}) {
   };
 }
 
+function estimatedNetworkCostUsd(band) {
+  if (band === 'red') return 0.25;
+  if (band === 'yellow') return 0.05;
+  return 0.01;
+}
+
+function buildSunPayQuote(url) {
+  const amountParam = url.searchParams.get('amount') || url.searchParams.get('amountUsd') || '25';
+  const amountUsd = Number(amountParam);
+  const asset = (url.searchParams.get('asset') || 'USDC').toUpperCase();
+  const destination = url.searchParams.get('destination') || 'demo-recipient';
+  const memo = url.searchParams.get('memo') || 'Sun-Pay public quote';
+  const decision = classifyBaseRate();
+
+  if (!Number.isFinite(amountUsd) || amountUsd <= 0) {
+    return {
+      ok: false,
+      status: 'invalid_amount',
+      message: 'Provide a positive amount or amountUsd query parameter.'
+    };
+  }
+
+  if (amountUsd > 10000) {
+    return {
+      ok: false,
+      status: 'amount_limit_exceeded',
+      message: 'Public quote demo is capped at 10000 USD. Use private review for larger settlement planning.'
+    };
+  }
+
+  const networkCostUsd = estimatedNetworkCostUsd(decision.band);
+  const utilizationFeeUsd = amountUsd * decision.utilizationMarkup;
+  const totalEstimatedCostUsd = amountUsd + networkCostUsd + utilizationFeeUsd;
+  const createdAt = new Date().toISOString();
+  const quoteId = `sunpay_${decision.band}_${Date.now().toString(36)}`;
+
+  return {
+    ok: true,
+    status: 'quoted',
+    service: 'Sun-Pay Quote Engine',
+    quoteId,
+    network: 'base',
+    settlementAsset: asset,
+    amountUsd: usd(amountUsd),
+    destination,
+    memo,
+    rateBand: decision.band,
+    pressureScore: decision.pressureScore,
+    utilizationMarkupPct: decision.utilizationMarkupPct,
+    utilizationFeeUsd: usd(utilizationFeeUsd),
+    estimatedNetworkCostUsd: usd(networkCostUsd),
+    totalEstimatedCostUsd: usd(totalEstimatedCostUsd),
+    requiresUserApproval: true,
+    executableNow: false,
+    nextStep: 'Connect a wallet or checkout provider before transaction creation. This endpoint only quotes cost and routing posture.',
+    guardrails: [
+      'Quote only; no money moved',
+      'No transaction signing in this runtime',
+      'No private keys accepted or stored',
+      'User approval required before any future payment execution',
+      'USDC on Base is the preferred first settlement asset for live wiring'
+    ],
+    rateDecision: decision,
+    createdAt
+  };
+}
+
 function baseRatePayload() {
   return {
     ok: true,
@@ -139,10 +212,12 @@ function healthPayload() {
       scenarios: '/scenarios',
       rates: '/rates',
       base: '/base',
+      pay: '/pay',
       health: '/health.json',
       api_health: '/api/health',
       device_status: '/api/device-status',
-      base_rate_api: '/api/rates/base'
+      base_rate_api: '/api/rates/base',
+      sunpay_quote_api: '/api/pay/quote'
     },
     public_routes: PUBLIC_ROUTES,
     guardrails: [
@@ -150,7 +225,8 @@ function healthPayload() {
       'No invasive device fingerprinting',
       'No private wallet keys or credentials required',
       'Runtime health is verified by this API response',
-      'SkyGrid Dispatcher is advisory in v1 and does not perform OS-level network switching'
+      'SkyGrid Dispatcher is advisory in v1 and does not perform OS-level network switching',
+      'Sun-Pay quote endpoint does not move money or create transactions'
     ]
   };
 }
@@ -229,6 +305,7 @@ function renderShell({ title, eyebrow, heading, body, cards = [], cta = [] }) {
       <a href="/scenarios">Scenarios</a>
       <a href="/rates">Rates</a>
       <a href="/base">Base</a>
+      <a href="/pay">Sun-Pay</a>
       <a href="/health.json">Health</a>
     </nav>
     <span class="pill">${escapeHtml(eyebrow)}</span>
@@ -246,16 +323,16 @@ function renderHome() {
     title: 'Aura-Core SKYGRID Runtime',
     eyebrow: 'Runtime primary · public demo enabled',
     heading: '<span>Aura-Core</span> powers SKYGRID',
-    body: 'This public route is served by the Aura-Core runtime app. It exposes health, dispatch, scenario, Base settlement, and rate-utilization demo routes without requiring a private dashboard session.',
+    body: 'This public route is served by the Aura-Core runtime app. It exposes health, dispatch, scenario, Base settlement, Sun-Pay quote, and rate-utilization demo routes without requiring a private dashboard session.',
     cta: [
       { href: '/dispatch', label: 'Arm Dispatcher Demo' },
-      { href: '/rates', label: 'View Base Rate Bands' },
-      { href: '/api/rates/base', label: 'Open Rate API' }
+      { href: '/pay', label: 'Open Sun-Pay Quote' },
+      { href: '/api/pay/quote?amount=25', label: 'Quote $25' }
     ],
     cards: [
-      { label: 'Public', title: 'Demo routes open', body: '/, /dispatch, /scenarios, /rates, /base, and /api/rates/base are intended for public inspection.' },
+      { label: 'Public', title: 'Demo routes open', body: '/, /dispatch, /scenarios, /rates, /base, /pay, and /api/pay/quote are intended for public inspection.' },
       { label: 'Guardrail', title: 'Advisory v1', body: 'SkyGrid Dispatcher is an advisory network-health and failover recommendation tool for demos, testing, and resilience planning.' },
-      { label: 'Settlement', title: 'Base-aware pricing', body: 'Base rate bands classify network pressure as green, yellow, or red before applying utilization markups.' }
+      { label: 'Settlement', title: 'Base-aware pricing', body: 'Base rate bands classify network pressure as green, yellow, or red before applying Sun-Pay quote markups.' }
     ]
   });
 }
@@ -306,7 +383,7 @@ function renderRates() {
     body: `${decision.customerSummary} Current utilization markup recommendation: ${decision.utilizationMarkupPct}. Pressure score: ${decision.pressureScore}.`,
     cta: [
       { href: '/api/rates/base', label: 'Open JSON API' },
-      { href: '/base', label: 'Base Settlement Layer' }
+      { href: '/pay', label: 'Quote Sun-Pay' }
     ],
     cards: [
       { label: 'Green', title: '3.5% standard', body: 'Stable/low network cost. Keep friction low and use normal settlement routing.' },
@@ -325,12 +402,38 @@ function renderBase() {
     body: 'Aura-Core can use Base as a low-cost settlement and routing signal layer for SkyGrid, Sun-Pay, and adaptive utilization. Rates remain adaptive so the demo follows network conditions instead of hard-coding stale pricing.',
     cta: [
       { href: '/rates', label: 'View Rate Bands' },
-      { href: '/api/rates/base', label: 'Open Rate API' }
+      { href: '/api/pay/quote?amount=25', label: 'Quote $25 on Base' }
     ],
     cards: [
       { label: 'Signal', title: 'L2 execution cost', body: 'Base gas contributes to the direct transaction cost floor.' },
       { label: 'Overhead', title: 'L1/blob pressure', body: 'Rollup data and security costs are treated as variable overhead.' },
       { label: 'Business', title: 'Utilization markup', body: 'SkyGrid/Sun-Pay applies a trend-following markup band to protect service and margin.' }
+    ]
+  });
+}
+
+function renderPay(url) {
+  const quote = buildSunPayQuote(url);
+  const body = quote.ok
+    ? `Sun-Pay quote engine is online. A ${quote.amountUsd} USD quote on Base/${quote.settlementAsset} is in the ${quote.rateBand.toUpperCase()} band with ${quote.utilizationMarkupPct} utilization markup. No money is moved by this page.`
+    : quote.message;
+
+  return renderShell({
+    title: 'Sun-Pay Quote Engine',
+    eyebrow: 'Sun-Pay quote · no custody',
+    heading: '<span>Sun-Pay</span> quote layer',
+    body,
+    cta: [
+      { href: '/api/pay/quote?amount=25', label: 'Quote $25' },
+      { href: '/api/pay/quote?amount=100', label: 'Quote $100' },
+      { href: '/rates', label: 'View Rate Bands' }
+    ],
+    cards: quote.ok ? [
+      { label: 'Quote', title: quote.quoteId, body: `Total estimated cost: $${quote.totalEstimatedCostUsd}. Utilization fee: $${quote.utilizationFeeUsd}. Network estimate: $${quote.estimatedNetworkCostUsd}.` },
+      { label: 'Approval', title: 'User confirmation required', body: 'This runtime returns a quote only. A future wallet or checkout provider must collect approval before transaction creation.' },
+      { label: 'Safety', title: 'No keys, no transfer', body: 'The endpoint does not accept private keys, does not sign transactions, and does not move funds.' }
+    ] : [
+      { label: 'Error', title: quote.status, body: quote.message }
     ]
   });
 }
@@ -351,6 +454,11 @@ export default function handler(req, res) {
     return json(res, 200, baseRatePayload());
   }
 
+  if (path === '/api/pay/quote') {
+    const quote = buildSunPayQuote(url);
+    return json(res, quote.ok ? 200 : 400, quote);
+  }
+
   if (path === '/') {
     return html(res, 200, renderHome());
   }
@@ -369,6 +477,10 @@ export default function handler(req, res) {
 
   if (path === '/base') {
     return html(res, 200, renderBase());
+  }
+
+  if (path === '/pay') {
+    return html(res, 200, renderPay(url));
   }
 
   return json(res, 404, {
