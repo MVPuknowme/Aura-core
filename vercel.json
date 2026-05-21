@@ -6,12 +6,36 @@
   "buildCommand": "corepack enable && corepack prepare pnpm@10.23.0 --activate && pnpm run build",
   "rewrites": [
     {
-      "source": "/health.json",
-      "destination": "/api/health"
+      "source": "/",
+      "destination": "/api/runtime"
     },
     {
-      "source": "/",
-      "destination": "/api/home"
+      "source": "/health.json",
+      "destination": "/api/runtime"
+    },
+    {
+      "source": "/dispatch",
+      "destination": "/api/runtime"
+    },
+    {
+      "source": "/scenarios",
+      "destination": "/api/runtime"
+    },
+    {
+      "source": "/rates",
+      "destination": "/api/runtime"
+    },
+    {
+      "source": "/base",
+      "destination": "/api/runtime"
+    },
+    {
+      "source": "/pay",
+      "destination": "/api/runtime"
+    },
+    {
+      "source": "/api/pay/quote",
+      "destination": "/api/runtime"
     }
   ],
   "cleanUrls": true,
