@@ -5,7 +5,7 @@
   "description": "Aura-Core SKYGRID runtime with public demo routes and Base rate utilization bands.",
   "main": "app.js",
   "type": "module",
-  "packageManager": "pnpm@10.23.0",
+  "packageManager": "pnpm@11.1.3",
   "scripts": {
     "start": "node app.js",
     "dev": "node app.js",
