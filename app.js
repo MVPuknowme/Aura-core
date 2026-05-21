@@ -1,4 +1,4 @@
-const VERSION = '1.3.2-sunpay-quote';
+const VERSION = '1.3.3-highway-api';
 
 const env = {
   AURA_MODE: process.env.AURA_MODE || 'vercel-runtime',
@@ -14,11 +14,46 @@ const PUBLIC_ROUTES = [
   '/rates',
   '/base',
   '/pay',
+  '/highway',
   '/health.json',
   '/api/health',
   '/api/device-status',
   '/api/rates/base',
-  '/api/pay/quote'
+  '/api/pay/quote',
+  '/api/highway/status',
+  '/api/highway/flasks',
+  '/api/highway/postman'
+];
+
+const HIGHWAY_LANES = [
+  {
+    id: 'github-control-flask',
+    label: 'GitHub Control Flask',
+    role: 'Proof, repo, issue, commit, and action status lane',
+    target: 'GitHub',
+    status: 'ready_for_probe'
+  },
+  {
+    id: 'aws-relay-flask',
+    label: 'AWS Relay Flask',
+    role: 'Lambda URL and health mirror lane',
+    target: 'AWS',
+    status: 'ready_for_probe'
+  },
+  {
+    id: 'postman-validator-flask',
+    label: 'Postman Validator Flask',
+    role: 'Newman/Postman reliability check lane',
+    target: 'Postman',
+    status: 'ready_for_probe'
+  },
+  {
+    id: 'web3-bridge-flask',
+    label: 'Web3 Bridge Flask',
+    role: 'Base/Web3 quote and status lane',
+    target: 'Base/Web3',
+    status: 'ready_for_probe'
+  }
 ];
 
 function json(res, statusCode, body) {
@@ -44,7 +79,7 @@ function escapeHtml(value) {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
+    .replace(/\"/g, '&quot;')
     .replace(/'/g, '&#039;');
 }
 
@@ -177,6 +212,39 @@ function buildSunPayQuote(url) {
   };
 }
 
+function highwayPayload() {
+  return {
+    ok: true,
+    status: 'ready',
+    service: 'SkyGrid Highway API',
+    version: VERSION,
+    mode: 'advisory_preflight',
+    lanes: HIGHWAY_LANES,
+    highway: {
+      primary: 'GitHub proof -> Vercel runtime -> Postman validation -> AWS health mirror -> dashboard proof',
+      web3_inbound: 'Base/Web3 status -> Web3 Bridge Flask -> Postman validation -> dashboard proof',
+      web3_outbound: 'Vercel quote/status -> Postman validation -> Web3 Bridge Flask -> proof log',
+      fallback: 'AWS health mirror remains the backup lane when a public route is degraded'
+    },
+    routes: {
+      page: '/highway',
+      status: '/api/highway/status',
+      flasks: '/api/highway/flasks',
+      postman: '/api/highway/postman',
+      health: '/health.json',
+      quote: '/api/pay/quote?amount=25',
+      device_link: '/api/stripe/device-link'
+    },
+    guardrails: [
+      'Advisory preflight only',
+      'Proof-first before launch claims',
+      'No production route switching from public demo routes',
+      'Sentinel remains fail-closed until route checks pass'
+    ],
+    generated_at: new Date().toISOString()
+  };
+}
+
 function baseRatePayload() {
   return {
     ok: true,
@@ -213,11 +281,15 @@ function healthPayload() {
       rates: '/rates',
       base: '/base',
       pay: '/pay',
+      highway: '/highway',
       health: '/health.json',
       api_health: '/api/health',
       device_status: '/api/device-status',
       base_rate_api: '/api/rates/base',
-      sunpay_quote_api: '/api/pay/quote'
+      sunpay_quote_api: '/api/pay/quote',
+      highway_status_api: '/api/highway/status',
+      highway_flasks_api: '/api/highway/flasks',
+      highway_postman_api: '/api/highway/postman'
     },
     public_routes: PUBLIC_ROUTES,
     guardrails: [
@@ -226,7 +298,8 @@ function healthPayload() {
       'No private wallet keys or credentials required',
       'Runtime health is verified by this API response',
       'SkyGrid Dispatcher is advisory in v1 and does not perform OS-level network switching',
-      'Sun-Pay quote endpoint does not move money or create transactions'
+      'Sun-Pay quote endpoint does not move money or create transactions',
+      'SkyGrid Highway API is advisory until Postman and operator checks pass'
     ]
   };
 }
@@ -306,6 +379,7 @@ function renderShell({ title, eyebrow, heading, body, cards = [], cta = [] }) {
       <a href="/rates">Rates</a>
       <a href="/base">Base</a>
       <a href="/pay">Sun-Pay</a>
+      <a href="/highway">Highway</a>
       <a href="/health.json">Health</a>
     </nav>
     <span class="pill">${escapeHtml(eyebrow)}</span>
@@ -323,16 +397,16 @@ function renderHome() {
     title: 'Aura-Core SKYGRID Runtime',
     eyebrow: 'Runtime primary · public demo enabled',
     heading: '<span>Aura-Core</span> powers SKYGRID',
-    body: 'This public route is served by the Aura-Core runtime app. It exposes health, dispatch, scenario, Base settlement, Sun-Pay quote, and rate-utilization demo routes without requiring a private dashboard session.',
+    body: 'This public route is served by the Aura-Core runtime app. It exposes health, dispatch, scenario, Base settlement, Sun-Pay quote, Highway API, and rate-utilization demo routes without requiring a private dashboard session.',
     cta: [
       { href: '/dispatch', label: 'Arm Dispatcher Demo' },
-      { href: '/pay', label: 'Open Sun-Pay Quote' },
+      { href: '/highway', label: 'Open Highway API' },
       { href: '/api/pay/quote?amount=25', label: 'Quote $25' }
     ],
     cards: [
-      { label: 'Public', title: 'Demo routes open', body: '/, /dispatch, /scenarios, /rates, /base, /pay, and /api/pay/quote are intended for public inspection.' },
+      { label: 'Public', title: 'Demo routes open', body: '/, /dispatch, /scenarios, /rates, /base, /pay, /highway, and /api/pay/quote are intended for public inspection.' },
       { label: 'Guardrail', title: 'Advisory v1', body: 'SkyGrid Dispatcher is an advisory network-health and failover recommendation tool for demos, testing, and resilience planning.' },
-      { label: 'Settlement', title: 'Base-aware pricing', body: 'Base rate bands classify network pressure as green, yellow, or red before applying Sun-Pay quote markups.' }
+      { label: 'Highway', title: 'Four-lane bridge map', body: 'GitHub, AWS, Postman, and Web3 lanes are mapped as proof-first status routes before production use.' }
     ]
   });
 }
@@ -438,6 +512,25 @@ function renderPay(url) {
   });
 }
 
+function renderHighway() {
+  return renderShell({
+    title: 'SkyGrid Highway API',
+    eyebrow: 'Highway API · four reliable flasks',
+    heading: '<span>Highway</span> API bridge',
+    body: 'SkyGrid Highway API maps four reliable Flask-style lanes for GitHub proof, AWS health relay, Postman validation, and Web3/Base status. The route is advisory until proof checks pass.',
+    cta: [
+      { href: '/api/highway/status', label: 'Open Highway JSON' },
+      { href: '/api/highway/flasks', label: 'View Four Flasks' },
+      { href: '/api/highway/postman', label: 'Postman Probe Map' }
+    ],
+    cards: HIGHWAY_LANES.map((lane) => ({
+      label: lane.target,
+      title: lane.label,
+      body: `${lane.role}. Status: ${lane.status}.`
+    }))
+  });
+}
+
 export default function handler(req, res) {
   const url = new URL(req.url, `https://${req.headers.host || 'aura-core.local'}`);
   const path = url.pathname.replace(/\/$/, '') || '/';
@@ -457,6 +550,10 @@ export default function handler(req, res) {
   if (path === '/api/pay/quote') {
     const quote = buildSunPayQuote(url);
     return json(res, quote.ok ? 200 : 400, quote);
+  }
+
+  if (path === '/api/highway/status' || path === '/api/highway/flasks' || path === '/api/highway/postman') {
+    return json(res, 200, highwayPayload());
   }
 
   if (path === '/') {
@@ -481,6 +578,10 @@ export default function handler(req, res) {
 
   if (path === '/pay') {
     return html(res, 200, renderPay(url));
+  }
+
+  if (path === '/highway') {
+    return html(res, 200, renderHighway());
   }
 
   return json(res, 404, {
