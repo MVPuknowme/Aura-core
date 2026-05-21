@@ -1,0 +1,57 @@
+{
+  "project": "aura-core/skygrid",
+  "run_config": "failover_training_expressway",
+  "mode": "training_only",
+  "primary_lane": "aura-core-yvov",
+  "watch_lanes": [
+    "aura-core",
+    "aura-core-t2t5"
+  ],
+  "expressway_routes": [
+    "/health.json",
+    "/highway",
+    "/api/highway/status",
+    "/api/highway/flasks",
+    "/api/highway/postman",
+    "/dispatch",
+    "/scenarios",
+    "/rates",
+    "/base",
+    "/pay",
+    "/api/pay/quote?amount=25",
+    "/api/stripe/device-link"
+  ],
+  "lane_checks": [
+    "runtime_health",
+    "highway_status",
+    "postman_route_probe",
+    "aws_health_mirror",
+    "web3_quote_status",
+    "rollback_ready"
+  ],
+  "approval_gates": [
+    "operator_review",
+    "sentinel_review",
+    "postman_pass",
+    "primary_200s",
+    "fallback_200",
+    "rollback_documented"
+  ],
+  "allowed_in_training": [
+    "read_status",
+    "probe_route",
+    "record_proof",
+    "display_dashboard_status"
+  ],
+  "blocked_in_training": [
+    "automatic_cutover",
+    "unattended_switch",
+    "live_payment",
+    "private_data_movement"
+  ],
+  "public_language": "Advisory production-readiness training. Proof-first. Controlled pilot. No guaranteed outcome claims.",
+  "sentinel": {
+    "default": "fail_closed",
+    "production_switch": "blocked_until_all_gates_pass"
+  }
+}
