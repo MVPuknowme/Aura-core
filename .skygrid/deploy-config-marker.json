@@ -1,14 +1,35 @@
 {
   "system": "Aura-Core / SkyGrid",
-  "purpose": "Force Vercel to build latest Node 24 pnpm 11 config instead of stale deployment pointer.",
+  "command": "/deploy",
+  "purpose": "Trigger Vercel build from the active MVPuknowme branch with the latest runtime contract endpoints.",
   "runtime": {
     "node": "24.x",
-    "packageManager": "pnpm@11.1.3"
+    "packageManager": "pnpm@10.23.0",
+    "dependencyMode": "pure-node-runtime",
+    "externalRuntimeDependencies": false
+  },
+  "routes": {
+    "health": "/health.json",
+    "highway": "/highway",
+    "highwayStatus": "/api/highway/status",
+    "highwayFlasks": "/api/highway/flasks",
+    "highwayPostman": "/api/highway/postman",
+    "aiPreflight": "/api/ai/preflight",
+    "intake": "/api/intake",
+    "sunPayQuote": "/api/pay/quote?amount=25",
+    "stripeDeviceLink": "/api/stripe/device-link",
+    "rates": "/rates",
+    "base": "/base",
+    "dispatch": "/dispatch"
   },
   "preflight": {
     "interferenceDetector": "scripts/build-interference-preflight.mjs",
     "cleanNodeModulesBeforeInstall": true,
-    "registry": "https://registry.npmjs.org/"
+    "registry": "https://registry.npmjs.org/",
+    "advisoryOnly": true,
+    "moneyMovement": false,
+    "deviceEntitlementActivation": false,
+    "automaticRouting": false
   },
-  "updatedAt": "2026-05-20T19:00:00Z"
+  "updatedAt": "2026-05-21T19:45:00Z"
 }
