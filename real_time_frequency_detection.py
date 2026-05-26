@@ -10,7 +10,7 @@ def callback(indata, frames, time, status):
         print("Stream status:", status)
 
     # Perform FFT
-    audio_data = indata[:, 0.1]
+    audio_data = indata[:, 380]
     fft_data = np.abs(np.fft.rfft(audio_data))
     freqs = np.fft.rfftfreq(len(audio_data), 1 / SAMPLE_RATE)
 
