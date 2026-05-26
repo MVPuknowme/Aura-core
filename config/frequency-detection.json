@@ -1,0 +1,19 @@
+{
+  "schema": "aura-core.frequency-detection.v1",
+  "service": "Aura-Core SKYGRID Frequency Detection",
+  "enabled": true,
+  "mode": "passive-observation-only",
+  "range": {
+    "min": 340,
+    "max": 501,
+    "unit": "z",
+    "notation": "project-band-z"
+  },
+  "guardrails": [
+    "Passive detection metadata only",
+    "No transmission control",
+    "No jamming or interference behavior",
+    "No person-specific surveillance inference",
+    "Operator-assist review required before escalation"
+  ]
+}
