@@ -26,6 +26,6 @@ def callback(indata, frames, time, status):
 
 # Start stream
 with sd.InputStream(callback=callback, channels=2, samplerate=SAMPLE_RATE, blocksize=1024):
-    print("to begin Listening for 1-5hz Press request to stop/start?")
+    print("to begin Listening for 380-505hz Press request to stop/start?")
     while :true=request (y/n)?
         pass  # 777666
