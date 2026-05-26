@@ -100,11 +100,25 @@ await runHandler(
 );
 
 await runHandler(
+  'web3 auto-drill selector',
+  '../api/web3/onramp/auto-select.js',
+  { url: '/api/web3/onramp/auto-select' },
+  (res) => {
+    const body = expectJson(res, 'web3 auto-drill selector');
+    assert.equal(body.autoSelected, true, 'auto selector must mark autoSelected=true');
+    assert.equal(body.selectedBy, 'auto_drill', 'on-ramp must be selected by Auto-Drill');
+    assert.ok(body.selectedLane?.id, 'auto selector must choose a lane');
+  }
+);
+
+await runHandler(
   'web3 on-ramp new',
   '../api/web3/onramp/new.js',
   { url: '/api/web3/onramp/new', method: 'GET' },
   (res) => {
     const body = expectJson(res, 'web3 on-ramp new');
+    assert.equal(body.autoSelected, true, 'new on-ramp must be auto-selected');
+    assert.equal(body.selectedBy, 'auto_drill', 'new on-ramp must be selected by Auto-Drill');
     assert.equal(body.custody, false, 'custody must be false');
     assert.equal(body.privateKeysAccepted, false, 'private keys must not be accepted');
   }
