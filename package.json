@@ -11,6 +11,7 @@
     "dev": "node app.js",
     "build": "node -e \"console.log('Aura-Core runtime deployment: no static build required')\"",
     "vercel-build": "pnpm run build",
+    "test:web3-onramp:no-vercel": "node scripts/test-web3-onramp-no-vercel.mjs",
     "prod": "AURA_MODE=prod SKYGRID_TRACE=false SKYGRID_LEVEL=info NODE_ENV=production node app.js",
     "deploy": "pnpm run prod",
     "run.config": "node scripts/skygrid-run-config.mjs",
