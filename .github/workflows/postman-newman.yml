@@ -6,17 +6,17 @@ on:
       site_url:
         description: Public Aura-Core / SKYGRID Vercel runtime URL
         required: false
-        default: https://aura-core.vercel.app/
+        default: https://aura-core-yvov.vercel.app/
         type: string
       base_url:
         description: Primary Vercel API base URL
         required: false
-        default: https://aura-core.vercel.app
+        default: https://aura-core-yvov.vercel.app
         type: string
       aws_service_url:
         description: Optional AWS/SKYGRID service URL after deploy
         required: false
-        default: https://aura-core.vercel.app
+        default: https://aura-core-yvov.vercel.app
         type: string
   push:
     branches:
@@ -40,9 +40,10 @@ jobs:
     timeout-minutes: 10
 
     env:
-      SITE_URL: ${{ inputs.site_url || 'https://aura-core.vercel.app/' }}
-      BASE_URL: ${{ inputs.base_url || 'https://aura-core.vercel.app' }}
-      AWS_SERVICE_URL: ${{ inputs.aws_service_url || 'https://aura-core.vercel.app' }}
+      ACTIVE_SKYGRID_RUNTIME_URL: https://aura-core-yvov.vercel.app
+      SITE_URL: ${{ inputs.site_url || 'https://aura-core-yvov.vercel.app/' }}
+      BASE_URL: ${{ inputs.base_url || 'https://aura-core-yvov.vercel.app' }}
+      AWS_SERVICE_URL: ${{ inputs.aws_service_url || 'https://aura-core-yvov.vercel.app' }}
 
     steps:
       - name: Check out repository
@@ -62,6 +63,7 @@ jobs:
       - name: Run Newman collection
         run: |
           set -euo pipefail
+          echo "Running Newman against $BASE_URL"
           newman run postman/skygrid-reliability.collection.json \
             --env-var "site_url=$SITE_URL" \
             --env-var "base_url=$BASE_URL" \
