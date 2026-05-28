@@ -23,7 +23,9 @@
     "make.debug": "pnpm run debug:utility-billing",
     "test.config": "pnpm run run.config"
   },
-  "dependencies": {},
+  "dependencies": {
+    "stripe": "^14.0.0"
+  },
   "engines": {
     "node": ">=24 <25"
   }
