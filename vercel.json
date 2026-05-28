@@ -72,6 +72,14 @@
     {
       "source": "/api/highway/postman",
       "destination": "/api/runtime"
+    },
+    {
+      "source": "/api/stripe/status",
+      "destination": "/api/runtime"
+    },
+    {
+      "source": "/api/stripe/device-link",
+      "destination": "/api/runtime"
     }
   ],
   "cleanUrls": true,
