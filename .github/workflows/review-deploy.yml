@@ -1,9 +1,6 @@
 name: Review Deploy (5.5)
 
 on:
-  push:
-    branches:
-      - 'review/**'
   workflow_dispatch:
     inputs:
       base:
@@ -16,7 +13,7 @@ on:
         default: '5.5'
 
 permissions:
-  contents: write
+  contents: read
   pull-requests: write
 
 jobs:
@@ -30,6 +27,21 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Validate inputs
+        run: |
+          set -euo pipefail
+          # Validate base branch - only allow alphanumeric, hyphens, underscores, and forward slashes
+          if ! [[ "${BASE_BRANCH}" =~ ^[a-zA-Z0-9._/-]+$ ]]; then
+            echo "Error: Invalid base branch name: ${BASE_BRANCH}"
+            exit 1
+          fi
+          # Validate version - only allow semver-like format
+          if ! [[ "${PIPELINE_VERSION}" =~ ^[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Invalid pipeline version: ${PIPELINE_VERSION}"
+            exit 1
+          fi
+          echo "Validation passed"
 
       - name: Show context
         run: |
@@ -62,14 +74,15 @@ jobs:
           BODY=$(cat <<'EOF'
 Automated review PR opened by **Review Deploy (5.5)**.
 
-- Source branch: `review/**`
 - Intended for human review + deployment validation
 - Pipeline tag: 5.5
 
 Checks executed:
-- npm ci
+- npm ci (install dependencies)
 - lint (if present)
 - tests (if present)
+
+**Note:** This workflow requires explicit manual dispatch. It is not triggered automatically on push events.
 EOF
 )
 
@@ -83,5 +96,5 @@ EOF
           gh pr create \
             --base "${BASE_BRANCH}" \
             --head "${BRANCH}" \
-            --title "${TITLE}" \
-            --body "${BODY}"
+            --title "$TITLE" \
+            --body "$BODY"
