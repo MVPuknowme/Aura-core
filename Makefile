@@ -13,7 +13,12 @@ run:
 debug:
 	npm run debug --if-present
 
+# Alias for command-style usage
+make.debug: debug
+
 health:
 	bash scripts/healthcheck.sh
 
 ci-local: setup lint test
+
+.PHONY: setup lint test run debug make.debug health ci-local
