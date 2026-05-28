@@ -55,14 +55,40 @@ function runtimePayload(extra = {}) {
   };
 }
 
+function isValidStripeUrl(url) {
+  try {
+    const parsed = new URL(url);
+    // Only allow HTTPS
+    if (parsed.protocol !== 'https:') {
+      return false;
+    }
+    // Allow Stripe checkout and payment link domains
+    const hostname = parsed.hostname;
+    return hostname === 'checkout.stripe.com' ||
+           hostname === 'pay.stripe.com' ||
+           hostname.endsWith('.stripe.com');
+  } catch (e) {
+    return false;
+  }
+}
+
 function configuredStripeLink() {
-  return (
-    process.env.STRIPE_PAYMENT_LINK ||
-    process.env.STRIPE_DEVICE_LINK_URL ||
-    process.env.SKYGRID_STRIPE_LINK ||
-    process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK ||
-    ''
-  ).trim();
+  const candidates = [
+    process.env.STRIPE_PAYMENT_LINK,
+    process.env.STRIPE_DEVICE_LINK_URL,
+    process.env.SKYGRID_STRIPE_LINK,
+    process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK
+  ];
+  
+  for (const candidate of candidates) {
+    if (candidate) {
+      const trimmed = candidate.trim();
+      if (isValidStripeUrl(trimmed)) {
+        return trimmed;
+      }
+    }
+  }
+  return '';
 }
 
 function stripeStatusPayload(req) {
