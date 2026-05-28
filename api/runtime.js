@@ -139,7 +139,9 @@ function stripeDeviceLinkPayload(req) {
 
 export default function handler(req, res) {
   const url = new URL(req.url, `https://${req.headers.host || 'localhost'}`);
-  let path = url.searchParams.get('__path') || url.pathname;
+  // Use Vercel's x-rewrote-url header to get the original path when URL is rewritten.
+  // This prevents path injection attacks via query parameters.
+  let path = req.headers['x-rewrote-url'] || url.pathname;
   path = path.replace(/\/$/, '') || '/';
 
   if (path === '/') {
