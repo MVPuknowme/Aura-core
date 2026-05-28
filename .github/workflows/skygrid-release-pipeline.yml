@@ -185,7 +185,7 @@ jobs:
 
       - name: Deploy staging
         if: steps.validate.outputs.deploy_ready == 'true'
-        run: node deploy.sky.js
+        run: npm run deploy
         env:
           SKYGRID_ENV: staging
           AURA_ENV: ${{ secrets.AURA_ENV }}
@@ -259,7 +259,7 @@ jobs:
           fi
 
       - name: Deploy production
-        run: node deploy.sky.js
+        run: npm run deploy
         env:
           SKYGRID_ENV: production
           AURA_ENV: ${{ secrets.AURA_ENV }}
