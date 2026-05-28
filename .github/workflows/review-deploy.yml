@@ -1,0 +1,87 @@
+name: Review Deploy (5.5)
+
+on:
+  push:
+    branches:
+      - 'review/**'
+  workflow_dispatch:
+    inputs:
+      base:
+        description: 'Base branch to open PR against'
+        required: false
+        default: 'MVPuknowme'
+      version:
+        description: 'Pipeline version tag'
+        required: false
+        default: '5.5'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  open_pr_and_validate:
+    runs-on: ubuntu-latest
+    env:
+      BASE_BRANCH: ${{ github.event.inputs.base || 'MVPuknowme' }}
+      PIPELINE_VERSION: ${{ github.event.inputs.version || '5.5' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Show context
+        run: |
+          echo "branch=${GITHUB_REF_NAME}"
+          echo "base=${BASE_BRANCH}"
+          echo "version=${PIPELINE_VERSION}"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci --ignore-scripts
+
+      - name: Lint
+        run: npm run lint --if-present
+
+      - name: Test
+        run: npm test --if-present
+
+      - name: Create or update PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          BRANCH="${GITHUB_REF_NAME}"
+          TITLE="[${PIPELINE_VERSION}] Review: ${BRANCH}"
+          BODY=$(cat <<'EOF'
+Automated review PR opened by **Review Deploy (5.5)**.
+
+- Source branch: `review/**`
+- Intended for human review + deployment validation
+- Pipeline tag: 5.5
+
+Checks executed:
+- npm ci
+- lint (if present)
+- tests (if present)
+EOF
+)
+
+          # If a PR already exists for this head branch, do nothing.
+          EXISTING=$(gh pr list --head "$BRANCH" --json number --jq '.[0].number' || true)
+          if [ -n "${EXISTING}" ]; then
+            echo "PR already exists: #${EXISTING}"
+            exit 0
+          fi
+
+          gh pr create \
+            --base "${BASE_BRANCH}" \
+            --head "${BRANCH}" \
+            --title "${TITLE}" \
+            --body "${BODY}"
