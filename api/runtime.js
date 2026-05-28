@@ -1,4 +1,4 @@
-const VERSION = '1.3.5-smoke-runtime';
+const VERSION = '1.3.8-pacific-heart-ingest';
 
 function sendJson(res, statusCode, body) {
   res.statusCode = statusCode;
@@ -45,10 +45,147 @@ function runtimePayload(extra = {}) {
   };
 }
 
-export default function handler(req, res) {
+async function readJsonBody(req, limitBytes = 32768) {
+  return new Promise((resolve, reject) => {
+    let size = 0;
+    let raw = '';
+
+    req.on('data', (chunk) => {
+      size += chunk.length;
+      if (size > limitBytes) {
+        reject(Object.assign(new Error('Request body too large'), { statusCode: 413 }));
+        req.destroy();
+        return;
+      }
+      raw += chunk.toString('utf8');
+    });
+
+    req.on('end', () => {
+      if (!raw.trim()) {
+        reject(Object.assign(new Error('Missing JSON body'), { statusCode: 400 }));
+        return;
+      }
+
+      try {
+        resolve(JSON.parse(raw));
+      } catch {
+        reject(Object.assign(new Error('Malformed JSON body'), { statusCode: 400 }));
+      }
+    });
+
+    req.on('error', reject);
+  });
+}
+
+function stringField(value, min = 1, max = 160) {
+  return typeof value === 'string' && value.trim().length >= min && value.trim().length <= max;
+}
+
+function validatePacificHeartPayload(payload) {
+  const errors = [];
+
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    return ['Payload must be a JSON object.'];
+  }
+
+  if (!stringField(payload.eventId, 3, 120)) errors.push('eventId is required.');
+  if (!stringField(payload.source, 3, 120)) errors.push('source is required.');
+  if (!stringField(payload.patientRef, 3, 120)) errors.push('patientRef is required.');
+  if (!stringField(payload.incidentType, 3, 80)) errors.push('incidentType is required.');
+  if (!stringField(payload.severity, 3, 40)) errors.push('severity is required.');
+
+  if (payload.vitals !== undefined && (typeof payload.vitals !== 'object' || Array.isArray(payload.vitals))) {
+    errors.push('vitals must be an object when provided.');
+  }
+
+  if (payload.alerts !== undefined && !Array.isArray(payload.alerts)) {
+    errors.push('alerts must be an array when provided.');
+  }
+
+  if (payload.consent !== undefined && typeof payload.consent !== 'object') {
+    errors.push('consent must be an object when provided.');
+  }
+
+  return errors;
+}
+
+function buildPacificHeartHandoff(payload, req) {
+  const now = new Date().toISOString();
+  const normalizedSeverity = String(payload.severity).toLowerCase();
+  const priority = ['critical', 'high', 'emergency'].includes(normalizedSeverity) ? 'urgent_review' : 'standard_review';
+
+  return runtimePayload({
+    service: 'Pacific Heart Emergency Ingest Sandbox',
+    status: 'accepted',
+    route: '/api/pacific-heart/ingest',
+    ingestId: `ph_${Date.now().toString(36)}`,
+    receivedAt: now,
+    requestHost: req.headers.host || null,
+    handoff: {
+      target: 'skygrid_emergency_processing_sandbox',
+      priority,
+      dispatcherReady: false,
+      responderReady: false,
+      humanReviewRequired: true,
+      nextStep: 'Store in preflight ledger or forward to a sandbox dispatcher queue after approval.'
+    },
+    acceptedPayload: {
+      eventId: payload.eventId,
+      source: payload.source,
+      patientRef: payload.patientRef,
+      incidentType: payload.incidentType,
+      severity: payload.severity,
+      vitalsProvided: Boolean(payload.vitals),
+      alertCount: Array.isArray(payload.alerts) ? payload.alerts.length : 0,
+      consentProvided: Boolean(payload.consent)
+    },
+    guardrails: [
+      'Sandbox endpoint only',
+      'No certified emergency dispatch action is performed',
+      'No diagnosis is produced',
+      'No PHI should be sent to public preview deployments',
+      'Human review is required before responder-facing use'
+    ]
+  });
+}
+
+async function handlePacificHeartIngest(req, res) {
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST');
+    return sendJson(res, 405, runtimePayload({
+      ok: false,
+      service: 'Pacific Heart Emergency Ingest Sandbox',
+      status: 'method_not_allowed',
+      expectedMethod: 'POST'
+    }));
+  }
+
+  try {
+    const payload = await readJsonBody(req);
+    const errors = validatePacificHeartPayload(payload);
+
+    if (errors.length > 0) {
+      return sendJson(res, 400, runtimePayload({
+        ok: false,
+        service: 'Pacific Heart Emergency Ingest Sandbox',
+        status: 'invalid_payload',
+        errors
+      }));
+    }
+
+    return sendJson(res, 202, buildPacificHeartHandoff(payload, req));
+  } catch (error) {
+    return sendJson(res, error.statusCode || 500, runtimePayload({
+      ok: false,
+      service: 'Pacific Heart Emergency Ingest Sandbox',
+      status: error.statusCode === 413 ? 'body_too_large' : 'request_error',
+      message: error.message || 'Unable to process ingest request.'
+    }));
+  }
+}
+
+export default async function handler(req, res) {
   const url = new URL(req.url, `https://${req.headers.host || 'localhost'}`);
-  // Use the original path from __path query parameter if available (from Vercel rewrite),
-  // otherwise fall back to the actual request pathname
   let path = url.searchParams.get('__path');
   if (!path) {
     path = url.pathname;
@@ -68,9 +205,14 @@ export default function handler(req, res) {
         healthAlias: '/health.json',
         helm: '/api/skygrid/helm?command=status',
         provenance: '/api/skygrid/provenance',
-        aws: '/api/skygrid/aws'
+        aws: '/api/skygrid/aws',
+        pacificHeartIngest: '/api/pacific-heart/ingest'
       }
     }));
+  }
+
+  if (path === '/api/pacific-heart/ingest') {
+    return handlePacificHeartIngest(req, res);
   }
 
   if (path === '/api/skygrid/helm') {
