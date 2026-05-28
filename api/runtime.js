@@ -47,7 +47,13 @@ function runtimePayload(extra = {}) {
 
 export default function handler(req, res) {
   const url = new URL(req.url, `https://${req.headers.host || 'localhost'}`);
-  const path = url.pathname.replace(/\/$/, '') || '/';
+  // Use the original path from __path query parameter if available (from Vercel rewrite),
+  // otherwise fall back to the actual request pathname
+  let path = url.searchParams.get('__path');
+  if (!path) {
+    path = url.pathname;
+  }
+  path = path.replace(/\/$/, '') || '/';
 
   if (path === '/') {
     return sendHome(res);

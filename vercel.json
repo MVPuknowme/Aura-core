@@ -7,51 +7,51 @@
   "rewrites": [
     {
       "source": "/",
-      "destination": "/api/runtime"
+      "destination": "/api/runtime?__path=/"
     },
     {
       "source": "/health.json",
-      "destination": "/api/runtime"
+      "destination": "/api/runtime?__path=/health.json"
     },
     {
       "source": "/api/health",
-      "destination": "/api/runtime"
+      "destination": "/api/runtime?__path=/api/health"
     },
     {
       "source": "/api/skygrid/helm",
-      "destination": "/api/runtime"
+      "destination": "/api/runtime?__path=/api/skygrid/helm"
     },
     {
       "source": "/api/skygrid/provenance",
-      "destination": "/api/runtime"
+      "destination": "/api/runtime?__path=/api/skygrid/provenance"
     },
     {
       "source": "/api/skygrid/aws",
-      "destination": "/api/runtime"
+      "destination": "/api/runtime?__path=/api/skygrid/aws"
     },
     {
       "source": "/dispatch",
-      "destination": "/api/runtime"
+      "destination": "/api/runtime?__path=/dispatch"
     },
     {
       "source": "/scenarios",
-      "destination": "/api/runtime"
+      "destination": "/api/runtime?__path=/scenarios"
     },
     {
       "source": "/rates",
-      "destination": "/api/runtime"
+      "destination": "/api/runtime?__path=/rates"
     },
     {
       "source": "/base",
-      "destination": "/api/runtime"
+      "destination": "/api/runtime?__path=/base"
     },
     {
       "source": "/pay",
-      "destination": "/api/runtime"
+      "destination": "/api/runtime?__path=/pay"
     },
     {
       "source": "/highway",
-      "destination": "/api/runtime"
+      "destination": "/api/runtime?__path=/highway"
     },
     {
       "source": "/interface",
@@ -59,19 +59,19 @@
     },
     {
       "source": "/api/pay/quote",
-      "destination": "/api/runtime"
+      "destination": "/api/runtime?__path=/api/pay/quote"
     },
     {
       "source": "/api/highway/status",
-      "destination": "/api/runtime"
+      "destination": "/api/runtime?__path=/api/highway/status"
     },
     {
       "source": "/api/highway/flasks",
-      "destination": "/api/runtime"
+      "destination": "/api/runtime?__path=/api/highway/flasks"
     },
     {
       "source": "/api/highway/postman",
-      "destination": "/api/runtime"
+      "destination": "/api/runtime?__path=/api/highway/postman"
     }
   ],
   "cleanUrls": true,
