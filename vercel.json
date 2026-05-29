@@ -2,8 +2,8 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
   "framework": null,
-  "installCommand": "rm -rf node_modules ~/.local/share/pnpm/store && corepack enable && corepack prepare pnpm@10.23.0 --activate && pnpm config set registry https://registry.npmjs.org/ && pnpm run preflight:interference && pnpm install --frozen-lockfile=false",
-  "buildCommand": "corepack enable && corepack prepare pnpm@10.23.0 --activate && pnpm run build",
+  "installCommand": "corepack enable && corepack prepare pnpm@10.23.0 --activate && pnpm config set registry https://registry.npmjs.org/ && pnpm install --no-frozen-lockfile",
+  "buildCommand": "corepack enable && corepack prepare pnpm@10.23.0 --activate && pnpm run preflight:interference && pnpm run build",
   "rewrites": [
     {
       "source": "/",
@@ -90,7 +90,7 @@
         },
         {
           "key": "X-Phoenix-Version",
-          "value": "1.3.6-route-clean-redeploy"
+          "value": "1.3.8-pacific-heart-ingest"
         }
       ]
     }
