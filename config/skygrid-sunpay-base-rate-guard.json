@@ -1,0 +1,59 @@
+{
+  "version": "1.0.0",
+  "name": "skygrid-sunpay-base-rate-guard",
+  "mode": "base_primary_protected_ready",
+  "effectiveDate": "2026-05-29",
+  "products": ["SkyGrid", "Sun-Pay"],
+  "defaultRoute": "base",
+  "pricingDecision": {
+    "publicPricingBands": "hold",
+    "customerSurcharge": "off",
+    "emergencyPremium": "standby_only",
+    "macroMarginBuffer": "preserve",
+    "discounting": "limited"
+  },
+  "normalMode": {
+    "baseRouting": "primary",
+    "telemetryWrites": "normal_to_high",
+    "blobBatching": "enabled",
+    "lowValueSettlement": "enabled",
+    "sunPayMicroSettlement": "enabled",
+    "batching": "normal"
+  },
+  "protectedModeTriggers": {
+    "baseGasGweiSustainedGt": 0.1,
+    "baseGasWindowMinutes": 15,
+    "baseUtilizationPctGte": 70,
+    "blobFeeSpike": "material_15m_spike",
+    "ethereumL1Gas": "above_normal_operating_band",
+    "sequencerLatency": "degraded_or_delayed",
+    "bridgeStatus": "degraded_or_delayed",
+    "upgradeWindow": "active_or_scheduled",
+    "manualOperatorOverride": true
+  },
+  "protectedModeBehavior": {
+    "queueNonessentialWrites": true,
+    "batchTelemetryWrites": true,
+    "prioritizePaymentConfirmations": true,
+    "preserveDispatcherThroughput": true,
+    "reduceLowValueSettlementFrequency": true,
+    "avoidMajorReconciliationSweeps": true,
+    "avoidLargeWithdrawalSensitiveFlows": true,
+    "showNetworkProtectionNotice": true
+  },
+  "advisoryGuardrails": [
+    "No money moves from public demo routes.",
+    "No private keys are accepted or stored.",
+    "Protected mode changes routing posture before changing customer pricing.",
+    "Base remains the primary route while fees, utilization, blob costs, and status are healthy.",
+    "Upgrade windows are treated as routing/reliability events, not automatic pricing events."
+  ],
+  "implementationFlags": {
+    "pricingBands": "no_change",
+    "baseUtilization": "increase_when_green",
+    "routingRules": "harden",
+    "blobUtilization": "keep_active",
+    "upgradeWindowLogic": "enable",
+    "treasuryMargin": "preserve"
+  }
+}
