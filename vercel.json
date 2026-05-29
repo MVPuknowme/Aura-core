@@ -72,6 +72,10 @@
     {
       "source": "/api/highway/postman",
       "destination": "/api/runtime?__path=/api/highway/postman"
+    },
+    {
+      "source": "/api/pacific-heart/ingest",
+      "destination": "/api/runtime?__path=/api/pacific-heart/ingest"
     }
   ],
   "cleanUrls": true,
