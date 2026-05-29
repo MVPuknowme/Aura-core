@@ -113,12 +113,17 @@ function buildPacificHeartHandoff(payload, req) {
   const now = new Date().toISOString();
   const normalizedSeverity = String(payload.severity).toLowerCase();
   const priority = ['critical', 'high', 'emergency'].includes(normalizedSeverity) ? 'urgent_review' : 'standard_review';
+  // Generate unique ingestId using timestamp, eventId hash, and random entropy
+  // to ensure uniqueness even in high-concurrency scenarios with same-millisecond requests
+  const randomSuffix = Math.random().toString(36).substring(2, 10);
+  const eventIdHash = payload.eventId.split('').reduce((acc, char) => ((acc << 5) - acc) + char.charCodeAt(0), 0).toString(36).substring(0, 6);
+  const ingestId = `ph_${Date.now().toString(36)}_${eventIdHash}_${randomSuffix}`;
 
   return runtimePayload({
     service: 'Pacific Heart Emergency Ingest Sandbox',
     status: 'accepted',
     route: '/api/pacific-heart/ingest',
-    ingestId: `ph_${Date.now().toString(36)}`,
+    ingestId,
     receivedAt: now,
     requestHost: req.headers.host || null,
     handoff: {
