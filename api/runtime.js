@@ -46,6 +46,12 @@ function runtimePayload(extra = {}) {
 }
 
 async function readJsonBody(req, limitBytes = 32768) {
+  // Fast path: if Vercel or middleware has already parsed the body, use it directly
+  if (req.body && typeof req.body === 'object') return req.body;
+  if (typeof req.body === 'string') {
+    try { return JSON.parse(req.body); } catch { throw Object.assign(new Error('Malformed JSON body'), { statusCode: 400 }); }
+  }
+
   return new Promise((resolve, reject) => {
     let size = 0;
     let raw = '';
