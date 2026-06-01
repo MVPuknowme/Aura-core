@@ -34,12 +34,18 @@ jobs:
 
       - name: Validate required secrets
         shell: bash
+        env:
+          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
         run: |
           set -euo pipefail
-          if [ -z "${{ secrets.AIRTABLE_TOKEN }}" ]; then
+
+          if [ -z "${AIRTABLE_TOKEN:-}" ]; then
             echo "❌ Missing required GitHub secret: AIRTABLE_TOKEN"
+            echo "Create it at: Repo Settings → Secrets and variables → Actions → Repository secrets"
+            echo "Make sure it is a Secret, not a Variable."
             exit 1
           fi
+
           echo "✅ Required Airtable token secret is present"
           echo "Base ID: ${AIRTABLE_BASE_ID}"
           echo "Table: ${AIRTABLE_TABLE_NAME}"
