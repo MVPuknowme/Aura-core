@@ -7,27 +7,11 @@
   "rewrites": [
     {
       "source": "/",
-      "destination": "/api/runtime?__path=/"
+      "destination": "/api/root"
     },
     {
       "source": "/health.json",
-      "destination": "/api/runtime?__path=/health.json"
-    },
-    {
-      "source": "/api/health",
-      "destination": "/api/runtime?__path=/api/health"
-    },
-    {
-      "source": "/api/skygrid/helm",
-      "destination": "/api/runtime?__path=/api/skygrid/helm"
-    },
-    {
-      "source": "/api/skygrid/provenance",
-      "destination": "/api/runtime?__path=/api/skygrid/provenance"
-    },
-    {
-      "source": "/api/skygrid/aws",
-      "destination": "/api/runtime?__path=/api/skygrid/aws"
+      "destination": "/api/health"
     },
     {
       "source": "/dispatch",
@@ -86,7 +70,7 @@
         },
         {
           "key": "X-Phoenix-Version",
-          "value": "1.3.6-route-clean-redeploy"
+          "value": "1.3.10-newman-route-repair"
         }
       ]
     }
