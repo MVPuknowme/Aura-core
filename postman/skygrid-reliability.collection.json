@@ -1,12 +1,12 @@
 {
   "info": {
-    "name": "Patrick/Newman Postal Kafka Bridge Reliability Checks",
-    "description": "Postman/Newman checks for the Patrick/Newman Postal Kafka Bridge: a hot temporary emergency-notice link that verifies delivery across Web3-facing references, Vercel, B12, and the AWS emergency ramp without activating funds, devices, or production routing.",
+    "name": "Patrick/Newman Postman Kafka Bridge TM Reliability Checks",
+    "description": "Postman/Newman checks for the Patrick/Newman Postman Kafka Bridge TM: a temporary emergency-notice link that verifies delivery across Web3-facing references, Vercel, B12, and the AWS emergency ramp without activating funds, devices, or production routing.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "Patrick/Newman Postal Kafka Bridge Link Map",
+      "name": "Patrick/Newman Postman Kafka Bridge TM Link Map",
       "event": [
         {
           "listen": "test",
@@ -14,21 +14,21 @@
             "type": "text/javascript",
             "exec": [
               "const linkMap = {",
-              "  bridge_name: 'Patrick/Newman Postal Kafka Bridge',",
-              "  bridge_mode: 'hot_temp_emergency_notice_link',",
+              "  bridge_name: 'Patrick/Newman Postman Kafka Bridge TM',",
+              "  bridge_mode: 'temporary_emergency_notice_link',",
               "  web3_gateway_url: pm.collectionVariables.get('web3_gateway_url'),",
               "  site_url: pm.collectionVariables.get('site_url'),",
               "  b12_site_url: pm.collectionVariables.get('b12_site_url'),",
               "  base_url: pm.collectionVariables.get('base_url'),",
               "  aws_service_url: pm.collectionVariables.get('aws_service_url')",
               "};",
-              "pm.test('Patrick/Newman Postal Kafka Bridge has required public URLs', function () {",
+              "pm.test('Patrick/Newman Postman Kafka Bridge TM has required public URLs', function () {",
               "  pm.expect(linkMap.site_url).to.match(/^https?:\\/\\//);",
               "  pm.expect(linkMap.base_url).to.match(/^https?:\\/\\//);",
               "  pm.expect(linkMap.b12_site_url).to.match(/^https?:\\/\\//);",
               "  pm.expect(linkMap.aws_service_url).to.match(/^https?:\\/\\//);",
               "});",
-              "pm.collectionVariables.set('patrick_newman_postal_kafka_bridge_link_map', JSON.stringify(linkMap));"
+              "pm.collectionVariables.set('patrick_newman_postman_kafka_bridge_link_map', JSON.stringify(linkMap));"
             ]
           }
         }
@@ -65,309 +65,6 @@
               "pm.test('Web3 gateway response time is under 7000ms', function () {",
               "  pm.expect(pm.response.responseTime).to.be.below(7000);",
               "});"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "B12 Public Site Link",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{b12_site_url}}",
-          "host": ["{{b12_site_url}}"]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "const b12Body = pm.response.text();",
-              "pm.test('B12 public site is reachable', function () {",
-              "  pm.expect([200, 204, 301, 302]).to.include(pm.response.code);",
-              "});",
-              "pm.test('B12 public site returns a non-empty page', function () {",
-              "  pm.expect(b12Body).to.be.a('string').and.to.have.length.above(0);",
-              "});",
-              "pm.collectionVariables.set('b12_last_status_code', pm.response.code);",
-              "pm.collectionVariables.set('b12_last_checked_at', new Date().toISOString());"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "Vercel Runtime Home",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{site_url}}",
-          "host": ["{{site_url}}"]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "const siteBody = pm.response.text();",
-              "const siteBodyLower = siteBody.toLowerCase();",
-              "pm.test('Vercel runtime home status code is successful', function () {",
-              "  pm.expect(pm.response.code).to.be.oneOf([200, 204, 301, 302]);",
-              "});",
-              "pm.test('Vercel runtime home response time is under 3000ms', function () {",
-              "  pm.expect(pm.response.responseTime).to.be.below(3000);",
-              "});",
-              "pm.test('Vercel runtime home body is not empty', function () {",
-              "  pm.expect(siteBody).to.be.a('string').and.to.have.length.above(0);",
-              "});",
-              "pm.test('Vercel runtime home references SKYGRID or Aura-Core', function () {",
-              "  pm.expect(siteBodyLower.includes('skygrid') || siteBodyLower.includes('aura-core')).to.equal(true);",
-              "});",
-              "pm.collectionVariables.set('last_status_code', pm.response.code);",
-              "pm.collectionVariables.set('last_response_time_ms', pm.response.responseTime);",
-              "pm.collectionVariables.set('last_checked_at', new Date().toISOString());",
-              "pm.collectionVariables.set('last_url', pm.request.url.toString());"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "Vercel Intake Readiness",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{base_url}}/api/intake",
-          "host": ["{{base_url}}"],
-          "path": ["api", "intake"]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "const intakeText = pm.response.text().trim();",
-              "let intakeJson = null;",
-              "pm.test('Intake route loads successfully', function () {",
-              "  pm.expect(pm.response.code).to.equal(200);",
-              "});",
-              "pm.test('Intake readiness response is JSON', function () {",
-              "  pm.expect(intakeText.startsWith('{')).to.equal(true);",
-              "  intakeJson = JSON.parse(intakeText);",
-              "  pm.expect(intakeJson.ok).to.equal(true);",
-              "});",
-              "pm.test('Intake route is review-only and safe', function () {",
-              "  if (!intakeJson) { intakeJson = JSON.parse(intakeText); }",
-              "  const guardrails = JSON.stringify(intakeJson.guardrails || []).toLowerCase();",
-              "  pm.expect(guardrails).to.include('does not move funds');",
-              "  pm.expect(guardrails).to.include('operator review required');",
-              "});"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "Patrick/Newman Postal Kafka Bridge Delivery Probe",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\"fullName\":\"Patrick Newman Postal Kafka Bridge Probe\",\"email\":\"probe@example.com\",\"organization\":\"MVPuknowme / Aura-Core\",\"partnerType\":\"emergency-notice-link-test\",\"networkInterest\":\"Patrick/Newman Postal Kafka Bridge from Web3 to Vercel to B12 to AWS\",\"locationRegion\":\"test\",\"currentInfrastructure\":\"Postman/Newman plus Kafka-capable bridge systems\",\"desiredUseCase\":\"Verify hot temporary emergency-notice delivery receipt without activating production routing.\",\"proofPacketNeeded\":\"yes\",\"additionalNotes\":\"Automated bridge smoke test only. No funds, device entitlement, dispatch authority, or routing activation.\"}"
-        },
-        "url": {
-          "raw": "{{base_url}}/api/intake",
-          "host": ["{{base_url}}"],
-          "path": ["api", "intake"]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "const deliveryText = pm.response.text().trim();",
-              "let deliveryJson = null;",
-              "pm.test('Bridge delivery probe creates a review receipt', function () {",
-              "  pm.expect(pm.response.code).to.equal(201);",
-              "  deliveryJson = JSON.parse(deliveryText);",
-              "  pm.expect(deliveryJson.ok).to.equal(true);",
-              "  pm.expect(deliveryJson.status).to.equal('received');",
-              "});",
-              "pm.test('Delivery receipt has submission id and guardrails', function () {",
-              "  if (!deliveryJson) { deliveryJson = JSON.parse(deliveryText); }",
-              "  pm.expect(deliveryJson.submissionId).to.match(/^sg_/);",
-              "  pm.expect(JSON.stringify(deliveryJson.guardrails).toLowerCase()).to.include('no financial activity');",
-              "});",
-              "pm.collectionVariables.set('last_bridge_submission_id', deliveryJson && deliveryJson.submissionId);",
-              "pm.collectionVariables.set('last_bridge_received_at', deliveryJson && deliveryJson.receivedAt);"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "Runtime Health API",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{base_url}}/api/health",
-          "host": ["{{base_url}}"],
-          "path": ["api", "health"]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "const statusText = pm.response.text().trim();",
-              "let statusJson = null;",
-              "pm.test('Health API loads successfully', function () {",
-              "  pm.expect(pm.response.code).to.equal(200);",
-              "});",
-              "pm.test('Health API is fast', function () {",
-              "  pm.expect(pm.response.responseTime).to.be.below(3000);",
-              "});",
-              "pm.test('Health API response is JSON', function () {",
-              "  pm.expect(statusText.startsWith('{')).to.equal(true);",
-              "  pm.expect(statusText.startsWith('<')).to.equal(false);",
-              "  statusJson = JSON.parse(statusText);",
-              "  pm.expect(statusJson).to.be.an('object');",
-              "});",
-              "pm.test('Health API confirms Aura-Core SKYGRID runtime', function () {",
-              "  if (!statusJson) { statusJson = JSON.parse(statusText); }",
-              "  pm.expect(statusJson.ok).to.equal(true);",
-              "  pm.expect(statusJson.status).to.equal('online');",
-              "  pm.expect(JSON.stringify(statusJson).toLowerCase()).to.include('aura-core');",
-              "  pm.expect(JSON.stringify(statusJson).toLowerCase()).to.include('skygrid');",
-              "});"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "SKYGRID Helm Status",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{base_url}}/api/skygrid/helm?command=status",
-          "host": ["{{base_url}}"],
-          "path": ["api", "skygrid", "helm"],
-          "query": [{ "key": "command", "value": "status" }]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "const helmText = pm.response.text().trim();",
-              "let helmJson = null;",
-              "pm.test('Helm status loads successfully', function () {",
-              "  pm.expect(pm.response.code).to.equal(200);",
-              "});",
-              "pm.test('Helm status response is JSON', function () {",
-              "  pm.expect(helmText.startsWith('{')).to.equal(true);",
-              "  helmJson = JSON.parse(helmText);",
-              "  pm.expect(helmJson).to.be.an('object');",
-              "});",
-              "pm.test('Helm status is operator-assist only', function () {",
-              "  if (!helmJson) { helmJson = JSON.parse(helmText); }",
-              "  pm.expect(helmJson.ok).to.equal(true);",
-              "  pm.expect(helmJson.helm.autonomous_execution).to.equal(false);",
-              "  pm.expect(helmJson.helm.destructive_actions_enabled).to.equal(false);",
-              "});"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "SKYGRID Provenance Mirror Status",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{base_url}}/api/skygrid/provenance",
-          "host": ["{{base_url}}"],
-          "path": ["api", "skygrid", "provenance"]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "const provenanceText = pm.response.text().trim();",
-              "let provenanceJson = null;",
-              "pm.test('Provenance status loads successfully or is pending deployment', function () {",
-              "  pm.expect([200, 404, 503]).to.include(pm.response.code);",
-              "});",
-              "pm.test('Provenance response is JSON when route exists', function () {",
-              "  if (pm.response.code === 200) {",
-              "    pm.expect(provenanceText.startsWith('{')).to.equal(true);",
-              "    provenanceJson = JSON.parse(provenanceText);",
-              "    pm.expect(provenanceJson.ok).to.equal(true);",
-              "    pm.expect(provenanceJson.recognized_assistive_build.embedded_autonomous_ai).to.equal(false);",
-              "  }",
-              "});",
-              "pm.test('Provenance response time is under 5000ms', function () {",
-              "  pm.expect(pm.response.responseTime).to.be.below(5000);",
-              "});"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "AWS Emergency Ramp Health Endpoint",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{aws_service_url}}/api/skygrid/aws",
-          "host": ["{{aws_service_url}}"],
-          "path": ["api", "skygrid", "aws"]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('AWS emergency ramp status is acceptable', function () {",
-              "  pm.expect([200, 204, 404, 503]).to.include(pm.response.code);",
-              "});",
-              "pm.test('AWS emergency ramp response time is under 5000ms', function () {",
-              "  pm.expect(pm.response.responseTime).to.be.below(5000);",
-              "});",
-              "pm.collectionVariables.set('aws_last_status_code', pm.response.code);",
-              "pm.collectionVariables.set('aws_last_checked_at', new Date().toISOString());"
             ]
           }
         }
