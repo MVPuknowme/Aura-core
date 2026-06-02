@@ -6,7 +6,7 @@ on:
       node_version:
         description: Node.js version to use
         required: false
-        default: '20'
+        default: '24'
       install_command:
         description: Install command override
         required: false
@@ -15,6 +15,9 @@ on:
         description: Deploy command override
         required: false
         default: 'npm run deploy'
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
   deploy:
