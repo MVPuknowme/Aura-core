@@ -18,6 +18,18 @@
       "destination": "/api/runtime?__path=/api/health"
     },
     {
+      "source": "/api/status",
+      "destination": "/api/runtime?__path=/api/status"
+    },
+    {
+      "source": "/api/intake",
+      "destination": "/api/runtime?__path=/api/intake"
+    },
+    {
+      "source": "/api/pacific-heart/ingest",
+      "destination": "/api/runtime?__path=/api/pacific-heart/ingest"
+    },
+    {
       "source": "/api/skygrid/helm",
       "destination": "/api/runtime?__path=/api/skygrid/helm"
     },
@@ -55,7 +67,7 @@
     },
     {
       "source": "/interface",
-      "destination": "/api/interface-page"
+      "destination": "/api/runtime?__path=/interface"
     },
     {
       "source": "/api/pay/quote",
@@ -86,7 +98,7 @@
         },
         {
           "key": "X-Phoenix-Version",
-          "value": "1.3.6-route-clean-redeploy"
+          "value": "1.3.9-runtime-route-coverage"
         }
       ]
     }
