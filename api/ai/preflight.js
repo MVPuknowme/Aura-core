@@ -1,9 +1,13 @@
+const AUTO_DRILL_OPERATION_NAME = 'Auto-Drill Aura-Core AI Operation TM';
+const AUTO_DRILL_ROUTING_FEE_PERCENT = Number(process.env.AUTO_DRILL_ROUTING_FEE_PERCENT || 3.5);
+
 function sendJson(res, statusCode, body) {
   res.statusCode = statusCode;
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store, max-age=0');
   res.setHeader('X-SkyGrid-Network', 'Aura-Core');
-  res.setHeader('X-Aura-Core-AI', 'preflight');
+  res.setHeader('X-Aura-Core-AI', 'auto-drill-preflight');
+  res.setHeader('X-Auto-Drill-Operation', 'Aura-Core-AI-Preflight');
   res.end(JSON.stringify(body, null, 2));
 }
 
@@ -41,7 +45,7 @@ function classifyBaseRate() {
 
   if (pressureScore >= 35) return { band: 'red', pressureScore, utilizationMarkupPct: '7.5%' };
   if (pressureScore >= 12) return { band: 'yellow', pressureScore, utilizationMarkupPct: '5.0%' };
-  return { band: 'green', pressureScore, utilizationMarkupPct: '3.5%' };
+  return { band: 'green', pressureScore, utilizationMarkupPct: `${AUTO_DRILL_ROUTING_FEE_PERCENT.toFixed(1)}%` };
 }
 
 function classifyPreflight(input) {
@@ -53,7 +57,7 @@ function classifyPreflight(input) {
 
   let readiness = 'ready';
   let riskLevel = base.band;
-  let recommendedAction = 'Proceed with advisory preflight validation and record proof before activation.';
+  let recommendedAction = 'Proceed with Auto-Drill advisory preflight validation and record proof before activation.';
 
   if (!hasAsset) {
     readiness = 'needs_attention';
@@ -99,7 +103,8 @@ function buildPreflight(req, input) {
   return {
     ok: true,
     status: 'preflight_ready',
-    service: 'Aura-Core AI Preflight Engine',
+    service: AUTO_DRILL_OPERATION_NAME,
+    operationClass: 'sentinel_style_unique_preflight',
     mode: 'advisory_preflight',
     asset,
     type,
@@ -110,6 +115,9 @@ function buildPreflight(req, input) {
     rateBand: decision.base.band,
     pressureScore: decision.base.pressureScore,
     utilizationMarkupPct: decision.base.utilizationMarkupPct,
+    autoDrillRoutingFeePercent: AUTO_DRILL_ROUTING_FEE_PERCENT,
+    autoDrillRoutingFeeLabel: `${AUTO_DRILL_ROUTING_FEE_PERCENT.toFixed(1)}%`,
+    feeMeaning: 'Auto-Drill routing fee percentage; not a flat USD lease amount.',
     sunPayReady: true,
     stripeDeviceLinkReady: 'staged',
     liveRoutingEnabled: false,
@@ -124,6 +132,7 @@ function buildPreflight(req, input) {
     ],
     guardrails: [
       'Advisory decision only',
+      '3.5 means Auto-Drill routing fee percent by default, not 3.50 USD',
       'No money moved',
       'No transaction signing',
       'No automatic network routing',
@@ -150,7 +159,7 @@ export default async function handler(req, res) {
     return sendJson(res, 405, {
       ok: false,
       status: 'method_not_allowed',
-      message: 'Use GET for a sample preflight decision or POST JSON for an asset-specific decision.'
+      message: 'Use GET for a sample Auto-Drill preflight decision or POST JSON for an asset-specific decision.'
     });
   }
 
