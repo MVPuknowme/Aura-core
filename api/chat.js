@@ -1,4 +1,5 @@
-const BOT_VERSION = '1.0.0-skygrid-tech-bot';
+const BOT_VERSION = '1.0.1-skygrid-tech-bot-avatar';
+const DEFAULT_BOT_AVATAR_URL = 'https://avatars.githubusercontent.com/u/130760115?v=4';
 
 const SKYGRID_CONTEXT = `
 You are the SKYGRID / Aura-Core tech bot for people landing on skygrid-protocol.net.
@@ -26,6 +27,10 @@ Recommended concise answer:
 SKYGRID is a validation-first emergency data on-ramp. It connects public entry points to protected backend systems through tested runtime gates, so emergency and continuity data can move safely without exposing the core network.
 `;
 
+function botAvatarUrl() {
+  return process.env.SKYGRID_BOT_AVATAR_URL || DEFAULT_BOT_AVATAR_URL;
+}
+
 function sendJson(res, statusCode, body) {
   res.statusCode = statusCode;
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -35,6 +40,7 @@ function sendJson(res, statusCode, body) {
 }
 
 function sendChatPage(res) {
+  const avatarUrl = botAvatarUrl();
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store, max-age=0');
@@ -50,10 +56,15 @@ function sendChatPage(res) {
     body { margin: 0; min-height: 100vh; background: radial-gradient(circle at top, #1e3a8a 0, #0f172a 42%, #020617 100%); color: #e5eefc; }
     main { max-width: 920px; margin: 0 auto; padding: 48px 20px; }
     .card { border: 1px solid rgba(148, 163, 184, .28); border-radius: 24px; padding: 24px; background: rgba(15, 23, 42, .78); box-shadow: 0 24px 80px rgba(0,0,0,.28); }
-    h1 { margin: 0 0 10px; font-size: clamp(2rem, 5vw, 3.4rem); letter-spacing: -0.05em; }
+    .bot-head { display: flex; gap: 16px; align-items: center; margin-bottom: 10px; }
+    .avatar { width: 74px; height: 74px; border-radius: 999px; object-fit: cover; border: 3px solid rgba(125, 211, 252, .85); box-shadow: 0 0 28px rgba(56, 189, 248, .38); background: rgba(2, 6, 23, .8); }
+    h1 { margin: 0 0 6px; font-size: clamp(2rem, 5vw, 3.4rem); letter-spacing: -0.05em; }
     p { color: #bfd3f7; line-height: 1.6; }
     .log { display: grid; gap: 12px; margin: 22px 0; }
-    .bubble { padding: 14px 16px; border-radius: 18px; border: 1px solid rgba(148, 163, 184, .20); background: rgba(30, 41, 59, .76); white-space: pre-wrap; line-height: 1.55; }
+    .row { display: flex; gap: 10px; align-items: flex-start; }
+    .row.user-row { justify-content: flex-end; }
+    .mini-avatar { width: 36px; height: 36px; border-radius: 999px; object-fit: cover; border: 2px solid rgba(125, 211, 252, .72); flex: 0 0 auto; }
+    .bubble { padding: 14px 16px; border-radius: 18px; border: 1px solid rgba(148, 163, 184, .20); background: rgba(30, 41, 59, .76); white-space: pre-wrap; line-height: 1.55; max-width: 760px; }
     .user { background: rgba(14, 165, 233, .18); }
     form { display: flex; gap: 10px; align-items: stretch; }
     input { flex: 1; border-radius: 16px; border: 1px solid rgba(148, 163, 184, .32); background: rgba(2, 6, 23, .74); color: #e5eefc; padding: 14px 16px; font: inherit; }
@@ -65,10 +76,18 @@ function sendChatPage(res) {
 <body>
   <main>
     <section class="card">
-      <h1>Ask SKYGRID</h1>
-      <p>Ask what SKYGRID does, how the emergency data on-ramp works, what Vercel/Postman/AWS do, or how the P2P proof layer fits in.</p>
+      <div class="bot-head">
+        <img class="avatar" src="${avatarUrl}" alt="SKYGRID tech bot avatar" />
+        <div>
+          <h1>Ask SKYGRID</h1>
+          <p>Ask what SKYGRID does, how the emergency data on-ramp works, what Vercel/Postman/AWS do, or how the P2P proof layer fits in.</p>
+        </div>
+      </div>
       <div id="log" class="log">
-        <div class="bubble">Hi — I’m the SKYGRID tech bot. I can explain the MVPuknowme emergency data on-ramp, validation flow, and runtime architecture.</div>
+        <div class="row">
+          <img class="mini-avatar" src="${avatarUrl}" alt="SKYGRID tech bot avatar" />
+          <div class="bubble">Hi — I’m the SKYGRID tech bot. I can explain the MVPuknowme emergency data on-ramp, validation flow, and runtime architecture.</div>
+        </div>
       </div>
       <form id="chatForm">
         <input id="message" autocomplete="off" placeholder="Ask: What does SKYGRID do?" />
@@ -78,16 +97,37 @@ function sendChatPage(res) {
     </section>
   </main>
   <script>
+    const avatarUrl = ${JSON.stringify(avatarUrl)};
     const form = document.getElementById('chatForm');
     const input = document.getElementById('message');
     const log = document.getElementById('log');
 
-    function addBubble(text, cls = '') {
-      const el = document.createElement('div');
-      el.className = 'bubble ' + cls;
-      el.textContent = text;
-      log.appendChild(el);
-      el.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    function addBotBubble(text) {
+      const row = document.createElement('div');
+      row.className = 'row';
+      const img = document.createElement('img');
+      img.className = 'mini-avatar';
+      img.src = avatarUrl;
+      img.alt = 'SKYGRID tech bot avatar';
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      bubble.textContent = text;
+      row.appendChild(img);
+      row.appendChild(bubble);
+      log.appendChild(row);
+      row.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      return bubble;
+    }
+
+    function addUserBubble(text) {
+      const row = document.createElement('div');
+      row.className = 'row user-row';
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble user';
+      bubble.textContent = text;
+      row.appendChild(bubble);
+      log.appendChild(row);
+      row.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
 
     form.addEventListener('submit', async (event) => {
@@ -95,11 +135,8 @@ function sendChatPage(res) {
       const message = input.value.trim();
       if (!message) return;
       input.value = '';
-      addBubble(message, 'user');
-      const pending = document.createElement('div');
-      pending.className = 'bubble';
-      pending.textContent = 'Thinking...';
-      log.appendChild(pending);
+      addUserBubble(message);
+      const pending = addBotBubble('Thinking...');
       try {
         const response = await fetch('/api/chat', {
           method: 'POST',
@@ -244,6 +281,7 @@ export default async function handler(req, res) {
       service: 'SKYGRID Tech Bot',
       source,
       answer,
+      avatarUrl: botAvatarUrl(),
       version: BOT_VERSION,
       timestamp: new Date().toISOString()
     });
