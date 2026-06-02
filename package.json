@@ -24,6 +24,7 @@
     "test.config": "pnpm run run.config"
   },
   "dependencies": {
+    "ai": "latest",
     "stripe": "^14.0.0"
   },
   "engines": {
