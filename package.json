@@ -2,6 +2,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node scripts/vercel-build.mjs"
+    "pnpk:validate": "node scripts/validate-pnpk.mjs",
+    "build": "npm run pnpk:validate && node scripts/vercel-build.mjs"
   }
 }

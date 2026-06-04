@@ -1,0 +1,60 @@
+{
+  "pnpk_version": "1.0.0",
+  "service": "SKYGRID Emergency Data On-Ramp",
+  "operator": "MVPuknowme",
+  "mode": "controlled_pilot",
+  "sentinel": "fail_closed",
+  "runtime_policy": {
+    "payment_execution": false,
+    "device_activation": false,
+    "production_failover": false,
+    "private_data_movement": false
+  },
+  "routes": {
+    "health": "/health.json",
+    "highway_status": "/api/highway/status",
+    "stripe_device_link": "/api/stripe/device-link",
+    "dispatch": "/dispatch",
+    "scenarios": "/scenarios"
+  },
+  "platforms": {
+    "cloudflare_worker": {
+      "enabled": true,
+      "primary": true,
+      "domain": "https://api.skygrid-protocol.net"
+    },
+    "vercel": {
+      "enabled": true,
+      "fallback": true,
+      "runtime": "vercel-static"
+    },
+    "stripe": {
+      "enabled": true,
+      "mode": "test_or_disabled",
+      "live_mode_allowed": false
+    },
+    "postman": {
+      "enabled": true,
+      "guardrail_tests_required": true
+    }
+  },
+  "triggers": {
+    "emergency_ramp_health_check": {
+      "enabled": true,
+      "method": "GET",
+      "route": "/health.json",
+      "expected_mode": "controlled_pilot",
+      "expected_sentinel": "fail_closed"
+    },
+    "stripe_device_link_guardrail": {
+      "enabled": true,
+      "method": "POST",
+      "route": "/api/stripe/device-link",
+      "must_block": [
+        "execute=true",
+        "activate_device=true",
+        "mode=live"
+      ]
+    }
+  }
+}
