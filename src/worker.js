@@ -42,7 +42,9 @@ export default {
         ...base,
         route: "/api/stripe/device-link",
         stripe_mode: "test_or_disabled",
-        livemode: false
+        livemode: false,
+        payment_execution: false,
+        device_activation: false
       });
     }
 
