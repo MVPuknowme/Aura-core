@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/health.json",
+      "destination": "/api/health"
+    }
+  ]
+}
