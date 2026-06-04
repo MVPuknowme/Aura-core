@@ -1,4 +1,8 @@
 {
+  "framework": null,
+  "installCommand": "echo \"No install required\"",
+  "buildCommand": "echo \"SKYGRID Vercel fallback ready\"",
+  "outputDirectory": "public",
   "rewrites": [
     {
       "source": "/health.json",
