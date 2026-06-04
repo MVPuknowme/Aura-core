@@ -3,13 +3,13 @@ export default function handler(req, res) {
     ok: true,
     status: "online",
     service: "SKYGRID Emergency Data On-Ramp",
+    route: "/api/highway/status",
     mode: "controlled_pilot",
     sentinel: "fail_closed",
     runtime: "vercel",
-    payment_execution: false,
-    device_activation: false,
+    highway: "advisory",
+    routing: "pilot_only",
     production_failover: false,
-    private_data_movement: false,
     generated_at: new Date().toISOString()
   });
 }
