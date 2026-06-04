@@ -1,0 +1,37 @@
+name: Deploy Cloudflare Worker
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - MVPuknowme
+      - master
+    paths:
+      - "src/worker.js"
+      - "wrangler.toml"
+      - ".github/workflows/cloudflare-worker.yml"
+
+jobs:
+  deploy:
+    name: Deploy SKYGRID Emergency Data On-Ramp Worker
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+
+      - name: Deploy Worker with Wrangler
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+name = "skygrid-emergency-on-ramp"
+main = "src/worker.js"
+compatibility_date = "2026-06-04"
+
+workers_dev = true
+
+[[routes]]
+pattern = "api.skygrid-protocol.net/*"
+zone_name = "skygrid-protocol.net"
