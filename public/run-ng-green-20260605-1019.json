@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "run": "ng-green-trigger",
+  "service": "SKYGRID Emergency Data On-Ramp",
+  "lane": "MVPuknowme",
+  "mode": "controlled_pilot",
+  "sentinel": "fail_closed",
+  "compatibility": {
+    "xmcp": true,
+    "ng": true
+  },
+  "vercel": {
+    "node": ">=24 <25",
+    "packageManager": "pnpm@11.1.3",
+    "outputDirectory": "public"
+  }
+}
