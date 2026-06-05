@@ -7,6 +7,7 @@
   },
   "scripts": {
     "pnpk:validate": "node scripts/validate-pnpk.mjs",
+    "ramp:switch": "node scripts/aura-core-ai-ramp-switch.mjs",
     "build": "npm run pnpk:validate && node scripts/vercel-build.mjs"
   },
   "bin": {
