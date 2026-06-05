@@ -1,6 +1,10 @@
 {
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@11.1.3",
+  "engines": {
+    "node": ">=24 <25"
+  },
   "scripts": {
     "pnpk:validate": "node scripts/validate-pnpk.mjs",
     "build": "npm run pnpk:validate && node scripts/vercel-build.mjs"
