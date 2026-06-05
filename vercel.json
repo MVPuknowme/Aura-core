@@ -5,6 +5,10 @@
   "outputDirectory": "public",
   "rewrites": [
     {
+      "source": "/api/health",
+      "destination": "/health.json"
+    },
+    {
       "source": "/health.json",
       "destination": "/health.json"
     }
