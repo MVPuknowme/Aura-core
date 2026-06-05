@@ -1,0 +1,13 @@
+{
+  "ok": true,
+  "run": "green-trigger",
+  "service": "SKYGRID Emergency Data On-Ramp",
+  "lane": "MVPuknowme",
+  "mode": "controlled_pilot",
+  "sentinel": "fail_closed",
+  "vercel": {
+    "install": "echo-only",
+    "build": "echo-only",
+    "outputDirectory": "public"
+  }
+}
