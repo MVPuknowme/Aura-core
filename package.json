@@ -10,6 +10,7 @@
     "build": "npm run pnpk:validate && node scripts/vercel-build.mjs"
   },
   "bin": {
-    "xmcp": "tools/xmcp/index.mjs"
+    "xmcp": "tools/xmcp/index.mjs",
+    "ng": "tools/ng/index.mjs"
   }
 }
