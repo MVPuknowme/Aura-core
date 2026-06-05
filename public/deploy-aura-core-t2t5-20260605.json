@@ -1,0 +1,13 @@
+{
+  "ok": true,
+  "target": "https://aura-core-t2t5.vercel.app/",
+  "service": "SKYGRID Emergency Data On-Ramp",
+  "lane": "MVPuknowme",
+  "mode": "controlled_pilot",
+  "sentinel": "fail_closed",
+  "deployment": "vercel-static-fallback",
+  "expected_routes": [
+    "/",
+    "/health.json"
+  ]
+}
