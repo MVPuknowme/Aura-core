@@ -12,6 +12,7 @@
   },
   "routes": {
     "health": "/health.json",
+    "api_health": "/api/health",
     "highway_status": "/api/highway/status",
     "stripe_device_link": "/api/stripe/device-link",
     "dispatch": "/dispatch",
@@ -26,7 +27,33 @@
     "vercel": {
       "enabled": true,
       "fallback": true,
-      "runtime": "vercel-static"
+      "runtime": "vercel-static",
+      "ramps": {
+        "aura_core_primary": {
+          "enabled": true,
+          "role": "primary_vercel_ramp",
+          "domain": "https://aura-core.vercel.app",
+          "health_route": "/api/health",
+          "static_health_route": "/health.json",
+          "status": "candidate_until_health_200"
+        },
+        "aura_core_t2t5": {
+          "enabled": true,
+          "role": "secondary_vercel_ramp",
+          "domain": "https://aura-core-t2t5.vercel.app",
+          "health_route": "/api/health",
+          "static_health_route": "/health.json",
+          "status": "candidate_until_health_200"
+        }
+      },
+      "active_ramp_policy": {
+        "controller": "aura_core_ai_switch",
+        "selection_mode": "health_first_fail_closed",
+        "default_ramp": "aura_core_primary",
+        "fallback_ramp": "aura_core_t2t5",
+        "activation_rule": "select the first enabled ramp returning HTTP 200 with ok=true, mode=controlled_pilot, sentinel=fail_closed",
+        "no_healthy_ramp_behavior": "fail_closed_no_route_activation"
+      }
     },
     "stripe": {
       "enabled": true,
@@ -38,11 +65,48 @@
       "guardrail_tests_required": true
     }
   },
+  "aura_core_ai_switch": {
+    "enabled": true,
+    "purpose": "select the active Vercel emergency data on-ramp from PNPK-approved candidates",
+    "allowed_actions": [
+      "read_pnpk_ramp_registry",
+      "check_ramp_health",
+      "select_active_ramp",
+      "report_active_ramp"
+    ],
+    "blocked_actions": [
+      "payment_execution",
+      "device_activation",
+      "production_failover",
+      "private_data_movement",
+      "rf_control",
+      "nuisance_signal_output"
+    ],
+    "selected_ramp_ref": "platforms.vercel.active_ramp_policy",
+    "decision_inputs": [
+      "health_http_status",
+      "health_ok",
+      "health_mode",
+      "health_sentinel",
+      "route_availability"
+    ],
+    "decision_output": {
+      "active_ramp": null,
+      "reason": "pending_health_check"
+    }
+  },
   "triggers": {
     "emergency_ramp_health_check": {
       "enabled": true,
       "method": "GET",
       "route": "/health.json",
+      "expected_mode": "controlled_pilot",
+      "expected_sentinel": "fail_closed"
+    },
+    "api_ramp_health_check": {
+      "enabled": true,
+      "method": "GET",
+      "route": "/api/health",
       "expected_mode": "controlled_pilot",
       "expected_sentinel": "fail_closed"
     },
