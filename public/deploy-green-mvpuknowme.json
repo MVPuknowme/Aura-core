@@ -1,0 +1,8 @@
+{
+  "ok": true,
+  "lane": "MVPuknowme",
+  "service": "SKYGRID Emergency Data On-Ramp",
+  "mode": "controlled_pilot",
+  "sentinel": "fail_closed",
+  "trigger": "green-redeploy"
+}
