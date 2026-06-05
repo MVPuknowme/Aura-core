@@ -89,7 +89,7 @@
   "provisioning_router": {
     "enabled": true,
     "controller": "aura_core_ai_switch",
-    "selection_mode": "route_need_first_fail_closed",
+    "selection_mode": "route_need_and_end_user_lease_value_fail_closed",
     "runtime_targets": {
       "postman": "/api/highway/postman",
       "lambda": "aws_lambda.emergency_validation_runtime",
@@ -103,8 +103,18 @@
       },
       {
         "when": "route_type=provisional_lease OR lease_need!=none",
-        "select": "web3",
-        "reason": "lease quote requires Ethereum gas and compute-space quote envelope"
+        "select": "web3_quote_pending_end_user",
+        "reason": "lease quote is offered to the end user; final planning state is based on the end user's offered lease value decision"
+      },
+      {
+        "when": "end_user_decision=accept AND offered_lease_value_eth>0",
+        "select": "web3_quote_accepted_no_execution",
+        "reason": "end user accepted the offered lease value; controlled pilot still permits quote/planning only"
+      },
+      {
+        "when": "end_user_decision=decline",
+        "select": "postman",
+        "reason": "end user declined the offered lease value; remain advisory through Postman"
       },
       {
         "when": "route_type=diagnostic",
@@ -112,6 +122,20 @@
         "reason": "diagnostic routes run through Postman validation"
       }
     ],
+    "end_user_offer_gate": {
+      "enabled": true,
+      "required_for": "provisional_lease",
+      "decision_field": "end_user_decision",
+      "value_field": "offered_lease_value_eth",
+      "accepted_values": [
+        "accept",
+        "decline",
+        "pending"
+      ],
+      "pending_behavior": "quote_only_wait_for_end_user",
+      "decline_behavior": "remain_postman_advisory",
+      "accept_behavior": "web3_quote_accepted_no_execution"
+    },
     "ethereum_gas_supply": {
       "mode": "quote_only",
       "chain": "ethereum",
@@ -120,7 +144,8 @@
       "gas_fields": [
         "gas_units",
         "max_fee_gwei",
-        "max_fee_eth"
+        "max_fee_eth",
+        "offered_lease_value_eth"
       ]
     },
     "auto_drill_space": {
@@ -128,10 +153,11 @@
       "mode": "quote_and_reserve_only",
       "harvest_execution_allowed": false,
       "production_failover_allowed": false,
-      "description": "Auto-Drill receives route and compute-space planning envelopes only during controlled pilot."
+      "description": "Auto-Drill receives route and compute-space planning envelopes only during controlled pilot, after the end user's lease-value decision is recorded."
     },
     "guardrails": [
       "Advisory controlled pilot only",
+      "End-user lease-value decision required for provisional lease planning",
       "No payment execution",
       "No wallet signing",
       "No transaction broadcast",
@@ -142,7 +168,7 @@
   },
   "aura_core_ai_switch": {
     "enabled": true,
-    "purpose": "select the active Vercel emergency data on-ramp and choose Postman/Lambda/Web3 planning path from PNPK-approved candidates",
+    "purpose": "select the active Vercel emergency data on-ramp and choose Postman/Lambda/Web3 planning path from PNPK-approved candidates, with provisional lease planning gated by end-user offered lease value decision",
     "allowed_actions": [
       "read_pnpk_ramp_registry",
       "check_ramp_health",
@@ -150,6 +176,7 @@
       "select_planning_runtime",
       "create_gas_quote_envelope",
       "create_auto_drill_space_envelope",
+      "record_end_user_lease_value_decision",
       "report_active_ramp"
     ],
     "blocked_actions": [
@@ -171,13 +198,16 @@
       "route_availability",
       "route_type",
       "lease_need",
+      "offered_lease_value_eth",
+      "end_user_decision",
       "ethereum_gas_quote",
       "auto_drill_space_request"
     ],
     "decision_output": {
       "active_ramp": null,
       "planning_runtime": null,
-      "reason": "pending_health_and_route_check"
+      "end_user_gate": null,
+      "reason": "pending_health_route_and_end_user_check"
     }
   },
   "triggers": {
