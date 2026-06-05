@@ -1,0 +1,23 @@
+{
+  "ok": true,
+  "status": "online",
+  "service": "SKYGRID Emergency Data On-Ramp",
+  "mode": "controlled_pilot",
+  "sentinel": "fail_closed",
+  "runtime": "postman-validation-target",
+  "route": "/api/highway/postman",
+  "routing_options": [
+    "postman",
+    "aws_lambda_emergency_validation",
+    "web3_provisional_lease_quote"
+  ],
+  "guardrails": [
+    "Advisory controlled pilot only",
+    "No payment execution",
+    "No wallet signing",
+    "No transaction broadcast",
+    "No device activation",
+    "No production failover",
+    "No private data movement"
+  ]
+}
