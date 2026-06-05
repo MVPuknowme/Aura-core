@@ -14,9 +14,15 @@
     "health": "/health.json",
     "api_health": "/api/health",
     "highway_status": "/api/highway/status",
+    "highway_flasks": "/api/highway/flasks",
+    "highway_postman": "/api/highway/postman",
+    "pay_quote": "/api/pay/quote?amount=25",
     "stripe_device_link": "/api/stripe/device-link",
     "dispatch": "/dispatch",
-    "scenarios": "/scenarios"
+    "scenarios": "/scenarios",
+    "rates": "/rates",
+    "base": "/base",
+    "pay": "/pay"
   },
   "platforms": {
     "cloudflare_worker": {
@@ -35,6 +41,7 @@
           "domain": "https://aura-core.vercel.app",
           "health_route": "/api/health",
           "static_health_route": "/health.json",
+          "postman_route": "/api/highway/postman",
           "status": "candidate_until_health_200"
         },
         "aura_core_t2t5": {
@@ -43,6 +50,7 @@
           "domain": "https://aura-core-t2t5.vercel.app",
           "health_route": "/api/health",
           "static_health_route": "/health.json",
+          "postman_route": "/api/highway/postman",
           "status": "candidate_until_health_200"
         }
       },
@@ -55,6 +63,18 @@
         "no_healthy_ramp_behavior": "fail_closed_no_route_activation"
       }
     },
+    "aws_lambda": {
+      "enabled": true,
+      "role": "emergency_validation_runtime",
+      "activation_scope": "emergency_routes_only",
+      "execution_mode": "controlled_pilot_advisory"
+    },
+    "web3": {
+      "enabled": true,
+      "role": "provisional_lease_quote_runtime",
+      "chain": "ethereum",
+      "execution_mode": "quote_only_no_wallet_signing"
+    },
     "stripe": {
       "enabled": true,
       "mode": "test_or_disabled",
@@ -62,20 +82,80 @@
     },
     "postman": {
       "enabled": true,
-      "guardrail_tests_required": true
+      "guardrail_tests_required": true,
+      "target_route": "/api/highway/postman"
     }
+  },
+  "provisioning_router": {
+    "enabled": true,
+    "controller": "aura_core_ai_switch",
+    "selection_mode": "route_need_first_fail_closed",
+    "runtime_targets": {
+      "postman": "/api/highway/postman",
+      "lambda": "aws_lambda.emergency_validation_runtime",
+      "web3": "ethereum.provisional_lease_quote_runtime"
+    },
+    "route_rules": [
+      {
+        "when": "route_type=emergency",
+        "select": "lambda",
+        "reason": "emergency data requires validation runtime"
+      },
+      {
+        "when": "route_type=provisional_lease OR lease_need!=none",
+        "select": "web3",
+        "reason": "lease quote requires Ethereum gas and compute-space quote envelope"
+      },
+      {
+        "when": "route_type=diagnostic",
+        "select": "postman",
+        "reason": "diagnostic routes run through Postman validation"
+      }
+    ],
+    "ethereum_gas_supply": {
+      "mode": "quote_only",
+      "chain": "ethereum",
+      "wallet_signing_allowed": false,
+      "transaction_broadcast_allowed": false,
+      "gas_fields": [
+        "gas_units",
+        "max_fee_gwei",
+        "max_fee_eth"
+      ]
+    },
+    "auto_drill_space": {
+      "enabled": true,
+      "mode": "quote_and_reserve_only",
+      "harvest_execution_allowed": false,
+      "production_failover_allowed": false,
+      "description": "Auto-Drill receives route and compute-space planning envelopes only during controlled pilot."
+    },
+    "guardrails": [
+      "Advisory controlled pilot only",
+      "No payment execution",
+      "No wallet signing",
+      "No transaction broadcast",
+      "No device activation",
+      "No production failover",
+      "No private data movement"
+    ]
   },
   "aura_core_ai_switch": {
     "enabled": true,
-    "purpose": "select the active Vercel emergency data on-ramp from PNPK-approved candidates",
+    "purpose": "select the active Vercel emergency data on-ramp and choose Postman/Lambda/Web3 planning path from PNPK-approved candidates",
     "allowed_actions": [
       "read_pnpk_ramp_registry",
       "check_ramp_health",
       "select_active_ramp",
+      "select_planning_runtime",
+      "create_gas_quote_envelope",
+      "create_auto_drill_space_envelope",
       "report_active_ramp"
     ],
     "blocked_actions": [
       "payment_execution",
+      "wallet_signing",
+      "transaction_broadcast",
       "device_activation",
       "production_failover",
       "private_data_movement",
@@ -88,11 +168,16 @@
       "health_ok",
       "health_mode",
       "health_sentinel",
-      "route_availability"
+      "route_availability",
+      "route_type",
+      "lease_need",
+      "ethereum_gas_quote",
+      "auto_drill_space_request"
     ],
     "decision_output": {
       "active_ramp": null,
-      "reason": "pending_health_check"
+      "planning_runtime": null,
+      "reason": "pending_health_and_route_check"
     }
   },
   "triggers": {
@@ -107,6 +192,13 @@
       "enabled": true,
       "method": "GET",
       "route": "/api/health",
+      "expected_mode": "controlled_pilot",
+      "expected_sentinel": "fail_closed"
+    },
+    "postman_runtime_check": {
+      "enabled": true,
+      "method": "GET",
+      "route": "/api/highway/postman",
       "expected_mode": "controlled_pilot",
       "expected_sentinel": "fail_closed"
     },
