@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "repair": "vercel-node24-pnpm11-static-fallback",
+  "service": "SKYGRID Emergency Data On-Ramp",
+  "mode": "controlled_pilot",
+  "sentinel": "fail_closed",
+  "install": "no-install",
+  "build": "echo-only",
+  "node": ">=24 <25",
+  "packageManager": "pnpm@11.1.3"
+}
