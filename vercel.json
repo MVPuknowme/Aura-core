@@ -1,12 +1,27 @@
 {
   "framework": null,
-  "installCommand": "echo \"No install required\"",
+  "installCommand": "echo \"No install required for SKYGRID controlled pilot fallback\"",
   "buildCommand": "echo \"SKYGRID Vercel fallback ready\"",
   "outputDirectory": "public",
   "rewrites": [
     {
       "source": "/health.json",
-      "destination": "/api/health"
+      "destination": "/health.json"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-SkyGrid-Network",
+          "value": "Aura-Core"
+        },
+        {
+          "key": "X-SkyGrid-Mode",
+          "value": "controlled-pilot"
+        }
+      ]
     }
   ]
 }
