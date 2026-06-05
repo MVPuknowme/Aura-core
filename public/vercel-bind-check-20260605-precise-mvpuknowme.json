@@ -1,0 +1,15 @@
+{
+  "ok": true,
+  "purpose": "force-vercel-production-binding-check",
+  "target_domain": "aura-core.vercel.app",
+  "branch": "MVPuknowme",
+  "expected_root": "./",
+  "expected_static_routes": [
+    "/",
+    "/api/health",
+    "/health.json"
+  ],
+  "service": "SKYGRID Emergency Data On-Ramp",
+  "mode": "controlled_pilot",
+  "sentinel": "fail_closed"
+}
