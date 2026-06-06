@@ -1,0 +1,1 @@
+"skygrid:verify": "node scripts/verify-skygrid-routes.mjs"
