@@ -1,0 +1,140 @@
+export default async function handler(req, res) {
+  const path = req.url.split("?")[0];
+
+  const base = {
+    skygrid: "SKYGRID Emergency Data On-Ramp",
+    aura_core: "AI control layer for Allbridge routing",
+    allbridge: "cross-network bridge and failover fabric",
+    runtime: "vercel-aura-core",
+    timestamp: new Date().toISOString()
+  };
+
+  if (path === "/" || path === "/api/runtime") {
+    return res.status(200).json({
+      ...base,
+      ok: true,
+      page: "skygrid-home",
+      status: "ready",
+      message:
+        "SKYGRID is the public emergency data on-ramp. Aura-Core controls Allbridge routing behind it."
+    });
+  }
+
+  if (path === "/status" || path === "/api/status") {
+    return res.status(200).json({
+      ...base,
+      ok: true,
+      page: "status",
+      status: "operational",
+      checks: {
+        skygrid_public_surface: "ready",
+        aura_core_ai_control: "ready",
+        allbridge_control: "standby",
+        aws_validation_backend: "protected",
+        airtable_records: "external",
+        linear_execution: "external"
+      }
+    });
+  }
+
+  if (path === "/api/health") {
+    return res.status(200).json({
+      ...base,
+      ok: true,
+      component: "aura-core-ai-control-plane",
+      status: "healthy"
+    });
+  }
+
+  if (path === "/api/intake") {
+    if (req.method !== "POST") {
+      return res.status(405).json({
+        ...base,
+        ok: false,
+        error: "method_not_allowed",
+        allowed: ["POST"]
+      });
+    }
+
+    return res.status(202).json({
+      ...base,
+      ok: true,
+      route: "skygrid-intake",
+      status: "accepted",
+      next:
+        "Aura-Core will evaluate routing, validation, and Allbridge failover handling."
+    });
+  }
+
+  if (path === "/api/route" || path === "/api/aura-core") {
+    return res.status(200).json({
+      ...base,
+      ok: true,
+      route: "aura-core-ai-control",
+      status: "ready",
+      purpose:
+        "Evaluate emergency data, select routing path, and coordinate Allbridge failover."
+    });
+  }
+
+  if (path === "/api/allbridge") {
+    return res.status(200).json({
+      ...base,
+      ok: true,
+      route: "allbridge-control",
+      status: "standby",
+      purpose:
+        "Bridge-control endpoint reserved for Aura-Core routing and continuity decisions."
+    });
+  }
+
+  if (path === "/dispatch") {
+    return res.status(200).json({
+      ...base,
+      ok: true,
+      page: "dispatch",
+      status: "ready",
+      message:
+        "SKYGRID Dispatcher route is online and backed by Aura-Core routing intelligence."
+    });
+  }
+
+  if (path === "/partners") {
+    return res.status(200).json({
+      ...base,
+      ok: true,
+      page: "partners",
+      status: "ready",
+      message:
+        "Partner, carrier, responder, and continuity intake route for SKYGRID and Aura-Core."
+    });
+  }
+
+  if (path === "/investors") {
+    return res.status(200).json({
+      ...base,
+      ok: true,
+      page: "investors",
+      status: "ready",
+      message:
+        "Investor route for SKYGRID Emergency Data On-Ramp, Aura-Core AI control, and Allbridge routing."
+    });
+  }
+
+  if (path === "/contact") {
+    return res.status(200).json({
+      ...base,
+      ok: true,
+      page: "contact",
+      status: "ready",
+      message: "Contact route ready for Airtable/B12 intake wiring."
+    });
+  }
+
+  return res.status(404).json({
+    ...base,
+    ok: false,
+    error: "route_not_found",
+    path
+  });
+}
