@@ -3,12 +3,13 @@
   "type": "module",
   "packageManager": "pnpm@11.1.3",
   "engines": {
-    "node": ">=24 <25"
+    "node": "24.x"
   },
   "scripts": {
     "pnpk:validate": "node scripts/validate-pnpk.mjs",
     "ramp:switch": "node scripts/aura-core-ai-ramp-switch.mjs",
-    "build": "npm run pnpk:validate && node scripts/vercel-build.mjs"
+    "build": "npm run pnpk:validate && node scripts/vercel-build.mjs",
+    "skygrid:verify": "node scripts/verify-skygrid-routes.mjs"
   },
   "bin": {
     "xmcp": "tools/xmcp/index.mjs",
