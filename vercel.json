@@ -4,27 +4,29 @@
   "buildCommand": "echo \"SKYGRID Vercel fallback ready\"",
   "outputDirectory": "public",
   "rewrites": [
-    {
-      "source": "/api/health",
-      "destination": "/health.json"
-    },
-    {
-      "source": "/health.json",
-      "destination": "/health.json"
-    }
+    { "source": "/", "destination": "/api/runtime" },
+    { "source": "/status", "destination": "/api/runtime" },
+    { "source": "/dispatch", "destination": "/api/runtime" },
+    { "source": "/partners", "destination": "/api/runtime" },
+    { "source": "/investors", "destination": "/api/runtime" },
+    { "source": "/contact", "destination": "/api/runtime" },
+    { "source": "/api/health", "destination": "/api/runtime" },
+    { "source": "/api/intake", "destination": "/api/runtime" },
+    { "source": "/api/status", "destination": "/api/runtime" },
+    { "source": "/api/route", "destination": "/api/runtime" },
+    { "source": "/api/aura-core", "destination": "/api/runtime" },
+    { "source": "/api/allbridge", "destination": "/api/runtime" },
+    { "source": "/api/:path*", "destination": "/api/runtime" }
+  ],
+  "redirects": [
+    { "source": "/home", "destination": "/", "permanent": true }
   ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        {
-          "key": "X-SkyGrid-Network",
-          "value": "Aura-Core"
-        },
-        {
-          "key": "X-SkyGrid-Mode",
-          "value": "controlled-pilot"
-        }
+        { "key": "X-SkyGrid-Network", "value": "Aura-Core" },
+        { "key": "X-SkyGrid-Mode", "value": "controlled-pilot" }
       ]
     }
   ]
