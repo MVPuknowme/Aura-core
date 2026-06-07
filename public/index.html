@@ -91,6 +91,37 @@
         background: rgba(15, 23, 42, 0.72);
         border: 1px solid rgba(125, 211, 252, 0.35);
       }
+      .contact {
+        margin-top: 38px;
+        border: 1px solid rgba(103, 232, 249, 0.28);
+        border-radius: 24px;
+        padding: 24px;
+        background: rgba(8, 47, 73, 0.34);
+      }
+      .contact h2 {
+        margin: 0 0 10px;
+        font-size: 24px;
+      }
+      .contact p {
+        margin: 0 0 14px;
+        color: #dbeafe;
+        line-height: 1.55;
+      }
+      .contact-list {
+        display: grid;
+        gap: 10px;
+        margin: 16px 0 0;
+        padding: 0;
+        list-style: none;
+      }
+      .contact-list a {
+        color: #bae6fd;
+        text-decoration: none;
+        font-weight: 700;
+      }
+      .contact-list span {
+        color: #cbd5e1;
+      }
       footer {
         margin-top: 36px;
         color: #93c5fd;
@@ -121,6 +152,19 @@
         </article>
       </section>
 
+      <section class="contact" aria-label="Contact SKYGRID">
+        <h2>Contact SKYGRID</h2>
+        <p>
+          For partner review, emergency-operator discussion, leasee node onboarding, or proof access, contact the SKYGRID operator. Please use the live Vercel link until the custom domain is fully routed off B12.
+        </p>
+        <ul class="contact-list">
+          <li><strong>Email:</strong> <a href="mailto:mike_p32@icloud.com?subject=SKYGRID%20Emergency%20Data%20On-Ramp%20Inquiry">mike_p32@icloud.com</a></li>
+          <li><strong>GitHub proof:</strong> <a href="https://github.com/MVPuknowme/Aura-core" target="_blank" rel="noopener noreferrer">github.com/MVPuknowme/Aura-core</a></li>
+          <li><strong>Live site:</strong> <a href="https://aura-core.vercel.app" target="_blank" rel="noopener noreferrer">aura-core.vercel.app</a></li>
+          <li><span>Inquiry types: carrier partnership, emergency save/offload review, leasee device-owner node participation, Postman API proof, and Auto-Drill space availability.</span></li>
+        </ul>
+      </section>
+
       <nav class="actions" aria-label="SKYGRID deployment routes">
         <a class="button" href="/api/health">Check API Health</a>
         <a class="button secondary" href="/health.json">Raw Health JSON</a>
@@ -130,7 +174,7 @@
       </nav>
 
       <footer>
-        Service: SKYGRID Emergency Data On-Ramp · Operator: MVPuknowme · Runtime: vercel-static
+        Service: SKYGRID Emergency Data On-Ramp · Operator: MVPuknowme · Runtime: vercel-static · Contact: mike_p32@icloud.com
       </footer>
     </main>
   </body>
