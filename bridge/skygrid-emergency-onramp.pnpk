@@ -304,5 +304,23 @@
       "transaction_broadcast_allowed": false,
       "payment_execution_allowed": false
     }
+  },
+  "dual_approval_gate": {
+    "enabled": true,
+    "required_approvals": [
+      "owner",
+      "emergency_operator"
+    ],
+    "approval_logic": "owner_and_emergency_operator_required",
+    "missing_approval_behavior": "fail_closed",
+    "applies_to": [
+      "emergency",
+      "autodrill",
+      "system_health",
+      "recovery_proof",
+      "continuity_log",
+      "web3_quote"
+    ],
+    "trust_statement": "PNPK is the policy traffic layer. SKYGRID routes only when owner and emergency operator approval agree."
   }
 }
