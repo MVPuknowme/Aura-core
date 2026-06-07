@@ -8,6 +8,8 @@
   "scripts": {
     "pnpk:validate": "node scripts/validate-pnpk.mjs",
     "ramp:switch": "node scripts/aura-core-ai-ramp-switch.mjs",
+    "partition:verify": "node scripts/skygrid-partition-router.mjs",
+    "autodrill:sim": "node scripts/skygrid-autodrill-sim.mjs",
     "build": "npm run pnpk:validate && node scripts/vercel-build.mjs",
     "skygrid:verify": "node scripts/verify-skygrid-routes.mjs"
   },
