@@ -242,5 +242,67 @@
         "mode=live"
       ]
     }
+  },
+  "partitions": {
+    "emergency": {
+      "allowed_ramps": [
+        "cloudflare_worker",
+        "aws_lambda",
+        "vercel"
+      ],
+      "allowed_nodes": [
+        "validator",
+        "field",
+        "edge"
+      ],
+      "mode": "controlled_pilot",
+      "sentinel": "fail_closed"
+    },
+    "diagnostic": {
+      "allowed_ramps": [
+        "postman",
+        "vercel"
+      ],
+      "allowed_nodes": [
+        "validator",
+        "home",
+        "edge"
+      ],
+      "mode": "controlled_pilot",
+      "sentinel": "fail_closed"
+    },
+    "web3_quote": {
+      "allowed_ramps": [
+        "arbitrum",
+        "scroll",
+        "base"
+      ],
+      "allowed_nodes": [
+        "validator"
+      ],
+      "mode": "controlled_pilot",
+      "sentinel": "fail_closed",
+      "wallet_signing_allowed": false,
+      "transaction_broadcast_allowed": false,
+      "payment_execution_allowed": false
+    },
+    "autodrill": {
+      "allowed_ramps": [
+        "vercel",
+        "aws_lambda",
+        "postman"
+      ],
+      "allowed_nodes": [
+        "edge",
+        "field",
+        "validator"
+      ],
+      "mode": "quote_and_reserve_only",
+      "sentinel": "fail_closed",
+      "production_failover_allowed": false,
+      "wallet_signing_allowed": false,
+      "transaction_broadcast_allowed": false,
+      "payment_execution_allowed": false
+    }
   }
 }
