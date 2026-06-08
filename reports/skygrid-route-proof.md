@@ -19,3 +19,5 @@ Validation:
 Production deployment: https://aura-core-9wrf13u1x-home-e539c0b1.vercel.app
 
 Final trust model: PNPK is the traffic law. Aura-Core AI decides only inside PNPK law. SKYGRID opens gate-in/gate-out only when route is available, partitioned save space exists, owner approval is present, emergency operator approval is present, and approved leasee device-owner quorum agrees. Missing approval, missing quorum, unavailable route, unavailable space, or unsafe movement fails closed.
+
+Website contact layer verified: public homepage routes 200 and intake remains 202 after contact update.
