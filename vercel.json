@@ -1,69 +1,71 @@
 {
-  "version": 2,
-  "rewrites": [
-    {
-      "source": "/",
-      "destination": "/api/runtime"
-    },
-    {
-      "source": "/health.json",
-      "destination": "/api/runtime"
-    },
-    {
-      "source": "/dispatch",
-      "destination": "/api/runtime"
-    },
-    {
-      "source": "/highway",
-      "destination": "/api/runtime"
-    },
-    {
-      "source": "/scenarios",
-      "destination": "/api/runtime"
-    },
-    {
-      "source": "/rates",
-      "destination": "/api/runtime"
-    },
-    {
-      "source": "/base",
-      "destination": "/api/runtime"
-    },
-    {
-      "source": "/pay",
-      "destination": "/api/runtime"
-    },
-    {
-      "source": "/intake",
-      "destination": "/api/runtime"
-    },
-    {
-      "source": "/api/skygrid/status",
-      "destination": "/api/runtime"
-    },
-    {
-      "source": "/api/skygrid/intake",
-      "destination": "/api/runtime"
-    },
-    {
-      "source": "/api/highway/status",
-      "destination": "/api/runtime"
-    },
-    {
-      "source": "/api/highway/flasks",
-      "destination": "/api/runtime"
-    },
-    {
-      "source": "/api/highway/postman",
-      "destination": "/api/runtime"
-    },
-    {
-      "source": "/api/pay/quote",
-      "destination": "/api/runtime"
-    },
-    {
-      "source": "/api/stripe/device-link",
-      "destination": "/api/runtime"
-    }
-  ]
+    "version":  2,
+    "rewrites":  [
+                     {
+                         "source":  "/",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/health.json",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/dispatch",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/highway",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/scenarios",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/rates",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/base",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/pay",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/intake",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/api/skygrid/status",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/api/skygrid/intake",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/api/highway/status",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/api/highway/flasks",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/api/highway/postman",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/api/pay/quote",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/api/stripe/device-link",
+                         "destination":  "/api/runtime"
+                     }
+                 ],
+    "buildCommand":  "node --check api/runtime.mjs",
+    "installCommand":  "pnpm install --frozen-lockfile=false"
 }
