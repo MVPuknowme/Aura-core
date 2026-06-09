@@ -15,3 +15,5 @@ DerivedData/
 build/
 *.xcuserstate
 xcuserdata/
+.vercel
+.env*
