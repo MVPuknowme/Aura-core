@@ -1,0 +1,129 @@
+{
+  "info": {
+    "name": "SKYGRID Auto-Drill Emergency Data Ramp",
+    "description": "Proof collection for SKYGRID Emergency Data On-Ramp public runtime and protected bridge behavior.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Ramp Health",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/health.json"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('health returns 200', () => pm.response.to.have.status(200));",
+              "const j = pm.response.json();",
+              "pm.test('product is SKYGRID Emergency Data On-Ramp', () => pm.expect(j.product).to.eql('SKYGRID Emergency Data On-Ramp'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ramp Status",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/skygrid/status"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status returns 200 or 502 if AWS bridge unavailable', () => pm.expect([200,502]).to.include(pm.response.code));",
+              "const j = pm.response.json();",
+              "pm.test('route map present', () => pm.expect(j.routes).to.be.an('array'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auto-Drill Intake",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/skygrid/intake",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"source\": \"postman-autodrill\", \"type\": \"system-health\", \"severity\": \"test\", \"region\": \"Klamath Falls\", \"message\": \"SKYGRID Auto-Drill validation event\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('intake accepted or bridge reports upstream failure', () => pm.expect([202,502]).to.include(pm.response.code));",
+              "const j = pm.response.json();",
+              "pm.test('event id exists', () => pm.expect(j.event.eventId).to.be.a('string'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dispatch Page",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/dispatch"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('dispatch reachable', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Highway Page",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/highway"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('highway reachable', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Quote Only Guard",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/pay/quote?amount=25"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('quote-only route returns 200', () => pm.response.to.have.status(200));",
+              "const j = pm.response.json();",
+              "pm.test('no payment executed', () => pm.expect(j.noPaymentExecuted).to.eql(true));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

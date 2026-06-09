@@ -1,33 +1,69 @@
 {
-  "framework": null,
-  "installCommand": "echo \"No install required for SKYGRID controlled pilot fallback\"",
-  "buildCommand": "echo \"SKYGRID Vercel fallback ready\"",
-  "outputDirectory": "public",
+  "version": 2,
   "rewrites": [
-    { "source": "/", "destination": "/api/runtime" },
-    { "source": "/status", "destination": "/api/runtime" },
-    { "source": "/dispatch", "destination": "/api/runtime" },
-    { "source": "/partners", "destination": "/api/runtime" },
-    { "source": "/investors", "destination": "/api/runtime" },
-    { "source": "/contact", "destination": "/api/runtime" },
-    { "source": "/api/health", "destination": "/api/runtime" },
-    { "source": "/api/intake", "destination": "/api/runtime" },
-    { "source": "/api/status", "destination": "/api/runtime" },
-    { "source": "/api/route", "destination": "/api/runtime" },
-    { "source": "/api/aura-core", "destination": "/api/runtime" },
-    { "source": "/api/allbridge", "destination": "/api/runtime" },
-    { "source": "/api/:path*", "destination": "/api/runtime" }
-  ],
-  "redirects": [
-    { "source": "/home", "destination": "/", "permanent": true }
-  ],
-  "headers": [
     {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "X-SkyGrid-Network", "value": "Aura-Core" },
-        { "key": "X-SkyGrid-Mode", "value": "controlled-pilot" }
-      ]
+      "source": "/",
+      "destination": "/api/runtime"
+    },
+    {
+      "source": "/health.json",
+      "destination": "/api/runtime"
+    },
+    {
+      "source": "/dispatch",
+      "destination": "/api/runtime"
+    },
+    {
+      "source": "/highway",
+      "destination": "/api/runtime"
+    },
+    {
+      "source": "/scenarios",
+      "destination": "/api/runtime"
+    },
+    {
+      "source": "/rates",
+      "destination": "/api/runtime"
+    },
+    {
+      "source": "/base",
+      "destination": "/api/runtime"
+    },
+    {
+      "source": "/pay",
+      "destination": "/api/runtime"
+    },
+    {
+      "source": "/intake",
+      "destination": "/api/runtime"
+    },
+    {
+      "source": "/api/skygrid/status",
+      "destination": "/api/runtime"
+    },
+    {
+      "source": "/api/skygrid/intake",
+      "destination": "/api/runtime"
+    },
+    {
+      "source": "/api/highway/status",
+      "destination": "/api/runtime"
+    },
+    {
+      "source": "/api/highway/flasks",
+      "destination": "/api/runtime"
+    },
+    {
+      "source": "/api/highway/postman",
+      "destination": "/api/runtime"
+    },
+    {
+      "source": "/api/pay/quote",
+      "destination": "/api/runtime"
+    },
+    {
+      "source": "/api/stripe/device-link",
+      "destination": "/api/runtime"
     }
   ]
 }

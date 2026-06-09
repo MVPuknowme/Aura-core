@@ -1,0 +1,20 @@
+{
+  "name": "SKYGRID Auto-Drill Environment Template",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "https://skygrid-protocol.net",
+      "enabled": true
+    },
+    {
+      "key": "aws_status_url",
+      "value": "https://6h7zx1kqah.execute-api.us-east-1.amazonaws.com/prod/status",
+      "enabled": true
+    },
+    {
+      "key": "aws_intake_url",
+      "value": "https://6h7zx1kqah.execute-api.us-east-1.amazonaws.com/prod/intake",
+      "enabled": true
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+name: Cloudflare Worker Deploy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.34.1
+          run_install: false
+
+      - name: Verify deploy tools
+        run: |
+          node --version
+          pnpm --version
+
+      - name: Validate Cloudflare deploy inputs
+        run: |
+          test -n "${{ secrets.CLOUDFLARE_API_TOKEN }}" || (echo "Missing CLOUDFLARE_API_TOKEN" && exit 1)
+          test -n "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" || (echo "Missing CLOUDFLARE_ACCOUNT_ID" && exit 1)
+
+      - name: Deploy Worker with Wrangler
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          packageManager: pnpm
+          command: deploy

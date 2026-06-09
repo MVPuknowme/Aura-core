@@ -1,4 +1,17 @@
-.vercel
+.vercel/
 node_modules/
-node_modules/
-pnpm-lock.yaml
+*.log
+.env
+.env.*
+.wrangler/
+.dev.vars
+.DS_Store
+
+# macOS / Xcode app bundles
+*.app/
+**/*.app/
+.DS_Store
+DerivedData/
+build/
+*.xcuserstate
+xcuserdata/

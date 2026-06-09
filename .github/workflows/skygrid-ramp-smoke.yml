@@ -1,0 +1,34 @@
+name: SKYGRID Ramp Smoke Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - MVPuknowme
+      - main
+    paths:
+      - "api/runtime.mjs"
+      - "vercel.json"
+      - "postman/**"
+      - "scripts/skygrid-ramp-smoke.sh"
+      - ".github/workflows/skygrid-ramp-smoke.yml"
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    env:
+      SKYGRID_BASE_URL: ${{ vars.SKYGRID_BASE_URL || 'https://skygrid-protocol.net' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate runtime syntax
+        run: node --check api/runtime.mjs
+
+      - name: Validate Postman JSON
+        run: |
+          node -e "JSON.parse(require('fs').readFileSync('postman/skygrid-autodrill.collection.json','utf8')); console.log('collection ok')"
+          node -e "JSON.parse(require('fs').readFileSync('postman/skygrid-autodrill.environment.template.json','utf8')); console.log('environment ok')"
+
+      - name: Run public route smoke test
+        run: bash scripts/skygrid-ramp-smoke.sh "$SKYGRID_BASE_URL"
