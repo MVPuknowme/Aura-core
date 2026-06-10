@@ -7,7 +7,7 @@
 //   SKYGRID_PARTNERSHIP_CODE
 
 const PRODUCT = "SKYGRID Emergency Data On-Ramp";
-const VERSION = "2026-06-09-ramp-dropin";
+const VERSION = "2026-06-10-aura-core-options";
 
 function now() {
   return new Date().toISOString();
@@ -61,7 +61,7 @@ code { background:rgba(255,255,255,.08); padding:.15rem .35rem; border-radius:.4
 function routeMap() {
   return [
     "/", "/health.json", "/dispatch", "/highway", "/scenarios", "/rates", "/base", "/pay",
-    "/api/skygrid/status", "/api/skygrid/intake", "/api/highway/status",
+    "/api/skygrid/status", "/api/skygrid/intake", "/api/aura-core/decide", "/api/highway/status",
     "/api/highway/flasks", "/api/highway/postman", "/api/pay/quote?amount=25",
     "/api/stripe/device-link"
   ];
@@ -72,7 +72,36 @@ function configured() {
     awsStatusUrl: Boolean(process.env.SKYGRID_AWS_STATUS_URL),
     awsIntakeUrl: Boolean(process.env.SKYGRID_AWS_INTAKE_URL),
     emergencyCallId: Boolean(process.env.SKYGRID_EMERGENCY_CALL_ID),
-    partnershipCode: Boolean(process.env.SKYGRID_PARTNERSHIP_CODE)
+    partnershipCode: Boolean(process.env.SKYGRID_PARTNERSHIP_CODE),
+    lambdaRouterUrl: Boolean(process.env.SKYGRID_LAMBDA_ROUTER_URL),
+    s3Bucket: Boolean(process.env.SKYGRID_S3_BUCKET)
+  };
+}
+
+function auraCoreDecision(payload = {}) {
+  const need = String(payload.need || payload.type || payload.event_type || "system-health").toLowerCase();
+  const severity = String(payload.severity || payload.priority || "normal").toLowerCase();
+  const urgent = ["critical", "emergency", "high", "sev1", "p1"].includes(severity) || need.includes("emergency") || need.includes("outage");
+  const bridge = Boolean(payload.allbridge || payload.bridge) || need.includes("bridge") || need.includes("failover");
+  const archive = Boolean(payload.archive || payload.s3) || need.includes("log") || need.includes("audit") || need.includes("proof");
+  const compute = Boolean(payload.lambda || payload.compute) || need.includes("process") || need.includes("route");
+
+  let selected = "advisory_response";
+  if (urgent) selected = "lambda_router";
+  else if (bridge) selected = "allbridge_failover_advisory";
+  else if (compute) selected = "lambda_router";
+  else if (archive) selected = "s3_proof_log";
+
+  return {
+    selected,
+    reason: urgent ? "urgent_or_outage_signal" : bridge ? "bridge_or_failover_need" : compute ? "compute_or_route_need" : archive ? "archive_or_proof_need" : "safe_default",
+    options: {
+      s3_proof_log: "audit, proof, status history, non-urgent continuity record",
+      lambda_router: "urgent outage, emergency, validation, partner routing, compute decision",
+      allbridge_failover_advisory: "cross-network bridge, failover fabric, route recommendation",
+      advisory_response: "demo, safe default, no external execution"
+    },
+    advisoryOnly: true
   };
 }
 
@@ -106,11 +135,7 @@ async function forwardToAws(url, payload, method = "POST") {
   let body;
   try { body = JSON.parse(text); } catch { body = { raw: text }; }
 
-  return {
-    status: response.status,
-    ok: response.ok,
-    body
-  };
+  return { status: response.status, ok: response.ok, body };
 }
 
 function landing(res) {
@@ -118,11 +143,11 @@ function landing(res) {
     <span class="badge">Controlled Pilot Runtime</span>
     <h1>${PRODUCT}</h1>
     <p>Secure public entry point for emergency, outage, responder, system-health, and continuity data.</p>
-    <p>This Vercel/Web3 bridge validates public traffic, keeps AWS protected, and surfaces proof routes for Postman Auto-Drill.</p>
+    <p>Aura-Core provides advisory option selection for S3 proof logs, Lambda routing, and Allbridge failover fabric.</p>
     <div class="grid">
       <div class="tile"><strong>Status</strong><br><a href="/api/skygrid/status">/api/skygrid/status</a></div>
-      <div class="tile"><strong>Dispatch</strong><br><a href="/dispatch">/dispatch</a></div>
-      <div class="tile"><strong>Highway</strong><br><a href="/highway">/highway</a></div>
+      <div class="tile"><strong>Intake</strong><br><code>POST /api/skygrid/intake</code></div>
+      <div class="tile"><strong>Aura-Core Decide</strong><br><code>POST /api/aura-core/decide</code></div>
       <div class="tile"><strong>Health</strong><br><a href="/health.json">/health.json</a></div>
     </div>
   `);
@@ -136,7 +161,10 @@ export default async function handler(req, res) {
   if (req.method === "GET" && ["/health.json", "/api/skygrid/status", "/api/highway/status"].includes(path)) {
     const base = {
       ok: true,
-      product: PRODUCT,
+      skygrid: PRODUCT,
+      aura_core: "AI control layer for Allbridge routing",
+      allbridge: "cross-network bridge and failover fabric",
+      runtime: "vercel-aura-core",
       version: VERSION,
       mode: "controlled-pilot",
       advisoryOnly: true,
@@ -158,17 +186,31 @@ export default async function handler(req, res) {
     return json(res, 200, { ...base, aws: { proxied: false, reason: "AWS bridge env not fully configured" } });
   }
 
-  if (req.method === "POST" && ["/api/skygrid/intake", "/intake"].includes(path)) {
+  if (req.method === "POST" && ["/api/skygrid/intake", "/intake", "/api/aura-core/decide"].includes(path)) {
     const body = await readBody(req);
+    const decision = auraCoreDecision(body);
     const event = {
       eventId: `skygrid_${Date.now()}_${Math.random().toString(16).slice(2)}`,
       receivedAt: now(),
-      product: PRODUCT,
+      skygrid: PRODUCT,
+      aura_core: "AI control layer for Allbridge routing",
+      allbridge: "cross-network bridge and failover fabric",
+      runtime: "vercel-aura-core",
       advisoryOnly: true,
       source: body?.source || "postman-autodrill",
-      type: body?.type || "system-health",
+      type: body?.type || body?.event_type || body?.need || "system-health",
+      decision,
       payload: body
     };
+
+    if (decision.selected === "lambda_router" && process.env.SKYGRID_LAMBDA_ROUTER_URL) {
+      try {
+        const lambda = await forwardToAws(process.env.SKYGRID_LAMBDA_ROUTER_URL, event, "POST");
+        return json(res, lambda.ok ? 202 : 502, { accepted: lambda.ok, event, lambda });
+      } catch (error) {
+        return json(res, 502, { accepted: false, event, lambda: { ok: false, error: String(error?.message || error) } });
+      }
+    }
 
     if (process.env.SKYGRID_AWS_INTAKE_URL && process.env.SKYGRID_EMERGENCY_CALL_ID && process.env.SKYGRID_PARTNERSHIP_CODE) {
       try {
@@ -179,7 +221,15 @@ export default async function handler(req, res) {
       }
     }
 
-    return json(res, 202, { accepted: true, event, aws: { proxied: false, reason: "AWS bridge env not fully configured" } });
+    return json(res, 202, {
+      accepted: true,
+      event,
+      aws: {
+        proxied: false,
+        reason: "AWS bridge env not fully configured",
+        recommendedNext: decision.selected === "s3_proof_log" ? "configure SKYGRID_S3_BUCKET or SKYGRID_AWS_INTAKE_URL" : "configure SKYGRID_LAMBDA_ROUTER_URL or SKYGRID_AWS_INTAKE_URL"
+      }
+    });
   }
 
   if (req.method === "GET" && path === "/dispatch") {
@@ -219,7 +269,7 @@ export default async function handler(req, res) {
       ok: true,
       product: PRODUCT,
       collection: "skygrid-autodrill.collection.json",
-      checks: ["status", "health", "intake", "dispatch", "highway"],
+      checks: ["status", "health", "intake", "dispatch", "highway", "aura-core-decision"],
       timestamp: now()
     });
   }
@@ -230,7 +280,7 @@ export default async function handler(req, res) {
       product: PRODUCT,
       route: path,
       mode: "demo",
-      scenarios: ["outage", "latency-spike", "aws-protected-route", "web3-bridge"],
+      scenarios: ["outage", "latency-spike", "aws-protected-route", "web3-bridge", "s3-proof-log", "lambda-router"],
       timestamp: now()
     });
   }
@@ -271,9 +321,12 @@ export default async function handler(req, res) {
 
   return json(res, 404, {
     ok: false,
-    product: PRODUCT,
-    error: "Route not found",
-    route: path,
+    skygrid: PRODUCT,
+    aura_core: "AI control layer for Allbridge routing",
+    allbridge: "cross-network bridge and failover fabric",
+    runtime: "vercel-aura-core",
+    error: "route_not_found",
+    path,
     routes: routeMap(),
     timestamp: now()
   });
