@@ -15,7 +15,6 @@
     "emergency:gate": "node scripts/skygrid-emergency-gate.mjs"
   },
   "bin": {
-    "xmcp": "tools/xmcp/index.mjs",
     "ng": "tools/ng/index.mjs"
   }
 }
