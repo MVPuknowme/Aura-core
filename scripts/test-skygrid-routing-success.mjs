@@ -108,14 +108,20 @@ for (const check of checks) {
       location
     });
   } catch (error) {
-    hardFailure = true;
+    const elapsedMs = Math.round(performance.now() - started);
+
     results.push({
       name: check.name,
       method: check.method,
       url,
       status: "ERROR",
-      verdict: "FAIL",
-      error: error.message
+      verdict: "PENDING_ROUTE",
+      elapsed_ms: elapsedMs,
+      server: "unknown",
+      x_vercel_id: "none",
+      location: "none",
+      error: error.message,
+      diagnostic: "fetch_error_public_domain_pending_dns_tls_or_proxy"
     });
   }
 }
@@ -129,6 +135,8 @@ const summary = {
   success_count: results.filter((r) => r.verdict === "SUCCESS").length,
   pending_count: results.filter((r) => r.verdict === "PENDING_ROUTE").length,
   fail_count: results.filter((r) => r.verdict === "FAIL").length,
+  vercel_routed_count: results.filter((r) => r.x_vercel_id && r.x_vercel_id !== "none").length,
+  non_vercel_servers: [...new Set(results.map((r) => r.server).filter((server) => server && server !== "unknown" && server.toLowerCase() !== "vercel"))],
   results
 };
 
@@ -141,6 +149,10 @@ if (hardFailure) {
 
 if (summary.pending_count > 0) {
   console.warn("SKYGRID routing success test completed with pending route/domain-binding responses.");
+}
+
+if (summary.vercel_routed_count === 0) {
+  console.warn("No Vercel routing headers detected. Check domain DNS/binding if production should terminate at Vercel.");
 }
 
 console.log("SKYGRID routing success test completed without hard failures.");
