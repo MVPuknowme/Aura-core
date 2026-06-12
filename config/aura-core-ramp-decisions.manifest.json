@@ -1,0 +1,76 @@
+{
+  "system": "SKYGRID Emergency Data On-Ramp",
+  "control_layer": "Aura-Core AI",
+  "decision_scope": "advisory_ramp_decisioning",
+  "runtime": "vercel-aura-core",
+  "production_base_url": "https://skygrid-protocol.net",
+  "primary_intake_route": "POST /api/skygrid/intake",
+  "status_routes": [
+    "GET /health.json",
+    "GET /api/skygrid/status",
+    "GET /api/highway/status"
+  ],
+  "mode": "controlled_pilot",
+  "sentinel_default": "fail_closed",
+  "operator_confirmation_required": true,
+  "allowed_actions": [
+    "prefer_ramp",
+    "hold_ramp",
+    "degrade_ramp",
+    "block_ramp",
+    "request_operator_confirmation",
+    "require_more_proof",
+    "fail_closed"
+  ],
+  "blocked_claims": [
+    "direct_emergency_dispatch",
+    "unauthorized_carrier_switching",
+    "os_level_network_switching",
+    "wallet_signing",
+    "payment_execution",
+    "private_data_movement_without_policy",
+    "authentication_bypass",
+    "payment_control_bypass"
+  ],
+  "decision_inputs": [
+    "route_health",
+    "bridge_direction",
+    "latency",
+    "cache_state",
+    "proof_audit_availability",
+    "operator_intent",
+    "pnpk_policy_approval",
+    "payment_metadata_when_present",
+    "allbridge_fabric_status",
+    "autodrill_space_availability",
+    "leasee_device_owner_quorum",
+    "public_only_proof_constraints",
+    "emergency_operator_approval_state"
+  ],
+  "decision_output_schema": {
+    "event_type": "aura_core_ramp_decision",
+    "system": "SKYGRID Emergency Data On-Ramp",
+    "control_layer": "Aura-Core AI",
+    "base_url": "https://skygrid-protocol.net",
+    "route": "/api/skygrid/intake",
+    "runtime": "vercel-aura-core",
+    "decision_id": "uuid",
+    "request_id": "uuid",
+    "ramp_id": "string",
+    "decision": "prefer_ramp|hold_ramp|degrade_ramp|block_ramp|request_operator_confirmation|require_more_proof|fail_closed",
+    "reason": "string",
+    "operator_confirmation_required": true,
+    "operator_confirmation_present": false,
+    "safety": {
+      "dispatch_claim": false,
+      "os_level_switching": false,
+      "payment_execution": false,
+      "private_data_movement": false
+    },
+    "timestamp": "ISO-8601"
+  },
+  "postman_base_variable": {
+    "name": "asg_aura_core_patch_base_url",
+    "value": "https://skygrid-protocol.net"
+  }
+}
