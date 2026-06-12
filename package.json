@@ -12,6 +12,7 @@
     "autodrill:sim": "node scripts/skygrid-autodrill-sim.mjs",
     "build": "npm run pnpk:validate && node scripts/vercel-build.mjs",
     "skygrid:verify": "node scripts/verify-skygrid-routes.mjs",
+    "skygrid:test:routing": "node scripts/test-skygrid-routing-success.mjs",
     "emergency:gate": "node scripts/skygrid-emergency-gate.mjs"
   },
   "bin": {
