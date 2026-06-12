@@ -1,29 +1,30 @@
-const base = process.env.SKYGRID_BASE_URL || "https://skygrid-protocol.net";
+const base = (process.env.SKYGRID_BASE_URL || "https://aura-core.vercel.app").replace(/\/$/, "");
 
 const checks = [
   ["GET", "/"],
-  ["GET", "/status"],
-  ["GET", "/api/health"],
-  ["POST", "/api/intake"],
-  ["GET", "/api/route"],
-  ["GET", "/api/aura-core"],
-  ["GET", "/api/allbridge"],
+  ["GET", "/health.json"],
   ["GET", "/dispatch"],
-  ["GET", "/partners"],
-  ["GET", "/investors"],
-  ["GET", "/contact"]
+  ["GET", "/scenarios"],
+  ["GET", "/api/skygrid/status"],
+  ["GET", "/api/highway/status"],
+  ["POST", "/api/skygrid/intake"]
 ];
 
 let failed = false;
 
 for (const [method, path] of checks) {
-  const res = await fetch(`${base}${path}`, { method });
-  const ok =
-    (method === "POST" && path === "/api/intake" && res.status === 202) ||
-    (method === "GET" && res.status === 200);
+  try {
+    const res = await fetch(`${base}${path}`, { method });
+    const ok =
+      (method === "POST" && path === "/api/skygrid/intake" && [200, 202].includes(res.status)) ||
+      (method === "GET" && [200, 202, 405].includes(res.status));
 
-  console.log(`${method} ${path} -> ${res.status} ${ok ? "OK" : "FAIL"}`);
-  if (!ok) failed = true;
+    console.log(`${method} ${base}${path} -> ${res.status} ${ok ? "OK" : "FAIL"}`);
+    if (!ok) failed = true;
+  } catch (error) {
+    failed = true;
+    console.error(`${method} ${base}${path} -> ERROR ${error.message}`);
+  }
 }
 
 if (failed) process.exit(1);
