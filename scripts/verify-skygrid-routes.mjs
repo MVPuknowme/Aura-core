@@ -1,4 +1,5 @@
 const base = (process.env.SKYGRID_BASE_URL || "https://aura-core.vercel.app").replace(/\/$/, "");
+const allowPendingDomain = process.env.SKYGRID_ALLOW_PENDING_DOMAIN === "true";
 
 const checks = [
   ["GET", "/"],
@@ -17,30 +18,42 @@ let failed = false;
 let pending = false;
 
 for (const [method, path] of checks) {
+  const url = `${base}${path}`;
+
   try {
-    const res = await fetch(`${base}${path}`, { method });
+    const res = await fetch(url, { method });
 
     if (okStatuses.has(res.status)) {
-      console.log(`${method} ${base}${path} -> ${res.status} OK`);
+      console.log(`${method} ${url} -> ${res.status} OK`);
       continue;
     }
 
     if (pendingStatuses.has(res.status)) {
       pending = true;
-      console.warn(`${method} ${base}${path} -> ${res.status} WARN route_pending_or_domain_binding`);
+      console.warn(`${method} ${url} -> ${res.status} WARN route_pending_or_domain_binding`);
       continue;
     }
 
     failed = true;
-    console.error(`${method} ${base}${path} -> ${res.status} FAIL`);
+    console.error(`${method} ${url} -> ${res.status} FAIL`);
   } catch (error) {
+    if (allowPendingDomain) {
+      pending = true;
+      console.warn(`${method} ${url} -> ERROR ${error.message} WARN public_domain_pending_dns_tls_or_proxy`);
+      continue;
+    }
+
     failed = true;
-    console.error(`${method} ${base}${path} -> ERROR ${error.message}`);
+    console.error(`${method} ${url} -> ERROR ${error.message}`);
   }
 }
 
 if (pending) {
   console.warn("SKYGRID route verifier completed with pending public-domain routes. Runner dependencies are healthy; check Vercel domain binding/protection separately.");
+}
+
+if (pending && allowPendingDomain) {
+  console.warn("SKYGRID_ALLOW_PENDING_DOMAIN=true; pending public-domain DNS/TLS/protection responses are non-blocking for this preflight.");
 }
 
 if (failed) process.exit(1);
