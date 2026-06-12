@@ -28,6 +28,7 @@ jobs:
 
     env:
       SKYGRID_BASE_URL: https://skygrid-protocol.net
+      SKYGRID_ALLOW_PENDING_DOMAIN: "true"
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
