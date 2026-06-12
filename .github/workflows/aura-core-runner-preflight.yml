@@ -1,0 +1,63 @@
+name: Aura-Core Runner Preflight
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/aura-core-runner-preflight.yml"
+      - "scripts/setup-msys2-path.ps1"
+      - "scripts/verify-skygrid-routes.mjs"
+      - "package.json"
+  push:
+    branches:
+      - MVPuknowme
+    paths:
+      - ".github/workflows/aura-core-runner-preflight.yml"
+      - "scripts/setup-msys2-path.ps1"
+      - "scripts/verify-skygrid-routes.mjs"
+      - "package.json"
+
+jobs:
+  windows-msys2-preflight:
+    name: Windows MSYS2 PATH + SKYGRID route verifier
+    runs-on: windows-latest
+
+    env:
+      SKYGRID_BASE_URL: https://skygrid-protocol.net
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Add pre-installed MSYS2 to PATH
+        shell: pwsh
+        run: .\scripts\setup-msys2-path.ps1
+
+      - name: Verify MSYS2 tools
+        shell: pwsh
+        run: |
+          Write-Host "PATH=$env:PATH"
+          Get-Command bash -ErrorAction Stop
+          bash --version
+          Get-Command pacman -ErrorAction Stop
+          pacman --version
+
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Enable pnpm
+        shell: pwsh
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.23.0 --activate
+          pnpm --version
+
+      - name: Install dependencies
+        shell: pwsh
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Verify SKYGRID production routes
+        shell: pwsh
+        run: pnpm run skygrid:verify
