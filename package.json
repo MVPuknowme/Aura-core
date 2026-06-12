@@ -13,7 +13,7 @@
     "build": "npm run pnpk:validate && node scripts/vercel-build.mjs",
     "skygrid:verify": "node scripts/verify-skygrid-routes.mjs",
     "skygrid:test:routing": "node scripts/test-skygrid-routing-success.mjs",
-    "mcp:check": "node -e \"import('@modelcontextprotocol/sdk').then(() => console.log('MCP TypeScript SDK available'))\"",
+    "mcp:check": "node scripts/check-mcp-sdk.mjs",
     "emergency:gate": "node scripts/skygrid-emergency-gate.mjs"
   },
   "dependencies": {
