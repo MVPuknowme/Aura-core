@@ -11,6 +11,8 @@
     "partition:verify": "node scripts/skygrid-partition-router.mjs",
     "autodrill:sim": "node scripts/skygrid-autodrill-sim.mjs",
     "build": "npm run pnpk:validate && node scripts/vercel-build.mjs",
+    "build:xmcp": "node tools/xmcp/index.mjs build --vercel",
+    "xmcp:build": "node tools/xmcp/index.mjs build --vercel",
     "skygrid:verify": "node scripts/verify-skygrid-routes.mjs",
     "skygrid:test:routing": "node scripts/test-skygrid-routing-success.mjs",
     "mcp:check": "node scripts/check-mcp-sdk.mjs",
@@ -20,6 +22,7 @@
     "@modelcontextprotocol/sdk": "latest"
   },
   "bin": {
-    "ng": "tools/ng/index.mjs"
+    "ng": "tools/ng/index.mjs",
+    "xmcp": "tools/xmcp/index.mjs"
   }
 }
