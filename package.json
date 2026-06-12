@@ -17,7 +17,8 @@
     "emergency:gate": "node scripts/skygrid-emergency-gate.mjs"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "latest"
+    "@modelcontextprotocol/sdk": "latest",
+    "@vercel/analytics": "^2.0.1"
   },
   "bin": {
     "ng": "tools/ng/index.mjs"
