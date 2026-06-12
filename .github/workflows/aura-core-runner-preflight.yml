@@ -7,6 +7,8 @@ on:
       - ".github/workflows/aura-core-runner-preflight.yml"
       - "scripts/setup-msys2-path.ps1"
       - "scripts/verify-skygrid-routes.mjs"
+      - "scripts/test-skygrid-routing-success.mjs"
+      - "requirements-mcp.txt"
       - "package.json"
   push:
     branches:
@@ -15,15 +17,18 @@ on:
       - ".github/workflows/aura-core-runner-preflight.yml"
       - "scripts/setup-msys2-path.ps1"
       - "scripts/verify-skygrid-routes.mjs"
+      - "scripts/test-skygrid-routing-success.mjs"
+      - "requirements-mcp.txt"
       - "package.json"
 
 jobs:
   windows-msys2-preflight:
-    name: Windows MSYS2 PATH + SKYGRID route verifier
+    name: Windows MSYS2 PATH + MCP + SKYGRID route verifier
     runs-on: windows-latest
 
     env:
       SKYGRID_BASE_URL: https://skygrid-protocol.net
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout
@@ -47,6 +52,11 @@ jobs:
         with:
           node-version: "24"
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - name: Enable pnpm
         shell: pwsh
         run: |
@@ -54,10 +64,24 @@ jobs:
           corepack prepare pnpm@10.23.0 --activate
           pnpm --version
 
-      - name: Install dependencies
+      - name: Install Node dependencies
         shell: pwsh
         run: pnpm install --frozen-lockfile=false
+
+      - name: Install Python MCP dependency
+        shell: pwsh
+        run: python -m pip install -r requirements-mcp.txt
+
+      - name: Verify MCP SDKs
+        shell: pwsh
+        run: |
+          pnpm run mcp:check
+          python -c "import mcp; print('Python MCP available')"
 
       - name: Verify SKYGRID production routes
         shell: pwsh
         run: pnpm run skygrid:verify
+
+      - name: Test SKYGRID routing success classification
+        shell: pwsh
+        run: pnpm run skygrid:test:routing
