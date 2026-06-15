@@ -16,6 +16,14 @@
       "destination": "/api/runtime"
     },
     {
+      "source": "/incidents",
+      "destination": "/api/runtime"
+    },
+    {
+      "source": "/settings",
+      "destination": "/api/runtime"
+    },
+    {
       "source": "/highway",
       "destination": "/api/runtime"
     },
@@ -45,6 +53,14 @@
     },
     {
       "source": "/api/skygrid/intake",
+      "destination": "/api/runtime"
+    },
+    {
+      "source": "/api/aura-core/decide",
+      "destination": "/api/runtime"
+    },
+    {
+      "source": "/api/agent/signals",
       "destination": "/api/runtime"
     },
     {
