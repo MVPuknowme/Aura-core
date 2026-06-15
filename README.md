@@ -8,6 +8,14 @@ It watches live network conditions, detects degradation, and helps preserve cont
 
 The system does **not** blindly move data. It follows **PNPK policy**, Aura-Core AI trust decisions, Auto-Drill space checks, leasee device-owner quorum, and fail-closed guardrails.
 
+## Public article
+
+For public-facing readers, start here:
+
+- [SkyGrid Dispatcher Public Demo](articles/skygrid-dispatcher-public-demo.md)
+
+This article explains the Dispatcher demo in plain language for partners, community readers, infrastructure collaborators, and non-technical visitors.
+
 ## What SKYGRID does
 
 SKYGRID helps answer one question:
