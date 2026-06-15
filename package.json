@@ -7,10 +7,11 @@
   },
   "scripts": {
     "pnpk:validate": "node scripts/validate-pnpk.mjs",
+    "manifest:sync": "node scripts/verify-skygrid-manifest-sync.mjs",
     "ramp:switch": "node scripts/aura-core-ai-ramp-switch.mjs",
     "partition:verify": "node scripts/skygrid-partition-router.mjs",
     "autodrill:sim": "node scripts/skygrid-autodrill-sim.mjs",
-    "build": "npm run pnpk:validate && node scripts/vercel-build.mjs",
+    "build": "npm run pnpk:validate && npm run manifest:sync && node scripts/vercel-build.mjs",
     "build:xmcp": "node tools/xmcp/index.mjs build --vercel",
     "xmcp:build": "node tools/xmcp/index.mjs build --vercel",
     "skygrid:verify": "node scripts/verify-skygrid-routes.mjs",
