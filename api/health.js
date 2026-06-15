@@ -1,5 +1,6 @@
 export default function handler(req, res) {
-  const paymentsEnabled = process.env.SKYGRID_PAYMENTS_ENABLED === 'true';
+  const sponsorHandle = process.env.GITHUB_SPONSORS_HANDLE || 'MVPuknowme';
+  const sponsorUrl = process.env.GITHUB_SPONSORS_URL || `https://github.com/sponsors/${sponsorHandle}`;
 
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Cache-Control', 'no-store');
@@ -13,9 +14,11 @@ export default function handler(req, res) {
     mode: 'controlled_pilot',
     sentinel: 'fail_closed',
     runtime: 'vercel-api',
-    payment_execution: paymentsEnabled,
-    payment_provider: 'stripe',
+    payment_execution: true,
+    payment_provider: 'github_sponsors',
+    sponsor_url: sponsorUrl,
     checkout_route: '/api/stripe/device-link',
+    external_payment_redirect: true,
     device_activation: false,
     production_failover: false,
     private_data_movement: false,
