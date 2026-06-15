@@ -10,6 +10,8 @@ on:
       - "api/runtime.mjs"
       - "vercel.json"
       - "postman/**"
+      - "config/skygrid-route-manifest.json"
+      - "scripts/verify-skygrid-manifest-sync.mjs"
       - "scripts/skygrid-ramp-smoke.sh"
       - ".github/workflows/skygrid-ramp-smoke.yml"
 
@@ -29,6 +31,9 @@ jobs:
         run: |
           node -e "JSON.parse(require('fs').readFileSync('postman/skygrid-autodrill.collection.json','utf8')); console.log('collection ok')"
           node -e "JSON.parse(require('fs').readFileSync('postman/skygrid-autodrill.environment.template.json','utf8')); console.log('environment ok')"
+
+      - name: Verify GitHub route manifest sync
+        run: node scripts/verify-skygrid-manifest-sync.mjs
 
       - name: Run public route smoke test
         run: bash scripts/skygrid-ramp-smoke.sh "$SKYGRID_BASE_URL"
