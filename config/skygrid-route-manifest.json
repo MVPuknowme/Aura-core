@@ -5,7 +5,6 @@
   "mode": "controlled_pilot",
   "sentinel": "fail_closed",
   "policy": {
-    "payment_execution_provider": "github_sponsors",
     "device_activation": false,
     "production_failover": false,
     "private_data_movement": false,
@@ -19,7 +18,7 @@
     },
     "cloudflare_worker": {
       "owner": "src/worker.js",
-      "role": "edge health, status, intake acknowledgement, sponsor link"
+      "role": "edge health, status, intake acknowledgement"
     },
     "postman": {
       "owner": "postman/skygrid-autodrill.collection.json",
@@ -41,6 +40,10 @@
     { "id": "rates", "method": "GET", "path": "/rates", "owner": "vercel", "proof_owner": "postman", "required": false, "status": "implemented" },
     { "id": "base", "method": "GET", "path": "/base", "owner": "vercel", "proof_owner": "postman", "required": false, "status": "implemented" },
     { "id": "pay", "method": "GET", "path": "/pay", "owner": "vercel", "proof_owner": "postman", "required": false, "status": "implemented" },
+    { "id": "dashboard_command_center", "method": "GET", "path": "/dashboard/command-center", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
+    { "id": "dashboard_validation_panel", "method": "GET", "path": "/dashboard/validation-panel", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
+    { "id": "dashboard_deployment_review", "method": "GET", "path": "/dashboard/deployment-review", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
+    { "id": "dashboard_receipts", "method": "GET", "path": "/dashboard/receipts", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
     { "id": "skygrid_status", "method": "GET", "path": "/api/skygrid/status", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
     { "id": "skygrid_intake", "method": "POST", "path": "/api/skygrid/intake", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
     { "id": "aura_core_decide", "method": "POST", "path": "/api/aura-core/decide", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
@@ -49,12 +52,12 @@
     { "id": "highway_flasks", "method": "GET", "path": "/api/highway/flasks", "owner": "vercel", "proof_owner": "postman", "required": false, "status": "implemented" },
     { "id": "highway_postman", "method": "GET", "path": "/api/highway/postman", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
     { "id": "pay_quote", "method": "GET", "path": "/api/pay/quote", "sample_path": "/api/pay/quote?amount=25", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
-    { "id": "sponsors_link", "method": "GET", "path": "/api/sponsors/link", "owner": "vercel_and_cloudflare", "proof_owner": "postman", "required": true, "status": "implemented_in_file_route_and_worker" },
+    { "id": "sponsors_link", "method": "GET", "path": "/api/sponsors/link", "owner": "vercel_and_cloudflare", "proof_owner": "postman", "required": false, "status": "implemented_in_file_route_and_worker" },
     { "id": "stripe_device_link_legacy", "method": "GET", "path": "/api/stripe/device-link", "owner": "vercel_and_cloudflare", "proof_owner": "postman", "required": false, "status": "legacy_compatibility" },
-    { "id": "autodrill_latest", "method": "GET", "path": "/api/autodrill/latest", "owner": "postman_then_runtime", "proof_owner": "postman", "required": true, "status": "planned" },
-    { "id": "build_pad_quote", "method": "POST", "path": "/api/build-pad/quote", "owner": "postman_then_runtime", "proof_owner": "postman", "required": true, "status": "planned" },
-    { "id": "node_lease_intake", "method": "POST", "path": "/api/node-lease/intake", "owner": "postman_then_runtime", "proof_owner": "postman", "required": true, "status": "planned" },
-    { "id": "failover_status", "method": "GET", "path": "/api/failover/status", "owner": "postman_then_runtime", "proof_owner": "postman", "required": true, "status": "planned_blocked_until_readiness" }
+    { "id": "autodrill_latest", "method": "GET", "path": "/api/autodrill/latest", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
+    { "id": "build_pad_quote", "method": "POST", "path": "/api/build-pad/quote", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented_quote_only" },
+    { "id": "node_lease_intake", "method": "POST", "path": "/api/node-lease/intake", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented_intake_only" },
+    { "id": "failover_status", "method": "GET", "path": "/api/failover/status", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented_blocked_until_readiness" }
   ],
   "launch_ladder": [
     "auto_drill_proof",
