@@ -7,7 +7,7 @@
 //   SKYGRID_PARTNERSHIP_CODE
 
 const PRODUCT = "SKYGRID Emergency Data On-Ramp";
-const VERSION = "2026-06-10-aura-core-options";
+const VERSION = "2026-06-14-public-demo-routes";
 
 function now() {
   return new Date().toISOString();
@@ -52,6 +52,9 @@ code { background:rgba(255,255,255,.08); padding:.15rem .35rem; border-radius:.4
 .badge { display:inline-block; padding:.3rem .6rem; border:1px solid rgba(255,255,255,.22); border-radius:999px; color:#f0abfc; margin-bottom:1rem; }
 .grid { display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(210px,1fr)); margin-top:20px; }
 .tile { border:1px solid rgba(255,255,255,.13); border-radius:16px; padding:16px; background:rgba(255,255,255,.05); }
+.notice { border-left:4px solid #f59e0b; padding:12px 14px; background:rgba(245,158,11,.11); border-radius:12px; margin-top:18px; }
+nav { display:flex; flex-wrap:wrap; gap:10px; margin:18px 0 4px; }
+nav a { border:1px solid rgba(255,255,255,.14); border-radius:999px; padding:8px 12px; text-decoration:none; background:rgba(255,255,255,.05); }
 </style>
 </head>
 <body><main><section class="card">${body}</section></main></body>
@@ -60,11 +63,26 @@ code { background:rgba(255,255,255,.08); padding:.15rem .35rem; border-radius:.4
 
 function routeMap() {
   return [
-    "/", "/health.json", "/dispatch", "/highway", "/scenarios", "/rates", "/base", "/pay",
-    "/api/skygrid/status", "/api/skygrid/intake", "/api/aura-core/decide", "/api/highway/status",
+    "/", "/health.json", "/dispatch", "/incidents", "/settings", "/highway", "/scenarios", "/rates", "/base", "/pay",
+    "/api/skygrid/status", "/api/skygrid/intake", "/api/aura-core/decide", "/api/agent/signals", "/api/highway/status",
     "/api/highway/flasks", "/api/highway/postman", "/api/pay/quote?amount=25",
     "/api/stripe/device-link"
   ];
+}
+
+function nav() {
+  return `<nav>
+    <a href="/">Home</a>
+    <a href="/dispatch">Dispatch</a>
+    <a href="/scenarios">Scenarios</a>
+    <a href="/incidents">Incidents</a>
+    <a href="/settings">Settings</a>
+    <a href="/health.json">Health</a>
+  </nav>`;
+}
+
+function safetyCopy() {
+  return `<div class="notice"><strong>Advisory / Simulation Mode.</strong> SkyGrid helps evaluate network health and recommend fallback paths. It is not certified emergency infrastructure and does not replace 911, FirstNet, GMDSS, VHF, AIS, EPIRB, or official emergency procedures.</div>`;
 }
 
 function configured() {
@@ -144,12 +162,16 @@ function landing(res) {
     <h1>${PRODUCT}</h1>
     <p>Secure public entry point for emergency, outage, responder, system-health, and continuity data.</p>
     <p>Aura-Core provides advisory option selection for S3 proof logs, Lambda routing, and Allbridge failover fabric.</p>
+    ${nav()}
     <div class="grid">
       <div class="tile"><strong>Status</strong><br><a href="/api/skygrid/status">/api/skygrid/status</a></div>
-      <div class="tile"><strong>Intake</strong><br><code>POST /api/skygrid/intake</code></div>
-      <div class="tile"><strong>Aura-Core Decide</strong><br><code>POST /api/aura-core/decide</code></div>
+      <div class="tile"><strong>Dispatch</strong><br><a href="/dispatch">/dispatch</a></div>
+      <div class="tile"><strong>Scenarios</strong><br><a href="/scenarios">/scenarios</a></div>
+      <div class="tile"><strong>Incidents</strong><br><a href="/incidents">/incidents</a></div>
+      <div class="tile"><strong>Settings</strong><br><a href="/settings">/settings</a></div>
       <div class="tile"><strong>Health</strong><br><a href="/health.json">/health.json</a></div>
     </div>
+    ${safetyCopy()}
   `);
 }
 
@@ -186,7 +208,7 @@ export default async function handler(req, res) {
     return json(res, 200, { ...base, aws: { proxied: false, reason: "AWS bridge env not fully configured" } });
   }
 
-  if (req.method === "POST" && ["/api/skygrid/intake", "/intake", "/api/aura-core/decide"].includes(path)) {
+  if (req.method === "POST" && ["/api/skygrid/intake", "/intake", "/api/aura-core/decide", "/api/agent/signals"].includes(path)) {
     const body = await readBody(req);
     const decision = auraCoreDecision(body);
     const event = {
@@ -197,11 +219,22 @@ export default async function handler(req, res) {
       allbridge: "cross-network bridge and failover fabric",
       runtime: "vercel-aura-core",
       advisoryOnly: true,
-      source: body?.source || "postman-autodrill",
+      source: body?.source || (path === "/api/agent/signals" ? "agent-signals" : "postman-autodrill"),
       type: body?.type || body?.event_type || body?.need || "system-health",
       decision,
       payload: body
     };
+
+    if (path === "/api/agent/signals") {
+      return json(res, 202, {
+        accepted: true,
+        contract: "/api/agent/signals",
+        advisoryOnly: true,
+        requiredFields: ["source", "type"],
+        optionalFields: ["severity", "latencyMs", "lossPercent", "transport", "region", "scenario"],
+        event
+      });
+    }
 
     if (decision.selected === "lambda_router" && process.env.SKYGRID_LAMBDA_ROUTER_URL) {
       try {
@@ -237,7 +270,47 @@ export default async function handler(req, res) {
       <span class="badge">Advisory Dispatcher</span>
       <h1>SKYGRID Dispatch</h1>
       <p>Controlled-pilot dispatch page for network status, advisory failover selection, and proof logging.</p>
+      ${nav()}
+      <div class="grid">
+        <div class="tile"><strong>WiFi</strong><br>Real browser-visible path</div>
+        <div class="tile"><strong>Cellular</strong><br>Real when browser-visible</div>
+        <div class="tile"><strong>LoRa</strong><br>Simulated unless daemon connected</div>
+        <div class="tile"><strong>Tor</strong><br>Simulated unless daemon connected</div>
+        <div class="tile"><strong>Satellite</strong><br>Simulated unless gateway feed connected</div>
+      </div>
       <p>API: <code>POST /api/skygrid/intake</code></p>
+      ${safetyCopy()}
+    `);
+  }
+
+  if (req.method === "GET" && path === "/incidents") {
+    return html(res, 200, "SKYGRID Incidents", `
+      <span class="badge">Incident Log</span>
+      <h1>SKYGRID Incidents</h1>
+      <p>Chronological incident review page for demo triggers, recommendations, YES/NO decisions, and exportable JSON records.</p>
+      ${nav()}
+      <div class="grid">
+        <div class="tile"><strong>Current state</strong><br>No local incident store is attached in this public runtime.</div>
+        <div class="tile"><strong>Export contract</strong><br><code>{ eventId, receivedAt, type, decision, payload }</code></div>
+        <div class="tile"><strong>Next integration</strong><br>Lovable Cloud or local browser fallback.</div>
+      </div>
+      ${safetyCopy()}
+    `);
+  }
+
+  if (req.method === "GET" && path === "/settings") {
+    return html(res, 200, "SKYGRID Settings", `
+      <span class="badge">Demo Configuration</span>
+      <h1>SKYGRID Settings</h1>
+      <p>Configuration reference for thresholds, ping targets, transport toggles, and the agent signals contract.</p>
+      ${nav()}
+      <div class="grid">
+        <div class="tile"><strong>Latency threshold</strong><br><code>&gt;300ms sustained 5s</code></div>
+        <div class="tile"><strong>Loss threshold</strong><br><code>&gt;20%</code></div>
+        <div class="tile"><strong>Default targets</strong><br>Oregon, N. Virginia, N. California</div>
+        <div class="tile"><strong>Agent contract</strong><br><code>POST /api/agent/signals</code></div>
+      </div>
+      ${safetyCopy()}
     `);
   }
 
@@ -246,6 +319,7 @@ export default async function handler(req, res) {
       <span class="badge">Emergency Highway</span>
       <h1>SKYGRID Emergency Highway</h1>
       <p>Public proof lane for emergency data ramp status, route map, and Postman Auto-Drill validation.</p>
+      ${nav()}
       <p>Status: <a href="/api/highway/status">/api/highway/status</a></p>
     `);
   }
@@ -269,7 +343,7 @@ export default async function handler(req, res) {
       ok: true,
       product: PRODUCT,
       collection: "skygrid-autodrill.collection.json",
-      checks: ["status", "health", "intake", "dispatch", "highway", "aura-core-decision"],
+      checks: ["status", "health", "intake", "dispatch", "highway", "aura-core-decision", "agent-signals", "incidents", "settings"],
       timestamp: now()
     });
   }
@@ -280,7 +354,7 @@ export default async function handler(req, res) {
       product: PRODUCT,
       route: path,
       mode: "demo",
-      scenarios: ["outage", "latency-spike", "aws-protected-route", "web3-bridge", "s3-proof-log", "lambda-router"],
+      scenarios: ["outage", "latency-spike", "aws-protected-route", "web3-bridge", "s3-proof-log", "lambda-router", "marine-dead-in-water"],
       timestamp: now()
     });
   }
@@ -290,6 +364,7 @@ export default async function handler(req, res) {
       <span class="badge">Prototype Only</span>
       <h1>SKYGRID Pay Demo</h1>
       <p>No active financial services. Quote-only route available at <code>/api/pay/quote?amount=25</code>.</p>
+      ${nav()}
     `);
   }
 
