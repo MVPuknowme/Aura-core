@@ -1,0 +1,25 @@
+{
+  "service": "SKYGRID Emergency Data On-Ramp",
+  "owned_deployment_domain": "https://aurasky.skygrid-protocol.net",
+  "domain_role": "primary_public_deployable_site",
+  "platform": "vercel",
+  "mode": "controlled_pilot",
+  "sentinel": "fail_closed",
+  "route_watch_command": "SKYGRID_BASE_URL=https://aurasky.skygrid-protocol.net pnpm run aura:selection:watch",
+  "route_verify_command": "SKYGRID_BASE_URL=https://aurasky.skygrid-protocol.net pnpm run skygrid:verify",
+  "routing_test_command": "SKYGRID_BASE_URL=https://aurasky.skygrid-protocol.net pnpm run skygrid:test:routing",
+  "required_routes": [
+    "/",
+    "/health.json",
+    "/dispatch",
+    "/scenarios",
+    "/api/skygrid/status",
+    "/api/highway/status",
+    "/api/skygrid/intake"
+  ],
+  "notes": [
+    "This config marks AuraSky as the owned deployable public site target.",
+    "Vercel domain attachment and DNS must point aurasky.skygrid-protocol.net to the Aura-core Vercel project.",
+    "Route tests should pass with selection_fail_count=0 and endpoint_fail_count=0 once DNS/TLS/binding are complete."
+  ]
+}
