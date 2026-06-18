@@ -18,10 +18,16 @@
     "skygrid:test:routing": "node scripts/test-skygrid-routing-success.mjs",
     "aura:selection:watch": "node scripts/aura-core-ai-selection-watch.mjs",
     "mcp:check": "node scripts/check-mcp-sdk.mjs",
-    "emergency:gate": "node scripts/skygrid-emergency-gate.mjs"
+    "emergency:gate": "node scripts/skygrid-emergency-gate.mjs",
+    "local:worker:start": "node scripts/skygrid-local-worker-start.mjs --approve-owner-test",
+    "eth:collection:draft": "node scripts/skygrid-ethereum-collection-draft.mjs",
+    "local:ethereum:proof": "pnpm run local:worker:start && pnpm run eth:collection:draft",
+    "local:worker:proof": "node scripts/skygrid-local-worker-start.mjs",
+    "local:worker:fallback": "node scripts/skygrid-local-worker-start.mjs --approve-owner-test --fallback"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "latest"
+    "@modelcontextprotocol/sdk": "latest",
+    "@vercel/sandbox": "^2.2.1"
   },
   "bin": {
     "ng": "tools/ng/index.mjs",

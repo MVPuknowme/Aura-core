@@ -1,0 +1,57 @@
+{
+  "service": "SKYGRID Emergency Data On-Ramp",
+  "mode": "non_emergency_capacity_observe_only",
+  "purpose": "Authorized Ethereum/L2 build-location inventory for proof-only collection and distribution drafting.",
+  "safety": {
+    "moves_funds": false,
+    "signs_transactions": false,
+    "bridges_tokens": false,
+    "collects_from_third_parties": false,
+    "requires_operator_approval_before_execution": true,
+    "allowedToExecute": false
+  },
+  "canonical_domain": "https://aurcore.skygrid-protocol.net",
+  "default_lanes": [
+    "base",
+    "scroll",
+    "ethereum_mainnet_observe_only",
+    "blockscout",
+    "usdc_quote_only",
+    "device_compute_proof_only"
+  ],
+  "locations": [
+    {
+      "id": "owner-pc-local-proof",
+      "type": "owner_equipment",
+      "lane": "device_compute_proof_only",
+      "status": "pending_local_worker_report",
+      "proof_source": ".skygrid/proofs/",
+      "authorized": true,
+      "notes": "Only owner-controlled equipment. Run pnpm run local:worker:start to generate proof."
+    },
+    {
+      "id": "base-helper-lane",
+      "type": "l2_network_lane",
+      "lane": "base",
+      "status": "observe_only",
+      "authorized": true,
+      "notes": "May be used for status/reference/quote drafting only until execution approval exists."
+    },
+    {
+      "id": "scroll-proof-lane",
+      "type": "l2_network_lane",
+      "lane": "scroll",
+      "status": "observe_only",
+      "authorized": true,
+      "notes": "May be used for proof/reference drafting only."
+    },
+    {
+      "id": "ethereum-mainnet-observe",
+      "type": "l1_network_lane",
+      "lane": "ethereum_mainnet_observe_only",
+      "status": "observe_only",
+      "authorized": true,
+      "notes": "Ethereum mainnet is observe-only in this draft. No signing or token movement."
+    }
+  ]
+}

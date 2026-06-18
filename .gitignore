@@ -17,3 +17,7 @@ build/
 xcuserdata/
 .vercel
 .env*
+
+# SKYGRID local proof packets - may contain machine/network metadata
+.skygrid/proofs/
+.skygrid/ethereum-collection-drafts/
