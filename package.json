@@ -24,11 +24,13 @@
     "local:ethereum:proof": "pnpm run local:worker:start && pnpm run eth:collection:draft",
     "local:worker:proof": "node scripts/skygrid-local-worker-start.mjs",
     "local:worker:fallback": "node scripts/skygrid-local-worker-start.mjs --approve-owner-test --fallback",
-    "local:owner:selftest": "node scripts/skygrid-owner-self-test-execute.mjs"
+    "local:owner:selftest": "node scripts/skygrid-owner-self-test-execute.mjs",
+    "smoke:ai-gateway": "node --env-file=.env.local ./scripts/ai-gateway-smoke.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "latest",
-    "@vercel/sandbox": "^2.2.1"
+    "@vercel/sandbox": "^2.2.1",
+    "ai": "^6.0.208"
   },
   "bin": {
     "ng": "tools/ng/index.mjs",

@@ -22,3 +22,5 @@ xcuserdata/
 .skygrid/proofs/
 .skygrid/ethereum-collection-drafts/
 .skygrid/
+
+.env.local
