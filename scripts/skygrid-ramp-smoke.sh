@@ -10,36 +10,31 @@ echo "SKYGRID Emergency Data On-Ramp smoke test"
 echo "Base: ${BASE_URL}"
 echo ""
 
-build_url() {
-  local path="$1"
-  local url="${BASE_URL}${path}"
+curl_args=("-sS" "-L")
 
-  if [[ -n "$VERCEL_BYPASS" ]]; then
-    if [[ "$url" == *"?"* ]]; then
-      url="${url}&x-vercel-set-bypass-cookie=true&x-vercel-protection-bypass=${VERCEL_BYPASS}"
-    else
-      url="${url}?x-vercel-set-bypass-cookie=true&x-vercel-protection-bypass=${VERCEL_BYPASS}"
-    fi
-  fi
-
-  echo "$url"
-}
+if [[ -n "$VERCEL_BYPASS" ]]; then
+  curl_args+=(
+    -H "x-vercel-protection-bypass: ${VERCEL_BYPASS}"
+    -H "x-vercel-set-bypass-cookie: true"
+  )
+else
+  echo "WARN: VERCEL_AUTOMATION_BYPASS_SECRET is not set."
+fi
 
 check_required() {
   local path="$1"
-  local url
-  url="$(build_url "$path")"
+  local url="${BASE_URL}${path}"
 
   local body_file
   body_file="$(mktemp)"
 
   local code
-  code="$(curl -sS -L -o "$body_file" -w "%{http_code}" "$url" || true)"
+  code="$(curl "${curl_args[@]}" -o "$body_file" -w "%{http_code}" "$url" || true)"
 
   echo "== ${path} HTTP ${code}"
 
   if [[ "$code" != "200" ]]; then
-    echo "FAIL: ${BASE_URL}${path} is not ready"
+    echo "FAIL: ${url} is not ready"
     cat "$body_file" || true
     rm -f "$body_file"
     exit 1
@@ -52,16 +47,15 @@ check_required() {
 
 check_optional() {
   local path="$1"
-  local url
-  url="$(build_url "$path")"
+  local url="${BASE_URL}${path}"
 
   local code
-  code="$(curl -sS -L -o /dev/null -w "%{http_code}" "$url" || true)"
+  code="$(curl "${curl_args[@]}" -o /dev/null -w "%{http_code}" "$url" || true)"
 
   echo "== ${path} HTTP ${code}"
 
   if [[ "$code" != "200" ]]; then
-    echo "WARN: ${BASE_URL}${path} is optional and did not return 200"
+    echo "WARN: ${url} is optional and did not return 200"
   fi
 }
 
