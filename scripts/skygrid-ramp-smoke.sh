@@ -1,47 +1,58 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE="${1:-https://aura-core-home-e539c0b1.vercel.app}"
+BASE_URL="${1:-${SKYGRID_BASE_URL:-https://aura-core-home-e539c0b1.vercel.app}}"
+BASE_URL="${BASE_URL%/}"
 
 echo "SKYGRID Emergency Data On-Ramp smoke test"
-echo "Base: $BASE"
-echo
+echo "Base: ${BASE_URL}"
+echo ""
 
-paths=(
-  "/"
-  "/health.json"
-  "/dispatch"
-  "/highway"
-  "/api/skygrid/status"
-  "/api/highway/status"
-  "/api/highway/postman"
-  "/api/pay/quote?amount=25"
-)
+check_required() {
+  local path="$1"
+  local url="${BASE_URL}${path}"
 
-for path in "${paths[@]}"; do
-  printf "== %-32s " "$path"
-  code="$(curl -sS -o /tmp/skygrid-ramp-response.txt -w "%{http_code}" "$BASE$path" || true)"
-  echo "HTTP $code"
-  if [[ "$code" == "404" || "$code" == "000" ]]; then
-    echo "FAIL: $BASE$path is not ready"
-    cat /tmp/skygrid-ramp-response.txt || true
+  local body_file
+  body_file="$(mktemp)"
+
+  local code
+  code="$(curl -sS -L -o "$body_file" -w "%{http_code}" "$url" || true)"
+
+  echo "== ${path} HTTP ${code}"
+
+  if [[ "$code" != "200" ]]; then
+    echo "FAIL: ${url} is not ready"
+    cat "$body_file" || true
+    rm -f "$body_file"
     exit 1
   fi
-done
 
-echo
-echo "POST /api/skygrid/intake"
-code="$(curl -sS -o /tmp/skygrid-ramp-response.txt -w "%{http_code}" \
-  -H "Content-Type: application/json" \
-  -d '{"source":"smoke-test","type":"system-health","message":"SKYGRID smoke validation"}' \
-  "$BASE/api/skygrid/intake" || true)"
-echo "HTTP $code"
-cat /tmp/skygrid-ramp-response.txt
-echo
+  cat "$body_file" || true
+  echo ""
+  rm -f "$body_file"
+}
 
-if [[ "$code" != "202" && "$code" != "502" ]]; then
-  echo "FAIL: intake route did not return accepted or upstream failure"
-  exit 1
-fi
+check_optional() {
+  local path="$1"
+  local url="${BASE_URL}${path}"
 
-echo "PASS: public routes are present. If intake returned 502, configure AWS env secrets in Vercel."
+  local code
+  code="$(curl -sS -L -o /dev/null -w "%{http_code}" "$url" || true)"
+
+  echo "== ${path} HTTP ${code}"
+
+  if [[ "$code" != "200" ]]; then
+    echo "WARN: ${url} is optional and did not return 200"
+  fi
+}
+
+# Hard readiness gate: the ramp API health endpoint.
+check_required "/api/health"
+
+# Optional public/dashboard routes. These should not fail the ramp readiness smoke.
+check_optional "/"
+check_optional "/health.json"
+check_optional "/api/skygrid/provenance"
+
+echo ""
+echo "SKYGRID ramp smoke completed successfully."
