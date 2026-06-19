@@ -23,7 +23,8 @@
     "eth:collection:draft": "node scripts/skygrid-ethereum-collection-draft.mjs",
     "local:ethereum:proof": "pnpm run local:worker:start && pnpm run eth:collection:draft",
     "local:worker:proof": "node scripts/skygrid-local-worker-start.mjs",
-    "local:worker:fallback": "node scripts/skygrid-local-worker-start.mjs --approve-owner-test --fallback"
+    "local:worker:fallback": "node scripts/skygrid-local-worker-start.mjs --approve-owner-test --fallback",
+    "local:owner:selftest": "node scripts/skygrid-owner-self-test-execute.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "latest",
