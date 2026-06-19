@@ -1,4 +1,4 @@
-const base = (process.env.SKYGRID_BASE_URL || "https://aurasky.skygrid-protocol.net").replace(/\/$/, "");
+const base = (process.env.SKYGRID_BASE_URL || "https://aura-core-home-e539c0b1.vercel.app").replace(/\/$/, "");
 const requestId = crypto.randomUUID();
 
 const workloadPreference = [

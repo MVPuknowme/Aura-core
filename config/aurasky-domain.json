@@ -1,13 +1,13 @@
 {
   "service": "SKYGRID Emergency Data On-Ramp",
-  "owned_deployment_domain": "https://aurasky.skygrid-protocol.net",
+  "owned_deployment_domain": "https://aura-core-home-e539c0b1.vercel.app",
   "domain_role": "primary_public_deployable_site",
   "platform": "vercel",
   "mode": "controlled_pilot",
   "sentinel": "fail_closed",
-  "route_watch_command": "SKYGRID_BASE_URL=https://aurasky.skygrid-protocol.net pnpm run aura:selection:watch",
-  "route_verify_command": "SKYGRID_BASE_URL=https://aurasky.skygrid-protocol.net pnpm run skygrid:verify",
-  "routing_test_command": "SKYGRID_BASE_URL=https://aurasky.skygrid-protocol.net pnpm run skygrid:test:routing",
+  "route_watch_command": "SKYGRID_BASE_URL=https://aura-core-home-e539c0b1.vercel.app pnpm run aura:selection:watch",
+  "route_verify_command": "SKYGRID_BASE_URL=https://aura-core-home-e539c0b1.vercel.app pnpm run skygrid:verify",
+  "routing_test_command": "SKYGRID_BASE_URL=https://aura-core-home-e539c0b1.vercel.app pnpm run skygrid:test:routing",
   "required_routes": [
     "/",
     "/health.json",

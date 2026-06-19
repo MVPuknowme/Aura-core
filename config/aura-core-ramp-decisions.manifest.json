@@ -3,7 +3,7 @@
   "control_layer": "Aura-Core AI",
   "decision_scope": "advisory_ramp_decisioning",
   "runtime": "vercel-aura-core",
-  "production_base_url": "https://aurasky.skygrid-protocol.net",
+  "production_base_url": "https://aura-core-home-e539c0b1.vercel.app",
   "primary_intake_route": "POST /api/skygrid/intake",
   "status_routes": [
     "GET /health.json",
@@ -51,7 +51,7 @@
     "event_type": "aura_core_ramp_decision",
     "system": "SKYGRID Emergency Data On-Ramp",
     "control_layer": "Aura-Core AI",
-    "base_url": "https://aurasky.skygrid-protocol.net",
+    "base_url": "https://aura-core-home-e539c0b1.vercel.app",
     "route": "/api/skygrid/intake",
     "runtime": "vercel-aura-core",
     "decision_id": "uuid",
@@ -71,6 +71,6 @@
   },
   "postman_base_variable": {
     "name": "asg_aura_core_patch_base_url",
-    "value": "https://aurasky.skygrid-protocol.net"
+    "value": "https://aura-core-home-e539c0b1.vercel.app"
   }
 }

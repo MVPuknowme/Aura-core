@@ -1,9 +1,9 @@
-﻿{
+{
   "name": "SKYGRID Auto-Drill Environment Template",
   "values": [
     {
       "key": "base_url",
-      "value": "https://aurasky.skygrid-protocol.net",
+      "value": "https://aura-core-home-e539c0b1.vercel.app",
       "enabled": true
     },
     {
