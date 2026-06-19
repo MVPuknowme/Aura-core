@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE="${1:-https://skygrid-protocol.net}"
+BASE="${1:-https://aurasky.skygrid-protocol.net}"
 
 echo "SKYGRID Emergency Data On-Ramp smoke test"
 echo "Base: $BASE"
