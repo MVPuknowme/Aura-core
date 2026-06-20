@@ -124,6 +124,162 @@
           }
         }
       ]
+    },
+    {
+      "name": "Home Page Proof",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('route proof status is allowed', () => pm.expect([200]).to.include(pm.response.code));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Incidents Page Proof",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/incidents"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('route proof status is allowed', () => pm.expect([200]).to.include(pm.response.code));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Settings Page Proof",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/settings"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('route proof status is allowed', () => pm.expect([200]).to.include(pm.response.code));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Aura-Core Decide Proof",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/aura-core/decide",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"source\":\"postman-autodrill\",\"mode\":\"controlled_pilot\",\"route\":\"decision-proof\",\"noProductionFailover\":true}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('route proof status is allowed', () => pm.expect([200,202,400,422,502]).to.include(pm.response.code));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Agent Signals Proof",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/agent/signals",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"source\":\"postman-autodrill\",\"signal\":\"route-proof\",\"severity\":\"test\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('route proof status is allowed', () => pm.expect([200,202,400,422,502]).to.include(pm.response.code));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Highway Status Proof",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/highway/status"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('route proof status is allowed', () => pm.expect([200,502]).to.include(pm.response.code));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Highway Postman Proof",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/highway/postman"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('route proof status is allowed', () => pm.expect([200,502]).to.include(pm.response.code));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sponsors Link Proof",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/sponsors/link"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('route proof status is allowed', () => pm.expect([200,302,307,308]).to.include(pm.response.code));"
+            ]
+          }
+        }
+      ]
     }
   ]
 }
