@@ -280,6 +280,162 @@
           }
         }
       ]
+    },
+    {
+      "name": "Dashboard Command Center Proof",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/dashboard/command-center"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('route proof status is allowed', () => pm.expect([200]).to.include(pm.response.code));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard Validation Panel Proof",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/dashboard/validation-panel"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('route proof status is allowed', () => pm.expect([200]).to.include(pm.response.code));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard Deployment Review Proof",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/dashboard/deployment-review"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('route proof status is allowed', () => pm.expect([200]).to.include(pm.response.code));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard Receipts Proof",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/dashboard/receipts"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('route proof status is allowed', () => pm.expect([200]).to.include(pm.response.code));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auto-Drill Latest Proof",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/autodrill/latest"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('route proof status is allowed', () => pm.expect([200,502]).to.include(pm.response.code));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Build Pad Quote Proof",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/build-pad/quote",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"source\":\"postman-autodrill\",\"quoteOnly\":true,\"region\":\"Oregon\",\"requestedCapacity\":\"pilot\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('route proof status is allowed', () => pm.expect([200,202,400,422,502]).to.include(pm.response.code));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Node Lease Intake Proof",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/node-lease/intake",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"source\":\"postman-autodrill\",\"intakeOnly\":true,\"region\":\"Oregon\",\"nodeType\":\"pilot\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('route proof status is allowed', () => pm.expect([200,202,400,422,502]).to.include(pm.response.code));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Failover Status Proof",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/failover/status"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('route proof status is allowed', () => pm.expect([200,423,502]).to.include(pm.response.code));"
+            ]
+          }
+        }
+      ]
     }
   ]
 }
