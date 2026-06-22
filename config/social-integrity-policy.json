@@ -1,0 +1,33 @@
+﻿{
+  "service": "SKYGRID Social Integrity Gate",
+  "product": "SKYGRID Emergency Data On-Ramp",
+  "mode": "controlled_pilot",
+  "defaultDecision": "allow-log",
+  "platforms": [
+    "instagram",
+    "snapchat",
+    "tiktok"
+  ],
+  "thresholds": {
+    "allow": 90,
+    "allowLog": 65,
+    "challenge": 40,
+    "quarantine": 20,
+    "block": 0
+  },
+  "safetyRules": {
+    "noPrivateDmScraping": true,
+    "noCookieCapture": true,
+    "noPasswordCapture": true,
+    "noSessionTokenCapture": true,
+    "noLiveLocationTracking": true,
+    "ledgerLocalByDefault": true,
+    "startInLogOnlyOrQuarantine": true
+  },
+  "productionTargets": {
+    "instagram": "/api/social/instagram",
+    "snapchat": "/api/social/snapchat",
+    "tiktok": "/api/social/tiktok",
+    "unified": "/api/social/integrity"
+  }
+}
