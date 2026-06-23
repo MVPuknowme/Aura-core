@@ -25,7 +25,8 @@
     "local:worker:proof": "node scripts/skygrid-local-worker-start.mjs",
     "local:worker:fallback": "node scripts/skygrid-local-worker-start.mjs --approve-owner-test --fallback",
     "local:owner:selftest": "node scripts/skygrid-owner-self-test-execute.mjs",
-    "smoke:ai-gateway": "node --env-file=.env.local ./scripts/ai-gateway-smoke.mjs"
+    "smoke:ai-gateway": "node --env-file=.env.local ./scripts/ai-gateway-smoke.mjs",
+    "local:runtime": "node scripts/skygrid-local-runtime-server.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "latest",
