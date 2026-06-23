@@ -30,7 +30,8 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "latest",
     "@vercel/sandbox": "^2.2.1",
-    "ai": "^6.0.208"
+    "ai": "^6.0.208",
+    "express": "^5.2.1"
   },
   "bin": {
     "ng": "tools/ng/index.mjs",

@@ -1,0 +1,20 @@
+﻿{
+  "service": "SKYGRID Social Photo Verification",
+  "mode": "controlled_pilot",
+  "expectedProofCode": "SKYGRID",
+  "rules": {
+    "detectDuplicatePhotoHashAcrossAccounts": true,
+    "quarantineDuplicatePhotoAcrossDifferentSenders": true,
+    "challengeMissingPhotoProof": true,
+    "quarantineInvalidProofCode": true,
+    "doNotUseFacialRecognition": true,
+    "doNotIdentifyPeopleByFace": true
+  },
+  "verifiedSenders": [
+    {
+      "platform": "instagram",
+      "senderHint": "example-known-business",
+      "label": "example verified sender"
+    }
+  ]
+}

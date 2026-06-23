@@ -1,0 +1,26 @@
+﻿{
+  "service": "SKYGRID Social Solicitation Firewall",
+  "product": "SKYGRID Emergency Data On-Ramp",
+  "mode": "controlled_pilot",
+  "defaultAction": "quarantine",
+  "autoReplyEnabled": true,
+  "rules": {
+    "blockMoneyRequests": true,
+    "blockInvestmentPitches": true,
+    "blockCryptoSolicitation": true,
+    "blockDonationRequests": true,
+    "blockGrantFeeRequests": true,
+    "blockPrizeOrGiveawayClaims": true,
+    "blockPaymentLinkRequests": true,
+    "blockOnlyFansOrOF": true,
+    "blockFareRequests": true,
+    "blockAssistanceRequests": true
+  },
+  "safeAllowContexts": [
+    "verified customer support",
+    "service quote",
+    "approved business partnership",
+    "emergency continuity workflow",
+    "known signed webhook"
+  ]
+}
