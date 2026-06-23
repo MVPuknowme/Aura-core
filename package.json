@@ -26,7 +26,8 @@
     "local:worker:fallback": "node scripts/skygrid-local-worker-start.mjs --approve-owner-test --fallback",
     "local:owner:selftest": "node scripts/skygrid-owner-self-test-execute.mjs",
     "smoke:ai-gateway": "node --env-file=.env.local ./scripts/ai-gateway-smoke.mjs",
-    "local:runtime": "node scripts/skygrid-local-runtime-server.mjs"
+    "local:runtime": "node scripts/skygrid-local-runtime-server.mjs",
+    "agentkit:basepay:smoke": "node --env-file=.env.local scripts/agentkit-basepay-smoke.mjs"
   },
   "dependencies": {
     "@coinbase/agentkit": "^0.10.4",
