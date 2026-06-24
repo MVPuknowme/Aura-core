@@ -27,7 +27,12 @@
     "local:owner:selftest": "node scripts/skygrid-owner-self-test-execute.mjs",
     "smoke:ai-gateway": "node --env-file=.env.local ./scripts/ai-gateway-smoke.mjs",
     "local:runtime": "node scripts/skygrid-local-runtime-server.mjs",
-    "agentkit:basepay:smoke": "node --env-file=.env.local scripts/agentkit-basepay-smoke.mjs"
+    "agentkit:basepay:smoke": "node --env-file=.env.local scripts/agentkit-basepay-smoke.mjs",
+    "route:probe": "node scripts/skygrid-route-option-probe.mjs",
+    "route:probe:primary": "node scripts/skygrid-route-option-probe.mjs --scenario=primary",
+    "route:probe:local": "node scripts/skygrid-route-option-probe.mjs --scenario=local",
+    "route:probe:queue": "node scripts/skygrid-route-option-probe.mjs --scenario=queue",
+    "route:probe:proof": "pnpm run route:probe:primary && pnpm run route:probe:local && pnpm run route:probe:queue"
   },
   "dependencies": {
     "@coinbase/agentkit": "^0.10.4",
