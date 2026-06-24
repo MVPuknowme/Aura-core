@@ -1,5 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
-  "installCommand": "npm exec --yes --package=pnpm@10.23.0 -- pnpm install --frozen-lockfile"
+  "framework": null,
+  "installCommand": "npm exec --yes --package=pnpm@10.23.0 -- pnpm install --frozen-lockfile",
+  "buildCommand": null,
+  "outputDirectory": null
 }
