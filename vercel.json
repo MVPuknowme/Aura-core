@@ -3,6 +3,6 @@
   "version": 2,
   "framework": null,
   "installCommand": "npm exec --yes --package=pnpm@10.23.0 -- pnpm install --frozen-lockfile",
-  "buildCommand": null,
+  "buildCommand": "node -e \"console.log('SKYGRID Emergency Data On-Ramp API deployment: no frontend build required')\"",
   "outputDirectory": null
 }
