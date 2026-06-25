@@ -1,0 +1,4 @@
+# Default reviewer for Aura-Core / SKYGRID Emergency Data On-Ramp changes.
+# Enable branch protection in GitHub settings to require CODEOWNERS review.
+
+* @MVPuknowme
