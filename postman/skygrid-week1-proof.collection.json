@@ -1,0 +1,103 @@
+﻿{
+  "info": {
+    "name": "SKYGRID Emergency Data On-Ramp Week 1 Proof",
+    "description": "Postman/Newman proof collection for SKYGRID Emergency Data On-Ramp controlled pilot. Sandbox only. No PHI. No dispatch. No diagnosis.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/health"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('health returns 200', function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Runtime Status",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/status"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status returns 200', function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pacific Heart Ingest Accepted",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/pacific-heart/ingest",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"eventId\": \"ph-postman-001\",\n  \"source\": \"pacific-heart-sandbox\",\n  \"patientRef\": \"sandbox-patient-001\",\n  \"incidentType\": \"possible-overdose-vs-metabolic-event\",\n  \"severity\": \"high\",\n  \"vitals\": {\n    \"heartRate\": 118,\n    \"spo2\": 92\n  },\n  \"alerts\": [\n    \"naloxone-history-review\",\n    \"glucose-check-recommended\"\n  ],\n  \"consent\": {\n    \"sandbox\": true\n  }\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('ingest returns 202 accepted', function () { pm.response.to.have.status(202); });",
+              "const json = pm.response.json();",
+              "pm.test('status accepted', function () { pm.expect(json.status).to.eql('accepted'); });",
+              "pm.test('human review required', function () { pm.expect(json.handoff.humanReviewRequired).to.eql(true); });",
+              "pm.test('urgent review for high severity', function () { pm.expect(json.handoff.priority).to.eql('urgent_review'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pacific Heart Rejects Missing Fields",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/pacific-heart/ingest",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"source\": \"pacific-heart-sandbox\",\n  \"severity\": \"high\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('bad payload returns 400', function () { pm.response.to.have.status(400); });",
+              "const json = pm.response.json();",
+              "pm.test('invalid_payload status', function () { pm.expect(json.status).to.eql('invalid_payload'); });"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

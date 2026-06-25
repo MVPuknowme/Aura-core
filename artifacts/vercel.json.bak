@@ -1,0 +1,136 @@
+{
+    "version":  2,
+    "installCommand":  "corepack enable \u0026\u0026 corepack prepare pnpm@10.23.0 --activate \u0026\u0026 pnpm install --frozen-lockfile=false",
+    "buildCommand":  "pnpm run build",
+    "rewrites":  [
+                     {
+                         "source":  "/",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/health.json",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/api/health",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/api/status",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/api/intake",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/api/pacific-heart/ingest",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/dispatch",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/incidents",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/settings",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/highway",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/scenarios",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/rates",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/base",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/pay",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/intake",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/dashboard/command-center",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/dashboard/validation-panel",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/dashboard/deployment-review",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/dashboard/receipts",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/api/skygrid/status",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/api/skygrid/intake",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/api/aura-core/decide",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/api/agent/signals",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/api/highway/status",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/api/highway/flasks",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/api/highway/postman",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/api/pay/quote",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/api/autodrill/latest",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/api/build-pad/quote",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/api/node-lease/intake",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/api/failover/status",
+                         "destination":  "/api/runtime"
+                     },
+                     {
+                         "source":  "/api/stripe/device-link",
+                         "destination":  "/api/runtime"
+                     }
+                 ],
+    "devCommand":  "node scripts/skygrid-local-runtime-server.mjs --port $PORT"
+}
