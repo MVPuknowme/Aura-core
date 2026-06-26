@@ -1,0 +1,121 @@
+﻿{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://skygrid-protocol.net/schema/pnpk.schema.json",
+  "title": "PNPk Patrick Newman Postman Kafka Payload",
+  "type": "object",
+  "required": [
+    "pnpk_version",
+    "system",
+    "payload_type",
+    "classification",
+    "redaction_status",
+    "source",
+    "postman",
+    "kafka",
+    "auto_drill",
+    "protection",
+    "payload",
+    "audit"
+  ],
+  "properties": {
+    "pnpk_version": {
+      "type": "string",
+      "const": "0.1"
+    },
+    "system": {
+      "type": "string",
+      "const": "SKYGRID Emergency Data On-Ramp"
+    },
+    "payload_type": {
+      "type": "string",
+      "enum": [
+        "safe-demo",
+        "extracted-data-manifest",
+        "redacted-evidence",
+        "postman-smoke-proof",
+        "kafka-routing-proof",
+        "auto-drill-checkpoint"
+      ]
+    },
+    "classification": {
+      "type": "string",
+      "enum": [
+        "public-demo",
+        "internal",
+        "restricted",
+        "attorney-review",
+        "do-not-commit"
+      ]
+    },
+    "redaction_status": {
+      "type": "string",
+      "enum": [
+        "dummy-only",
+        "redacted",
+        "encrypted",
+        "hash-only",
+        "unredacted-do-not-commit"
+      ]
+    },
+    "source": {
+      "type": "object",
+      "required": ["origin", "captured_utc"],
+      "properties": {
+        "origin": { "type": "string" },
+        "captured_utc": { "type": "string" },
+        "operator": { "type": "string" },
+        "notes": { "type": "string" }
+      }
+    },
+    "postman": {
+      "type": "object",
+      "properties": {
+        "collection": { "type": "string" },
+        "environment": { "type": "string" },
+        "expected_status": { "type": "integer" }
+      }
+    },
+    "kafka": {
+      "type": "object",
+      "properties": {
+        "topic": { "type": "string" },
+        "partition_key": { "type": "string" },
+        "routing_intent": { "type": "string" }
+      }
+    },
+    "auto_drill": {
+      "type": "object",
+      "required": ["enabled", "mode"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "mode": {
+          "type": "string",
+          "enum": ["verify-only", "route-test", "preserve-proof", "quarantine"]
+        },
+        "replay_safe": { "type": "boolean" }
+      }
+    },
+    "protection": {
+      "type": "object",
+      "required": ["contains_secrets", "hash_algorithm"],
+      "properties": {
+        "contains_secrets": { "type": "boolean" },
+        "hash_algorithm": { "type": "string" },
+        "payload_sha256": { "type": "string" },
+        "encryption": { "type": "string" },
+        "storage_rule": { "type": "string" }
+      }
+    },
+    "payload": {
+      "type": "object"
+    },
+    "audit": {
+      "type": "object",
+      "properties": {
+        "created_utc": { "type": "string" },
+        "created_by": { "type": "string" },
+        "review_status": { "type": "string" }
+      }
+    }
+  }
+}
