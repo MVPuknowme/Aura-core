@@ -5,6 +5,9 @@
   "installCommand": "npm exec --yes --package=pnpm@10.23.0 -- pnpm install --frozen-lockfile",
   "buildCommand": "node -e \"console.log('SKYGRID Emergency Data On-Ramp API deployment: no frontend build required')\"",
   "outputDirectory": null,
+  "redirects": [
+    { "source": "/articles/skygrid-dispatcher-public-demo.md", "destination": "/articles/skygrid-dispatcher-public-demo", "permanent": true }
+  ],
   "rewrites": [
     { "source": "/", "destination": "/api/runtime" },
     { "source": "/health.json", "destination": "/api/runtime" },
@@ -16,6 +19,7 @@
     { "source": "/rates", "destination": "/api/runtime" },
     { "source": "/base", "destination": "/api/runtime" },
     { "source": "/pay", "destination": "/api/runtime" },
+    { "source": "/articles/skygrid-dispatcher-public-demo", "destination": "/api/skygrid-dispatcher-public-demo" },
     { "source": "/dashboard/command-center", "destination": "/api/runtime" },
     { "source": "/dashboard/validation-panel", "destination": "/api/runtime" },
     { "source": "/dashboard/deployment-review", "destination": "/api/runtime" },
@@ -31,7 +35,6 @@
     { "source": "/api/autodrill/latest", "destination": "/api/runtime" },
     { "source": "/api/build-pad/quote", "destination": "/api/runtime" },
     { "source": "/api/node-lease/intake", "destination": "/api/runtime" },
-    { "source": "/api/failover/status", "destination": "/api/runtime" },
-    { "source": "/api/stripe/device-link", "destination": "/api/runtime" }
+    { "source": "/api/failover/status", "destination": "/api/runtime" }
   ]
 }
