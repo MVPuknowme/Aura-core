@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://skygrid.local/schemas/sunpay-payout-log.schema.json",
+  "title": "Sun Pay Payout Log",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "payout_id",
+    "node_id",
+    "amount_usd",
+    "allocation_type",
+    "verification_status",
+    "payout_method",
+    "source_trace"
+  ],
+  "properties": {
+    "payout_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "node_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "host_name": {
+      "type": "string"
+    },
+    "amount_usd": {
+      "type": "number",
+      "minimum": 0
+    },
+    "allocation_type": {
+      "type": "string",
+      "enum": [
+        "Gross Revenue",
+        "Infrastructure Reinvestment",
+        "Node Host Credit",
+        "Founder Allocation 3%",
+        "Operational Reserve",
+        "Emergency Reserve",
+        "Projection Only"
+      ]
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "Projected",
+        "Estimated",
+        "Verified",
+        "Pending Payout",
+        "Paid",
+        "Needs Review"
+      ]
+    },
+    "payout_method": {
+      "type": "string",
+      "enum": [
+        "Ledger Only",
+        "Plaid Verified Bank",
+        "ACH",
+        "USDC",
+        "BTC",
+        "Cash App",
+        "Manual",
+        "Unknown"
+      ]
+    },
+    "masked_destination": {
+      "type": "string",
+      "description": "Never store full bank account numbers, routing numbers, keys, secrets, or credentials."
+    },
+    "tx_hash_or_ref": {
+      "type": "string"
+    },
+    "source_trace": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "verification_status": {
+            "const": "Paid"
+          }
+        }
+      },
+      "then": {
+        "required": ["tx_hash_or_ref", "timestamp", "masked_destination"],
+        "properties": {
+          "payout_method": {
+            "not": {
+              "const": "Ledger Only"
+            }
+          }
+        }
+      }
+    }
+  ]
+}
