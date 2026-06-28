@@ -1,0 +1,60 @@
+﻿Patch MVPuknowme/Aura-core on branch MVPuknowme.
+
+Smoke now passes on Vercel protected deployment aura-core-t2t5 for:
+- /api/health
+- /health.json
+- /api/highway/status
+- /api/highway/postman
+- /api/autodrill/latest
+- /api/failover/status
+- /dashboard/command-center
+- /dashboard/validation-panel
+- /dashboard/receipts
+
+Add a new safe dashboard data feed:
+
+GET /api/panels/summary
+
+Requirements:
+- Product/system name: SKYGRID Emergency Data On-Ramp.
+- mode: controlled_pilot.
+- sentinel: fail_closed.
+- ok: true.
+- Include configured() booleans only; never expose env values.
+- Include health summary.
+- Include static health summary.
+- Include highway status.
+- Include Postman proof lane status.
+- Include Auto-Drill latest synthetic status.
+- Include failoverStatus().
+- Include launchLadder().
+- Include routeMap().
+- Include dashboard route readiness for:
+  - /dashboard/command-center
+  - /dashboard/validation-panel
+  - /dashboard/receipts
+- Include data routes:
+  - /api/health
+  - /health.json
+  - /api/highway/status
+  - /api/highway/postman
+  - /api/autodrill/latest
+  - /api/failover/status
+  - /api/panels/summary
+- Include guardrails:
+  - fail_closed: true
+  - advisory_only: true
+  - no_wallet_signing: true
+  - no_transaction_broadcast: true
+  - no_payment_execution: true
+  - no_private_data_movement: true
+  - no_device_activation: true
+  - production_failover: false
+- Add /api/panels/summary to routeMap().
+- Update dashboard pages so they visibly reference:
+  Data feed: /api/panels/summary
+- Update scripts/skygrid-ramp-smoke.sh to test /api/panels/summary.
+- Do not add wallet signing, payment execution, transaction broadcast, private data movement, device activation, RF control, or production failover.
+- Do not commit .env, .env.local, secrets, tokens, keys, private payloads, or generated smoke artifacts.
+
+Return a clean diff.
