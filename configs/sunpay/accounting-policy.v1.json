@@ -1,0 +1,91 @@
+{
+  "policy_id": "sunpay-clean-accounting-v1",
+  "system": "SKYGRID Emergency Data On-Ramp / Sun Pay Phoenix",
+  "created_from_record_review": "rec454piNH86zxcy2",
+  "default_currency": "USD",
+  "core_rule": "Projected amounts, estimated credits, verified amounts, pending payouts, and paid amounts must be stored and reported separately.",
+  "status_flow": [
+    "Needs Review",
+    "Projected",
+    "Estimated",
+    "Verified",
+    "Pending Payout",
+    "Paid"
+  ],
+  "forbidden_status_shortcuts": [
+    ["Projected", "Paid"],
+    ["Estimated", "Paid"],
+    ["Needs Review", "Paid"]
+  ],
+  "allocation_model": {
+    "infrastructure_reinvestment_pct": 40,
+    "node_host_credit_pct": 27,
+    "operational_reserve_pct": 30,
+    "founder_allocation_pct": 3,
+    "note": "Percentages are modeling assumptions until tied to verified gross revenue. Founder allocation remains 3% after business allocations."
+  },
+  "banking_controls": {
+    "intended_bank_rail": "U.S. Bank ACH or verified equivalent",
+    "allowed_destination_storage": [
+      "masked account label",
+      "last four only when necessary",
+      "ACH trace ID",
+      "posting date",
+      "effective date",
+      "statement month",
+      "external processor reference"
+    ],
+    "forbidden_storage": [
+      "full bank account number",
+      "routing number",
+      "bank username",
+      "bank password",
+      "Plaid access token",
+      "private key",
+      "seed phrase"
+    ]
+  },
+  "verification_requirements": {
+    "node_record": [
+      "Airtable record ID",
+      "node ID",
+      "region",
+      "device or cluster class",
+      "status",
+      "source trace"
+    ],
+    "aws_evidence": [
+      "AWS account or alias",
+      "region",
+      "resource IDs",
+      "deployment manifest",
+      "CloudWatch metrics",
+      "billing or cost tags"
+    ],
+    "payment_evidence": [
+      "bank statement line or processor event",
+      "exact amount",
+      "posting date",
+      "trace/reference ID",
+      "destination mask",
+      "reconciliation note"
+    ],
+    "crypto_evidence": [
+      "chain",
+      "token",
+      "tx hash",
+      "amount",
+      "timestamp",
+      "confirmation source"
+    ]
+  },
+  "record_specific_controls": {
+    "rec454piNH86zxcy2": {
+      "node_id": "klamath-falls-core",
+      "current_status": "Needs Review",
+      "reported_daily_output_usd": 1463,
+      "do_not_auto_verify": true,
+      "reason": "Reported daily output conflicts with prior weekly/monthly/annual projection family and lacks attached AWS/bank/payment evidence."
+    }
+  }
+}
