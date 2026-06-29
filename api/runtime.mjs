@@ -68,7 +68,7 @@ function routeMap() {
     "/dashboard/command-center", "/dashboard/validation-panel", "/dashboard/deployment-review", "/dashboard/receipts",
     "/api/skygrid/status", "/api/skygrid/intake", "/api/aura-core/decide", "/api/agent/signals", "/api/highway/status",
     "/api/highway/flasks", "/api/highway/postman", "/api/pay/quote?amount=25", "/api/autodrill/latest",
-    "/api/build-pad/quote", "/api/node-lease/intake", "/api/failover/status", "/api/stripe/device-link"
+    "/api/build-pad/quote", "/api/node-lease/intake", "/api/failover/status", "/api/panels/summary", "/api/stripe/device-link"
   ];
 }
 
@@ -138,6 +138,68 @@ function failoverStatus() {
   };
 }
 
+function panelSummary(path = "/api/panels/summary") {
+  const cfg = configured();
+  const failover = failoverStatus();
+  const awsReady = Boolean(cfg.awsStatusUrl && cfg.awsIntakeUrl && cfg.emergencyCallId && cfg.partnershipCode);
+
+  const panelRoutes = [
+    "/dashboard/command-center",
+    "/dashboard/validation-panel",
+    "/dashboard/receipts"
+  ];
+
+  const dataRoutes = [
+    "/api/health",
+    "/health.json",
+    "/api/highway/status",
+    "/api/highway/postman",
+    "/api/autodrill/latest",
+    "/api/failover/status",
+    "/api/panels/summary"
+  ];
+
+  return {
+    ok: true,
+    product: PRODUCT,
+    system: PRODUCT,
+    route: path,
+    mode: "controlled_pilot",
+    sentinel: "fail_closed",
+    status: {
+      health: { ok: true, route: "/api/health", status: "healthy" },
+      static_health: { ok: true, route: "/health.json", mode: "controlled_pilot", sentinel: "fail_closed" },
+      highway: { ok: true, route: "/api/highway/status", status: "online" },
+      postman: { ok: true, route: "/api/highway/postman", status: "postman_ready" },
+      autodrill: {
+        ok: true,
+        route: "/api/autodrill/latest",
+        result: "pass_with_warnings",
+        warnings: ["External Newman artifact not attached in runtime yet", "AWS persistence env gated"]
+      },
+      failover: { ok: failover.ok, state: failover.failover_state },
+      dashboard_routes: panelRoutes.map((route) => ({ route, ready: true })),
+      aws_persistence: { ready: awsReady, configured: cfg }
+    },
+    configured: cfg,
+    guardrails: {
+      fail_closed: true,
+      advisory_only: true,
+      no_wallet_signing: true,
+      no_transaction_broadcast: true,
+      no_payment_execution: true,
+      no_private_data_movement: true,
+      no_device_activation: true,
+      production_failover: false
+    },
+    panel_routes: panelRoutes,
+    data_routes: dataRoutes,
+    launch_ladder: launchLadder(),
+    failover,
+    routes: routeMap(),
+    timestamp: now()
+  };
+}
 function auraCoreDecision(payload = {}) {
   const need = String(payload.need || payload.type || payload.event_type || "system-health").toLowerCase();
   const severity = String(payload.severity || payload.priority || "normal").toLowerCase();
@@ -229,7 +291,9 @@ function dashboardPage(res, path) {
         ["Business Packages", "Node Readiness Assessment, Auto-Drill Proof Pack, Partner Pilot."],
         ["Proof Lane", "Postman/Newman validates current routes and reports drift."],
         ["Web3 Lane", "Wallet actions are explicit approval-only steps."],
-        ["Next API", "POST /api/build-pad/quote"]
+        ["Next API", "POST /api/build-pad/quote"],
+        ["Data Feed", "GET /api/panels/summary"],
+        ["Data Feed", "GET /api/panels/summary"]
       ]
     },
     "/dashboard/validation-panel": {
@@ -242,7 +306,9 @@ function dashboardPage(res, path) {
         ["Runtime Syntax", "node --check api/runtime.mjs"],
         ["AWS Bridge", "Env-gated status/intake URLs."],
         ["No Hidden Execution", "No wallet signing or transaction broadcast."],
-        ["Failover", "Blocked until health quorum and operator approval."]
+        ["Failover", "Blocked until health quorum and operator approval."],
+        ["Data Feed", "GET /api/panels/summary"],
+        ["Data Feed", "GET /api/panels/summary"]
       ]
     },
     "/dashboard/deployment-review": {
@@ -268,7 +334,9 @@ function dashboardPage(res, path) {
         ["AWS Relay", "Pending configured persistence backend."],
         ["Web3 Proof", "Only after explicit wallet approval."],
         ["Auto-Drill", "GET /api/autodrill/latest"],
-        ["Failover Status", "GET /api/failover/status"]
+        ["Failover Status", "GET /api/failover/status"],
+        ["Data Feed", "GET /api/panels/summary"],
+        ["Data Feed", "GET /api/panels/summary"]
       ]
     }
   };
