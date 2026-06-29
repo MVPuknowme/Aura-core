@@ -1,0 +1,15 @@
+{
+  "node_id": "skygrid-node-kfalls-001",
+  "mode": "grid_connected | islanded | battery_only | ambient_trickle",
+  "battery_soc": 74,
+  "critical_load_minutes_remaining": 310,
+  "solar_watts_now": 186,
+  "ambient_harvest_mw": 12,
+  "comms": [
+    "wifi",
+    "lte",
+    "lora"
+  ],
+  "emergency_ready": true,
+  "proof_timestamp": "2026-06-28T00:00:00Z"
+}

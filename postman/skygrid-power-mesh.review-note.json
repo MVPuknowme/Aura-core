@@ -1,0 +1,39 @@
+{
+  "info": {
+    "name": "SKYGRID Power Mesh Telemetry Review Note",
+    "description": "Placeholder review artifact for validating the Klamath Falls SKYGRID Power Mesh telemetry payload before public route integration.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Review telemetry fixture before route wiring",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/health",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "health"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('health route responds before power mesh route wiring', function () {",
+              "  pm.expect(pm.response.code).to.be.oneOf([200, 302, 401, 403]);",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
