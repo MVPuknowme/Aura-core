@@ -490,6 +490,11 @@ export default async function handler(req, res) {
   if (req.method === "GET" && path === "/api/failover/status") {
     return json(res, 200, failoverStatus());
   }
+  if (req.method === "GET" && path === "/api/panels/summary") {
+    return json(res, 200, panelSummary(path));
+  }
+
+
 
   if (req.method === "POST" && path === "/api/build-pad/quote") {
     const body = await readBody(req);
