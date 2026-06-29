@@ -1,0 +1,107 @@
+{
+  "policy_id": "skygrid-validation-node-distribution-v1",
+  "system": "SKYGRID Emergency Data On-Ramp",
+  "created_at": "2026-06-29T05:12:00Z",
+  "mode": "controlled_topology_plan",
+  "live_execution": false,
+  "core_rule": "Redistribute validation responsibility without changing payout, paid, or verified accounting states.",
+  "routing_principles": [
+    "Keep canonical control-plane validation separate from payout accounting.",
+    "Prefer west-side resilience for Oregon/Klamath proof routes while keeping cloud control stable.",
+    "Use edge devices as reroute-potential and heartbeat probes until telemetry proves higher roles.",
+    "Do not classify any projected validator revenue as verified or paid because of topology assignment.",
+    "All production failover remains operator-gated and advisory until health quorum and rollback proof exist."
+  ],
+  "tiers": [
+    {
+      "tier": 0,
+      "name": "canonical_control_plane",
+      "role": "source of routing policy, manifest validation, public route checks, and deployment-state proof",
+      "target_regions": ["us-east-1", "vercel-production"],
+      "promotion_requirements": ["public route check pass", "manifest sync pass", "deployment marker", "health endpoint proof"]
+    },
+    {
+      "tier": 1,
+      "name": "west_resilience_anchor",
+      "role": "regional validator anchor and west-side proof lane",
+      "target_regions": ["Klamath Falls / Klamath County", "us-west-2"],
+      "promotion_requirements": ["node telemetry fixture", "schema validation", "negative fixture test", "AWS region mapping", "source trace"]
+    },
+    {
+      "tier": 2,
+      "name": "oregon_edge_validation_ring",
+      "role": "pilot heartbeat, packet checks, route score, and local reroute-potential evidence",
+      "target_regions": ["Lincoln City, Oregon", "Silverton Zone", "Portland", "Salem", "Bend/Redmond", "La Pine"],
+      "promotion_requirements": ["consent", "heartbeat", "successful checks", "latency record", "no private-data movement"]
+    },
+    {
+      "tier": 3,
+      "name": "northwest_observer_ring",
+      "role": "observer/backup route scoring and regional comparison checks",
+      "target_regions": ["Seattle", "Portland", "Oregon Coast"],
+      "promotion_requirements": ["public endpoint check", "packet test", "operator review"]
+    }
+  ],
+  "current_assignments": [
+    {
+      "record_id": "rec454piNH86zxcy2",
+      "node_id": "klamath-falls-core",
+      "region": "Klamath Falls / Klamath County",
+      "current_status": "Needs Review",
+      "new_distribution_role": "west_resilience_anchor",
+      "validation_weight": 50,
+      "payout_status_change": "none",
+      "notes": "High-output validator-class record remains Needs Review. Use for west proof lane only after telemetry/source trace; do not treat reported output as verified revenue."
+    },
+    {
+      "record_id": "recHgmSsTngwQ7XQF",
+      "node_id": "spx-node-001",
+      "region": "Lincoln City, Oregon",
+      "current_status": "Pilot Active",
+      "new_distribution_role": "oregon_edge_probe_primary",
+      "validation_weight": 25,
+      "payout_status_change": "none",
+      "notes": "Use as pilot heartbeat and edge route check node. Keep micro-credit accounting separate from validation routing."
+    },
+    {
+      "record_id": "recI8B8jr5v6e6rVx",
+      "node_id": "spx-node-002",
+      "region": "Silverton Zone",
+      "current_status": "Pending Threshold",
+      "new_distribution_role": "oregon_edge_probe_secondary",
+      "validation_weight": 15,
+      "payout_status_change": "none",
+      "notes": "Use as secondary route-scoring and threshold-modeling node until more successful checks are collected."
+    },
+    {
+      "record_id": null,
+      "node_id": "vercel-public-runtime",
+      "region": "vercel-production",
+      "current_status": "route_sync_redeploy_ready",
+      "new_distribution_role": "public_route_sentinel",
+      "validation_weight": 10,
+      "payout_status_change": "not_applicable",
+      "notes": "Public route checker verifies route exposure. Domain aliasing remains separate from node payout logic."
+    }
+  ],
+  "health_quorum": {
+    "minimum_pass_conditions": [
+      "canonical_control_plane passes route manifest check",
+      "west_resilience_anchor passes schema-backed telemetry validation",
+      "at least one oregon_edge_validation_ring node reports fresh heartbeat",
+      "public route sentinel passes /health.json and /api/highway/status"
+    ],
+    "fail_closed_on": [
+      "missing consent",
+      "missing source trace",
+      "negative fixture unexpectedly passes",
+      "public route 404 on required production alias",
+      "any attempt to mark projected payout as paid without payment evidence"
+    ]
+  },
+  "accounting_guardrails": {
+    "do_not_change_statuses": ["Needs Review", "Pilot Active", "Pending Threshold"],
+    "verified_paid_amount_change": 0,
+    "note": "Topology redistribution is operational planning only. It does not verify revenue, bank settlement, or payout execution."
+  }
+}
