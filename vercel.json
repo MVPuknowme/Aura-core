@@ -35,6 +35,7 @@
     { "source": "/api/autodrill/latest", "destination": "/api/runtime" },
     { "source": "/api/build-pad/quote", "destination": "/api/runtime" },
     { "source": "/api/node-lease/intake", "destination": "/api/runtime" },
-    { "source": "/api/failover/status", "destination": "/api/runtime" }
+    { "source": "/api/failover/status", "destination": "/api/runtime" },
+    { "source": "/api/panels/summary", "destination": "/api/runtime" }
   ]
 }
