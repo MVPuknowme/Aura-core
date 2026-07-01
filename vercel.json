@@ -30,7 +30,7 @@
     { "source": "/api/agent/signals", "destination": "/api/runtime" },
     { "source": "/api/highway/status", "destination": "/api/runtime" },
     { "source": "/api/highway/flasks", "destination": "/api/runtime" },
-    { "source": "/api/highway/postman", "destination": "/api/runtime" },
+    { "source": "/api/highway/postman", "destination": "/api/runtime" }, { "source": "/api/compat/ios", "destination": "/api/compat/ios" },
     { "source": "/api/pay/quote", "destination": "/api/runtime" },
     { "source": "/api/autodrill/latest", "destination": "/api/runtime" },
     { "source": "/api/build-pad/quote", "destination": "/api/runtime" },
