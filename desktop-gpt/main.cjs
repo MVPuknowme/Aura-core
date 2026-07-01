@@ -338,6 +338,86 @@ function offlineReply(userText) {
       "Controlled pilot can continue. Production failover is not certified yet."
     ].join("\n");
   }
+  if (
+    text.includes("github status") ||
+    text.includes("git hub status") ||
+    text.includes("aura core github") ||
+    text.includes("github aura core") ||
+    text.includes("wire github") ||
+    text.includes("wire git hub")
+  ) {
+    return [
+      "Status: GitHub Aura-Core context recognized.",
+      "",
+      "Repository: MVPuknowme/Aura-core.",
+      "Local root: E:\\Aura-core.",
+      "Desktop root: E:\\Aura-core\\desktop-gpt.",
+      "Primary branch: MVPuknowme.",
+      "Dev branch: dev/aura-shield-ios-blocker.",
+      "Remote: origin.",
+      "",
+      "Safe rules:",
+      "- Do not force push.",
+      "- Do not commit .env.local, .runtime, logs, API keys, private keys, seed phrases, or wallet material.",
+      "- Use git status -sb before every commit.",
+      "- Use pull --rebase --autostash if remote changed.",
+      "- Push current dev branch with git push -u origin HEAD.",
+      "",
+      "Mode: local offline response. No API call used."
+    ].join("\n");
+  }
+
+  if (
+    text.includes("github sync") ||
+    text.includes("git sync") ||
+    text.includes("sync aura core") ||
+    text.includes("sync repo")
+  ) {
+    return [
+      "Status: GitHub sync workflow recognized.",
+      "",
+      "Run from E:\\Aura-core:",
+      "",
+      "cd E:\\Aura-core",
+      "git status -sb",
+      "git branch --show-current",
+      "git fetch origin",
+      "git pull --rebase --autostash origin $(git branch --show-current)",
+      "git push -u origin HEAD",
+      "",
+      "Rule: do not force push. If a conflict appears, stop and inspect it first.",
+      "",
+      "Mode: local offline response. No API call used."
+    ].join("\n");
+  }
+
+  if (
+    text.includes("github proof") ||
+    text.includes("proof to github") ||
+    text.includes("postman proof to github")
+  ) {
+    return [
+      "Status: GitHub proof workflow recognized.",
+      "",
+      "Proof files:",
+      "- postman/skygrid-aura-desktop.generated.collection.json",
+      "- artifacts/postman/",
+      "",
+      "Run from E:\\Aura-core:",
+      "",
+      "cd E:\\Aura-core",
+      "npx newman run .\\postman\\skygrid-aura-desktop.generated.collection.json",
+      "git status -sb",
+      "git add postman/skygrid-aura-desktop.generated.collection.json artifacts/postman",
+      "git commit -m \"Update SKYGRID Aura Desktop Postman proof\"",
+      "git pull --rebase --autostash origin $(git branch --show-current)",
+      "git push -u origin HEAD",
+      "",
+      "Expected: Newman failed requests = 0.",
+      "",
+      "Mode: local offline response. No API call used."
+    ].join("\n");
+  }
   return null;
 }
 
@@ -589,7 +669,11 @@ ipcMain.handle("ask-gpt", async (_event, userText) => {
   const local = offlineReply(userText);
 
   if (local) {
-    return `${local}\n\nMode: local offline response. No API call used.`;
+    if (String(local).includes("Mode: local offline response. No API call used.")) {
+    return local;
+}
+
+return `${local}\n\nMode: local offline response. No API call used.`;
   }
 
   try {
