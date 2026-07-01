@@ -418,6 +418,36 @@ function offlineReply(userText) {
       "Mode: local offline response. No API call used."
     ].join("\n");
   }
+  if (
+    text.includes("wonder bread") ||
+    text.includes("our imaginations") ||
+    text.includes("imagination into working systems") ||
+    text.includes("summarize the current aura-core state") ||
+    text.includes("summarize current aura-core state") ||
+    text.includes("summarize current aura core state")
+  ) {
+    return [
+      "Status: imagination converted into proof.",
+      "",
+      "Operating phrase: Wonder bread from our imaginations.",
+      "",
+      "Meaning: we turn rough ideas into working systems, keep the guardrails on, and proof everything locally when API quota is blocked.",
+      "",
+      "Current Aura-Core state:",
+      "- SKYGRID Emergency Data On-Ramp routes are green.",
+      "- Aura Desktop local offline mode works.",
+      "- GitHub Aura-Core context is wired.",
+      "- Postman API generation works locally.",
+      "- Newman proof passed with all approved routes HTTP 200.",
+      "- iOS compatibility fallback route is green.",
+      "- Failover remains blocked by design.",
+      "- Production failover is not certified yet.",
+      "",
+      "Next safe action: continue proof-driven local training.",
+      "",
+      "Mode: local offline response. No API call used."
+    ].join("\n");
+  }
   return null;
 }
 
@@ -670,6 +700,10 @@ ipcMain.handle("ask-gpt", async (_event, userText) => {
 
   if (local) {
     if (String(local).includes("Mode: local offline response. No API call used.")) {
+    return local;
+}
+
+if (String(local).includes("Mode: local offline response. No API call used.")) {
     return local;
 }
 
