@@ -199,9 +199,349 @@ function offlineReply(userText) {
     ].join("\n");
   }
 
+  if (
+    text.includes("train aura") ||
+    text.includes("training mode") ||
+    text.includes("teach aura") ||
+    text.includes("learn current state")
+  ) {
+    return [
+      "Status: training mode recognized.",
+      "",
+      "Current SKYGRID training state:",
+      "- Product: SKYGRID Emergency Data On-Ramp.",
+      "- Runtime: controlled pilot.",
+      "- Public routes: mostly green.",
+      "- AWS persistence: ready, but visible config still shows s3Bucket false.",
+      "- lambdaRouterUrl: false until an actual Lambda router URL is provided.",
+      "- iOS fallback: should stay passkey-free and wallet-signing-free.",
+      "- Failover: must remain blocked.",
+      "- Production gates: health quorum, rollback, and certified policy are not ready yet.",
+      "",
+      "Next safe training action: expand offline commands and keep all routing read-only."
+    ].join("\n");
+  }
+
+  if (
+    text.includes("what is blocked") ||
+    text.includes("current blockers") ||
+    text.includes("blocker report") ||
+    text.includes("what remains blocked")
+  ) {
+    return [
+      "Status: blocker report recognized.",
+      "",
+      "Remaining blockers:",
+      "- s3Bucket: false in Vercel runtime config.",
+      "- lambdaRouterUrl: false because no Lambda router URL is wired yet.",
+      "- health_quorum_ready: false.",
+      "- rollback_ready: false.",
+      "- production_policy_ready: false.",
+      "",
+      "Safe interpretation:",
+      "- Controlled pilot can continue.",
+      "- Production failover remains blocked.",
+      "- No wallet signing, transaction broadcast, payment execution, private data movement, or device activation."
+    ].join("\n");
+  }
+
+  if (
+    text.includes("s3 bucket") ||
+    text.includes("s3bucket") ||
+    text.includes("bucket env")
+  ) {
+    return [
+      "Status: S3 bucket check recognized.",
+      "",
+      "Known expected production env:",
+      "SKYGRID_S3_BUCKET=skygrid-emergency-vault-1782686975",
+      "",
+      "Run from E:\\Aura-core:",
+      "",
+      "cd E:\\Aura-core",
+      "npx vercel env ls production --scope home-e539c0b1",
+      "",
+      "If missing, add SKYGRID_S3_BUCKET to production and redeploy.",
+      "",
+      "Do not print secrets. The bucket name itself is not a secret."
+    ].join("\n");
+  }
+
+  if (
+    text.includes("ios blocker") ||
+    text.includes("ios fallback") ||
+    text.includes("iphone") ||
+    text.includes("safari")
+  ) {
+    return [
+      "Status: iOS compatibility recognized.",
+      "",
+      "Safe iOS rule:",
+      "- passkeysRequired: false",
+      "- walletSigningRequired: false",
+      "- fallbackEnabled: true",
+      "- failoverUnlockAllowed: false",
+      "",
+      "Run from E:\\Aura-core:",
+      "",
+      "$BASE=\"https://aura-core-t2t5.vercel.app\"",
+      "curl.exe -i \"$BASE/api/compat/ios\"",
+      "",
+      "Expected: HTTP 200 and fallback-safe policy."
+    ].join("\n");
+  }
+
+  if (
+    text.includes("route traffic") ||
+    text.includes("routing policy") ||
+    text.includes("route policy")
+  ) {
+    return [
+      "Status: routing policy recognized.",
+      "",
+      "Allowed now:",
+      "- Read-only route checks.",
+      "- Public health checks.",
+      "- Vercel readiness checks.",
+      "- iOS compatibility checks.",
+      "",
+      "Blocked now:",
+      "- Raw PowerShell remoting.",
+      "- Wallet private key loading.",
+      "- Wallet signing.",
+      "- Transaction broadcast.",
+      "- Payment execution.",
+      "- Private data movement.",
+      "- Production failover unlock.",
+      "",
+      "Rule: Aura may inspect approved routes, but she may not control live routing until MVP explicitly approves and health quorum is verified."
+    ].join("\n");
+  }
+
+  if (
+    text.includes("launch status") ||
+    text.includes("pilot status") ||
+    text.includes("skygrid status")
+  ) {
+    return [
+      "Status: SKYGRID controlled pilot status recognized.",
+      "",
+      "Current state:",
+      "- Health: green.",
+      "- Highway: online.",
+      "- Postman: ready.",
+      "- Dashboard routes: ready.",
+      "- AWS persistence: ready with remaining config cleanup.",
+      "- Failover: blocked by design.",
+      "- Guardrails: active.",
+      "",
+      "Controlled pilot can continue. Production failover is not certified yet."
+    ].join("\n");
+  }
   return null;
 }
 
+function wantsApprovedRouteProbe(userText) {
+  const text = String(userText || "").toLowerCase();
+
+  return (
+    text.includes("probe approved routes") ||
+    text.includes("inspect approved routes") ||
+    text.includes("run approved route check") ||
+    text.includes("check approved routes") ||
+    text.includes("route probe") ||
+    text.includes("traffic inspection")
+  );
+}
+
+function getApprovedRoutes() {
+  const fallbackRoutes = [
+    "https://aura-core-t2t5.vercel.app/api/health",
+    "https://aura-core-t2t5.vercel.app/api/panels/summary",
+    "https://aura-core-t2t5.vercel.app/api/failover/status",
+    "https://aura-core-t2t5.vercel.app/api/highway/status",
+    "https://aura-core-t2t5.vercel.app/api/highway/postman",
+    "https://aura-core-t2t5.vercel.app/api/compat/ios"
+  ];
+
+  const policyPath = path.join(__dirname, "aura-route-policy.json");
+
+  try {
+    const raw = fs.readFileSync(policyPath, "utf8").replace(/^\uFEFF/, "");
+    const policy = JSON.parse(raw);
+    const routes = Array.isArray(policy.allowed_routes) ? policy.allowed_routes : [];
+
+    return routes.length ? routes : fallbackRoutes;
+  } catch {
+    return fallbackRoutes;
+  }
+}
+
+async function probeApprovedRoutes() {
+  const routes = getApprovedRoutes();
+
+  if (!routes.length) {
+    return [
+      "Status: route probe blocked.",
+      "",
+      "Blocker: no approved routes found in aura-route-policy.json.",
+      "",
+      "Mode: local offline response. No API call used."
+    ].join("\n");
+  }
+
+  const results = [];
+
+  for (const url of routes) {
+    if (!String(url).startsWith("https://aura-core-t2t5.vercel.app/")) {
+      results.push(`${url} -> BLOCKED_BY_ALLOWLIST`);
+      continue;
+    }
+
+    try {
+      const started = Date.now();
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000);
+
+      const response = await fetch(url, {
+        method: "GET",
+        signal: controller.signal,
+        headers: {
+          "User-Agent": "Aura-GPT-Desktop-Route-Probe"
+        }
+      });
+
+      clearTimeout(timeout);
+
+      const elapsed = Date.now() - started;
+      results.push(`${url} -> ${response.status} ${response.statusText} ${elapsed}ms`);
+    } catch (error) {
+      results.push(`${url} -> ERROR ${error.message}`);
+    }
+  }
+
+  return [
+    "Status: approved route probe complete.",
+    "",
+    "Policy: read-only GET checks against allowlisted SKYGRID routes only.",
+    "",
+    ...results,
+    "",
+    "Guardrail: no wallet signing, no transaction broadcast, no payment execution, no private data movement, no production failover unlock.",
+    "",
+    "Mode: local offline response. No API call used."
+  ].join("\n");
+}
+function wantsPostmanApiGen(userText) {
+  const text = String(userText || "").toLowerCase();
+
+  return (
+    text.includes("postman api gen") ||
+    text.includes("postman api generator") ||
+    text.includes("generate postman") ||
+    text.includes("make postman collection") ||
+    text.includes("build postman collection") ||
+    text.includes("postman collection")
+  );
+}
+
+function buildPostmanItem(url) {
+  const parsed = new URL(url);
+  const pathParts = parsed.pathname.split("/").filter(Boolean);
+  const query = Array.from(parsed.searchParams.entries()).map(([key, value]) => ({
+    key,
+    value
+  }));
+
+  return {
+    name: parsed.pathname,
+    request: {
+      method: "GET",
+      header: [
+        {
+          key: "User-Agent",
+          value: "Aura-GPT-Desktop-Postman-Gen"
+        }
+      ],
+      url: {
+        raw: url,
+        protocol: parsed.protocol.replace(":", ""),
+        host: parsed.hostname.split("."),
+        path: pathParts,
+        ...(query.length ? { query } : {})
+      },
+      description: "Read-only SKYGRID Emergency Data On-Ramp route check generated locally by Aura Desktop."
+    },
+    response: []
+  };
+}
+
+function generatePostmanCollection() {
+  const routes = getApprovedRoutes();
+
+  if (!routes.length) {
+    return [
+      "Status: Postman API generation blocked.",
+      "",
+      "Blocker: no approved routes found in aura-route-policy.json.",
+      "",
+      "Mode: local offline response. No API call used."
+    ].join("\n");
+  }
+
+  const safeRoutes = routes.filter((url) =>
+    String(url).startsWith("https://aura-core-t2t5.vercel.app/")
+  );
+
+  const blockedRoutes = routes.filter((url) =>
+    !String(url).startsWith("https://aura-core-t2t5.vercel.app/")
+  );
+
+  const collection = {
+    info: {
+      name: "SKYGRID Emergency Data On-Ramp - Aura Desktop Generated",
+      description: [
+        "Generated locally by Aura GPT Desktop.",
+        "Scope: read-only approved SKYGRID routes.",
+        "Guardrails: no wallet signing, no transaction broadcast, no payment execution, no private data movement, no production failover unlock."
+      ].join("\n"),
+      schema: "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    item: safeRoutes.map(buildPostmanItem),
+    variable: [
+      {
+        key: "base_url",
+        value: "https://aura-core-t2t5.vercel.app"
+      }
+    ]
+  };
+
+  const postmanDir = path.join(__dirname, "..", "postman");
+  fs.mkdirSync(postmanDir, { recursive: true });
+
+  const outPath = path.join(postmanDir, "skygrid-aura-desktop.generated.collection.json");
+  fs.writeFileSync(outPath, JSON.stringify(collection, null, 2), "utf8");
+
+  return [
+    "Status: Postman API collection generated.",
+    "",
+    `Output: ${outPath}`,
+    "",
+    "Generated read-only routes:",
+    ...safeRoutes.map((url) => `- ${url}`),
+    "",
+    ...(blockedRoutes.length
+      ? ["Blocked non-allowlisted routes:", ...blockedRoutes.map((url) => `- ${url}`), ""]
+      : []),
+    "Run from E:\\Aura-core:",
+    "",
+    "npx newman run .\\postman\\skygrid-aura-desktop.generated.collection.json",
+    "",
+    "Guardrail: generated collection uses GET only against approved SKYGRID routes.",
+    "",
+    "Mode: local offline response. No API call used."
+  ].join("\n");
+}
 async function getClient() {
   if (!OpenAIClient) {
     const { default: OpenAI } = await import("openai");
@@ -242,6 +582,10 @@ app.on("window-all-closed", () => {
 });
 
 ipcMain.handle("ask-gpt", async (_event, userText) => {
+  // AURA_POSTMAN_FIRST_GATE
+  if (typeof wantsPostmanApiGen === "function" && wantsPostmanApiGen(userText)) {
+    return generatePostmanCollection();
+  }
   const local = offlineReply(userText);
 
   if (local) {

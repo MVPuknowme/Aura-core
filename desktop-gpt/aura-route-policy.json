@@ -1,11 +1,12 @@
-﻿{
+{
   "mode": "safe_allowlist",
   "allowed_routes": [
     "https://aura-core-t2t5.vercel.app/api/health",
     "https://aura-core-t2t5.vercel.app/api/panels/summary",
     "https://aura-core-t2t5.vercel.app/api/failover/status",
     "https://aura-core-t2t5.vercel.app/api/highway/status",
-    "https://aura-core-t2t5.vercel.app/api/highway/postman"
+    "https://aura-core-t2t5.vercel.app/api/highway/postman",
+    "https://aura-core-t2t5.vercel.app/api/compat/ios"
   ],
   "blocked_actions": [
     "raw_powershell_remote",
@@ -13,6 +14,9 @@
     "private_key_loading",
     "seed_phrase_loading",
     "production_failover_unlock",
-    "payment_execution"
+    "payment_execution",
+    "transaction_broadcast",
+    "private_data_movement",
+    "device_activation"
   ]
 }

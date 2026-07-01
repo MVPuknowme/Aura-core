@@ -24,3 +24,8 @@ xcuserdata/
 .skygrid/
 
 .env.local
+desktop-gpt/.runtime/
+desktop-gpt/logs/
+desktop-gpt/.env.local
+desktop-gpt/*.backup.*.cjs
+mock-body.json
