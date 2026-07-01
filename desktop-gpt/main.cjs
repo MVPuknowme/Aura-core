@@ -47,6 +47,49 @@ function getSystemInstructions() {
   }
 }
 
+function getLatestCommand(userText) {
+  const lines = String(userText || "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  return lines.length ? lines[lines.length - 1] : String(userText || "").trim();
+}
+
+function wantsWonderBread(userText) {
+  const text = String(userText || "").toLowerCase();
+
+  return (
+    text.includes("wonder bread") ||
+    text.includes("our imaginations") ||
+    text.includes("imagination converted into proof") ||
+    text.includes("imagination into working systems")
+  );
+}
+
+function wonderBreadReply() {
+  return [
+    "Status: imagination converted into proof.",
+    "",
+    "Operating phrase: Wonder bread from our imaginations.",
+    "",
+    "Meaning: we turn rough ideas into working systems, keep the guardrails on, and proof everything locally when API quota is blocked.",
+    "",
+    "Current Aura-Core state:",
+    "- SKYGRID Emergency Data On-Ramp routes are green.",
+    "- Aura Desktop local offline mode works.",
+    "- GitHub Aura-Core context is wired.",
+    "- Postman API generation works locally.",
+    "- Newman proof passed with all approved routes HTTP 200.",
+    "- iOS compatibility fallback route is green.",
+    "- Failover remains blocked by design.",
+    "- Production failover is not certified yet.",
+    "",
+    "Next safe action: continue proof-driven local training.",
+    "",
+    "Mode: local offline response. No API call used."
+  ].join("\n");
+}
 function offlineReply(userText) {
   const text = String(userText || "").toLowerCase();
 
@@ -792,7 +835,7 @@ ipcMain.handle("ask-gpt", async (_event, userText) => {
   if (typeof wantsPostmanApiGen === "function" && wantsPostmanApiGen(userText)) {
     return generatePostmanCollection();
   }
-  const local = offlineReply(userText);
+  const local = offlineReply(latestCommand);
 
   if (local) {
     if (String(local).includes("Mode: local offline response. No API call used.")) {
