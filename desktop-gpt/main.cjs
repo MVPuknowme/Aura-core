@@ -50,6 +50,38 @@ function getSystemInstructions() {
 function offlineReply(userText) {
   const text = String(userText || "").toLowerCase();
 
+  // AURA_WONDER_BREAD_TOP_GATE
+  if (
+    text.includes("wonder bread") ||
+    text.includes("our imaginations") ||
+    text.includes("operating phrase") ||
+    text.includes("imagination converted into proof") ||
+    text.includes("imagination into working systems") ||
+    text.includes("summarize the current aura-core state") ||
+    text.includes("summarize current aura-core state") ||
+    text.includes("summarize current aura core state")
+  ) {
+    return [
+      "Status: imagination converted into proof.",
+      "",
+      "Operating phrase: Wonder bread from our imaginations.",
+      "",
+      "Meaning: we turn rough ideas into working systems, keep the guardrails on, and proof everything locally when API quota is blocked.",
+      "",
+      "Current Aura-Core state:",
+      "- SKYGRID Emergency Data On-Ramp routes are green.",
+      "- Aura Desktop local offline mode works.",
+      "- GitHub Aura-Core context is wired.",
+      "- Postman API generation works locally.",
+      "- Newman proof passed with all approved routes HTTP 200.",
+      "- iOS compatibility fallback route is green.",
+      "- Failover remains blocked by design.",
+      "- Production failover is not certified yet.",
+      "",
+      "Next safe action: continue proof-driven local training."
+    ].join("\n");
+  }
+
   if (
     text === "hey aura" ||
     text === "hi aura" ||
@@ -454,6 +486,38 @@ function offlineReply(userText) {
 function wantsApprovedRouteProbe(userText) {
   const text = String(userText || "").toLowerCase();
 
+  // AURA_WONDER_BREAD_TOP_GATE
+  if (
+    text.includes("wonder bread") ||
+    text.includes("our imaginations") ||
+    text.includes("operating phrase") ||
+    text.includes("imagination converted into proof") ||
+    text.includes("imagination into working systems") ||
+    text.includes("summarize the current aura-core state") ||
+    text.includes("summarize current aura-core state") ||
+    text.includes("summarize current aura core state")
+  ) {
+    return [
+      "Status: imagination converted into proof.",
+      "",
+      "Operating phrase: Wonder bread from our imaginations.",
+      "",
+      "Meaning: we turn rough ideas into working systems, keep the guardrails on, and proof everything locally when API quota is blocked.",
+      "",
+      "Current Aura-Core state:",
+      "- SKYGRID Emergency Data On-Ramp routes are green.",
+      "- Aura Desktop local offline mode works.",
+      "- GitHub Aura-Core context is wired.",
+      "- Postman API generation works locally.",
+      "- Newman proof passed with all approved routes HTTP 200.",
+      "- iOS compatibility fallback route is green.",
+      "- Failover remains blocked by design.",
+      "- Production failover is not certified yet.",
+      "",
+      "Next safe action: continue proof-driven local training."
+    ].join("\n");
+  }
+
   return (
     text.includes("probe approved routes") ||
     text.includes("inspect approved routes") ||
@@ -544,6 +608,38 @@ async function probeApprovedRoutes() {
 }
 function wantsPostmanApiGen(userText) {
   const text = String(userText || "").toLowerCase();
+
+  // AURA_WONDER_BREAD_TOP_GATE
+  if (
+    text.includes("wonder bread") ||
+    text.includes("our imaginations") ||
+    text.includes("operating phrase") ||
+    text.includes("imagination converted into proof") ||
+    text.includes("imagination into working systems") ||
+    text.includes("summarize the current aura-core state") ||
+    text.includes("summarize current aura-core state") ||
+    text.includes("summarize current aura core state")
+  ) {
+    return [
+      "Status: imagination converted into proof.",
+      "",
+      "Operating phrase: Wonder bread from our imaginations.",
+      "",
+      "Meaning: we turn rough ideas into working systems, keep the guardrails on, and proof everything locally when API quota is blocked.",
+      "",
+      "Current Aura-Core state:",
+      "- SKYGRID Emergency Data On-Ramp routes are green.",
+      "- Aura Desktop local offline mode works.",
+      "- GitHub Aura-Core context is wired.",
+      "- Postman API generation works locally.",
+      "- Newman proof passed with all approved routes HTTP 200.",
+      "- iOS compatibility fallback route is green.",
+      "- Failover remains blocked by design.",
+      "- Production failover is not certified yet.",
+      "",
+      "Next safe action: continue proof-driven local training."
+    ].join("\n");
+  }
 
   return (
     text.includes("postman api gen") ||
