@@ -1,0 +1,16 @@
+﻿{
+  "name": "aura-gpt-desktop",
+  "version": "0.1.0",
+  "description": "Aura-Core GPT desktop interface for Windows 10",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron ."
+  },
+  "private": true,
+  "devDependencies": {
+    "electron": "latest"
+  },
+  "dependencies": {
+    "openai": "latest"
+  }
+}
