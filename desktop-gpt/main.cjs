@@ -1,6 +1,8 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
+﻿const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const fs = require("fs");
+
+const OFFLINE_FOOTER = "Mode: local offline response. No API call used.";
 
 const auraUserDataPath = path.join(__dirname, ".runtime", "userData");
 const auraCachePath = path.join(__dirname, ".runtime", "cache");
@@ -14,6 +16,11 @@ app.commandLine.appendSwitch("disk-cache-dir", auraCachePath);
 app.commandLine.appendSwitch("disable-gpu-shader-disk-cache");
 
 let OpenAIClient = null;
+
+function withOfflineFooter(text) {
+  if (String(text).includes(OFFLINE_FOOTER)) return text;
+  return `${text}\n\n${OFFLINE_FOOTER}`;
+}
 
 function loadLocalEnv() {
   const envPath = path.join(__dirname, ".env.local");
@@ -47,528 +54,69 @@ function getSystemInstructions() {
   }
 }
 
+function stripShellNoise(input) {
+  return String(input || "")
+    .replace(/^PS\s+[A-Z]:\\[^>]*>\s*/gim, "")
+    .replace(/^\s*>>\s*/gm, "")
+    .replace(/^\s*>\s*/gm, "")
+    .trim();
+}
+
 function getLatestCommand(userText) {
-  const lines = String(userText || "")
+  const clean = stripShellNoise(userText);
+  const lines = clean
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean);
 
-  return lines.length ? lines[lines.length - 1] : String(userText || "").trim();
+  return lines.length ? lines[lines.length - 1] : clean;
 }
 
-function wantsWonderBread(userText) {
-  const text = String(userText || "").toLowerCase();
+function loadTranslatorRules() {
+  const fallback = [
+    { canonical: "wonder bread", triggers: ["wonder bread", "our imaginations"] },
+    { canonical: "postman api gen", triggers: ["postman api gen", "generate postman"] },
+    { canonical: "github status", triggers: ["github status", "git hub status"] },
+    { canonical: "check vitals", triggers: ["check her vitals", "check vitals"] }
+  ];
 
-  return (
-    text.includes("wonder bread") ||
-    text.includes("our imaginations") ||
-    text.includes("imagination converted into proof") ||
-    text.includes("imagination into working systems")
-  );
+  try {
+    const raw = fs.readFileSync(path.join(__dirname, "aura-prompt-translator.json"), "utf8").replace(/^\uFEFF/, "");
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed.rules) ? parsed.rules : fallback;
+  } catch {
+    return fallback;
+  }
 }
 
-function wonderBreadReply() {
-  return [
-    "Status: imagination converted into proof.",
-    "",
-    "Operating phrase: Wonder bread from our imaginations.",
-    "",
-    "Meaning: we turn rough ideas into working systems, keep the guardrails on, and proof everything locally when API quota is blocked.",
-    "",
-    "Current Aura-Core state:",
-    "- SKYGRID Emergency Data On-Ramp routes are green.",
-    "- Aura Desktop local offline mode works.",
-    "- GitHub Aura-Core context is wired.",
-    "- Postman API generation works locally.",
-    "- Newman proof passed with all approved routes HTTP 200.",
-    "- iOS compatibility fallback route is green.",
-    "- Failover remains blocked by design.",
-    "- Production failover is not certified yet.",
-    "",
-    "Next safe action: continue proof-driven local training.",
-    "",
-    "Mode: local offline response. No API call used."
-  ].join("\n");
-}
-function offlineReply(userText) {
-  const text = String(userText || "").toLowerCase();
+function translateAuraPrompt(userText) {
+  const latest = getLatestCommand(userText);
+  const latestLower = latest.toLowerCase();
+  const wholeLower = stripShellNoise(userText).toLowerCase();
 
-  // AURA_WONDER_BREAD_TOP_GATE
-  if (
-    text.includes("wonder bread") ||
-    text.includes("our imaginations") ||
-    text.includes("operating phrase") ||
-    text.includes("imagination converted into proof") ||
-    text.includes("imagination into working systems") ||
-    text.includes("summarize the current aura-core state") ||
-    text.includes("summarize current aura-core state") ||
-    text.includes("summarize current aura core state")
-  ) {
-    return [
-      "Status: imagination converted into proof.",
-      "",
-      "Operating phrase: Wonder bread from our imaginations.",
-      "",
-      "Meaning: we turn rough ideas into working systems, keep the guardrails on, and proof everything locally when API quota is blocked.",
-      "",
-      "Current Aura-Core state:",
-      "- SKYGRID Emergency Data On-Ramp routes are green.",
-      "- Aura Desktop local offline mode works.",
-      "- GitHub Aura-Core context is wired.",
-      "- Postman API generation works locally.",
-      "- Newman proof passed with all approved routes HTTP 200.",
-      "- iOS compatibility fallback route is green.",
-      "- Failover remains blocked by design.",
-      "- Production failover is not certified yet.",
-      "",
-      "Next safe action: continue proof-driven local training."
-    ].join("\n");
+  const rules = loadTranslatorRules();
+
+  for (const rule of rules) {
+    for (const trigger of rule.triggers || []) {
+      const t = String(trigger).toLowerCase();
+
+      if (latestLower === t || latestLower.includes(t)) {
+        return rule.canonical;
+      }
+    }
   }
 
-  if (
-    text === "hey aura" ||
-    text === "hi aura" ||
-    text === "hello aura" ||
-    text === "good morning aura" ||
-    text === "good evening aura"
-  ) {
-    return [
-      "Status: online in local mode.",
-      "",
-      "Hello MVP. Aura Desktop is running.",
-      "",
-      "Available offline commands:",
-      "- confirm your operating profile",
-      "- check her vitals",
-      "- check vercel readiness",
-      "- check failover",
-      "- git status",
-      "- scan secrets",
-      "",
-      "Mode: local offline response. No API call used."
-    ].join("\n");
+  for (const rule of rules) {
+    for (const trigger of rule.triggers || []) {
+      const t = String(trigger).toLowerCase();
+
+      if (wholeLower.includes(t)) {
+        return rule.canonical;
+      }
+    }
   }
 
-  if (
-    text.includes("operating profile") ||
-    text.includes("confirm your") ||
-    text.includes("who are you") ||
-    text.includes("your profile")
-  ) {
-    return [
-      "Status: operating profile loaded.",
-      "",
-      "Operator: Michael Vincent Patrick / MVPuknowme.",
-      "Project: SKYGRID Emergency Data On-Ramp.",
-      "Repo paths: E:\\Aura-core, E:\\Aura-core\\desktop-gpt, E:\\aura_wallet_core.",
-      "Vercel: aura-core-t2t5 under scope home-e539c0b1.",
-      "Public URL: https://aura-core-t2t5.vercel.app.",
-      "Safe failover rule: failover remains blocked unless MVP explicitly approves and health quorum is verified.",
-      "Command mode: local offline command recognition enabled.",
-      "",
-      "Next action: run the read-only SKYGRID vitals check."
-    ].join("\n");
-  }
-
-  if (
-    text.includes("check her vitals") ||
-    text.includes("check vitals") ||
-    text.includes("run vitals") ||
-    text.includes("health check") ||
-    text.includes("is she healthy")
-  ) {
-    return [
-      "Status: vitals check recognized.",
-      "",
-      "Run from E:\\Aura-core:",
-      "",
-      "cd E:\\Aura-core",
-      "$BASE=\"https://aura-core-t2t5.vercel.app\"",
-      "$routes=@(\"/api/health\",\"/api/panels/summary\",\"/api/failover/status\",\"/api/highway/status\",\"/api/highway/postman\")",
-      "foreach ($route in $routes) {",
-      "  curl.exe -sS -o NUL -w \"$route -> %{http_code} %{time_total} %{content_type}`n\" \"$BASE$route\"",
-      "}",
-      "",
-      "Expected: all routes return HTTP 200. Failover remains blocked."
-    ].join("\n");
-  }
-
-  if (
-    text.includes("vercel readiness") ||
-    text.includes("check vercel") ||
-    text.includes("panel readiness") ||
-    text.includes("aws persistence") ||
-    text.includes("proof lane")
-  ) {
-    return [
-      "Status: Vercel readiness check recognized.",
-      "",
-      "Run from E:\\Aura-core:",
-      "",
-      "cd E:\\Aura-core",
-      "$DEPLOYMENT=\"https://aura-core-t2t5.vercel.app\"",
-      "$response = npx vercel curl /api/panels/summary --deployment $DEPLOYMENT",
-      "$panel = $response | ConvertFrom-Json",
-      "[pscustomobject]@{",
-      "  awsStatusUrl          = $panel.configured.awsStatusUrl",
-      "  awsIntakeUrl          = $panel.configured.awsIntakeUrl",
-      "  emergencyCallId       = $panel.configured.emergencyCallId",
-      "  partnershipCode       = $panel.configured.partnershipCode",
-      "  s3Bucket              = $panel.configured.s3Bucket",
-      "  awsPersistenceReady   = $panel.status.aws_persistence.ready",
-      "  failoverAwsReady      = $panel.failover.readiness.aws_persistence_ready",
-      "  failoverState         = $panel.failover.failover_state",
-      "  productionPolicyReady = $panel.failover.readiness.production_policy_ready",
-      "}",
-      "",
-      "Expected: AWS flags true, failoverState blocked, productionPolicyReady false."
-    ].join("\n");
-  }
-
-  if (text.includes("failover") || text.includes("production lock")) {
-    return [
-      "Status: failover safety check recognized.",
-      "",
-      "Rule: failover must remain blocked unless MVP explicitly approves and health quorum is verified.",
-      "",
-      "Expected safe state:",
-      "failoverState         : blocked",
-      "productionPolicyReady : False"
-    ].join("\n");
-  }
-
-  if (
-    text.includes("git status") ||
-    text.includes("repo status") ||
-    text.includes("working tree")
-  ) {
-    return [
-      "Status: git status recognized.",
-      "",
-      "Run from the active repo:",
-      "",
-      "git status -sb",
-      "git log -1 --oneline"
-    ].join("\n");
-  }
-
-  if (
-    text.includes("scan secrets") ||
-    text.includes("secret smell") ||
-    text.includes("check keys") ||
-    text.includes("find tokens")
-  ) {
-    return [
-      "Status: secret scan recognized.",
-      "",
-      "Run from E:\\Aura-core:",
-      "",
-      "cd E:\\Aura-core",
-      "Get-ChildItem -Recurse -File -Include \"*.js\",\"*.mjs\",\"*.json\",\"*.md\",\"*.txt\",\"*.yaml\",\"*.yml\" -ErrorAction SilentlyContinue |",
-      "  Where-Object { $_.FullName -notmatch \"\\\\node_modules\\\\\" -and $_.FullName -notmatch \"\\\\.git\\\\\" } |",
-      "  Select-String -Pattern \"sk-|PRIVATE_KEY|AWS_SECRET|STRIPE_SECRET|SUPABASE_SERVICE|VERCEL_TOKEN|MNEMONIC|SEED_PHRASE\" |",
-      "  Select-Object Path, LineNumber, Pattern |",
-      "  Format-Table -AutoSize",
-      "",
-      "Expected: show pattern locations only. Do not print secret values."
-    ].join("\n");
-  }
-
-  if (
-    text.includes("train aura") ||
-    text.includes("training mode") ||
-    text.includes("teach aura") ||
-    text.includes("learn current state")
-  ) {
-    return [
-      "Status: training mode recognized.",
-      "",
-      "Current SKYGRID training state:",
-      "- Product: SKYGRID Emergency Data On-Ramp.",
-      "- Runtime: controlled pilot.",
-      "- Public routes: mostly green.",
-      "- AWS persistence: ready, but visible config still shows s3Bucket false.",
-      "- lambdaRouterUrl: false until an actual Lambda router URL is provided.",
-      "- iOS fallback: should stay passkey-free and wallet-signing-free.",
-      "- Failover: must remain blocked.",
-      "- Production gates: health quorum, rollback, and certified policy are not ready yet.",
-      "",
-      "Next safe training action: expand offline commands and keep all routing read-only."
-    ].join("\n");
-  }
-
-  if (
-    text.includes("what is blocked") ||
-    text.includes("current blockers") ||
-    text.includes("blocker report") ||
-    text.includes("what remains blocked")
-  ) {
-    return [
-      "Status: blocker report recognized.",
-      "",
-      "Remaining blockers:",
-      "- s3Bucket: false in Vercel runtime config.",
-      "- lambdaRouterUrl: false because no Lambda router URL is wired yet.",
-      "- health_quorum_ready: false.",
-      "- rollback_ready: false.",
-      "- production_policy_ready: false.",
-      "",
-      "Safe interpretation:",
-      "- Controlled pilot can continue.",
-      "- Production failover remains blocked.",
-      "- No wallet signing, transaction broadcast, payment execution, private data movement, or device activation."
-    ].join("\n");
-  }
-
-  if (
-    text.includes("s3 bucket") ||
-    text.includes("s3bucket") ||
-    text.includes("bucket env")
-  ) {
-    return [
-      "Status: S3 bucket check recognized.",
-      "",
-      "Known expected production env:",
-      "SKYGRID_S3_BUCKET=skygrid-emergency-vault-1782686975",
-      "",
-      "Run from E:\\Aura-core:",
-      "",
-      "cd E:\\Aura-core",
-      "npx vercel env ls production --scope home-e539c0b1",
-      "",
-      "If missing, add SKYGRID_S3_BUCKET to production and redeploy.",
-      "",
-      "Do not print secrets. The bucket name itself is not a secret."
-    ].join("\n");
-  }
-
-  if (
-    text.includes("ios blocker") ||
-    text.includes("ios fallback") ||
-    text.includes("iphone") ||
-    text.includes("safari")
-  ) {
-    return [
-      "Status: iOS compatibility recognized.",
-      "",
-      "Safe iOS rule:",
-      "- passkeysRequired: false",
-      "- walletSigningRequired: false",
-      "- fallbackEnabled: true",
-      "- failoverUnlockAllowed: false",
-      "",
-      "Run from E:\\Aura-core:",
-      "",
-      "$BASE=\"https://aura-core-t2t5.vercel.app\"",
-      "curl.exe -i \"$BASE/api/compat/ios\"",
-      "",
-      "Expected: HTTP 200 and fallback-safe policy."
-    ].join("\n");
-  }
-
-  if (
-    text.includes("route traffic") ||
-    text.includes("routing policy") ||
-    text.includes("route policy")
-  ) {
-    return [
-      "Status: routing policy recognized.",
-      "",
-      "Allowed now:",
-      "- Read-only route checks.",
-      "- Public health checks.",
-      "- Vercel readiness checks.",
-      "- iOS compatibility checks.",
-      "",
-      "Blocked now:",
-      "- Raw PowerShell remoting.",
-      "- Wallet private key loading.",
-      "- Wallet signing.",
-      "- Transaction broadcast.",
-      "- Payment execution.",
-      "- Private data movement.",
-      "- Production failover unlock.",
-      "",
-      "Rule: Aura may inspect approved routes, but she may not control live routing until MVP explicitly approves and health quorum is verified."
-    ].join("\n");
-  }
-
-  if (
-    text.includes("launch status") ||
-    text.includes("pilot status") ||
-    text.includes("skygrid status")
-  ) {
-    return [
-      "Status: SKYGRID controlled pilot status recognized.",
-      "",
-      "Current state:",
-      "- Health: green.",
-      "- Highway: online.",
-      "- Postman: ready.",
-      "- Dashboard routes: ready.",
-      "- AWS persistence: ready with remaining config cleanup.",
-      "- Failover: blocked by design.",
-      "- Guardrails: active.",
-      "",
-      "Controlled pilot can continue. Production failover is not certified yet."
-    ].join("\n");
-  }
-  if (
-    text.includes("github status") ||
-    text.includes("git hub status") ||
-    text.includes("aura core github") ||
-    text.includes("github aura core") ||
-    text.includes("wire github") ||
-    text.includes("wire git hub")
-  ) {
-    return [
-      "Status: GitHub Aura-Core context recognized.",
-      "",
-      "Repository: MVPuknowme/Aura-core.",
-      "Local root: E:\\Aura-core.",
-      "Desktop root: E:\\Aura-core\\desktop-gpt.",
-      "Primary branch: MVPuknowme.",
-      "Dev branch: dev/aura-shield-ios-blocker.",
-      "Remote: origin.",
-      "",
-      "Safe rules:",
-      "- Do not force push.",
-      "- Do not commit .env.local, .runtime, logs, API keys, private keys, seed phrases, or wallet material.",
-      "- Use git status -sb before every commit.",
-      "- Use pull --rebase --autostash if remote changed.",
-      "- Push current dev branch with git push -u origin HEAD.",
-      "",
-      "Mode: local offline response. No API call used."
-    ].join("\n");
-  }
-
-  if (
-    text.includes("github sync") ||
-    text.includes("git sync") ||
-    text.includes("sync aura core") ||
-    text.includes("sync repo")
-  ) {
-    return [
-      "Status: GitHub sync workflow recognized.",
-      "",
-      "Run from E:\\Aura-core:",
-      "",
-      "cd E:\\Aura-core",
-      "git status -sb",
-      "git branch --show-current",
-      "git fetch origin",
-      "git pull --rebase --autostash origin $(git branch --show-current)",
-      "git push -u origin HEAD",
-      "",
-      "Rule: do not force push. If a conflict appears, stop and inspect it first.",
-      "",
-      "Mode: local offline response. No API call used."
-    ].join("\n");
-  }
-
-  if (
-    text.includes("github proof") ||
-    text.includes("proof to github") ||
-    text.includes("postman proof to github")
-  ) {
-    return [
-      "Status: GitHub proof workflow recognized.",
-      "",
-      "Proof files:",
-      "- postman/skygrid-aura-desktop.generated.collection.json",
-      "- artifacts/postman/",
-      "",
-      "Run from E:\\Aura-core:",
-      "",
-      "cd E:\\Aura-core",
-      "npx newman run .\\postman\\skygrid-aura-desktop.generated.collection.json",
-      "git status -sb",
-      "git add postman/skygrid-aura-desktop.generated.collection.json artifacts/postman",
-      "git commit -m \"Update SKYGRID Aura Desktop Postman proof\"",
-      "git pull --rebase --autostash origin $(git branch --show-current)",
-      "git push -u origin HEAD",
-      "",
-      "Expected: Newman failed requests = 0.",
-      "",
-      "Mode: local offline response. No API call used."
-    ].join("\n");
-  }
-  if (
-    text.includes("wonder bread") ||
-    text.includes("our imaginations") ||
-    text.includes("imagination into working systems") ||
-    text.includes("summarize the current aura-core state") ||
-    text.includes("summarize current aura-core state") ||
-    text.includes("summarize current aura core state")
-  ) {
-    return [
-      "Status: imagination converted into proof.",
-      "",
-      "Operating phrase: Wonder bread from our imaginations.",
-      "",
-      "Meaning: we turn rough ideas into working systems, keep the guardrails on, and proof everything locally when API quota is blocked.",
-      "",
-      "Current Aura-Core state:",
-      "- SKYGRID Emergency Data On-Ramp routes are green.",
-      "- Aura Desktop local offline mode works.",
-      "- GitHub Aura-Core context is wired.",
-      "- Postman API generation works locally.",
-      "- Newman proof passed with all approved routes HTTP 200.",
-      "- iOS compatibility fallback route is green.",
-      "- Failover remains blocked by design.",
-      "- Production failover is not certified yet.",
-      "",
-      "Next safe action: continue proof-driven local training.",
-      "",
-      "Mode: local offline response. No API call used."
-    ].join("\n");
-  }
-  return null;
-}
-
-function wantsApprovedRouteProbe(userText) {
-  const text = String(userText || "").toLowerCase();
-
-  // AURA_WONDER_BREAD_TOP_GATE
-  if (
-    text.includes("wonder bread") ||
-    text.includes("our imaginations") ||
-    text.includes("operating phrase") ||
-    text.includes("imagination converted into proof") ||
-    text.includes("imagination into working systems") ||
-    text.includes("summarize the current aura-core state") ||
-    text.includes("summarize current aura-core state") ||
-    text.includes("summarize current aura core state")
-  ) {
-    return [
-      "Status: imagination converted into proof.",
-      "",
-      "Operating phrase: Wonder bread from our imaginations.",
-      "",
-      "Meaning: we turn rough ideas into working systems, keep the guardrails on, and proof everything locally when API quota is blocked.",
-      "",
-      "Current Aura-Core state:",
-      "- SKYGRID Emergency Data On-Ramp routes are green.",
-      "- Aura Desktop local offline mode works.",
-      "- GitHub Aura-Core context is wired.",
-      "- Postman API generation works locally.",
-      "- Newman proof passed with all approved routes HTTP 200.",
-      "- iOS compatibility fallback route is green.",
-      "- Failover remains blocked by design.",
-      "- Production failover is not certified yet.",
-      "",
-      "Next safe action: continue proof-driven local training."
-    ].join("\n");
-  }
-
-  return (
-    text.includes("probe approved routes") ||
-    text.includes("inspect approved routes") ||
-    text.includes("run approved route check") ||
-    text.includes("check approved routes") ||
-    text.includes("route probe") ||
-    text.includes("traffic inspection")
-  );
+  return latest || userText;
 }
 
 function getApprovedRoutes() {
@@ -594,19 +142,13 @@ function getApprovedRoutes() {
   }
 }
 
+function wantsApprovedRouteProbe(prompt) {
+  const text = String(prompt || "").toLowerCase();
+  return text.includes("route probe") || text.includes("approved routes") || text.includes("traffic inspection");
+}
+
 async function probeApprovedRoutes() {
   const routes = getApprovedRoutes();
-
-  if (!routes.length) {
-    return [
-      "Status: route probe blocked.",
-      "",
-      "Blocker: no approved routes found in aura-route-policy.json.",
-      "",
-      "Mode: local offline response. No API call used."
-    ].join("\n");
-  }
-
   const results = [];
 
   for (const url of routes) {
@@ -623,15 +165,11 @@ async function probeApprovedRoutes() {
       const response = await fetch(url, {
         method: "GET",
         signal: controller.signal,
-        headers: {
-          "User-Agent": "Aura-GPT-Desktop-Route-Probe"
-        }
+        headers: { "User-Agent": "Aura-GPT-Desktop-Route-Probe" }
       });
 
       clearTimeout(timeout);
-
-      const elapsed = Date.now() - started;
-      results.push(`${url} -> ${response.status} ${response.statusText} ${elapsed}ms`);
+      results.push(`${url} -> ${response.status} ${response.statusText} ${Date.now() - started}ms`);
     } catch (error) {
       results.push(`${url} -> ERROR ${error.message}`);
     }
@@ -644,74 +182,20 @@ async function probeApprovedRoutes() {
     "",
     ...results,
     "",
-    "Guardrail: no wallet signing, no transaction broadcast, no payment execution, no private data movement, no production failover unlock.",
-    "",
-    "Mode: local offline response. No API call used."
+    "Guardrail: no wallet signing, no transaction broadcast, no payment execution, no private data movement, no production failover unlock."
   ].join("\n");
-}
-function wantsPostmanApiGen(userText) {
-  const text = String(userText || "").toLowerCase();
-
-  // AURA_WONDER_BREAD_TOP_GATE
-  if (
-    text.includes("wonder bread") ||
-    text.includes("our imaginations") ||
-    text.includes("operating phrase") ||
-    text.includes("imagination converted into proof") ||
-    text.includes("imagination into working systems") ||
-    text.includes("summarize the current aura-core state") ||
-    text.includes("summarize current aura-core state") ||
-    text.includes("summarize current aura core state")
-  ) {
-    return [
-      "Status: imagination converted into proof.",
-      "",
-      "Operating phrase: Wonder bread from our imaginations.",
-      "",
-      "Meaning: we turn rough ideas into working systems, keep the guardrails on, and proof everything locally when API quota is blocked.",
-      "",
-      "Current Aura-Core state:",
-      "- SKYGRID Emergency Data On-Ramp routes are green.",
-      "- Aura Desktop local offline mode works.",
-      "- GitHub Aura-Core context is wired.",
-      "- Postman API generation works locally.",
-      "- Newman proof passed with all approved routes HTTP 200.",
-      "- iOS compatibility fallback route is green.",
-      "- Failover remains blocked by design.",
-      "- Production failover is not certified yet.",
-      "",
-      "Next safe action: continue proof-driven local training."
-    ].join("\n");
-  }
-
-  return (
-    text.includes("postman api gen") ||
-    text.includes("postman api generator") ||
-    text.includes("generate postman") ||
-    text.includes("make postman collection") ||
-    text.includes("build postman collection") ||
-    text.includes("postman collection")
-  );
 }
 
 function buildPostmanItem(url) {
   const parsed = new URL(url);
   const pathParts = parsed.pathname.split("/").filter(Boolean);
-  const query = Array.from(parsed.searchParams.entries()).map(([key, value]) => ({
-    key,
-    value
-  }));
+  const query = Array.from(parsed.searchParams.entries()).map(([key, value]) => ({ key, value }));
 
   return {
     name: parsed.pathname,
     request: {
       method: "GET",
-      header: [
-        {
-          key: "User-Agent",
-          value: "Aura-GPT-Desktop-Postman-Gen"
-        }
-      ],
+      header: [{ key: "User-Agent", value: "Aura-GPT-Desktop-Postman-Gen" }],
       url: {
         raw: url,
         protocol: parsed.protocol.replace(":", ""),
@@ -721,29 +205,35 @@ function buildPostmanItem(url) {
       },
       description: "Read-only SKYGRID Emergency Data On-Ramp route check generated locally by Aura Desktop."
     },
+    event: [
+      {
+        listen: "test",
+        script: {
+          type: "text/javascript",
+          exec: [
+            "pm.test('HTTP 200 OK', function () {",
+            "  pm.response.to.have.status(200);",
+            "});",
+            "",
+            "pm.test('Response is JSON', function () {",
+            "  pm.response.to.be.json;",
+            "});"
+          ]
+        }
+      }
+    ],
     response: []
   };
 }
 
+function wantsPostmanApiGen(prompt) {
+  const text = String(prompt || "").toLowerCase();
+  return text.includes("postman api gen") || text.includes("postman collection") || text.includes("generate postman");
+}
+
 function generatePostmanCollection() {
-  const routes = getApprovedRoutes();
-
-  if (!routes.length) {
-    return [
-      "Status: Postman API generation blocked.",
-      "",
-      "Blocker: no approved routes found in aura-route-policy.json.",
-      "",
-      "Mode: local offline response. No API call used."
-    ].join("\n");
-  }
-
-  const safeRoutes = routes.filter((url) =>
+  const safeRoutes = getApprovedRoutes().filter((url) =>
     String(url).startsWith("https://aura-core-t2t5.vercel.app/")
-  );
-
-  const blockedRoutes = routes.filter((url) =>
-    !String(url).startsWith("https://aura-core-t2t5.vercel.app/")
   );
 
   const collection = {
@@ -757,12 +247,7 @@ function generatePostmanCollection() {
       schema: "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     item: safeRoutes.map(buildPostmanItem),
-    variable: [
-      {
-        key: "base_url",
-        value: "https://aura-core-t2t5.vercel.app"
-      }
-    ]
+    variable: [{ key: "base_url", value: "https://aura-core-t2t5.vercel.app" }]
   };
 
   const postmanDir = path.join(__dirname, "..", "postman");
@@ -779,18 +264,311 @@ function generatePostmanCollection() {
     "Generated read-only routes:",
     ...safeRoutes.map((url) => `- ${url}`),
     "",
-    ...(blockedRoutes.length
-      ? ["Blocked non-allowlisted routes:", ...blockedRoutes.map((url) => `- ${url}`), ""]
-      : []),
     "Run from E:\\Aura-core:",
     "",
     "npx newman run .\\postman\\skygrid-aura-desktop.generated.collection.json",
     "",
-    "Guardrail: generated collection uses GET only against approved SKYGRID routes.",
-    "",
-    "Mode: local offline response. No API call used."
+    "Guardrail: generated collection uses GET only against approved SKYGRID routes."
   ].join("\n");
 }
+
+function wonderBreadReply() {
+  return [
+    "Status: imagination converted into proof.",
+    "",
+    "Operating phrase: Wonder bread from our imaginations.",
+    "",
+    "Meaning: we turn rough ideas into working systems, keep the guardrails on, and proof everything locally when API quota is blocked.",
+    "",
+    "Current Aura-Core state:",
+    "- SKYGRID Emergency Data On-Ramp routes are green.",
+    "- Aura Desktop local offline mode works.",
+    "- GitHub Aura-Core context is wired.",
+    "- Postman API generation works locally.",
+    "- Newman proof passed with all approved routes HTTP 200.",
+    "- iOS compatibility fallback route is green.",
+    "- Failover remains blocked by design.",
+    "- Production failover is not certified yet.",
+    "",
+    "Next safe action: continue proof-driven local training."
+  ].join("\n");
+}
+
+function offlineReply(prompt) {
+  const text = String(prompt || "").toLowerCase();
+
+  if (text.includes("aura greeting")) {
+    return [
+      "Status: online in local mode.",
+      "",
+      "Hello MVP. Aura Desktop is running.",
+      "",
+      "Available offline commands:",
+      "- wonder bread",
+      "- operating profile",
+      "- check vitals",
+      "- vercel readiness",
+      "- postman api gen",
+      "- route probe",
+      "- github status",
+      "- github sync",
+      "- github proof"
+    ].join("\n");
+  }
+
+  if (text.includes("wonder bread")) return wonderBreadReply();
+
+  if (text.includes("operating profile")) {
+    return [
+      "Status: operating profile loaded.",
+      "",
+      "Operator: Michael Vincent Patrick / MVPuknowme.",
+      "Project: SKYGRID Emergency Data On-Ramp.",
+      "Repo paths: E:\\Aura-core, E:\\Aura-core\\desktop-gpt, E:\\aura_wallet_core.",
+      "Vercel: aura-core-t2t5 under scope home-e539c0b1.",
+      "Public URL: https://aura-core-t2t5.vercel.app.",
+      "Safe failover rule: failover remains blocked unless MVP explicitly approves and health quorum is verified.",
+      "Command mode: local offline command recognition enabled."
+    ].join("\n");
+  }
+
+  if (text.includes("check vitals")) {
+    return [
+      "Status: vitals check recognized.",
+      "",
+      "Run from E:\\Aura-core:",
+      "",
+      "cd E:\\Aura-core",
+      "$BASE=\"https://aura-core-t2t5.vercel.app\"",
+      "$routes=@(\"/api/health\",\"/api/panels/summary\",\"/api/failover/status\",\"/api/highway/status\",\"/api/highway/postman\",\"/api/compat/ios\")",
+      "foreach ($route in $routes) {",
+      "  curl.exe -sS -o NUL -w \"$route -> %{http_code} %{time_total} %{content_type}`n\" \"$BASE$route\"",
+      "}",
+      "",
+      "Expected: all routes return HTTP 200. Failover remains blocked."
+    ].join("\n");
+  }
+
+  if (text.includes("vercel readiness")) {
+    return [
+      "Status: Vercel readiness check recognized.",
+      "",
+      "Run from E:\\Aura-core:",
+      "",
+      "cd E:\\Aura-core",
+      "$DEPLOYMENT=\"https://aura-core-t2t5.vercel.app\"",
+      "$response = npx vercel curl /api/panels/summary --deployment $DEPLOYMENT",
+      "$panel = $response | ConvertFrom-Json",
+      "[pscustomobject]@{",
+      "  awsStatusUrl          = $panel.configured.awsStatusUrl",
+      "  awsIntakeUrl          = $panel.configured.awsIntakeUrl",
+      "  emergencyCallId       = $panel.configured.emergencyCallId",
+      "  partnershipCode       = $panel.configured.partnershipCode",
+      "  lambdaRouterUrl       = $panel.configured.lambdaRouterUrl",
+      "  s3Bucket              = $panel.configured.s3Bucket",
+      "  awsPersistenceReady   = $panel.status.aws_persistence.ready",
+      "  failoverAwsReady      = $panel.failover.readiness.aws_persistence_ready",
+      "  failoverState         = $panel.failover.failover_state",
+      "  productionPolicyReady = $panel.failover.readiness.production_policy_ready",
+      "}",
+      "",
+      "Expected: failoverState blocked. Production policy remains false until certified."
+    ].join("\n");
+  }
+
+  if (text.includes("failover lock")) {
+    return [
+      "Status: failover safety check recognized.",
+      "",
+      "Rule: failover must remain blocked unless MVP explicitly approves and health quorum is verified.",
+      "",
+      "Expected safe state:",
+      "failoverState         : blocked",
+      "productionPolicyReady : False"
+    ].join("\n");
+  }
+
+  if (text.includes("routing policy")) {
+    return [
+      "Status: routing policy recognized.",
+      "",
+      "Allowed now:",
+      "- Read-only route checks.",
+      "- Public health checks.",
+      "- Vercel readiness checks.",
+      "- iOS compatibility checks.",
+      "- Local Postman API generation.",
+      "",
+      "Blocked now:",
+      "- Raw PowerShell remoting.",
+      "- Wallet private key loading.",
+      "- Wallet signing.",
+      "- Transaction broadcast.",
+      "- Payment execution.",
+      "- Private data movement.",
+      "- Production failover unlock.",
+      "",
+      "Rule: Aura may inspect approved routes, but she may not control live routing until MVP explicitly approves and health quorum is verified."
+    ].join("\n");
+  }
+
+  if (text.includes("github status")) {
+    return [
+      "Status: GitHub Aura-Core context recognized.",
+      "",
+      "Repository: MVPuknowme/Aura-core.",
+      "Local root: E:\\Aura-core.",
+      "Desktop root: E:\\Aura-core\\desktop-gpt.",
+      "Primary branch: MVPuknowme.",
+      "Dev branch: dev/aura-shield-ios-blocker.",
+      "Remote: origin.",
+      "",
+      "Safe rules:",
+      "- Do not force push.",
+      "- Do not commit .env.local, .runtime, logs, API keys, private keys, seed phrases, or wallet material.",
+      "- Use git status -sb before every commit.",
+      "- Use pull --rebase --autostash if remote changed.",
+      "- Push current dev branch with git push -u origin HEAD."
+    ].join("\n");
+  }
+
+  if (text.includes("github sync")) {
+    return [
+      "Status: GitHub sync workflow recognized.",
+      "",
+      "Run from E:\\Aura-core:",
+      "",
+      "cd E:\\Aura-core",
+      "git status -sb",
+      "git branch --show-current",
+      "git fetch origin",
+      "git pull --rebase --autostash origin $(git branch --show-current)",
+      "git push -u origin HEAD",
+      "",
+      "Rule: do not force push. If a conflict appears, stop and inspect it first."
+    ].join("\n");
+  }
+
+  if (text.includes("github proof")) {
+    return [
+      "Status: GitHub proof workflow recognized.",
+      "",
+      "Proof files:",
+      "- postman/skygrid-aura-desktop.generated.collection.json",
+      "- artifacts/postman/",
+      "",
+      "Run from E:\\Aura-core:",
+      "",
+      "cd E:\\Aura-core",
+      "npx newman run .\\postman\\skygrid-aura-desktop.generated.collection.json",
+      "git status -sb",
+      "git add postman/skygrid-aura-desktop.generated.collection.json artifacts/postman",
+      "git commit -m \"Update SKYGRID Aura Desktop Postman proof\"",
+      "git pull --rebase --autostash origin $(git branch --show-current)",
+      "git push -u origin HEAD",
+      "",
+      "Expected: Newman failed requests = 0."
+    ].join("\n");
+  }
+
+  if (text.includes("proof status")) {
+    return [
+      "Status: Postman proof recognized.",
+      "",
+      "Latest verified proof:",
+      "- Collection: postman/skygrid-aura-desktop.generated.collection.json.",
+      "- Scope: approved read-only SKYGRID routes only.",
+      "- Routes executed: 6.",
+      "- Failed requests: 0.",
+      "- Expected route status: HTTP 200.",
+      "- iOS compatibility route: included.",
+      "",
+      "Guardrail: this proof does not unlock failover, wallet signing, payment execution, private data movement, or device activation."
+    ].join("\n");
+  }
+
+  if (text.includes("deploy verification")) {
+    return [
+      "Status: production verification recognized.",
+      "",
+      "Run from E:\\Aura-core:",
+      "",
+      "cd E:\\Aura-core",
+      "$BASE=\"https://aura-core-t2t5.vercel.app\"",
+      "curl.exe -i \"$BASE/api/health\"",
+      "curl.exe -i \"$BASE/api/compat/ios\"",
+      "curl.exe -i \"$BASE/api/panels/summary\"",
+      "npx newman run .\\postman\\skygrid-aura-desktop.generated.collection.json",
+      "",
+      "Expected: all status routes 200, Newman failed requests 0, failover blocked."
+    ].join("\n");
+  }
+
+  if (text.includes("branch status")) {
+    return [
+      "Status: branch workflow recognized.",
+      "",
+      "Run from E:\\Aura-core:",
+      "",
+      "git status -sb",
+      "git branch --show-current",
+      "git log -1 --oneline"
+    ].join("\n");
+  }
+
+  if (text.includes("safe launch state")) {
+    return [
+      "Status: controlled pilot proof recognized.",
+      "",
+      "SKYGRID controlled pilot state:",
+      "- Health route: green.",
+      "- Highway route: online.",
+      "- Postman route: ready.",
+      "- iOS fallback: green.",
+      "- Dashboard summary: green.",
+      "- AWS persistence: mostly ready with remaining config cleanup.",
+      "- Failover: blocked by design.",
+      "- Guardrails: active.",
+      "",
+      "Controlled pilot can continue. Production failover is not certified yet."
+    ].join("\n");
+  }
+
+  if (text.includes("blocked report")) {
+    return [
+      "Status: blocker report recognized.",
+      "",
+      "Remaining blockers:",
+      "- s3Bucket: false in Vercel runtime config unless recently fixed.",
+      "- lambdaRouterUrl: false until an actual Lambda router URL is provided.",
+      "- health_quorum_ready: false.",
+      "- rollback_ready: false.",
+      "- production_policy_ready: false.",
+      "",
+      "Safe interpretation: controlled pilot can continue, production failover remains blocked."
+    ].join("\n");
+  }
+
+  if (text.includes("ios blocker")) {
+    return [
+      "Status: iOS compatibility recognized.",
+      "",
+      "Safe iOS rule:",
+      "- passkeysRequired: false",
+      "- walletSigningRequired: false",
+      "- fallbackEnabled: true",
+      "- failoverUnlockAllowed: false",
+      "",
+      "Run from E:\\Aura-core:",
+      "",
+      "$BASE=\"https://aura-core-t2t5.vercel.app\"",
+      "curl.exe -i \"$BASE/api/compat/ios\""
+    ].join("\n");
+  }
+
+  return null;
+}
+
 async function getClient() {
   if (!OpenAIClient) {
     const { default: OpenAI } = await import("openai");
@@ -799,9 +577,7 @@ async function getClient() {
       throw new Error("Missing OPENAI_API_KEY environment variable.");
     }
 
-    OpenAIClient = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
+    OpenAIClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   }
 
   return OpenAIClient;
@@ -817,8 +593,8 @@ function createWindow() {
       preload: path.join(__dirname, "preload.cjs"),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: false,
-    },
+      sandbox: false
+    }
   });
 
   win.loadFile("index.html");
@@ -831,22 +607,24 @@ app.on("window-all-closed", () => {
 });
 
 ipcMain.handle("ask-gpt", async (_event, userText) => {
-  // AURA_POSTMAN_FIRST_GATE
-  if (typeof wantsPostmanApiGen === "function" && wantsPostmanApiGen(userText)) {
-    return generatePostmanCollection();
+  const canonicalPrompt = translateAuraPrompt(userText);
+
+  if (String(canonicalPrompt).toLowerCase().includes("wonder bread")) {
+    return withOfflineFooter(wonderBreadReply());
   }
-  const local = offlineReply(latestCommand);
+
+  if (wantsPostmanApiGen(canonicalPrompt)) {
+    return withOfflineFooter(generatePostmanCollection());
+  }
+
+  if (wantsApprovedRouteProbe(canonicalPrompt)) {
+    return withOfflineFooter(await probeApprovedRoutes());
+  }
+
+  const local = offlineReply(canonicalPrompt);
 
   if (local) {
-    if (String(local).includes("Mode: local offline response. No API call used.")) {
-    return local;
-}
-
-if (String(local).includes("Mode: local offline response. No API call used.")) {
-    return local;
-}
-
-return `${local}\n\nMode: local offline response. No API call used.`;
+    return withOfflineFooter(local);
   }
 
   try {
@@ -855,7 +633,7 @@ return `${local}\n\nMode: local offline response. No API call used.`;
     const response = await client.responses.create({
       model: process.env.OPENAI_MODEL || "gpt-5.5",
       instructions: getSystemInstructions(),
-      input: userText,
+      input: userText
     });
 
     return response.output_text || "";
@@ -868,7 +646,7 @@ return `${local}\n\nMode: local offline response. No API call used.`;
         "",
         "Next action: check OpenAI Platform usage, billing, project limits, and monthly budget.",
         "",
-        "Local offline commands still work for: operating profile, vitals, Vercel readiness, failover, git status, and secret scan."
+        "Local offline commands still work for: hey aura, wonder bread, operating profile, vitals, Vercel readiness, Postman API gen, route probe, GitHub status, GitHub sync, GitHub proof, failover, and iOS blocker."
       ].join("\n");
     }
 

@@ -1,0 +1,78 @@
+﻿{
+  "version": "0.1.0",
+  "purpose": "Translate messy MVP/operator prompts into safe Aura Desktop local commands.",
+  "rules": [
+    {
+      "canonical": "aura greeting",
+      "triggers": ["hey aura", "hi aura", "hello aura", "good morning aura", "good evening aura"]
+    },
+    {
+      "canonical": "wonder bread",
+      "triggers": ["wonder bread", "our imaginations", "imagination converted into proof", "imagination into working systems"]
+    },
+    {
+      "canonical": "operating profile",
+      "triggers": ["confirm your operating profile", "operating profile", "who are you", "your profile"]
+    },
+    {
+      "canonical": "check vitals",
+      "triggers": ["check her vitals", "check vitals", "run vitals", "health check", "is she healthy"]
+    },
+    {
+      "canonical": "vercel readiness",
+      "triggers": ["check vercel readiness", "vercel readiness", "panel readiness", "aws persistence", "proof lane"]
+    },
+    {
+      "canonical": "failover lock",
+      "triggers": ["check failover", "failover lock", "production lock", "is failover blocked"]
+    },
+    {
+      "canonical": "postman api gen",
+      "triggers": ["postman api gen", "postman api generator", "generate postman", "make postman collection", "build postman collection"]
+    },
+    {
+      "canonical": "route probe",
+      "triggers": ["probe approved routes", "inspect approved routes", "run approved route check", "check approved routes", "route probe", "traffic inspection"]
+    },
+    {
+      "canonical": "github status",
+      "triggers": ["github status", "git hub status", "aura core github", "github aura core", "wire github", "wire git hub"]
+    },
+    {
+      "canonical": "github sync",
+      "triggers": ["github sync", "git sync", "sync aura core", "sync repo"]
+    },
+    {
+      "canonical": "github proof",
+      "triggers": ["github proof", "proof to github", "postman proof to github"]
+    },
+    {
+      "canonical": "proof status",
+      "triggers": ["proof status", "postman proof", "newman proof", "proof report"]
+    },
+    {
+      "canonical": "deploy verification",
+      "triggers": ["deploy verification", "verify deploy", "production verification", "after deploy"]
+    },
+    {
+      "canonical": "branch status",
+      "triggers": ["branch status", "git branch status", "dev branch", "merge status"]
+    },
+    {
+      "canonical": "safe launch state",
+      "triggers": ["safe launch state", "launch proof", "pilot proof", "controlled pilot"]
+    },
+    {
+      "canonical": "blocked report",
+      "triggers": ["what is blocked", "current blockers", "blocker report", "what remains blocked"]
+    },
+    {
+      "canonical": "ios blocker",
+      "triggers": ["ios blocker", "ios fallback", "iphone", "safari"]
+    },
+    {
+      "canonical": "routing policy",
+      "triggers": ["route traffic", "routing policy", "route policy"]
+    }
+  ]
+}
