@@ -7,14 +7,28 @@ $ErrorActionPreference = "Stop"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot = Resolve-Path (Join-Path $ScriptDir "..")
 $LogDir = Join-Path $ScriptDir "logs"
-$LogPath = Join-Path $LogDir "aura-desktop.log"
+$RunId = "{0}-{1}" -f (Get-Date).ToString("yyyyMMdd-HHmmss"), $PID
+$LogPath = Join-Path $LogDir "aura-desktop-$RunId.log"
+$LatestLogPath = Join-Path $LogDir "aura-desktop.latest.log"
 
 New-Item -ItemType Directory -Force $LogDir | Out-Null
 
 function Write-AuraLog {
   param([string]$Message)
   $line = "[{0}] {1}" -f (Get-Date).ToString("s"), $Message
-  Add-Content -Path $LogPath -Value $line -Encoding UTF8
+
+  try {
+    Add-Content -Path $LogPath -Value $line -Encoding UTF8 -ErrorAction Stop
+  } catch {
+    Write-Host "[log-warning] Could not write run log: $($_.Exception.Message)"
+  }
+
+  try {
+    Set-Content -Path $LatestLogPath -Value $line -Encoding UTF8 -ErrorAction Stop
+  } catch {
+    # latest log is best-effort only; never fail launch because a viewer has the log open.
+  }
+
   Write-Host $line
 }
 
@@ -37,6 +51,7 @@ $env:AURA_DIRECTOR_BASE_URL = $DirectorBase
 Write-AuraLog "Aura GPT Desktop starter online."
 Write-AuraLog "ScriptDir=$ScriptDir"
 Write-AuraLog "RepoRoot=$RepoRoot"
+Write-AuraLog "LogPath=$LogPath"
 Write-AuraLog "DirectorUrl=$DirectorUrl"
 
 Set-Location -LiteralPath $ScriptDir
