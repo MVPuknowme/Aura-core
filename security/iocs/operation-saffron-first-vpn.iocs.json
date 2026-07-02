@@ -1,0 +1,72 @@
+﻿{
+  "id": "operation-saffron-first-vpn-1vpns",
+  "name": "First VPN Service / 1VPNS / Operation Saffron",
+  "classification": "red-high-risk-ransomware-adjacent-anonymization-infrastructure",
+  "confidence": "high",
+  "status": "law-enforcement-seized-may-2026",
+  "purpose": "SKYGRID defensive deny/watch IOC pack. Do not contact these indicators.",
+  "domains": [
+    "1vpns.com",
+    "1vpns.net",
+    "1vpns.org",
+    "1jabber.com"
+  ],
+  "defanged_domains": [
+    "1vpns[.]com",
+    "1vpns[.]net",
+    "1vpns[.]org",
+    "1jabber[.]com"
+  ],
+  "emails": [
+    "support@1vpns.com",
+    "1vpns@1jabber.com"
+  ],
+  "defanged_emails": [
+    "support@1vpns[.]com",
+    "1vpns@1jabber[.]com"
+  ],
+  "accounts": [
+    "@FVPNS",
+    "t.me/FirstVPNService",
+    "ICQ:82822222"
+  ],
+  "ips": [
+    "92.38.180.39",
+    "195.206.107.203",
+    "37.120.143.203",
+    "178.175.139.203",
+    "91.232.29.114",
+    "134.255.210.160",
+    "86.105.25.219",
+    "190.97.163.88",
+    "82.146.50.52",
+    "193.106.31.98",
+    "185.247.71.107",
+    "92.38.162.4",
+    "51.79.208.134",
+    "77.246.157.26",
+    "185.253.98.243",
+    "54.37.200.68",
+    "51.79.111.220",
+    "51.75.34.158",
+    "188.92.78.242",
+    "92.223.66.103",
+    "46.105.79.45"
+  ],
+  "recommended_action": [
+    "Block or alert on domains, accounts, and IPs where appropriate.",
+    "Search DNS, firewall, proxy, VPN, auth, EDR, browser, and router logs.",
+    "Do not assume IPs remain malicious forever; preserve timestamps and context.",
+    "Do not allow these indicators to spread into application routes, config, secrets, or public UI."
+  ],
+  "skygrid_tags": [
+    "first-vpn",
+    "1vpns",
+    "operation-saffron",
+    "ransomware-vpn",
+    "anonymization-infrastructure",
+    "law-enforcement-seized",
+    "high-confidence",
+    "deny-watch"
+  ]
+}

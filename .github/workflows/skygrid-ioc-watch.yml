@@ -1,0 +1,21 @@
+﻿name: SKYGRID IOC Watch
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  ioc-watch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Run IOC watch
+        run: node scripts/check-iocs.mjs

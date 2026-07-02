@@ -32,7 +32,8 @@
     "route:probe:primary": "node scripts/skygrid-route-option-probe.mjs --scenario=primary",
     "route:probe:local": "node scripts/skygrid-route-option-probe.mjs --scenario=local",
     "route:probe:queue": "node scripts/skygrid-route-option-probe.mjs --scenario=queue",
-    "route:probe:proof": "pnpm run route:probe:primary && pnpm run route:probe:local && pnpm run route:probe:queue"
+    "route:probe:proof": "pnpm run route:probe:primary && pnpm run route:probe:local && pnpm run route:probe:queue",
+    "security:ioc-check": "node scripts/check-iocs.mjs"
   },
   "dependencies": {
     "@coinbase/agentkit": "^0.10.4",
