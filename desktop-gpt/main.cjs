@@ -1,4 +1,4 @@
-﻿const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const fs = require("fs");
 
@@ -590,6 +590,9 @@ function createWindow() {
     title: "Aura GPT Desktop",
     backgroundColor: "#12091f",
     webPreferences: {
+      preload: require('path').join(__dirname, 'preload.cjs'),
+      contextIsolation: true,
+      nodeIntegration: false,
       preload: path.join(__dirname, "preload.cjs"),
       contextIsolation: true,
       nodeIntegration: false,
@@ -653,3 +656,194 @@ ipcMain.handle("ask-gpt", async (_event, userText) => {
     return `Status: API error.\n\n${error.message}`;
   }
 });
+
+
+// === AURA Telemetry Snapshot Handler v2 ===
+try {
+  const auraElectronTelemetry = require("electron");
+  const auraFsTelemetry = require("fs");
+  const auraPathTelemetry = require("path");
+  const auraOsTelemetry = require("os");
+
+  const auraIpcMainTelemetry = auraElectronTelemetry.ipcMain;
+  const auraRootTelemetry = auraPathTelemetry.resolve(__dirname, "..");
+
+  function auraReadJsonTelemetry(filePath) {
+    try {
+      if (!auraFsTelemetry.existsSync(filePath)) return null;
+      return JSON.parse(auraFsTelemetry.readFileSync(filePath, "utf8"));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function auraCountProofFilesTelemetry() {
+    try {
+      const artifactRoot = auraPathTelemetry.join(auraRootTelemetry, "artifacts");
+      if (!auraFsTelemetry.existsSync(artifactRoot)) return 0;
+
+      let count = 0;
+
+      function walk(dir) {
+        for (const item of auraFsTelemetry.readdirSync(dir, { withFileTypes: true })) {
+          const full = auraPathTelemetry.join(dir, item.name);
+          if (item.isDirectory()) walk(full);
+          else if (/\.(md|json|pnpk)$/i.test(item.name)) count++;
+        }
+      }
+
+      walk(artifactRoot);
+      return count;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  function auraBuildTelemetrySnapshot() {
+    const latestPath = auraPathTelemetry.join(
+      auraRootTelemetry,
+      "artifacts",
+      "iot",
+      "pc-analytics",
+      "latest-pc-analytics.json"
+    );
+
+    const routePath = auraPathTelemetry.join(
+      auraRootTelemetry,
+      "Aura",
+      "State",
+      "active-route.json"
+    );
+
+    const telemetry = auraReadJsonTelemetry(latestPath);
+    const route = auraReadJsonTelemetry(routePath);
+
+    const cpuPercent =
+      telemetry && telemetry.cpu && telemetry.cpu.load_percent != null
+        ? Number(telemetry.cpu.load_percent)
+        : 0;
+
+    const memoryUsedPercent =
+      telemetry && telemetry.memory && telemetry.memory.used_percent != null
+        ? Number(telemetry.memory.used_percent)
+        : Math.round(((auraOsTelemetry.totalmem() - auraOsTelemetry.freemem()) / auraOsTelemetry.totalmem()) * 100);
+
+    const firstDisk =
+      telemetry && telemetry.disk && telemetry.disk.length
+        ? telemetry.disk[0]
+        : null;
+
+    const diskUsedPercent =
+      firstDisk && firstDisk.used_percent != null
+        ? Number(firstDisk.used_percent)
+        : 0;
+
+    const diskFreeGb =
+      firstDisk && firstDisk.free_gb != null
+        ? Number(firstDisk.free_gb)
+        : 0;
+
+    const activeRoute =
+      route && route.name
+        ? route.name
+        : telemetry && telemetry.aura && telemetry.aura.active_route
+          ? telemetry.aura.active_route
+          : telemetry && telemetry.network && telemetry.network.active_route
+            ? telemetry.network.active_route
+            : "not selected";
+
+    const proofFiles =
+      telemetry && telemetry.aura && telemetry.aura.proof_files != null
+        ? Number(telemetry.aura.proof_files)
+        : auraCountProofFilesTelemetry();
+
+    return {
+      ok: true,
+      timestamp: new Date().toISOString(),
+      source: telemetry ? "artifacts/iot/pc-analytics/latest" : "live-system",
+      auraMode: process.env.AURA_MODE || "local",
+      openAiMode: process.env.AURA_OPENAI_MODE || "offline",
+      rawShell: process.env.AURA_RAW_SHELL || "disabled",
+      safeMode: (process.env.AURA_RAW_SHELL || "disabled") === "disabled",
+      activeRoute,
+      proofFiles,
+      cpuPercent,
+      memoryUsedPercent,
+      diskUsedPercent,
+      diskFreeGb,
+      diskDrive: firstDisk && firstDisk.drive ? firstDisk.drive : "C:",
+      osName:
+        telemetry && telemetry.system && telemetry.system.os
+          ? telemetry.system.os
+          : auraOsTelemetry.platform(),
+      osVersion:
+        telemetry && telemetry.system && telemetry.system.os_version
+          ? telemetry.system.os_version
+          : auraOsTelemetry.release()
+    };
+  }
+
+  if (auraIpcMainTelemetry && !global.__AURA_TELEMETRY_HANDLER_V2__) {
+    global.__AURA_TELEMETRY_HANDLER_V2__ = true;
+
+    auraIpcMainTelemetry.handle("aura:get-telemetry-snapshot", async () => {
+      try {
+        return auraBuildTelemetrySnapshot();
+      } catch (error) {
+        return {
+          ok: false,
+          timestamp: new Date().toISOString(),
+          error: error && error.message ? error.message : "Telemetry unavailable"
+        };
+      }
+    });
+  }
+} catch (_) {
+  // Optional local telemetry handler. Never block Aura startup.
+}
+// === End AURA Telemetry Snapshot Handler v2 ===
+
+// === AURA Telemetry JSON Prune v1 ===
+try {
+  const auraPruneFs = require("fs");
+  const auraPrunePath = require("path");
+  const auraPruneRoot = auraPrunePath.resolve(__dirname, "..");
+
+  function auraPruneOldTelemetryJson() {
+    try {
+      const dir = auraPrunePath.join(auraPruneRoot, "artifacts", "iot", "pc-analytics");
+      if (!auraPruneFs.existsSync(dir)) return 0;
+
+      const cutoff = Date.now() - (60 * 60 * 1000);
+      let removed = 0;
+
+      for (const name of auraPruneFs.readdirSync(dir)) {
+        if (!name.endsWith("-pc-analytics.json")) continue;
+        if (name === "latest-pc-analytics.json") continue;
+
+        const full = auraPrunePath.join(dir, name);
+        const stat = auraPruneFs.statSync(full);
+
+        if (stat.mtimeMs < cutoff) {
+          auraPruneFs.unlinkSync(full);
+          removed++;
+        }
+      }
+
+      return removed;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  if (!global.__AURA_TELEMETRY_PRUNE_TIMER__) {
+    global.__AURA_TELEMETRY_PRUNE_TIMER__ = true;
+
+    // Run once at startup, then every 10 minutes while Aura is open.
+    auraPruneOldTelemetryJson();
+    setInterval(auraPruneOldTelemetryJson, 10 * 60 * 1000);
+  }
+} catch (_) {
+  // Optional prune. Never block Aura startup.
+}
+// === End AURA Telemetry JSON Prune v1 ===

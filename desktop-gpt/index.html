@@ -137,6 +137,119 @@
   color: #22f5e6;
 }
 </style>
+<style id="aura-pip-telemetry-style">
+  .aura-pip-telemetry {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    width: 260px;
+    z-index: 9999;
+    padding: 12px 14px;
+    border-radius: 18px;
+    background: rgba(8, 12, 28, 0.82);
+    border: 1px solid rgba(96, 215, 255, 0.34);
+    box-shadow: 0 0 24px rgba(66, 211, 255, 0.14), inset 0 0 18px rgba(255,255,255,0.03);
+    color: #eaf8ff;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  .aura-pip-telemetry.minimized .aura-pip-body { display: none; }
+
+  .aura-pip-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .aura-pip-title {
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    font-weight: 800;
+    color: #8eeaff;
+  }
+
+  .aura-pip-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #35f2a4;
+    box-shadow: 0 0 10px rgba(53, 242, 164, 0.9);
+  }
+
+  .aura-pip-body { margin-top: 10px; }
+
+  .aura-pip-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .aura-pip-metric {
+    border-radius: 12px;
+    padding: 8px;
+    background: rgba(255,255,255,0.055);
+    border: 1px solid rgba(255,255,255,0.075);
+  }
+
+  .aura-pip-label {
+    font-size: 10px;
+    color: rgba(234,248,255,0.68);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .aura-pip-value {
+    margin-top: 3px;
+    font-size: 16px;
+    font-weight: 800;
+  }
+
+  .aura-pip-line {
+    margin-top: 8px;
+    font-size: 11px;
+    color: rgba(234,248,255,0.8);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .aura-pip-pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 9px;
+  }
+
+  .aura-pip-pill {
+    border-radius: 999px;
+    padding: 4px 7px;
+    background: rgba(142,234,255,0.11);
+    border: 1px solid rgba(142,234,255,0.18);
+    font-size: 10px;
+    color: #dff8ff;
+  }
+
+  .aura-pip-footer {
+    margin-top: 8px;
+    font-size: 10px;
+    color: rgba(234,248,255,0.55);
+  }
+
+  .aura-pip-warn .aura-pip-dot {
+    background: #ffcf5a;
+    box-shadow: 0 0 10px rgba(255, 207, 90, 0.9);
+  }
+
+  .aura-pip-hot .aura-pip-dot {
+    background: #ff5a7a;
+    box-shadow: 0 0 10px rgba(255, 90, 122, 0.9);
+  }
+</style>
 </head>
 <body>
 <div class="aura-brand">
@@ -216,6 +329,95 @@
       }
     });
   </script>
+<div id="aura-pip-telemetry" class="aura-pip-telemetry">
+  <div class="aura-pip-head" onclick="document.getElementById('aura-pip-telemetry').classList.toggle('minimized')">
+    <div class="aura-pip-title">AURA LIVE</div>
+    <div class="aura-pip-dot"></div>
+  </div>
+
+  <div class="aura-pip-body">
+    <div class="aura-pip-grid">
+      <div class="aura-pip-metric">
+        <div class="aura-pip-label">CPU</div>
+        <div class="aura-pip-value" id="aura-pip-cpu">--%</div>
+      </div>
+      <div class="aura-pip-metric">
+        <div class="aura-pip-label">Memory</div>
+        <div class="aura-pip-value" id="aura-pip-memory">--%</div>
+      </div>
+      <div class="aura-pip-metric">
+        <div class="aura-pip-label">Disk</div>
+        <div class="aura-pip-value" id="aura-pip-disk">--%</div>
+      </div>
+      <div class="aura-pip-metric">
+        <div class="aura-pip-label">Proofs</div>
+        <div class="aura-pip-value" id="aura-pip-proofs">--</div>
+      </div>
+    </div>
+
+    <div class="aura-pip-line" id="aura-pip-route">Route: checking...</div>
+    <div class="aura-pip-pill-row">
+      <span class="aura-pip-pill" id="aura-pip-mode">mode: local</span>
+      <span class="aura-pip-pill" id="aura-pip-openai">openai: offline</span>
+      <span class="aura-pip-pill" id="aura-pip-safe">safe: yes</span>
+    </div>
+    <div class="aura-pip-footer" id="aura-pip-refresh">Telemetry starting...</div>
+  </div>
+</div>
+
+<script id="aura-pip-telemetry-script">
+  (function () {
+    function setText(id, value) {
+      var el = document.getElementById(id);
+      if (el) el.textContent = value;
+    }
+
+    function classify(cpu, mem, disk) {
+      var hud = document.getElementById("aura-pip-telemetry");
+      if (!hud) return;
+      hud.classList.remove("aura-pip-warn", "aura-pip-hot");
+      var max = Math.max(Number(cpu || 0), Number(mem || 0), Number(disk || 0));
+      if (max >= 90) hud.classList.add("aura-pip-hot");
+      else if (max >= 75) hud.classList.add("aura-pip-warn");
+    }
+
+    async function refreshAuraTelemetry() {
+      try {
+        if (!window.auraTelemetry || !window.auraTelemetry.getSnapshot) {
+          setText("aura-pip-refresh", "Telemetry bridge unavailable");
+          return;
+        }
+
+        var snap = await window.auraTelemetry.getSnapshot();
+
+        if (!snap || !snap.ok) {
+          setText("aura-pip-refresh", "Telemetry unavailable");
+          return;
+        }
+
+        setText("aura-pip-cpu", String(snap.cpuPercent || 0) + "%");
+        setText("aura-pip-memory", String(snap.memoryUsedPercent || 0) + "%");
+        setText("aura-pip-disk", String(snap.diskUsedPercent || 0) + "%");
+        setText("aura-pip-proofs", String(snap.proofFiles || 0));
+        setText("aura-pip-route", "Route: " + (snap.activeRoute || "not selected"));
+        setText("aura-pip-mode", "mode: " + (snap.auraMode || "local"));
+        setText("aura-pip-openai", "openai: " + (snap.openAiMode || "offline"));
+        setText("aura-pip-safe", "safe: " + (snap.safeMode ? "yes" : "check"));
+        setText("aura-pip-refresh", "Updated: " + new Date().toLocaleTimeString() + " · " + (snap.source || "local"));
+
+        classify(snap.cpuPercent, snap.memoryUsedPercent, snap.diskUsedPercent);
+      } catch (error) {
+        setText("aura-pip-refresh", "Telemetry error");
+      }
+    }
+
+    refreshAuraTelemetry();
+    setInterval(refreshAuraTelemetry, 10000);
+  })();
+</script>
 </body>
 </html>
+
+
+
 

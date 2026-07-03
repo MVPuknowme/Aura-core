@@ -3,3 +3,17 @@
 contextBridge.exposeInMainWorld("auraGPT", {
   ask: async (text) => ipcRenderer.invoke("ask-gpt", text),
 });
+
+// === AURA PiP Telemetry Bridge ===
+try {
+  if (!window.auraTelemetry && contextBridge && ipcRenderer) {
+    contextBridge.exposeInMainWorld("auraTelemetry", {
+      getSnapshot: function () {
+        return ipcRenderer.invoke("aura:get-telemetry-snapshot");
+      }
+    });
+  }
+} catch (_) {
+  // Optional telemetry bridge. Never block Aura startup.
+}
+// === End AURA PiP Telemetry Bridge ===
