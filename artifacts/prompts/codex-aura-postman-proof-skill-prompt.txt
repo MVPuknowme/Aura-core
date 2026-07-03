@@ -1,0 +1,109 @@
+Build Aura PostmanProof skill.
+
+Goal:
+Aura should run local Newman/Postman proof tests against the currently selected active route and save validation artifacts.
+
+Rules:
+- Local mode only.
+- No OpenAI API required.
+- No raw shell execution from user text.
+- No push.
+- No pull.
+- No deploy.
+- No branch changes.
+- No secrets.
+- Only run Newman when the human invokes an allowlisted Aura phrase.
+
+Create:
+Aura/Skills/PostmanProof.ps1
+
+Friendly commands:
+- run proof
+- postman proof
+- test api routes
+- validate emergency on-ramp
+
+Function:
+Invoke-AuraPostmanProof
+
+Behavior:
+1. Read active route from:
+   Aura/State/active-route.json
+
+2. If no active route exists, print:
+   Recommendation:
+   Run: Invoke-AuraRuntime "road less traveled"
+
+3. Detect Newman:
+   newman --version
+
+4. Detect collection:
+   postman/skygrid-aura-desktop.generated.collection.json
+
+5. Run:
+   newman run postman/skygrid-aura-desktop.generated.collection.json `
+     --env-var "base_url=<active route url>" `
+     --reporters cli,json `
+     --reporter-json-export artifacts/validation/aura-postman-proof.json
+
+6. Generate Markdown summary:
+   artifacts/validation/aura-postman-proof.md
+
+7. Output:
+   AURA POSTMAN PROOF
+   ------------------
+   Active Route:
+   Collection:
+   Newman:
+   Result:
+   JSON Proof:
+   Markdown Proof:
+   Recommendation:
+
+8. If proof passes:
+   Recommendation:
+   Checkpoint validation artifacts when ready.
+
+9. If proof fails:
+   Recommendation:
+   Review failing collection or route before checkpoint.
+
+Runtime integration:
+Wire these phrases into aura-runtime.ps1:
+- run proof
+- postman proof
+- test api routes
+- validate emergency on-ramp
+
+All call:
+Invoke-AuraPostmanProof
+
+Update Aura/Config/commands.json with matching entries.
+
+Expected file changes:
+- Aura/Skills/PostmanProof.ps1
+- aura-runtime.ps1
+- Aura/Config/commands.json
+- artifacts/validation/aura-postman-proof.json
+- artifacts/validation/aura-postman-proof.md
+
+Success test:
+. .\aura-runtime.ps1
+Invoke-AuraRuntime "road less traveled"
+Invoke-AuraRuntime "postman proof"
+Invoke-AuraRuntime "show receipts"
+git status
+
+Expected:
+- Newman runs locally.
+- Uses active route from Aura/State/active-route.json.
+- Validation artifacts are written.
+- No push.
+- No deploy.
+- No branch changes.
+- Final output recommends checkpoint.
+
+After successful test, recommend but do not automatically run:
+
+git add .\aura-runtime.ps1 .\Aura\Skills\PostmanProof.ps1 .\Aura\Config\commands.json .\artifacts\validation\aura-postman-proof.json .\artifacts\validation\aura-postman-proof.md
+git commit -m "Add Aura Postman proof skill"

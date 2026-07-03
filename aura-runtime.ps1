@@ -124,6 +124,12 @@ function Invoke-AuraRegistryCommand {
             Invoke-AuraSortInbox
             break
         }
+        "run proof|postman proof|test api routes|validate emergency on-ramp" {
+            . .\Aura\Skills\PostmanProof.ps1
+            Invoke-AuraPostmanProof
+            break
+        }
+
 
 
 
@@ -237,6 +243,12 @@ function Invoke-AuraRuntime {
             Invoke-AuraSortInbox
             break
         }
+        "run proof|postman proof|test api routes|validate emergency on-ramp" {
+            . .\Aura\Skills\PostmanProof.ps1
+            Invoke-AuraPostmanProof
+            break
+        }
+
 
 
 
@@ -256,6 +268,7 @@ function Invoke-AuraRuntime {
 }
 
 Write-Host "Aura runtime repaired." -ForegroundColor Green
+
 
 
 
