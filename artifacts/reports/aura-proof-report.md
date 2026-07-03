@@ -1,19 +1,19 @@
 # AURA Proof Report
 
-Generated: 2026-07-03T14:32:52.2046999-07:00
+Generated: 2026-07-03T15:07:23.1978154-07:00
 
 ## Runtime
 
-- Mode: 
-- OpenAI Mode: 
-- Raw Shell: 
+- Mode: local
+- OpenAI Mode: offline
+- Raw Shell: disabled
 - Wallet: read-only
 
 ## Git
 
 - Branch: MVPuknowme
-- Commit: 4756141
-- Working Tree: clean
+- Commit: 34f51f7
+- Working Tree: changes present
 
 ## Commands
 
@@ -51,7 +51,7 @@ Generated: 2026-07-03T14:32:52.2046999-07:00
 
 - Name: vercel-production
 - URL: https://aura-core-t2t5.vercel.app
-- Average Latency: 191.33 ms
+- Average Latency: 198.67 ms
 - Reason: Passed all required endpoints with best latency/priority score.
 
 ## Training Proof Files
