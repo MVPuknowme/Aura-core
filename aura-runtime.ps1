@@ -1,3 +1,84 @@
+
+function Get-AuraCommandRegistry {
+    $registryPath = "E:\Aura-core\Aura\Config\commands.json"
+
+    if (-not (Test-Path $registryPath)) {
+        Write-Host "Aura command registry not found: $registryPath" -ForegroundColor Yellow
+        return @()
+    }
+
+    try {
+        $commands = Get-Content $registryPath -Raw | ConvertFrom-Json
+        return @($commands)
+    }
+    catch {
+        Write-Host "Aura command registry failed to load: $($_.Exception.Message)" -ForegroundColor Red
+        return @()
+    }
+}
+
+function Invoke-AuraRegistryCommand {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$InputText
+    )
+
+    $normalized = $InputText.ToLower().Trim()
+    $commands = Get-AuraCommandRegistry
+
+    $match = $commands | Where-Object {
+        $_.enabled -eq $true -and $_.phrase.ToLower().Trim() -eq $normalized
+    } | Select-Object -First 1
+
+    if (-not $match) {
+        return $false
+    }
+
+    Write-Host "Aura registry matched phrase: $($match.phrase)" -ForegroundColor Cyan
+    Write-Host "Intent: $($match.intent)"
+    Write-Host "Skill: $($match.skill)"
+    Write-Host "Safety: $($match.safety_level)"
+
+    switch ($match.skill) {
+        "Invoke-AuraTrainingStatus" {
+            . .\Aura\Skills\Training.ps1
+            Invoke-AuraTrainingStatus
+            return $true
+        }
+
+        "Invoke-AuraShowProof" {
+            . .\Aura\Skills\Training.ps1
+            Invoke-AuraShowProof
+            return $true
+        }
+
+        "Invoke-AuraValidateTraining" {
+            . .\Aura\Skills\Training.ps1
+            Invoke-AuraValidateTraining
+            return $true
+        }
+
+        "Invoke-AuraRuntime" {
+            Write-Host "Runtime diagnostic route is registered. Direct implementation pending." -ForegroundColor Yellow
+            return $true
+        }
+
+        "Invoke-AuraNetworkRoute" {
+            Write-Host "Network route skill is registered. Plugin implementation pending." -ForegroundColor Yellow
+            return $true
+        }
+
+        default {
+            if (Invoke-AuraRegistryCommand -InputText $InputText) {
+                break
+            }
+
+            Write-Host "Registered skill is not allowlisted: $($match.skill)" -ForegroundColor Red
+            return $true
+        }
+    }
+}
+
 function Invoke-AuraRuntime {
     param([string]$InputText)
 
@@ -43,11 +124,16 @@ function Invoke-AuraRuntime {
 
 
         default {
+            if (Invoke-AuraRegistryCommand -InputText $InputText) {
+                break
+            }
+
             Write-Host "Aura runtime loaded, but command not recognized: $InputText" -ForegroundColor Yellow
         }
     }
 }
 
 Write-Host "Aura runtime repaired." -ForegroundColor Green
+
 
 
