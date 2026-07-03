@@ -1,6 +1,6 @@
 # AURA Filing Validation Report
 
-Generated: 2026-07-03T14:56:35.3397579-07:00
+Generated: 2026-07-03T14:57:40.4033496-07:00
 
 ## Managed folders
 
