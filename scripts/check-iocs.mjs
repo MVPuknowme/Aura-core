@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env node
+#!/usr/bin/env node
 import fs from "node:fs";
 import path from "node:path";
 
@@ -21,10 +21,13 @@ const terms = [
   ...(iocs.ips || [])
 ].filter(Boolean);
 
-const allowedExact = new Set([
-  path.normalize("security/iocs/operation-saffron-first-vpn.iocs.json"),
-  path.normalize("docs/security/operation-saffron-first-vpn.md")
-]);
+const approvedPaths = [
+  "security/iocs/operation-saffron-first-vpn.iocs.json",
+  "docs/security/operation-saffron-first-vpn.md",
+  "docs/security/local-block-guidance-1vpns.md"
+];
+
+const allowedExact = new Set(approvedPaths.map((entry) => path.normalize(entry)));
 
 const ignoredDirs = new Set([
   ".git",
@@ -96,17 +99,19 @@ for (const file of walk(root)) {
 
 if (findings.length) {
   console.error("\nSKYGRID IOC WATCH FAILED");
-  console.error("The First VPN / 1VPNS IOC set appeared outside approved vault paths.\n");
+  console.error("The First VPN / 1VPNS IOC set appeared outside approved security vault paths.\n");
 
   for (const finding of findings) {
     console.error(`- ${finding.file} :: ${finding.term}`);
   }
 
   console.error("\nApproved paths:");
-  console.error("- security/iocs/operation-saffron-first-vpn.iocs.json");
-  console.error("- docs/security/operation-saffron-first-vpn.md");
-  console.error("\nReview before committing. If this is evidence, move it into the security vault.");
+  for (const approvedPath of approvedPaths) {
+    console.error(`- ${approvedPath}`);
+  }
+
+  console.error("\nReview before committing. If this is evidence, move it into the security vault or an approved security guidance file.");
   process.exit(1);
 }
 
-console.log("SKYGRID IOC WATCH PASSED — no First VPN / 1VPNS indicators outside approved vault paths.");
+console.log("SKYGRID IOC WATCH PASSED — no First VPN / 1VPNS indicators outside approved security paths.");
