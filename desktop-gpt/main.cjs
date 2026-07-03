@@ -847,3 +847,189 @@ try {
   // Optional prune. Never block Aura startup.
 }
 // === End AURA Telemetry JSON Prune v1 ===
+
+// === AURA Live Telemetry Snapshot Handler v3 ===
+try {
+  const auraLiveElectron = require("electron");
+  const auraLiveFs = require("fs");
+  const auraLivePath = require("path");
+  const auraLiveOs = require("os");
+  const auraLiveCp = require("child_process");
+
+  const auraLiveRoot = auraLivePath.resolve(__dirname, "..");
+
+  function auraLiveReadJson(filePath) {
+    try {
+      if (!auraLiveFs.existsSync(filePath)) return null;
+      return JSON.parse(auraLiveFs.readFileSync(filePath, "utf8"));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function auraLivePowerShellJson() {
+    try {
+      const ps = `
+        $cpu = Get-CimInstance Win32_Processor | Select-Object -First 1 LoadPercentage,NumberOfLogicalProcessors
+        $os = Get-CimInstance Win32_OperatingSystem | Select-Object -First 1 TotalVisibleMemorySize,FreePhysicalMemory,Caption,Version
+        $disk = Get-CimInstance Win32_LogicalDisk -Filter "DriveType=3" | Select-Object -First 1 DeviceID,Size,FreeSpace
+
+        $totalMemMb = [math]::Round($os.TotalVisibleMemorySize / 1024, 0)
+        $freeMemMb = [math]::Round($os.FreePhysicalMemory / 1024, 0)
+        $memUsed = if ($totalMemMb -gt 0) { [math]::Round((($totalMemMb - $freeMemMb) / $totalMemMb) * 100, 0) } else { 0 }
+
+        $diskTotalGb = [math]::Round($disk.Size / 1GB, 1)
+        $diskFreeGb = [math]::Round($disk.FreeSpace / 1GB, 1)
+        $diskUsed = if ($diskTotalGb -gt 0) { [math]::Round((($diskTotalGb - $diskFreeGb) / $diskTotalGb) * 100, 0) } else { 0 }
+
+        [pscustomobject]@{
+          cpuPercent = [int]$cpu.LoadPercentage
+          logicalProcessors = [int]$cpu.NumberOfLogicalProcessors
+          memoryUsedPercent = [int]$memUsed
+          totalMemMb = [int]$totalMemMb
+          freeMemMb = [int]$freeMemMb
+          diskDrive = $disk.DeviceID
+          diskUsedPercent = [int]$diskUsed
+          diskFreeGb = [double]$diskFreeGb
+          osName = $os.Caption
+          osVersion = $os.Version
+        } | ConvertTo-Json -Compress
+      `;
+
+      const out = auraLiveCp.execFileSync(
+        "powershell.exe",
+        ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", ps],
+        { encoding: "utf8", timeout: 5000, windowsHide: true }
+      ).trim();
+
+      return out ? JSON.parse(out) : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function auraLiveCountProofs() {
+    try {
+      const artifactRoot = auraLivePath.join(auraLiveRoot, "artifacts");
+      if (!auraLiveFs.existsSync(artifactRoot)) return 0;
+
+      let count = 0;
+      function walk(dir) {
+        for (const item of auraLiveFs.readdirSync(dir, { withFileTypes: true })) {
+          const full = auraLivePath.join(dir, item.name);
+          if (item.isDirectory()) walk(full);
+          else if (/\.(md|json|pnpk)$/i.test(item.name)) count++;
+        }
+      }
+
+      walk(artifactRoot);
+      return count;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  function auraLiveSnapshot() {
+    const latestPath = auraLivePath.join(
+      auraLiveRoot,
+      "artifacts",
+      "iot",
+      "pc-analytics",
+      "latest-pc-analytics.json"
+    );
+
+    const routePath = auraLivePath.join(
+      auraLiveRoot,
+      "Aura",
+      "State",
+      "active-route.json"
+    );
+
+    const jsonTelemetry = auraLiveReadJson(latestPath);
+    const route = auraLiveReadJson(routePath);
+    const live = auraLivePowerShellJson();
+
+    const fallbackMem = Math.round(
+      ((auraLiveOs.totalmem() - auraLiveOs.freemem()) / auraLiveOs.totalmem()) * 100
+    );
+
+    const activeRoute =
+      route && route.name
+        ? route.name
+        : jsonTelemetry && jsonTelemetry.aura && jsonTelemetry.aura.active_route
+          ? jsonTelemetry.aura.active_route
+          : jsonTelemetry && jsonTelemetry.network && jsonTelemetry.network.active_route
+            ? jsonTelemetry.network.active_route
+            : "not selected";
+
+    return {
+      ok: true,
+      timestamp: new Date().toISOString(),
+      source: live ? "live-system" : "json-fallback",
+      auraMode: process.env.AURA_MODE || "local",
+      openAiMode: process.env.AURA_OPENAI_MODE || "offline",
+      rawShell: process.env.AURA_RAW_SHELL || "disabled",
+      safeMode: (process.env.AURA_RAW_SHELL || "disabled") === "disabled",
+      activeRoute,
+      proofFiles: auraLiveCountProofs(),
+
+      cpuPercent: live && live.cpuPercent != null ? Number(live.cpuPercent) : 0,
+      logicalProcessors: live && live.logicalProcessors != null ? Number(live.logicalProcessors) : auraLiveOs.cpus().length,
+
+      memoryUsedPercent:
+        live && live.memoryUsedPercent != null
+          ? Number(live.memoryUsedPercent)
+          : fallbackMem,
+
+      diskUsedPercent:
+        live && live.diskUsedPercent != null
+          ? Number(live.diskUsedPercent)
+          : jsonTelemetry && jsonTelemetry.disk && jsonTelemetry.disk[0]
+            ? Number(jsonTelemetry.disk[0].used_percent || 0)
+            : 0,
+
+      diskFreeGb:
+        live && live.diskFreeGb != null
+          ? Number(live.diskFreeGb)
+          : jsonTelemetry && jsonTelemetry.disk && jsonTelemetry.disk[0]
+            ? Number(jsonTelemetry.disk[0].free_gb || 0)
+            : 0,
+
+      diskDrive:
+        live && live.diskDrive
+          ? live.diskDrive
+          : "C:",
+
+      osName:
+        live && live.osName
+          ? live.osName
+          : auraLiveOs.platform(),
+
+      osVersion:
+        live && live.osVersion
+          ? live.osVersion
+          : auraLiveOs.release()
+    };
+  }
+
+  if (auraLiveElectron.ipcMain) {
+    try {
+      auraLiveElectron.ipcMain.removeHandler("aura:get-telemetry-snapshot");
+    } catch (_) {}
+
+    auraLiveElectron.ipcMain.handle("aura:get-telemetry-snapshot", async () => {
+      try {
+        return auraLiveSnapshot();
+      } catch (error) {
+        return {
+          ok: false,
+          timestamp: new Date().toISOString(),
+          error: error && error.message ? error.message : "Telemetry unavailable"
+        };
+      }
+    });
+  }
+} catch (_) {
+  // Optional live telemetry. Never block Aura startup.
+}
+// === End AURA Live Telemetry Snapshot Handler v3 ===
