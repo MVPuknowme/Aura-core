@@ -1,0 +1,213 @@
+Build Aura GitHubSync skill and collaboration workflow for Codex, VS Code, Postman, and selected AI assistants.
+
+Goal:
+Aura should safely explain whether local work is synced with GitHub, and the implementation should update the repo files correctly. The workflow should support collaboration between:
+- Codex / code assistant
+- VS Code
+- Postman/Newman
+- Aura local PowerShell runtime
+- Human operator
+
+Core rule:
+Aura is a Windows 10 local app shell and proof-driven operations runtime.
+Aura is NOT a raw PowerShell executor.
+Aura must NOT require OpenAI API tokens for local mode.
+
+You ARE allowed to modify/create local project files needed for this feature.
+
+Expected file changes:
+- Create or update: Aura/Skills/GitHubSync.ps1
+- Update: aura-runtime.ps1
+- Update: Aura/Config/commands.json
+- Optional: create artifacts/validation/github-sync-readiness.md
+- Optional: update Postman/Newman proof notes if needed
+- Do not modify unrelated files.
+- Do not push.
+- Do not pull.
+- Do not deploy.
+- Do not change branches.
+- Do not run destructive commands.
+
+Create:
+Aura/Skills/GitHubSync.ps1
+
+Add friendly commands:
+- github status
+- sync status
+- are we published
+- what is local only
+- collaboration status
+- vscode status
+- postman status
+
+Safety rules:
+- Read-only by default.
+- Never auto-push.
+- Never auto-pull.
+- Never force-push.
+- Never change branches.
+- Never modify files outside the listed expected files.
+- Never expose secrets, tokens, API keys, private keys, or seed phrases.
+- Raw shell execution remains disabled.
+- All user input must route through allowlisted skills.
+- All output must be human-friendly.
+- End with a checkpoint recommendation when files were changed.
+
+Allowed Git checks:
+- git status --short
+- git branch --show-current
+- git remote -v
+- git rev-parse --short HEAD
+- git rev-parse --short origin/MVPuknowme
+- git log --oneline origin/MVPuknowme..HEAD
+- git log --oneline HEAD..origin/MVPuknowme
+
+Allowed VS Code checks:
+- Detect whether .vscode folder exists.
+- Detect workspace files such as *.code-workspace.
+- Detect changed files related to Aura runtime, skills, config, Postman, and desktop-gpt.
+- Do not launch VS Code unless explicitly asked by the human.
+
+Allowed Postman/Newman checks:
+- Detect installed Newman with:
+  newman --version
+- Detect Postman collections under:
+  postman/
+- Detect validation artifacts under:
+  artifacts/validation/
+- Do not run API tests unless the human asks for proof/test.
+- If tests are recommended, output the exact command but do not run it automatically.
+
+Behavior for Invoke-AuraGitHubSync:
+1. Detect current branch.
+2. Detect current local commit.
+3. Detect remote tracking commit if available.
+4. Count local commits ahead of origin.
+5. Count remote commits ahead of local.
+6. Detect dirty working tree.
+7. Print a clear summary.
+8. List local-only commits if any.
+9. End with recommendation:
+   - If clean and ahead: Safe to push manually when ready.
+   - If dirty: Checkpoint local changes before publishing.
+   - If remote is ahead: Review remote changes before pulling.
+   - If both ahead and behind: Manual merge/rebase review required.
+
+Behavior for Invoke-AuraCollaborationStatus:
+Print a human-friendly collaboration status:
+
+AURA COLLABORATION STATUS
+-------------------------
+Human Operator: active
+Aura Runtime: local / safe mode
+Raw Shell: disabled
+OpenAI API: optional / offline allowed
+VS Code: available or not detected
+Postman/Newman: available or not detected
+GitHub Sync: clean/ahead/behind/dirty
+Recommended next checkpoint: ...
+
+Behavior for Invoke-AuraVSCodeStatus:
+- Show whether .vscode exists.
+- Show workspace files.
+- Show files modified in current working tree.
+- Recommend opening VS Code manually if needed:
+  code E:\Aura-core
+- Do not run the command automatically.
+
+Behavior for Invoke-AuraPostmanStatus:
+- Show Newman version if available.
+- List Postman collections under postman/.
+- Show latest validation artifacts under artifacts/validation/.
+- Recommend proof command if appropriate:
+  newman run postman/skygrid-aura-desktop.generated.collection.json --reporters cli,json --reporter-json-export artifacts/validation/newman-proof.json
+- Do not run automatically.
+
+Runtime integration:
+Wire these phrases into aura-runtime.ps1:
+
+GitHubSync:
+- github status
+- sync status
+- are we published
+- what is local only
+
+Collaboration:
+- collaboration status
+- ai collaboration
+- codex status
+- vscode status
+- postman status
+
+Function mapping:
+- github status -> Invoke-AuraGitHubSync
+- sync status -> Invoke-AuraGitHubSync
+- are we published -> Invoke-AuraGitHubSync
+- what is local only -> Invoke-AuraGitHubSync
+- collaboration status -> Invoke-AuraCollaborationStatus
+- ai collaboration -> Invoke-AuraCollaborationStatus
+- codex status -> Invoke-AuraCollaborationStatus
+- vscode status -> Invoke-AuraVSCodeStatus
+- postman status -> Invoke-AuraPostmanStatus
+
+Update Aura/Config/commands.json with entries for all phrases.
+
+PowerShell 5.1 compatible.
+
+Expected output examples:
+
+AURA GITHUB SYNC
+----------------
+Branch: MVPuknowme
+Working Tree: clean
+Local Commit: abc1234
+Origin Commit: def5678
+
+Sync State:
+Local is ahead by 2 commits.
+Remote is ahead by 0 commits.
+
+Local-only commits:
+- abc1234 Add Aura help command
+- def5678 Add Aura vitals command
+
+Recommendation:
+Safe to push manually when ready.
+
+AURA COLLABORATION STATUS
+-------------------------
+Aura Runtime: local active
+Raw Shell: disabled
+OpenAI API: offline/local allowed
+VS Code: workspace detected
+Postman/Newman: available
+GitHub: local ahead by 2 commits
+
+Recommendation:
+Checkpoint completed work, then push manually when ready.
+
+Success test:
+. .\aura-runtime.ps1
+Invoke-AuraRuntime "github status"
+Invoke-AuraRuntime "sync status"
+Invoke-AuraRuntime "are we published"
+Invoke-AuraRuntime "what is local only"
+Invoke-AuraRuntime "collaboration status"
+Invoke-AuraRuntime "vscode status"
+Invoke-AuraRuntime "postman status"
+git status
+
+Expected:
+- No push.
+- No pull.
+- No deploy.
+- No branch change.
+- No secrets exposed.
+- Only intended files changed.
+- Clear human-readable sync and collaboration summaries.
+- Final output includes checkpoint recommendation.
+
+After successful test, recommend but do not automatically run:
+
+git add .\aura-runtime.ps1 .\Aura\Skills\GitHubSync.ps1 .\Aura\Config\commands.json
+git commit -m "Add Aura GitHub sync and collaboration status skill"

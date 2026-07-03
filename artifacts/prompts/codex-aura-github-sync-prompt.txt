@@ -1,0 +1,149 @@
+Build Aura GitHubSync skill for the proof-driven local runtime.
+
+Goal:
+Aura should safely explain whether local work is synced with GitHub, and the implementation should update the repo files correctly.
+
+You ARE allowed to modify/create local project files needed for this feature.
+
+Expected file changes:
+- Create or update: Aura/Skills/GitHubSync.ps1
+- Update: aura-runtime.ps1
+- Update: Aura/Config/commands.json
+- Do not modify unrelated files.
+- Do not push.
+- Do not pull.
+- Do not deploy.
+- Do not change branches.
+- Do not run destructive commands.
+
+Create:
+Aura/Skills/GitHubSync.ps1
+
+Add friendly commands:
+- github status
+- sync status
+- are we published
+- what is local only
+
+Safety rules:
+- Read-only by default.
+- Never auto-push.
+- Never auto-pull.
+- Never force-push.
+- Never change branches.
+- Never modify files outside the listed expected files.
+- Never expose secrets or tokens.
+- All output must be human-friendly.
+
+Allowed checks:
+- git status --short
+- git branch --show-current
+- git remote -v
+- git rev-parse --short HEAD
+- git rev-parse --short origin/MVPuknowme
+- git log --oneline origin/MVPuknowme..HEAD
+- git log --oneline HEAD..origin/MVPuknowme
+
+Behavior:
+1. Detect current branch.
+2. Detect current local commit.
+3. Detect remote tracking commit if available.
+4. Count local commits ahead of origin.
+5. Count remote commits ahead of local.
+6. Detect dirty working tree.
+7. Print a clear summary.
+8. End with a recommendation.
+9. If files were changed for this feature, recommend a checkpoint commit.
+
+Expected output example:
+
+AURA GITHUB SYNC
+----------------
+Branch: MVPuknowme
+Working Tree: clean
+Local Commit: abc1234
+Origin Commit: def5678
+
+Sync State:
+Local is ahead by 2 commits.
+Remote is ahead by 0 commits.
+
+Recommendation:
+Safe to push manually when ready.
+
+If working tree has changes:
+Recommendation:
+Checkpoint local changes before publishing.
+
+If implementation files were modified:
+Recommendation:
+Run:
+git add .\aura-runtime.ps1 .\Aura\Skills\GitHubSync.ps1 .\Aura\Config\commands.json
+git commit -m "Add Aura GitHub sync skill"
+
+Runtime integration:
+Wire these phrases into aura-runtime.ps1:
+- github status
+- sync status
+- are we published
+- what is local only
+
+All four phrases should call:
+Invoke-AuraGitHubSync
+
+Also add/update Aura/Config/commands.json entries:
+[
+  {
+    "phrase": "github status",
+    "intent": "github_sync_status",
+    "skill": "Invoke-AuraGitHubSync",
+    "safety_level": "read-only-local",
+    "enabled": true
+  },
+  {
+    "phrase": "sync status",
+    "intent": "github_sync_status",
+    "skill": "Invoke-AuraGitHubSync",
+    "safety_level": "read-only-local",
+    "enabled": true
+  },
+  {
+    "phrase": "are we published",
+    "intent": "github_publish_status",
+    "skill": "Invoke-AuraGitHubSync",
+    "safety_level": "read-only-local",
+    "enabled": true
+  },
+  {
+    "phrase": "what is local only",
+    "intent": "github_local_only_commits",
+    "skill": "Invoke-AuraGitHubSync",
+    "safety_level": "read-only-local",
+    "enabled": true
+  }
+]
+
+PowerShell 5.1 compatible.
+
+Success test:
+. .\aura-runtime.ps1
+Invoke-AuraRuntime "github status"
+Invoke-AuraRuntime "sync status"
+Invoke-AuraRuntime "are we published"
+Invoke-AuraRuntime "what is local only"
+git status
+
+Expected:
+- No push.
+- No pull.
+- No branch change.
+- No deploy.
+- No secrets exposed.
+- Only intended files changed.
+- Clear human-readable sync summary.
+- Final output includes checkpoint recommendation.
+
+After successful test, recommend but do not automatically run:
+
+git add .\aura-runtime.ps1 .\Aura\Skills\GitHubSync.ps1 .\Aura\Config\commands.json
+git commit -m "Add Aura GitHub sync skill"
