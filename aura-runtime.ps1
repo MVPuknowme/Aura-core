@@ -79,6 +79,12 @@ function Invoke-AuraRegistryCommand {
             Invoke-AuraHelp
             break
         }
+        "export proof report|proof report|export training proof" {
+            . .\Aura\Skills\ProofReport.ps1
+            Invoke-AuraExportProofReport
+            break
+        }
+
 
 
 
@@ -144,6 +150,12 @@ function Invoke-AuraRuntime {
             Invoke-AuraHelp
             break
         }
+        "export proof report|proof report|export training proof" {
+            . .\Aura\Skills\ProofReport.ps1
+            Invoke-AuraExportProofReport
+            break
+        }
+
 
 
 
@@ -160,6 +172,7 @@ function Invoke-AuraRuntime {
 }
 
 Write-Host "Aura runtime repaired." -ForegroundColor Green
+
 
 
 
