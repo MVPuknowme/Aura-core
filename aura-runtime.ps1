@@ -69,6 +69,12 @@ function Invoke-AuraRegistryCommand {
             Invoke-AuraNetworkRoute
             return $true
         }
+        "vitals" {
+            . .\Aura\Skills\Vitals.ps1
+            Invoke-AuraVitals
+            break
+        }
+
 
         default {
             if (Invoke-AuraRegistryCommand -InputText $InputText) {
@@ -122,6 +128,12 @@ function Invoke-AuraRuntime {
             Invoke-AuraLearnPhrase
             break
         }
+        "vitals" {
+            . .\Aura\Skills\Vitals.ps1
+            Invoke-AuraVitals
+            break
+        }
+
 
 
 
@@ -136,6 +148,7 @@ function Invoke-AuraRuntime {
 }
 
 Write-Host "Aura runtime repaired." -ForegroundColor Green
+
 
 
 
