@@ -1,0 +1,121 @@
+{
+  "queue_id": "skygrid-validation-node-work-queue-v1",
+  "system": "SKYGRID Emergency Data On-Ramp",
+  "created_at_local": "2026-07-02T18:45:00-07:00",
+  "created_at_utc": "2026-07-03T01:45:00Z",
+  "mode": "safe_validation_work",
+  "live_execution": false,
+  "purpose": "Assign useful validation work to known nodes without changing payout status, moving private data, scanning third-party systems, or activating production failover.",
+  "global_guardrails": [
+    "No unauthorized scanning or traffic routing.",
+    "No private user data movement.",
+    "No payout or revenue status promotion from validation work alone.",
+    "No production failover activation without operator approval and health quorum.",
+    "Only test owned/public SKYGRID endpoints and local fixtures.",
+    "Log results as proof artifacts before promotion."
+  ],
+  "jobs": [
+    {
+      "job_id": "job-public-route-sentinel-001",
+      "node_id": "vercel-public-runtime",
+      "role": "public_route_sentinel",
+      "priority": 1,
+      "status": "blocked_by_vercel_authentication",
+      "work": "Check public accessibility of /health.json, /api/highway/status, and /api/pay/quote?amount=25 on attached Vercel domains.",
+      "owned_targets": [
+        "https://aura-core-home-e539c0b1.vercel.app/health.json",
+        "https://aura-core-home-e539c0b1.vercel.app/api/highway/status",
+        "https://aura-core-home-e539c0b1.vercel.app/api/pay/quote?amount=25"
+      ],
+      "success_condition": "HTTP 200 without Vercel SSO redirect.",
+      "current_blocker": "Routes return 302 to Vercel SSO. Disable or bypass deployment protection before public checker can pass.",
+      "proof_artifact": "route-check output showing status codes and timestamps"
+    },
+    {
+      "job_id": "job-domain-ownership-002",
+      "node_id": "vercel-public-runtime",
+      "role": "domain_binding_probe",
+      "priority": 2,
+      "status": "blocked_by_domain_authorization",
+      "work": "Verify ownership and Vercel scope for aurcore.skygrid-protocol.net, then bind it to the correct aura-core project when authorized.",
+      "owned_targets": [
+        "aurcore.skygrid-protocol.net"
+      ],
+      "success_condition": "Domain appears in aura-core project domains and no longer returns DEPLOYMENT_NOT_FOUND.",
+      "current_blocker": "Vercel CLI returned 403 under home-e539c0b1 scope.",
+      "proof_artifact": "vercel domains inspect output or Vercel dashboard screenshot/record"
+    },
+    {
+      "job_id": "job-klamath-telemetry-003",
+      "node_id": "klamath-falls-core",
+      "record_id": "rec454piNH86zxcy2",
+      "role": "west_resilience_anchor",
+      "priority": 3,
+      "status": "ready_for_fixture_validation",
+      "work": "Validate Klamath power-mesh telemetry fixtures against schema and confirm invalid fixture fails.",
+      "owned_targets": [
+        "schemas/skygrid-power-mesh-telemetry.schema.json",
+        "fixtures/power-mesh/*"
+      ],
+      "success_condition": "Valid telemetry passes, invalid telemetry fails, and the validator exits nonzero if invalid data is accepted.",
+      "current_blocker": "Needs source trace and schema-backed validation proof before any promotion.",
+      "proof_artifact": "terminal output from telemetry validation script"
+    },
+    {
+      "job_id": "job-lincoln-heartbeat-004",
+      "node_id": "spx-node-001",
+      "record_id": "recHgmSsTngwQ7XQF",
+      "role": "oregon_edge_probe_primary",
+      "priority": 4,
+      "status": "pilot_active",
+      "work": "Run heartbeat-only edge probe and record route score, latency, and status against owned SKYGRID endpoints after protection is resolved.",
+      "owned_targets": [
+        "SKYGRID owned public endpoints only"
+      ],
+      "success_condition": "Fresh heartbeat record with timestamp, endpoint, status, latency, and no private payload.",
+      "current_blocker": "Public endpoint protection must be resolved first for unauthenticated heartbeat checks.",
+      "proof_artifact": "heartbeat JSON/log row"
+    },
+    {
+      "job_id": "job-silverton-score-005",
+      "node_id": "spx-node-002",
+      "record_id": "recI8B8jr5v6e6rVx",
+      "role": "oregon_edge_probe_secondary",
+      "priority": 5,
+      "status": "pending_threshold",
+      "work": "Perform secondary route-score modeling from safe test data and compare with Lincoln City probe results.",
+      "owned_targets": [
+        "local test output",
+        "SKYGRID owned public endpoint checks after protection is resolved"
+      ],
+      "success_condition": "Threshold score updated from safe test data without changing payout status.",
+      "current_blocker": "Needs more successful checks before threshold promotion.",
+      "proof_artifact": "route-score comparison artifact"
+    },
+    {
+      "job_id": "job-accounting-guardrail-006",
+      "node_id": "accounting-sentinel",
+      "role": "accounting_guardrail",
+      "priority": 6,
+      "status": "ready",
+      "work": "Confirm validation topology changes do not alter Needs Review, Pilot Active, Pending Threshold, pending payout, paid, or verified revenue fields.",
+      "owned_targets": [
+        "Sun Pay Node Ledger",
+        "Sun Pay payout log schema",
+        "accounting policy files"
+      ],
+      "success_condition": "No payout status changes caused by validation work.",
+      "current_blocker": null,
+      "proof_artifact": "Airtable ledger readout or accounting review output"
+    }
+  ],
+  "next_operator_action": "Disable Vercel deployment protection for the public production routes or create an automation bypass for route checks, then run public-route sentinel job first.",
+  "promotion_order": [
+    "job-public-route-sentinel-001",
+    "job-domain-ownership-002",
+    "job-klamath-telemetry-003",
+    "job-lincoln-heartbeat-004",
+    "job-silverton-score-005",
+    "job-accounting-guardrail-006"
+  ]
+}
