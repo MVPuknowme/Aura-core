@@ -1,0 +1,143 @@
+{
+  "generated_at": "2026-07-03T04:03:30.679Z",
+  "system": "SKYGRID Emergency Data On-Ramp",
+  "proof_type": "aura_call_circle_training_prompt",
+  "execution_path": "direct_node_import_no_http_server",
+  "local_http_route_status": "not_proven_in_this_artifact",
+  "request": {
+    "source": "chatbot",
+    "provider": "auto",
+    "execute": false,
+    "privacy": "restricted",
+    "message": "Aura, enter SKYGRID call-circle training mode. Review current SKYGRID state and choose the safest next action without executing production changes. Keep Vercel public route proof first, chatbot call-circle validation second, builder quote proof quote-only, heartbeat-only node validation for spx-node-001 and spx-node-002, accounting guardrail preservation, and token approvals on HOLD. Return selected next action, why it is safest, blocked items, proof artifact to create, and exact operator approval gate required before anything live changes."
+  },
+  "response": {
+    "ok": true,
+    "route": "/api/chatbot/call-circle",
+    "mode": "chatbot_bridge_decision_only",
+    "call_circle": [
+      "chatbot",
+      "aura_director",
+      "skygrid_advisory"
+    ],
+    "aura_director": {
+      "ok": true,
+      "product": "Aura GPT Desktop Switch Director",
+      "service": "SKYGRID Emergency Data On-Ramp",
+      "route": "/api/aura/director",
+      "mode": "controlled_pilot",
+      "sentinel": "fail_closed",
+      "providers": [
+        {
+          "id": "local_model",
+          "label": "Local Model Endpoint",
+          "available": false,
+          "reason": "AURA_LOCAL_MODEL_URL is not configured."
+        },
+        {
+          "id": "mcp_bridge",
+          "label": "MCP Bridge",
+          "available": false,
+          "reason": "AURA_MCP_BRIDGE_URL is not configured."
+        },
+        {
+          "id": "custom_provider",
+          "label": "Custom Provider",
+          "available": false,
+          "reason": "AURA_CUSTOM_PROVIDER_URL is not configured."
+        },
+        {
+          "id": "openai_responses",
+          "label": "OpenAI Responses API",
+          "available": true,
+          "reason": "OPENAI_API_KEY is configured; execution remains opt-in."
+        },
+        {
+          "id": "skygrid_advisory",
+          "label": "SKYGRID Advisory / Decision Only",
+          "available": true,
+          "reason": "Always available as fail-closed advisory mode."
+        }
+      ],
+      "timestamp": "2026-07-03T04:03:30.679Z"
+    },
+    "input_summary": {
+      "source": "chatbot",
+      "task": "Aura, enter SKYGRID call-circle training mode. Review current SKYGRID state and choose the safest next action without executing production changes. Keep Vercel public route proof first, chatbot call-circle validation second, builder quote proof quote-only, heartbeat-only node validation for spx-node-001 and spx-node-002, accounting guardrail preservation, and token approvals on HOLD. Return selected next action, why it is safest, blocked items, proof artifact to create, and exact operator approval gate required before anything live changes.",
+      "requested_execute_ignored": false
+    },
+    "decision": {
+      "ok": true,
+      "product": "Aura GPT Desktop Switch Director",
+      "service": "SKYGRID Emergency Data On-Ramp",
+      "mode": "controlled_pilot",
+      "sentinel": "fail_closed",
+      "source": "chatbot",
+      "task": "Aura, enter SKYGRID call-circle training mode. Review current SKYGRID state and choose the safest next action without executing production changes. Keep Vercel public route proof first, chatbot call-circle validation second, builder quote proof quote-only, heartbeat-only node validation for spx-node-001 and spx-node-002, accounting guardrail preservation, and token approvals on HOLD. Return selected next action, why it is safest, blocked items, proof artifact to create, and exact operator approval gate required before anything live changes.",
+      "privacy": "restricted",
+      "execute_requested": false,
+      "execute_allowed": false,
+      "execution_mode": "decision_only_fail_closed",
+      "selected_provider": {
+        "id": "openai_responses",
+        "label": "OpenAI Responses API",
+        "available": true,
+        "reason": "OPENAI_API_KEY is configured; execution remains opt-in."
+      },
+      "candidates": [
+        {
+          "id": "local_model",
+          "label": "Local Model Endpoint",
+          "available": false,
+          "reason": "AURA_LOCAL_MODEL_URL is not configured."
+        },
+        {
+          "id": "mcp_bridge",
+          "label": "MCP Bridge",
+          "available": false,
+          "reason": "AURA_MCP_BRIDGE_URL is not configured."
+        },
+        {
+          "id": "custom_provider",
+          "label": "Custom Provider",
+          "available": false,
+          "reason": "AURA_CUSTOM_PROVIDER_URL is not configured."
+        },
+        {
+          "id": "openai_responses",
+          "label": "OpenAI Responses API",
+          "available": true,
+          "reason": "OPENAI_API_KEY is configured; execution remains opt-in."
+        },
+        {
+          "id": "skygrid_advisory",
+          "label": "SKYGRID Advisory / Decision Only",
+          "available": true,
+          "reason": "Always available as fail-closed advisory mode."
+        }
+      ],
+      "reason": "Auto-selected openai_responses. Execution is disabled unless AURA_DIRECTOR_EXECUTE_ENABLED=true and a non-advisory provider is configured.",
+      "timestamp": "2026-07-03T04:03:30.678Z"
+    },
+    "guardrails": {
+      "fail_closed": true,
+      "execute_forced_false": true,
+      "no_wallet_signing": true,
+      "no_transaction_broadcast": true,
+      "no_private_data_movement": true,
+      "no_payment_execution": true,
+      "production_failover": false
+    },
+    "selected_next_action": "Restore public Vercel route proof, then validate chatbot HTTP route, then builder quote proof.",
+    "why_it_is_safest": "This keeps Aura in decision-only fail-closed mode while preserving accounting, wallet, payment, privacy, and failover guardrails.",
+    "blocked_items": [
+      "Public route proof remains blocked until Vercel SSO / Deployment Protection is disabled or bypassed through an approved operator path.",
+      "HTTP chatbot route proof is not complete until the route returns 200 from local Vercel dev or deployed Vercel.",
+      "Builder quote proof remains quote-only and must not execute payment or wallet actions.",
+      "Token approval remains blocked until testnet simulation, explicit spender, bounded allowance, and revoke path exist."
+    ],
+    "proof_artifact_to_create": "artifacts/training/aura-call-circle-training-proof.json",
+    "operator_approval_gate_required": "Named operator approval plus health quorum, rollback path, accounting guardrail pass, and explicit confirmation before any live change, wallet action, payout status change, or production failover.",
+    "timestamp": "2026-07-03T04:03:30.679Z"
+  }
+}
