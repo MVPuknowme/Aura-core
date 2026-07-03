@@ -1,4 +1,4 @@
-﻿name: SKYGRID IOC Watch
+name: SKYGRID IOC Watch
 
 on:
   push:
@@ -17,5 +17,8 @@ jobs:
         with:
           node-version: "24"
 
+      - name: Show Node version
+        run: node --version
+
       - name: Run IOC watch
-        run: node scripts/check-iocs.mjs
+        run: npm run security:ioc-check
