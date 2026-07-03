@@ -1,0 +1,37 @@
+[
+  {
+    "phrase": "where are we",
+    "intent": "runtime_diagnose",
+    "skill": "Invoke-AuraRuntime",
+    "safety_level": "safe-local",
+    "enabled": true
+  },
+  {
+    "phrase": "road less traveled",
+    "intent": "network_route_recommendation",
+    "skill": "Invoke-AuraNetworkRoute",
+    "safety_level": "safe-local",
+    "enabled": true
+  },
+  {
+    "phrase": "training status",
+    "intent": "training_status",
+    "skill": "Invoke-AuraTrainingStatus",
+    "safety_level": "safe-local",
+    "enabled": true
+  },
+  {
+    "phrase": "show proof",
+    "intent": "show_training_proof",
+    "skill": "Invoke-AuraShowProof",
+    "safety_level": "safe-local",
+    "enabled": true
+  },
+  {
+    "phrase": "validate training",
+    "intent": "validate_training",
+    "skill": "Invoke-AuraValidateTraining",
+    "safety_level": "safe-local",
+    "enabled": true
+  }
+]
