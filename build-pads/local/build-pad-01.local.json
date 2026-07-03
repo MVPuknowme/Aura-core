@@ -1,0 +1,23 @@
+﻿{
+    "mode":  "controlled_pilot",
+    "id":  "skygrid-build-pad-01-local-windows",
+    "operator":  "MigrAdmin",
+    "hostname":  "LGPC-25V2942",
+    "label":  "Build Pad 01 - Local Windows PC",
+    "capabilities":  {
+                         "local_shell":  true,
+                         "production_failover_allowed":  false,
+                         "wallet_signing_allowed":  false,
+                         "node":  "v24.16.0",
+                         "powershell":  true,
+                         "git":  "git version 2.54.0.windows.1",
+                         "private_data_movement_allowed":  false,
+                         "transaction_broadcast_allowed":  false,
+                         "hidden_remote_access":  false
+                     },
+    "registered_at":  "2026-07-02T17:54:47.8496085-07:00",
+    "sentinel":  "fail_closed",
+    "repo":  "E:\\Aura-core",
+    "status":  "registered_local_director_pending",
+    "director_base":  "https://aurasky.skygrid-protocol.net"
+}
