@@ -1,0 +1,42 @@
+Refactor Aura into a resilient local PowerShell operations runtime.
+
+Treat aura-runtime.ps1 as the kernel. It should only:
+- load config
+- discover plugins
+- safely load plugins
+- route commands
+- maintain shared $Aura state
+- log activity
+
+Use this folder layout:
+Aura/
+  Skills/
+    Git.ps1
+    Vercel.ps1
+    Health.ps1
+    Wallet.ps1
+    Skygrid.ps1
+  Config/
+    aura.json
+    permissions.json
+    plugins.json
+  Logs/
+
+Requirements:
+- PowerShell 5.1 compatible
+- DryRun true by default
+- auto-load every Aura/Skills/*.ps1
+- if a plugin fails, log it and continue
+- create shared $Aura object
+- implement Invoke-Aura "diagnose"
+- never auto-push
+- never auto-deploy
+- never expose API keys, private keys, seed phrases, or secrets
+- wallet mode read-only only
+- keep existing Git plugin working
+- write logs to Aura/Logs/aura-runtime.log
+
+Success test:
+. .\aura-runtime.ps1
+Invoke-Aura "diagnose"
+Invoke-AuraGitStatus
