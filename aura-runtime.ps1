@@ -17,6 +17,24 @@ function Invoke-AuraRuntime {
             Write-Host "Checkpoint available. DryRun safe mode active." -ForegroundColor Yellow
             break
         }
+        "training status" {
+            . .\Aura\Skills\Training.ps1
+            Invoke-AuraTrainingStatus
+            break
+        }
+
+        "show proof" {
+            . .\Aura\Skills\Training.ps1
+            Invoke-AuraShowProof
+            break
+        }
+
+        "validate training" {
+            . .\Aura\Skills\Training.ps1
+            Invoke-AuraValidateTraining
+            break
+        }
+
 
         default {
             Write-Host "Aura runtime loaded, but command not recognized: $InputText" -ForegroundColor Yellow
@@ -25,3 +43,4 @@ function Invoke-AuraRuntime {
 }
 
 Write-Host "Aura runtime repaired." -ForegroundColor Green
+
