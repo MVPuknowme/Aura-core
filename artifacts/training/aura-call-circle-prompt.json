@@ -1,0 +1,7 @@
+﻿{
+    "execute":  false,
+    "provider":  "auto",
+    "privacy":  "restricted",
+    "message":  "Aura, enter SKYGRID call-circle training mode.\n\nSystem: SKYGRID Emergency Data On-Ramp\nRoute: chatbot -\u003e Aura director -\u003e SKYGRID advisory\nMode: controlled_pilot\nSentinel: fail_closed\n\nObjective:\nReview the current SKYGRID state and choose the safest next action without executing production changes.\n\nCurrent known state:\n- Git branch MVPuknowme is clean and synced.\n- IOC watch passed locally.\n- Power mesh telemetry validation passed for skygrid-node-kfalls-001.\n- Sun Pay accounting guardrail passed and verified_paid_usd remains 0.\n- Public Vercel routes are deployed but may still be blocked by Vercel SSO / Deployment Protection.\n- Builder quote route exists and must remain quote-only.\n- Token approvals remain on HOLD.\n- No wallet signing, no transaction broadcast, no payment execution, no private data movement, and no production failover are allowed.\n\nTask:\nProduce a decision-only next-step plan for:\n1. Vercel public route proof.\n2. Chatbot call-circle validation.\n3. Builder quote proof.\n4. Heartbeat-only node validation for spx-node-001 and spx-node-002.\n5. Accounting guardrail preservation.\n6. Token approval hold criteria.\n\nReturn:\n- selected next action\n- why it is safest\n- blocked items\n- proof artifact to create\n- exact operator approval gate required before anything live changes",
+    "source":  "chatbot"
+}

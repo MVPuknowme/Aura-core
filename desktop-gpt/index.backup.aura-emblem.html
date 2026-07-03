@@ -1,0 +1,179 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Aura GPT Desktop</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Segoe UI, Arial, sans-serif;
+      background: linear-gradient(180deg, #12091f, #072b33, #1f102a);
+      color: white;
+    }
+
+    header {
+      padding: 18px 22px;
+      border-bottom: 2px solid #ff7a18;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .subtitle {
+      margin-top: 6px;
+      color: #00f5d4;
+      font-size: 13px;
+    }
+
+    main {
+      display: grid;
+      grid-template-rows: 1fr auto;
+      height: calc(100vh - 76px);
+    }
+
+    #chat {
+      padding: 18px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      line-height: 1.45;
+    }
+
+    .msg {
+      margin: 0 0 14px 0;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(255, 79, 216, 0.10);
+    }
+
+    .user {
+      border-left: 4px solid #ff7a18; border-top: 1px solid rgba(255,122,24,0.55);
+    }
+
+    .assistant {
+      border-left: 4px solid #00f5d4; border-top: 1px solid rgba(255,122,24,0.55);
+    }
+
+    .bar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      padding: 14px;
+      border-top: 2px solid #ff7a18;
+      background: rgba(0,0,0,0.25);
+    }
+
+    textarea {
+      resize: none;
+      height: 76px;
+      border-radius: 10px;
+      padding: 10px;
+      border: 2px solid #ff7a18;
+      background: #101926;
+      color: white;
+      font-size: 14px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 0 20px;
+      color: white;
+      background: linear-gradient(135deg, #ff4fd8, #ff7a18);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: wait;
+    }
+
+    .quick {
+      padding: 0 14px 10px 14px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      background: rgba(0,0,0,0.25);
+    }
+
+    .quick button {
+      padding: 8px 10px;
+      background: linear-gradient(135deg, #00f5d4, #ff4fd8);
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🩷 Aura GPT Desktop 🩵</h1>
+    <div class="subtitle">Windows 10 app shell Ã¢â‚¬Â¢ no Edge tab Ã¢â‚¬Â¢ no raw PowerShell execution</div>
+  </header>
+
+  <main>
+    <section id="chat">
+      <div class="msg assistant">Aura GPT Desktop online. Ask for SKYGRID vitals, patch plans, shell prompts, or repo triage.</div>
+    </section>
+
+    <section>
+      <div class="quick">
+        <button onclick="quick('Give me a safe read-only PowerShell vitals check for E:\\\\Aura-core.')">Vitals Prompt</button>
+        <button onclick="quick('Review SKYGRID production readiness. Keep failover blocked.')">Readiness Review</button>
+        <button onclick="quick('Give me a no-secrets troubleshooting plan for Vercel env readiness.')">Vercel Env Help</button>
+        <button onclick="quick('Give me a safe commit checklist for Aura-Core changes.')">Commit Checklist</button>
+      </div>
+
+      <div class="bar">
+        <textarea id="input" placeholder="Type to Aura GPT..."></textarea>
+        <button id="send" onclick="send()">Send</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const chat = document.getElementById("chat");
+    const input = document.getElementById("input");
+    const sendButton = document.getElementById("send");
+
+    function add(role, text) {
+      const div = document.createElement("div");
+      div.className = `msg ${role}`;
+      div.textContent = text;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function quick(text) {
+      input.value = text;
+      send();
+    }
+
+    async function send() {
+      const text = input.value.trim();
+      if (!text) return;
+
+      input.value = "";
+      add("user", text);
+      sendButton.disabled = true;
+
+      try {
+        const answer = await window.auraGPT.ask(text);
+        add("assistant", answer || "(No response text returned.)");
+      } catch (error) {
+        add("assistant", `Error: ${error.message}`);
+      } finally {
+        sendButton.disabled = false;
+        input.focus();
+      }
+    }
+
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        send();
+      }
+    });
+  </script>
+</body>
+</html>
