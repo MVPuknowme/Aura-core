@@ -46,7 +46,7 @@ function Invoke-AuraWhereAreWe {
 
     Write-Host "Network" -ForegroundColor Yellow
     Write-Host "-------"
-    $activeRoute = "E:\Aura-core\Aura\Config\active-route.json"
+    $activeRoute = "E:\Aura-core\Aura\State\active-route.json"
     if (Test-Path $activeRoute) {
         $route = Get-Content $activeRoute -Raw | ConvertFrom-Json
         Write-Host "Active route: $($route.name)"
@@ -68,3 +68,4 @@ function Invoke-AuraWhereAreWe {
 
     Write-Host ""
 }
+

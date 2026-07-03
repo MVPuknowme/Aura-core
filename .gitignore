@@ -29,3 +29,6 @@ desktop-gpt/logs/
 desktop-gpt/.env.local
 desktop-gpt/*.backup.*.cjs
 mock-body.json
+Aura/Logs/
+Aura/State/
+!Aura/State/.gitkeep

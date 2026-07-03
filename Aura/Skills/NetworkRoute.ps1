@@ -50,7 +50,7 @@ function Test-AuraRouteEndpoint {
 
 function Invoke-AuraNetworkRoute {
     $routesPath = "E:\Aura-core\Aura\Config\routes.json"
-    $activePath = "E:\Aura-core\Aura\Config\active-route.json"
+    $activePath = "E:\Aura-core\Aura\State\active-route.json"
 
     if (-not (Test-Path $routesPath)) {
         Write-AuraNetworkLog "No routes config found: $routesPath"
@@ -138,3 +138,4 @@ function Invoke-AuraNetworkRoute {
 
     $results | Select-Object name,url,priority,all_ok,average_latency_ms | Format-Table -AutoSize
 }
+
