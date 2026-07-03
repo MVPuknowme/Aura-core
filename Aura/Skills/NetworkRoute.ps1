@@ -139,3 +139,4 @@ function Invoke-AuraNetworkRoute {
     $results | Select-Object name,url,priority,all_ok,average_latency_ms | Format-Table -AutoSize
 }
 
+
