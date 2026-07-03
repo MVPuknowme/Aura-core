@@ -1,0 +1,168 @@
+Build Aura PNPk AutoDrill package skill.
+
+Goal:
+Aura should create, validate, show, and export `.pnpk` proof packages locally.
+
+Definition:
+`.pnpk` is an Aura/SKYGRID proof package format. It preserves:
+- prompt
+- package purpose
+- permitted actions
+- blocked actions
+- expected output
+- proof files
+- validation result
+- checkpoint recommendation
+
+Aura rules:
+- Local mode only.
+- No OpenAI API required.
+- No raw shell execution from user text.
+- No secrets.
+- No wallet signing.
+- No deploy.
+- No push.
+- `.pnpk` files are proof packages, not executable scripts.
+
+Create:
+Aura/Skills/Pnpk.ps1
+
+Friendly commands:
+- pnpk status
+- create pnpk
+- validate pnpk
+- show pnpk
+- export pnpk proof
+- autodrill package
+
+Functions:
+- Invoke-AuraPnpkStatus
+- New-AuraPnpkPackage
+- Test-AuraPnpkPackage
+- Show-AuraPnpkPackages
+- Export-AuraPnpkProof
+
+Folders:
+artifacts/pnpk/packages/
+artifacts/pnpk/proofs/
+
+Package extension:
+.pnpk
+
+Package schema:
+{
+  "format": "aura.pnpk",
+  "version": "0.1.0",
+  "name": "",
+  "purpose": "",
+  "created_at": "",
+  "created_by": "Aura Local Runtime",
+  "mode": "local",
+  "openai_required": false,
+  "raw_shell_execution": false,
+  "wallet_mode": "read-only",
+  "permitted_actions": [],
+  "blocked_actions": [
+    "raw_shell",
+    "push",
+    "deploy",
+    "wallet_sign",
+    "wallet_send",
+    "secret_print"
+  ],
+  "inputs": [],
+  "expected_outputs": [],
+  "proof_files": [],
+  "checkpoint_recommendation": "Review package proof and checkpoint when ready."
+}
+
+Behavior:
+
+Invoke-AuraPnpkStatus:
+- Count packages in artifacts/pnpk/packages/
+- Count proof files in artifacts/pnpk/proofs/
+- Show newest 5 packages
+- Print recommendation
+
+New-AuraPnpkPackage:
+- Prompt user for:
+  - package name
+  - purpose
+  - permitted actions, comma separated
+  - expected outputs, comma separated
+  - proof files, comma separated
+- Create timestamped .pnpk JSON-compatible file under artifacts/pnpk/packages/
+- Do not execute anything
+- End with checkpoint recommendation
+
+Test-AuraPnpkPackage:
+- Validate every .pnpk file under artifacts/pnpk/packages/
+- Required fields:
+  format, version, name, purpose, created_at, mode, openai_required, raw_shell_execution, wallet_mode, permitted_actions, blocked_actions, expected_outputs, proof_files, checkpoint_recommendation
+- Confirm:
+  format = aura.pnpk
+  openai_required = false
+  raw_shell_execution = false
+  wallet_mode = read-only
+  blocked_actions include raw_shell, push, deploy, wallet_sign, wallet_send, secret_print
+- Save JSON validation proof:
+  artifacts/pnpk/proofs/pnpk-validation-proof.json
+- Print pass/fail summary
+
+Show-AuraPnpkPackages:
+- List known packages:
+  name, purpose, created_at, path
+
+Export-AuraPnpkProof:
+- Generate Markdown:
+  artifacts/pnpk/proofs/pnpk-proof-report.md
+- Include:
+  package count
+  validation status
+  latest packages
+  safety summary
+  checkpoint recommendation
+
+Runtime integration:
+Wire these phrases into aura-runtime.ps1:
+- pnpk status
+- create pnpk
+- validate pnpk
+- show pnpk
+- export pnpk proof
+- autodrill package
+
+All should call the matching allowlisted functions in Aura/Skills/Pnpk.ps1.
+
+Update Aura/Config/commands.json with matching entries.
+
+Expected file changes:
+- Aura/Skills/Pnpk.ps1
+- aura-runtime.ps1
+- Aura/Config/commands.json
+- artifacts/pnpk/packages/
+- artifacts/pnpk/proofs/
+
+Success test:
+. .\aura-runtime.ps1
+Invoke-AuraRuntime "pnpk status"
+Invoke-AuraRuntime "create pnpk"
+Invoke-AuraRuntime "validate pnpk"
+Invoke-AuraRuntime "show pnpk"
+Invoke-AuraRuntime "export pnpk proof"
+git status
+
+Expected:
+- No API token required.
+- No raw shell execution.
+- No push.
+- No deploy.
+- `.pnpk` package created locally.
+- Validation proof created locally.
+- Markdown proof report created locally.
+- Final output recommends checkpoint.
+
+After successful test, recommend but do not automatically run:
+
+git add .\aura-runtime.ps1 .\Aura\Skills\Pnpk.ps1 .\Aura\Config\commands.json .\artifacts\pnpk\
+git commit -m "Add Aura PNPk AutoDrill package skill"

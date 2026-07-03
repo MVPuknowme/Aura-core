@@ -1,0 +1,16 @@
+{
+    "format":  "aura.pnpk.validation",
+    "version":  "0.1.0",
+    "generated_at":  "2026-07-03T15:31:25.5922393-07:00",
+    "package_count":  1,
+    "passed":  true,
+    "results":  [
+                    {
+                        "file":  "E:\\Aura-core\\artifacts\\pnpk\\packages\\20260703-153113-package-name-aura-local-runtime-proof-loop.pnpk",
+                        "ok":  true,
+                        "errors":  [
+
+                                   ]
+                    }
+                ]
+}

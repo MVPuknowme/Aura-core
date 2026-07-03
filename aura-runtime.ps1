@@ -129,6 +129,36 @@ function Invoke-AuraRegistryCommand {
             Invoke-AuraPostmanProof
             break
         }
+        "pnpk status" {
+            . .\Aura\Skills\Pnpk.ps1
+            Invoke-AuraPnpkStatus
+            break
+        }
+
+        "create pnpk|autodrill package" {
+            . .\Aura\Skills\Pnpk.ps1
+            New-AuraPnpkPackage
+            break
+        }
+
+        "validate pnpk" {
+            . .\Aura\Skills\Pnpk.ps1
+            Test-AuraPnpkPackage
+            break
+        }
+
+        "show pnpk" {
+            . .\Aura\Skills\Pnpk.ps1
+            Show-AuraPnpkPackages
+            break
+        }
+
+        "export pnpk proof" {
+            . .\Aura\Skills\Pnpk.ps1
+            Export-AuraPnpkProof
+            break
+        }
+
 
 
 
@@ -248,6 +278,36 @@ function Invoke-AuraRuntime {
             Invoke-AuraPostmanProof
             break
         }
+        "pnpk status" {
+            . .\Aura\Skills\Pnpk.ps1
+            Invoke-AuraPnpkStatus
+            break
+        }
+
+        "create pnpk|autodrill package" {
+            . .\Aura\Skills\Pnpk.ps1
+            New-AuraPnpkPackage
+            break
+        }
+
+        "validate pnpk" {
+            . .\Aura\Skills\Pnpk.ps1
+            Test-AuraPnpkPackage
+            break
+        }
+
+        "show pnpk" {
+            . .\Aura\Skills\Pnpk.ps1
+            Show-AuraPnpkPackages
+            break
+        }
+
+        "export pnpk proof" {
+            . .\Aura\Skills\Pnpk.ps1
+            Export-AuraPnpkProof
+            break
+        }
+
 
 
 
@@ -268,6 +328,7 @@ function Invoke-AuraRuntime {
 }
 
 Write-Host "Aura runtime repaired." -ForegroundColor Green
+
 
 
 
