@@ -64,7 +64,8 @@ function Invoke-AuraRegistryCommand {
         }
 
         "Invoke-AuraNetworkRoute" {
-            Write-Host "Network route skill is registered. Plugin implementation pending." -ForegroundColor Yellow
+            . .\Aura\Skills\NetworkRoute.ps1
+            Invoke-AuraNetworkRoute
             return $true
         }
 
@@ -134,6 +135,7 @@ function Invoke-AuraRuntime {
 }
 
 Write-Host "Aura runtime repaired." -ForegroundColor Green
+
 
 
 
