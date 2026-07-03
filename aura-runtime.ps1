@@ -34,6 +34,12 @@ function Invoke-AuraRuntime {
             Invoke-AuraValidateTraining
             break
         }
+        "learn phrase" {
+            . .\Aura\Skills\Training.ps1
+            Invoke-AuraLearnPhrase
+            break
+        }
+
 
 
         default {
@@ -43,4 +49,5 @@ function Invoke-AuraRuntime {
 }
 
 Write-Host "Aura runtime repaired." -ForegroundColor Green
+
 
