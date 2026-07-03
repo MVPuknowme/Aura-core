@@ -1033,3 +1033,146 @@ try {
   // Optional live telemetry. Never block Aura startup.
 }
 // === End AURA Live Telemetry Snapshot Handler v3 ===
+
+// === AURA Live Ping Handler v1 ===
+try {
+  const auraPingElectron = require("electron");
+  const auraPingFs = require("fs");
+  const auraPingPath = require("path");
+  const auraPingHttps = require("https");
+  const auraPingHttp = require("http");
+
+  const auraPingRoot = auraPingPath.resolve(__dirname, "..");
+
+  function auraPingReadJson(filePath) {
+    try {
+      if (!auraPingFs.existsSync(filePath)) return null;
+      return JSON.parse(auraPingFs.readFileSync(filePath, "utf8"));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function auraPingUrl(url, timeoutMs) {
+    return new Promise((resolve) => {
+      const started = Date.now();
+
+      try {
+        const client = url.startsWith("https:") ? auraPingHttps : auraPingHttp;
+        const req = client.get(url, { timeout: timeoutMs || 8000 }, (res) => {
+          res.resume();
+          res.on("end", () => {
+            resolve({
+              ok: res.statusCode >= 200 && res.statusCode < 500,
+              statusCode: res.statusCode,
+              latencyMs: Date.now() - started
+            });
+          });
+        });
+
+        req.on("timeout", () => {
+          req.destroy();
+          resolve({
+            ok: false,
+            statusCode: 0,
+            latencyMs: Date.now() - started,
+            error: "timeout"
+          });
+        });
+
+        req.on("error", (error) => {
+          resolve({
+            ok: false,
+            statusCode: 0,
+            latencyMs: Date.now() - started,
+            error: error && error.message ? error.message : "ping failed"
+          });
+        });
+      } catch (error) {
+        resolve({
+          ok: false,
+          statusCode: 0,
+          latencyMs: Date.now() - started,
+          error: error && error.message ? error.message : "ping failed"
+        });
+      }
+    });
+  }
+
+  async function auraBuildPingSnapshot() {
+    const routePath = auraPingPath.join(auraPingRoot, "Aura", "State", "active-route.json");
+    const route = auraPingReadJson(routePath);
+
+    const routeName = route && route.name ? route.name : "not selected";
+    const baseUrl = route && route.url ? String(route.url).replace(/\/$/, "") : null;
+
+    if (!baseUrl) {
+      return {
+        ok: false,
+        timestamp: new Date().toISOString(),
+        routeName,
+        baseUrl: "",
+        status: "no active route",
+        checks: []
+      };
+    }
+
+    const checks = [
+      { label: "health", path: "/api/health" },
+      { label: "status", path: "/api/highway/status" },
+      { label: "postman", path: "/api/highway/postman" }
+    ];
+
+    const results = [];
+
+    for (const check of checks) {
+      const url = baseUrl + check.path;
+      const result = await auraPingUrl(url, 8000);
+      results.push({
+        label: check.label,
+        path: check.path,
+        url,
+        ok: result.ok,
+        statusCode: result.statusCode,
+        latencyMs: result.latencyMs,
+        error: result.error || ""
+      });
+    }
+
+    const passing = results.filter((item) => item.ok).length;
+
+    return {
+      ok: passing > 0,
+      timestamp: new Date().toISOString(),
+      routeName,
+      baseUrl,
+      status: passing === results.length ? "all clear" : passing > 0 ? "partial" : "offline",
+      passing,
+      total: results.length,
+      checks: results
+    };
+  }
+
+  if (auraPingElectron.ipcMain) {
+    try {
+      auraPingElectron.ipcMain.removeHandler("aura:get-live-pings");
+    } catch (_) {}
+
+    auraPingElectron.ipcMain.handle("aura:get-live-pings", async () => {
+      try {
+        return await auraBuildPingSnapshot();
+      } catch (error) {
+        return {
+          ok: false,
+          timestamp: new Date().toISOString(),
+          status: "ping unavailable",
+          error: error && error.message ? error.message : "ping unavailable",
+          checks: []
+        };
+      }
+    });
+  }
+} catch (_) {
+  // Optional live pings. Never block Aura startup.
+}
+// === End AURA Live Ping Handler v1 ===

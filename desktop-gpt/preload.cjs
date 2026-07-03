@@ -17,3 +17,17 @@ try {
   // Optional telemetry bridge. Never block Aura startup.
 }
 // === End AURA PiP Telemetry Bridge ===
+
+// === AURA Live Ping Bridge ===
+try {
+  if (!window.auraPings && contextBridge && ipcRenderer) {
+    contextBridge.exposeInMainWorld("auraPings", {
+      getSnapshot: function () {
+        return ipcRenderer.invoke("aura:get-live-pings");
+      }
+    });
+  }
+} catch (_) {
+  // Optional ping bridge. Never block Aura startup.
+}
+// === End AURA Live Ping Bridge ===

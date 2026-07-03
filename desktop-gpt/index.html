@@ -250,6 +250,55 @@
     box-shadow: 0 0 10px rgba(255, 90, 122, 0.9);
   }
 </style>
+<style id="aura-live-pings-style">
+  .aura-live-pings {
+    margin-top: 10px;
+    padding-top: 9px;
+    border-top: 1px solid rgba(142,234,255,0.16);
+  }
+
+  .aura-pings-title {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    font-weight: 800;
+    color: rgba(142,234,255,0.9);
+    margin-bottom: 7px;
+  }
+
+  .aura-ping-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 6px;
+    align-items: center;
+    font-size: 10px;
+    color: rgba(234,248,255,0.82);
+    margin-top: 5px;
+  }
+
+  .aura-ping-status {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: #ffcf5a;
+    box-shadow: 0 0 8px rgba(255,207,90,0.8);
+  }
+
+  .aura-ping-status.ok {
+    background: #35f2a4;
+    box-shadow: 0 0 8px rgba(53,242,164,0.85);
+  }
+
+  .aura-ping-status.fail {
+    background: #ff5a7a;
+    box-shadow: 0 0 8px rgba(255,90,122,0.85);
+  }
+
+  .aura-pings-footer {
+    margin-top: 7px;
+    font-size: 10px;
+    color: rgba(234,248,255,0.52);
+  }
+</style>
 </head>
 <body>
 <div class="aura-brand">
@@ -415,8 +464,57 @@
     setInterval(refreshAuraTelemetry, 10000);
   })();
 </script>
+<script id="aura-live-pings-script">
+  (function () {
+    function pingStatusClass(check) {
+      if (!check) return "";
+      return check.ok ? "ok" : "fail";
+    }
+
+    function renderPings(snapshot) {
+      var rows = document.getElementById("aura-ping-rows");
+      var footer = document.getElementById("aura-pings-footer");
+      if (!rows || !footer) return;
+
+      if (!snapshot || !snapshot.checks || !snapshot.checks.length) {
+        rows.innerHTML = '<div class="aura-ping-row"><span>no active route</span><span>--</span><span class="aura-ping-status fail"></span></div>';
+        footer.textContent = "Pings unavailable";
+        return;
+      }
+
+      rows.innerHTML = snapshot.checks.map(function (check) {
+        return ''
+          + '<div class="aura-ping-row">'
+          + '<span>' + check.label + '</span>'
+          + '<span>' + check.statusCode + ' · ' + check.latencyMs + 'ms</span>'
+          + '<span class="aura-ping-status ' + pingStatusClass(check) + '"></span>'
+          + '</div>';
+      }).join("");
+
+      footer.textContent = (snapshot.routeName || "route") + " · " + (snapshot.status || "unknown") + " · " + new Date().toLocaleTimeString();
+    }
+
+    async function refreshAuraPings() {
+      try {
+        if (!window.auraPings || !window.auraPings.getSnapshot) {
+          renderPings(null);
+          return;
+        }
+
+        var snapshot = await window.auraPings.getSnapshot();
+        renderPings(snapshot);
+      } catch (_) {
+        renderPings(null);
+      }
+    }
+
+    refreshAuraPings();
+    setInterval(refreshAuraPings, 30000);
+  })();
+</script>
 </body>
 </html>
+
 
 
 
