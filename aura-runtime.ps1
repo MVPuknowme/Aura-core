@@ -84,6 +84,18 @@ function Invoke-AuraRegistryCommand {
             Invoke-AuraExportProofReport
             break
         }
+        "operating profile|safe mode status|profile" {
+            . .\Aura\Skills\OperatingProfile.ps1
+            Invoke-AuraOperatingProfile
+            break
+        }
+
+        "safe mode|enable safe mode|local mode" {
+            . .\Aura\Skills\OperatingProfile.ps1
+            Invoke-AuraSafeMode
+            break
+        }
+
 
 
 
@@ -155,6 +167,18 @@ function Invoke-AuraRuntime {
             Invoke-AuraExportProofReport
             break
         }
+        "operating profile|safe mode status|profile" {
+            . .\Aura\Skills\OperatingProfile.ps1
+            Invoke-AuraOperatingProfile
+            break
+        }
+
+        "safe mode|enable safe mode|local mode" {
+            . .\Aura\Skills\OperatingProfile.ps1
+            Invoke-AuraSafeMode
+            break
+        }
+
 
 
 
@@ -172,6 +196,7 @@ function Invoke-AuraRuntime {
 }
 
 Write-Host "Aura runtime repaired." -ForegroundColor Green
+
 
 
 
