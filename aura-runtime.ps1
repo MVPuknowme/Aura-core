@@ -95,6 +95,36 @@ function Invoke-AuraRegistryCommand {
             Invoke-AuraSafeMode
             break
         }
+        "inbox status|file status" {
+            . .\Aura\Skills\FilePostman.ps1
+            Invoke-AuraInboxStatus
+            break
+        }
+
+        "show inbox" {
+            . .\Aura\Skills\FilePostman.ps1
+            Show-AuraInbox
+            break
+        }
+
+        "validate filing" {
+            . .\Aura\Skills\FilePostman.ps1
+            Test-AuraFilingRules
+            break
+        }
+
+        "show receipts" {
+            . .\Aura\Skills\FilePostman.ps1
+            Show-AuraFileReceipts
+            break
+        }
+
+        "sort inbox|route inbox|postman file|route data|file this|sort proof" {
+            . .\Aura\Skills\FilePostman.ps1
+            Invoke-AuraSortInbox
+            break
+        }
+
 
 
 
@@ -178,6 +208,36 @@ function Invoke-AuraRuntime {
             Invoke-AuraSafeMode
             break
         }
+        "inbox status|file status" {
+            . .\Aura\Skills\FilePostman.ps1
+            Invoke-AuraInboxStatus
+            break
+        }
+
+        "show inbox" {
+            . .\Aura\Skills\FilePostman.ps1
+            Show-AuraInbox
+            break
+        }
+
+        "validate filing" {
+            . .\Aura\Skills\FilePostman.ps1
+            Test-AuraFilingRules
+            break
+        }
+
+        "show receipts" {
+            . .\Aura\Skills\FilePostman.ps1
+            Show-AuraFileReceipts
+            break
+        }
+
+        "sort inbox|route inbox|postman file|route data|file this|sort proof" {
+            . .\Aura\Skills\FilePostman.ps1
+            Invoke-AuraSortInbox
+            break
+        }
+
 
 
 
@@ -196,6 +256,7 @@ function Invoke-AuraRuntime {
 }
 
 Write-Host "Aura runtime repaired." -ForegroundColor Green
+
 
 
 

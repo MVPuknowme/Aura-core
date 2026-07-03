@@ -32,3 +32,8 @@ mock-body.json
 Aura/Logs/
 Aura/State/
 !Aura/State/.gitkeep
+Aura/Inbox/*
+!Aura/Inbox/.gitkeep
+!Aura/Inbox/Unsorted/
+Aura/Inbox/Unsorted/*
+!Aura/Inbox/Unsorted/.gitkeep

@@ -1,0 +1,140 @@
+Build Aura Inbox workflow for FilePostman.
+
+Goal:
+Aura should have a local inbox folder where the human/operator can drop files, prompts, reports, proof files, Postman collections, `.pnpk` packages, and generated data. Aura should classify each inbox item, route it to the correct approved folder, and leave a receipt.
+
+Aura rules:
+- Local mode only.
+- No OpenAI API required.
+- No raw shell execution from user text.
+- No secrets.
+- No wallet signing.
+- No deploy.
+- No push.
+- No destructive moves by default.
+- Do not overwrite existing files.
+- Duplicate-safe names required.
+- Every routed file gets a receipt.
+- Unknown file types stay in Aura/Inbox/Unsorted/ with a receipt and recommendation.
+
+Create/update:
+- Aura/Skills/FilePostman.ps1
+- aura-runtime.ps1
+- Aura/Config/commands.json
+
+Create folders:
+Aura/Inbox/
+Aura/Inbox/Unsorted/
+artifacts/receipts/
+
+Add friendly commands:
+- inbox status
+- sort inbox
+- route inbox
+- show inbox
+- clear inbox receipts
+- validate filing
+
+Function names:
+- Invoke-AuraInboxStatus
+- Invoke-AuraSortInbox
+- Show-AuraInbox
+- Clear-AuraInboxReceiptView
+- Test-AuraFilingRules
+
+Behavior:
+
+Invoke-AuraInboxStatus:
+- Count files in Aura/Inbox/
+- Count files in Aura/Inbox/Unsorted/
+- Show newest 10 inbox items
+- Show newest 10 receipts
+- Print recommendation:
+  - If inbox has files: run `sort inbox`
+  - If inbox empty: path is clear
+
+Invoke-AuraSortInbox:
+- Process files in Aura/Inbox/ only, not recursively except Unsorted is skipped.
+- Classify each file using FilePostman filing rules.
+- Copy file to destination folder with duplicate-safe name.
+- Do not delete original unless permissions.json allows MoveInboxItems=true.
+- If MoveInboxItems=false or missing, leave original in inbox and mark receipt action as copied.
+- If unknown classification, copy to Aura/Inbox/Unsorted/ with duplicate-safe name.
+- Create receipt JSON under artifacts/receipts/.
+- Print summary:
+  AURA INBOX SORT
+  ---------------
+  Processed:
+  Routed:
+  Unsorted:
+  Receipts:
+  Recommendation:
+
+Show-AuraInbox:
+- List files in Aura/Inbox/
+- List files in Aura/Inbox/Unsorted/
+- Do not print file contents.
+
+Clear-AuraInboxReceiptView:
+- Do not delete receipts.
+- Only print that receipts are preserved.
+- Recommend manual archive if needed.
+
+Test-AuraFilingRules:
+- Confirm managed folders exist.
+- Confirm receipts folder exists.
+- Confirm inbox folder exists.
+- Confirm unknowns go to Aura/Inbox/Unsorted/
+- Save validation report:
+  artifacts/receipts/filing-validation-report.md
+
+Runtime integration:
+Wire these phrases into aura-runtime.ps1:
+- inbox status
+- sort inbox
+- route inbox
+- show inbox
+- clear inbox receipts
+- validate filing
+
+Update Aura/Config/commands.json with matching entries.
+
+Expected file changes:
+- Aura/Skills/FilePostman.ps1
+- aura-runtime.ps1
+- Aura/Config/commands.json
+- Aura/Inbox/.gitkeep
+- Aura/Inbox/Unsorted/.gitkeep
+- artifacts/receipts/
+
+Git hygiene:
+- Track .gitkeep files for empty folders.
+- Do not track random inbox contents by default.
+- Add to .gitignore:
+  Aura/Inbox/*
+  !Aura/Inbox/.gitkeep
+  !Aura/Inbox/Unsorted/
+  Aura/Inbox/Unsorted/*
+  !Aura/Inbox/Unsorted/.gitkeep
+
+Success test:
+. .\aura-runtime.ps1
+Invoke-AuraRuntime "inbox status"
+Invoke-AuraRuntime "validate filing"
+Invoke-AuraRuntime "show inbox"
+git status
+
+Expected:
+- No API token required.
+- No raw shell execution.
+- No push.
+- No deploy.
+- No destructive moves.
+- Inbox folders exist.
+- Filing validation report created.
+- Final output recommends checkpoint.
+
+After successful test, recommend but do not automatically run:
+
+git add .\aura-runtime.ps1 .\Aura\Skills\FilePostman.ps1 .\Aura\Config\commands.json .\.gitignore .\Aura\Inbox\.gitkeep .\Aura\Inbox\Unsorted\.gitkeep .\artifacts\receipts\
+git commit -m "Add Aura Inbox filing workflow"
