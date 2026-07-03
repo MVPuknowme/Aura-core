@@ -1,12 +1,12 @@
 # AURA Postman Proof
 
-Generated: 2026-07-03T15:04:38.2402886-07:00
+Generated: 2026-07-03T15:12:04.7979390-07:00
 
 ## Route
 
 - Name: vercel-production
 - URL: https://aura-core-t2t5.vercel.app
-- Average Latency: 230 ms
+- Average Latency: 212.33 ms
 
 ## Collection
 
@@ -15,8 +15,8 @@ Generated: 2026-07-03T15:04:38.2402886-07:00
 ## Newman
 
 - Version: 6.2.2
-- Started: 2026-07-03T15:04:35.4209656-07:00
-- Ended: 2026-07-03T15:04:38.2402886-07:00
+- Started: 2026-07-03T15:12:01.9419943-07:00
+- Ended: 2026-07-03T15:12:04.7979390-07:00
 - Exit Code: 0
 - Result: PASS
 
