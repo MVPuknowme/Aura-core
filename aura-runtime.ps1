@@ -158,6 +158,12 @@ function Invoke-AuraRegistryCommand {
             Export-AuraPnpkProof
             break
         }
+        "skygrid brief|system brief|morning brief|emergency on-ramp status" {
+            . .\Aura\Skills\SkygridBrief.ps1
+            Invoke-AuraSkygridBrief
+            break
+        }
+
 
 
 
@@ -307,6 +313,12 @@ function Invoke-AuraRuntime {
             Export-AuraPnpkProof
             break
         }
+        "skygrid brief|system brief|morning brief|emergency on-ramp status" {
+            . .\Aura\Skills\SkygridBrief.ps1
+            Invoke-AuraSkygridBrief
+            break
+        }
+
 
 
 
@@ -328,6 +340,7 @@ function Invoke-AuraRuntime {
 }
 
 Write-Host "Aura runtime repaired." -ForegroundColor Green
+
 
 
 
