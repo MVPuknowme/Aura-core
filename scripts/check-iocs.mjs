@@ -10,7 +10,12 @@ if (!fs.existsSync(iocPath)) {
   process.exit(2);
 }
 
-const iocs = JSON.parse(fs.readFileSync(iocPath, "utf8"));
+function readJson(filePath) {
+  const raw = fs.readFileSync(filePath, "utf8").replace(/^\uFEFF/, "");
+  return JSON.parse(raw);
+}
+
+const iocs = readJson(iocPath);
 
 const terms = [
   ...(iocs.domains || []),
