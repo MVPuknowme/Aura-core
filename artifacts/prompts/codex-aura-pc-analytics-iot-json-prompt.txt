@@ -1,0 +1,181 @@
+Build Aura PCAnalytics skill using AWS IoT-style local JSON telemetry.
+
+Goal:
+Aura should inspect internal Windows PC health and write local analytics JSON files shaped like AWS IoT/device telemetry.
+
+Important:
+This is local/read-only analytics first.
+Do not publish to AWS IoT yet.
+Do not require AWS credentials.
+Do not require OpenAI API.
+Do not expose secrets.
+Do not collect private file contents.
+Do not print environment secrets.
+Do not send telemetry over the network.
+
+Create:
+Aura/Skills/PcAnalytics.ps1
+
+Friendly commands:
+- pc analytics
+- pc vitals
+- device telemetry
+- internal analytics
+- aws iot json
+- iot status
+
+Functions:
+- Invoke-AuraPcAnalytics
+- Invoke-AuraPcVitals
+- Export-AuraAwsIotJson
+- Show-AuraIotStatus
+
+Folders:
+artifacts/iot/
+artifacts/iot/pc-analytics/
+artifacts/iot/proofs/
+
+Telemetry JSON schema:
+{
+  "format": "aura.aws-iot.telemetry",
+  "version": "0.1.0",
+  "device_id": "",
+  "site_code": "local-win10",
+  "run_id": "",
+  "created_at": "",
+  "mode": "local",
+  "openai_required": false,
+  "aws_publish": false,
+  "raw_shell_execution": false,
+  "wallet_mode": "read-only",
+  "system": {
+    "computer_name": "",
+    "os": "",
+    "os_version": "",
+    "uptime_seconds": 0,
+    "timezone": ""
+  },
+  "cpu": {
+    "load_percent": 0,
+    "logical_processors": 0
+  },
+  "memory": {
+    "total_mb": 0,
+    "free_mb": 0,
+    "used_percent": 0
+  },
+  "disk": [
+    {
+      "drive": "C:",
+      "total_gb": 0,
+      "free_gb": 0,
+      "used_percent": 0
+    }
+  ],
+  "network": {
+    "online": true,
+    "adapters_up": [],
+    "dns_probe": "",
+    "active_route": ""
+  },
+  "aura": {
+    "runtime_loaded": true,
+    "safe_mode": true,
+    "active_route": "",
+    "proof_files": 0
+  },
+  "recommendation": ""
+}
+
+Behavior:
+
+Invoke-AuraPcAnalytics:
+1. Collect read-only system analytics:
+   - computer name
+   - Windows version
+   - uptime
+   - CPU load
+   - memory total/free/used percent
+   - disk total/free/used percent
+   - network adapters that are up
+   - active Aura route from Aura/State/active-route.json if present
+   - count proof files under artifacts/
+
+2. Save JSON to:
+   artifacts/iot/pc-analytics/<timestamp>-pc-analytics.json
+
+3. Save Markdown summary to:
+   artifacts/iot/proofs/<timestamp>-pc-analytics-proof.md
+
+4. Output:
+   AURA PC ANALYTICS
+   -----------------
+   Device:
+   OS:
+   Uptime:
+   CPU:
+   Memory:
+   Disk:
+   Network:
+   Active Route:
+   JSON:
+   Proof:
+   Recommendation:
+
+Invoke-AuraPcVitals:
+- Short console summary only.
+- No file write unless user runs pc analytics.
+
+Export-AuraAwsIotJson:
+- Create/latest AWS IoT-style JSON payload locally.
+- Do not publish.
+- Print where file was saved.
+
+Show-AuraIotStatus:
+- Count analytics JSONs.
+- Show newest 5.
+- Show whether AWS publish is disabled.
+- Show recommendation.
+
+Runtime integration:
+Wire these phrases into aura-runtime.ps1:
+- pc analytics
+- pc vitals
+- device telemetry
+- internal analytics
+- aws iot json
+- iot status
+
+Update Aura/Config/commands.json with matching entries.
+
+Safety:
+- No AWS publish.
+- No network upload.
+- No secrets.
+- No raw command execution from user input.
+- No file content scanning.
+- No wallet signing.
+- No deploy.
+- No push.
+
+PowerShell 5.1 compatible.
+
+Success test:
+. .\aura-runtime.ps1
+Invoke-AuraRuntime "pc vitals"
+Invoke-AuraRuntime "pc analytics"
+Invoke-AuraRuntime "iot status"
+git status
+
+Expected:
+- Local JSON telemetry created.
+- Local Markdown proof created.
+- No AWS credentials required.
+- No OpenAI key required.
+- No network publishing.
+- Final output recommends checkpoint.
+
+After successful test, recommend but do not automatically run:
+
+git add .\aura-runtime.ps1 .\Aura\Skills\PcAnalytics.ps1 .\Aura\Config\commands.json .\artifacts\iot\
+git commit -m "Add Aura PC analytics IoT JSON skill"
