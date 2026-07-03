@@ -74,6 +74,12 @@ function Invoke-AuraRegistryCommand {
             Invoke-AuraVitals
             break
         }
+        "help|commands|what can you do" {
+            . .\Aura\Skills\Help.ps1
+            Invoke-AuraHelp
+            break
+        }
+
 
 
         default {
@@ -133,6 +139,12 @@ function Invoke-AuraRuntime {
             Invoke-AuraVitals
             break
         }
+        "help|commands|what can you do" {
+            . .\Aura\Skills\Help.ps1
+            Invoke-AuraHelp
+            break
+        }
+
 
 
 
@@ -148,6 +160,7 @@ function Invoke-AuraRuntime {
 }
 
 Write-Host "Aura runtime repaired." -ForegroundColor Green
+
 
 
 
