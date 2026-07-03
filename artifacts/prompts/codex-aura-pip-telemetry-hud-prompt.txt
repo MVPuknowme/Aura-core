@@ -1,0 +1,132 @@
+Build an Aura desktop PiP telemetry HUD.
+
+Goal:
+Add a small picture-in-picture style telemetry panel to the Aura desktop app UI so that while Aura is open, the user can see live workload/performance and runtime state.
+
+Design intent:
+- Aura logo/photo stays in the top left.
+- New telemetry PiP panel appears in the top right, visually balanced opposite the logo/photo.
+- Panel should look like a compact floating HUD card.
+- It should feel like a live operator console, not a giant dashboard.
+
+Scope:
+Update the Aura desktop app files so the telemetry HUD appears in the running app.
+
+Expected files to inspect/update:
+- desktop-gpt/index.html
+- desktop-gpt/main.cjs
+- desktop-gpt/preload.cjs
+- optional local helper in desktop-gpt or Aura/Skills if needed
+
+Do not:
+- require OpenAI API
+- require AWS credentials
+- publish telemetry externally
+- expose secrets
+- make destructive system changes
+- block the app if telemetry cannot load
+
+Telemetry data source:
+Primary:
+- latest JSON under artifacts/iot/pc-analytics/
+Secondary fallback:
+- local system info directly from Electron/Node if JSON is missing
+
+Display fields:
+- CPU %
+- Memory used %
+- Disk free / used %
+- Active route
+- Proof file count
+- Aura mode
+- OpenAI mode
+- Raw shell state
+- Last update time
+
+UI requirements:
+1. Add a top-right floating panel:
+   - small rounded rectangle
+   - semi-transparent dark background
+   - subtle border/glow
+   - compact text
+   - readable at a glance
+
+2. Suggested title:
+   "AURA LIVE"
+   or
+   "TELEMETRY"
+
+3. Add small status pills:
+   - Route: active route name
+   - Safe: yes/no
+   - Mode: local/offline
+
+4. Show basic live metrics:
+   - CPU
+   - Memory
+   - Disk
+   - Proofs
+   - Refresh timestamp
+
+5. Auto-refresh every 5 seconds.
+
+6. If telemetry unavailable, show:
+   - "Telemetry unavailable"
+   - and do not crash app
+
+Implementation guidance:
+- preload.cjs should expose a safe telemetry reader bridge to the renderer
+- main.cjs can use ipcMain.handle if needed
+- renderer in index.html should poll telemetry safely
+- use local JSON if available
+- if no JSON exists, compute lightweight system metrics directly
+- keep it read-only
+
+Recommended IPC shape:
+window.auraTelemetry.getSnapshot()
+
+Suggested returned object:
+{
+  ok: true,
+  timestamp: "",
+  auraMode: "local",
+  openAiMode: "offline",
+  rawShell: "disabled",
+  safeMode: true,
+  activeRoute: "vercel-production",
+  proofFiles: 0,
+  cpuPercent: 0,
+  memoryUsedPercent: 0,
+  diskUsedPercent: 0,
+  diskFreeGb: 0,
+  source: "artifacts/iot/pc-analytics/latest" or "live-system"
+}
+
+Visual placement:
+- telemetry HUD anchored top: 16px, right: 16px
+- aura emblem block remains top left
+- avoid covering core chat controls
+
+Success criteria:
+- launch app with npm start
+- telemetry HUD appears in top right
+- values refresh automatically
+- app remains stable if telemetry JSON is missing
+- HUD looks clean and readable
+- no cloud publish, no secrets, no API dependency
+
+Nice-to-have:
+- green/yellow/red color cue for usage thresholds
+- tiny sparkline placeholder area for future expansion
+- click HUD to expand/collapse details
+
+After implementation, provide local test steps:
+1. npm start
+2. confirm top-left Aura emblem remains visible
+3. confirm top-right telemetry HUD appears
+4. confirm refresh updates every 5 seconds
+5. confirm missing telemetry file falls back gracefully
+
+After successful local test, recommend but do not auto-run:
+git add .\desktop-gpt\index.html .\desktop-gpt\main.cjs .\desktop-gpt\preload.cjs
+git commit -m "Add Aura PiP telemetry HUD"
