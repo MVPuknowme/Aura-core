@@ -37,3 +37,4 @@ Aura/Inbox/*
 !Aura/Inbox/Unsorted/
 Aura/Inbox/Unsorted/*
 !Aura/Inbox/Unsorted/.gitkeep
+artifacts/receipts/filing-validation-report.md
