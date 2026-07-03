@@ -103,9 +103,50 @@
       background: linear-gradient(135deg, #00f5d4, #ff4fd8);
       font-size: 12px;
     }
-  </style>
+  
+.aura-brand {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 18px;
+  background: rgba(8, 12, 28, 0.72);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 0 24px rgba(34, 245, 230, 0.24);
+}
+
+.aura-emblem {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+.aura-name {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.aura-subtitle {
+  font-size: 13px;
+  color: #22f5e6;
+}
+</style>
 </head>
 <body>
+<div class="aura-brand">
+  <img src="./assets/aura-emblem.png" class="aura-emblem" />
+  <div>
+    <div class="aura-name">AURA</div>
+    <div class="aura-subtitle">The Wind of Change</div>
+  </div>
+</div>
+
   <header>
     <h1>🩷 Aura GPT Desktop 🩵</h1>
     <div class="subtitle">Windows 10 app shell Ã¢â‚¬Â¢ no Edge tab Ã¢â‚¬Â¢ no raw PowerShell execution</div>
@@ -177,3 +218,4 @@
   </script>
 </body>
 </html>
+
