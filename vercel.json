@@ -3,7 +3,7 @@
   "version": 2,
   "framework": null,
   "installCommand": "npm exec --yes --package=pnpm@10.23.0 -- pnpm install --frozen-lockfile",
-  "buildCommand": "node -e \"console.log('SKYGRID Emergency Data On-Ramp API deployment: no frontend build required')\"",
+  "buildCommand": "node scripts/vercel-build.mjs",
   "outputDirectory": null,
   "redirects": [
     { "source": "/articles/skygrid-dispatcher-public-demo.md", "destination": "/articles/skygrid-dispatcher-public-demo", "permanent": true }
