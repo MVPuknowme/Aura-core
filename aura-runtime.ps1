@@ -59,7 +59,8 @@ function Invoke-AuraRegistryCommand {
         }
 
         "Invoke-AuraRuntime" {
-            Write-Host "Runtime diagnostic route is registered. Direct implementation pending." -ForegroundColor Yellow
+            . .\Aura\Skills\Diagnostics.ps1
+            Invoke-AuraWhereAreWe
             return $true
         }
 
@@ -135,6 +136,7 @@ function Invoke-AuraRuntime {
 }
 
 Write-Host "Aura runtime repaired." -ForegroundColor Green
+
 
 
 

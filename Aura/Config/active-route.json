@@ -1,0 +1,8 @@
+{
+    "selected_at":  "2026-07-03T14:17:13.6200606-07:00",
+    "name":  "vercel-production",
+    "url":  "https://aura-core-t2t5.vercel.app",
+    "priority":  2,
+    "average_latency_ms":  263,
+    "reason":  "Passed all required endpoints with best latency/priority score."
+}
