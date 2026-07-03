@@ -1,0 +1,69 @@
+Upgrade Aura FilePostman skill from placeholder to real inbox sorter.
+
+Goal:
+Invoke-AuraRuntime "sort inbox" should classify files in Aura/Inbox and copy them to the correct approved folder with a receipt.
+
+Rules:
+- Local mode only.
+- No OpenAI API required.
+- No raw shell execution from user text.
+- No deletes.
+- No destructive moves.
+- No overwrite; use duplicate-safe timestamped names.
+- Do not process Aura/Inbox/Unsorted recursively.
+- Do not print secrets or file contents.
+- Every routed file gets a receipt JSON.
+- Unknown files go to Aura/Inbox/Unsorted.
+
+Update:
+Aura/Skills/FilePostman.ps1
+
+Implement:
+- Get-AuraFileClassification
+- New-AuraDuplicateSafePath
+- New-AuraFileReceipt
+- Invoke-AuraSortInbox
+
+Classification:
+- name contains "prompt" -> artifacts/prompts/
+- name contains "training" -> artifacts/training/
+- name contains "validation" -> artifacts/validation/
+- name contains "newman" -> artifacts/validation/
+- name contains "proof" and extension .json -> artifacts/training/
+- extension .pnpk -> artifacts/pnpk/packages/
+- name contains "pnpk" and "proof" -> artifacts/pnpk/proofs/
+- extension .md and name contains "report" -> artifacts/reports/
+- name contains "collection" or extension .postman_collection.json -> postman/
+- unknown -> Aura/Inbox/Unsorted/
+
+Receipt path:
+artifacts/receipts/
+
+Receipt schema:
+{
+  "format": "aura.file.receipt",
+  "version": "0.1.0",
+  "source_path": "",
+  "destination_path": "",
+  "classification": "",
+  "action": "copied",
+  "created_at": "",
+  "raw_shell_execution": false,
+  "openai_required": false,
+  "checkpoint_recommendation": "Review routed files and checkpoint when ready."
+}
+
+Success test:
+. .\aura-runtime.ps1
+Invoke-AuraRuntime "inbox status"
+Invoke-AuraRuntime "sort inbox"
+Invoke-AuraRuntime "show receipts"
+git status
+
+Expected:
+- Files in Aura/Inbox are copied to correct destinations.
+- Original inbox files remain.
+- Receipt JSON files are created.
+- Unknown files are copied to Aura/Inbox/Unsorted.
+- No deletes.
+- Final output recommends checkpoint.
