@@ -378,20 +378,6 @@ function Invoke-AuraRuntimeBase {
 Write-Host "Aura runtime repaired." -ForegroundColor Green
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # === AURA Exact Intent Wrapper ===
 function Invoke-AuraRuntime {
     param(
@@ -400,42 +386,45 @@ function Invoke-AuraRuntime {
     )
 
     $normalized = $Command.Trim().ToLowerInvariant()
+    $repo = "E:\Aura-core"
 
-    switch -Regex ($normalized) {
-        '^(aws connected|connect aws|aws whoami)$' {
-            . .\Aura\Skills\AwsConnected.ps1
-            Invoke-AuraAwsConnected
-            return
-        }
-
-        '^(support console status|aws support policies|support console policies)$' {
-            . .\Aura\Skills\AwsConnected.ps1
-            Test-AuraAwsSupportPolicies
-            return
-        }
-
-        '^(cloudshell handoff|aws cloud shell|link aws cloudshell)$' {
-            . .\Aura\Skills\AwsCloudShell.ps1
-            New-AuraCloudShellHandoff
-            return
-        }
-
-        '^(cloudshell status|aws handoff status)$' {
-            . .\Aura\Skills\AwsCloudShell.ps1
-            Show-AuraCloudShellStatus
-            return
-        }
-
-        '^(cockpit status|skygrid brief|system brief|morning brief|emergency on-ramp status)$' {
-            . .\Aura\Skills\SkygridBrief.ps1
-            Invoke-AuraSkygridBrief
-            return
-        }
-
-        default {
-            Invoke-AuraRuntimeBase $Command
-            return
-        }
+    if ($normalized -match '^(aws connected|connect aws|aws whoami)$') {
+        . (Join-Path $repo "Aura\Skills\AwsConnected.ps1")
+        Invoke-AuraAwsConnected
+        return
     }
+
+    if ($normalized -match '^(support console status|aws support policies|support console policies)$') {
+        . (Join-Path $repo "Aura\Skills\AwsConnected.ps1")
+        Test-AuraAwsSupportPolicies
+        return
+    }
+
+    if ($normalized -match '^(cloudshell handoff|aws cloud shell|link aws cloudshell)$') {
+        . (Join-Path $repo "Aura\Skills\AwsCloudShell.ps1")
+        New-AuraCloudShellHandoff
+        return
+    }
+
+    if ($normalized -match '^(cloudshell status|aws handoff status)$') {
+        . (Join-Path $repo "Aura\Skills\AwsCloudShell.ps1")
+        Show-AuraCloudShellStatus
+        return
+    }
+
+    if ($normalized -match '^(cockpit status|skygrid brief|system brief|morning brief|emergency on-ramp status)$') {
+        . (Join-Path $repo "Aura\Skills\SkygridBrief.ps1")
+        Invoke-AuraSkygridBrief
+        return
+    }
+
+    if ($normalized -match '^(config needs|configuration needs|aura config|config doctor|doctor)$') {
+        . (Join-Path $repo "Aura\Skills\ConfigDoctor.ps1")
+        Invoke-AuraConfigDoctor
+        return
+    }
+
+    Invoke-AuraRuntimeBase $Command
 }
 # === End AURA Exact Intent Wrapper ===
+
