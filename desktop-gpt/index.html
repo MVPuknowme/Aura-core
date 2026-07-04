@@ -299,6 +299,296 @@
     color: rgba(234,248,255,0.52);
   }
 </style>
+<style id="aura-layout-top-right-pip-stack">
+  /* Intended Aura cockpit layout:
+     top-left logo/photo, top-right descending telemetry,
+     bottom-left command text/input. */
+
+  header,
+  .header,
+  .app-header,
+  .topbar,
+  .titlebar {
+    border-bottom: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .aura-brand,
+  .brand,
+  .logo,
+  .aura-emblem {
+    position: relative !important;
+    z-index: 10000 !important;
+  }
+
+  #aura-pip-telemetry,
+  .aura-pip-telemetry {
+    position: fixed !important;
+    top: 16px !important;
+    right: 16px !important;
+    bottom: auto !important;
+    left: auto !important;
+    width: 270px !important;
+    max-height: calc(100vh - 36px) !important;
+    overflow: hidden !important;
+    z-index: 9999 !important;
+  }
+
+  #aura-live-pings,
+  .aura-live-pings {
+    margin-top: 12px !important;
+    padding-top: 10px !important;
+    border-top: 1px solid rgba(142,234,255,0.18) !important;
+    max-height: 170px !important;
+    overflow: hidden !important;
+  }
+
+  /* Keep command/input area down-left, away from top logo + top-right telemetry. */
+  .composer,
+  .chat-input,
+  .input-row,
+  .prompt-box,
+  .composer-panel,
+  .input-panel,
+  form {
+    position: fixed !important;
+    left: 18px !important;
+    bottom: 18px !important;
+    width: min(560px, calc(100vw - 330px)) !important;
+    max-width: 560px !important;
+    z-index: 9000 !important;
+  }
+
+  textarea,
+  input[type="text"] {
+    max-width: 100% !important;
+  }
+
+  /* Conversation/output area gets breathing room from logo, PiPs, and bottom command box. */
+  main,
+  .main,
+  .app-main,
+  .chat-shell,
+  .chat-container,
+  .conversation,
+  .conversation-box,
+  #chat,
+  #messages {
+    padding-top: 92px !important;
+    padding-right: 320px !important;
+    padding-bottom: 160px !important;
+    padding-left: 18px !important;
+    box-sizing: border-box !important;
+  }
+
+  @media (max-width: 900px) {
+    #aura-pip-telemetry,
+    .aura-pip-telemetry {
+      top: 10px !important;
+      right: 10px !important;
+      width: 235px !important;
+      transform: scale(0.92);
+      transform-origin: top right;
+    }
+
+    .composer,
+    .chat-input,
+    .input-row,
+    .prompt-box,
+    .composer-panel,
+    .input-panel,
+    form {
+      left: 10px !important;
+      bottom: 10px !important;
+      width: calc(100vw - 20px) !important;
+    }
+
+    main,
+    .main,
+    .app-main,
+    .chat-shell,
+    .chat-container,
+    .conversation,
+    .conversation-box,
+    #chat,
+    #messages {
+      padding-right: 10px !important;
+      padding-bottom: 150px !important;
+    }
+  }
+</style>
+<style id="aura-header-zindex-fix">
+  /* Keep header from covering Aura telemetry */
+  header,
+  .header,
+  .app-header,
+  .topbar,
+  .titlebar {
+    z-index: 100 !important;
+    position: relative !important;
+    pointer-events: auto !important;
+    border-bottom: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* Aura logo remains visible but below telemetry stack */
+  .aura-brand,
+  .brand,
+  .logo,
+  .aura-emblem {
+    z-index: 5000 !important;
+    position: relative !important;
+  }
+
+  /* Telemetry stack always floats above header */
+  #aura-pip-telemetry,
+  .aura-pip-telemetry {
+    z-index: 2147483000 !important;
+    position: fixed !important;
+    top: 72px !important;
+    right: 16px !important;
+    left: auto !important;
+    bottom: auto !important;
+  }
+
+  #aura-live-pings,
+  .aura-live-pings {
+    z-index: 2147483000 !important;
+    position: relative !important;
+  }
+</style>
+<style id="aura-separate-route-pip-and-chat-border">
+  /* Local telemetry PiP: top-right primary box */
+  #aura-pip-telemetry,
+  .aura-pip-telemetry {
+    position: fixed !important;
+    top: 72px !important;
+    right: 16px !important;
+    left: auto !important;
+    bottom: auto !important;
+    width: 270px !important;
+    z-index: 2147483000 !important;
+    overflow: visible !important;
+  }
+
+  /* Route telemetry / live pings: separate descending box */
+  #aura-live-pings,
+  .aura-live-pings {
+    position: fixed !important;
+    top: 330px;
+    right: 16px !important;
+    left: auto !important;
+    width: 270px !important;
+    margin-top: 0 !important;
+    padding: 12px 14px !important;
+    border-radius: 18px !important;
+    background: rgba(8, 12, 28, 0.84) !important;
+    border: 1px solid rgba(255, 190, 96, 0.34) !important;
+    box-shadow: 0 0 24px rgba(255, 160, 64, 0.12), inset 0 0 18px rgba(255,255,255,0.03) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    z-index: 2147482999 !important;
+    box-sizing: border-box !important;
+  }
+
+  .aura-pings-title {
+    color: rgba(255, 210, 145, 0.95) !important;
+  }
+
+  /* Chat/conversation visual border */
+  main,
+  .main,
+  .app-main,
+  .chat-shell,
+  .chat-container,
+  .conversation,
+  .conversation-box,
+  #chat,
+  #messages {
+    border: 1px solid rgba(142,234,255,0.22) !important;
+    border-radius: 22px !important;
+    box-shadow: 0 0 30px rgba(66, 211, 255, 0.08), inset 0 0 20px rgba(255,255,255,0.025) !important;
+    background: rgba(8, 12, 28, 0.28) !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Keep chat clear of right telemetry stack and bottom command area */
+  main,
+  .main,
+  .app-main,
+  .chat-shell,
+  .chat-container,
+  .conversation,
+  .conversation-box,
+  #chat,
+  #messages {
+    margin-right: 318px !important;
+    padding-right: 18px !important;
+    padding-bottom: 145px !important;
+  }
+
+  /* Keep command/input bottom-left */
+  .composer,
+  .chat-input,
+  .input-row,
+  .prompt-box,
+  .composer-panel,
+  .input-panel,
+  form {
+    left: 18px !important;
+    bottom: 18px !important;
+    max-width: 560px !important;
+    z-index: 9000 !important;
+  }
+</style>
+
+<script id="aura-route-pip-position-script">
+  (function () {
+    function positionRoutePip() {
+      var local = document.getElementById("aura-pip-telemetry");
+      var route = document.getElementById("aura-live-pings");
+      if (!local || !route) return;
+
+      var rect = local.getBoundingClientRect();
+      route.style.top = Math.ceil(rect.bottom + 12) + "px";
+      route.style.right = "16px";
+      route.style.width = Math.ceil(rect.width) + "px";
+    }
+
+    window.addEventListener("load", positionRoutePip);
+    window.addEventListener("resize", positionRoutePip);
+    setInterval(positionRoutePip, 2000);
+
+    document.addEventListener("click", function () {
+      setTimeout(positionRoutePip, 50);
+    });
+  })();
+</script>
+<style id="aura-single-chat-border-fix">
+  /* Remove duplicate borders from nested chat containers */
+  main,
+  .main,
+  .app-main,
+  .chat-shell,
+  .chat-container,
+  .conversation,
+  .conversation-box,
+  #chat,
+  #messages {
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* Apply ONE border to the visible conversation surface only */
+  #messages {
+    border: 1px solid rgba(142,234,255,0.24) !important;
+    border-radius: 22px !important;
+    box-shadow: 0 0 30px rgba(66, 211, 255, 0.08), inset 0 0 20px rgba(255,255,255,0.025) !important;
+    background: rgba(8, 12, 28, 0.28) !important;
+    box-sizing: border-box !important;
+    padding: 16px !important;
+  }
+</style>
 </head>
 <body>
 <div class="aura-brand">
@@ -514,6 +804,12 @@
 </script>
 </body>
 </html>
+
+
+
+
+
+
 
 
 
