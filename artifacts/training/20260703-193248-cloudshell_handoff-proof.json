@@ -1,0 +1,14 @@
+{
+    "format":  "aura.training.proof",
+    "version":  "0.1.0",
+    "created_at":  "2026-07-03T19:32:48.0886806-07:00",
+    "intent":  "cloudshell_handoff",
+    "phrase":  "cloudshell handoff",
+    "meaning":  "Generate a safe AWS CloudShell bootstrap handoff script while keeping credentials inside AWS Console and outside Aura.",
+    "expected_command":  "aws cloud shell",
+    "safety":  "Local handoff generation only; no local AWS secret storage.",
+    "mode":  "local",
+    "openai_required":  false,
+    "raw_shell_execution":  false,
+    "wallet_mode":  "read-only"
+}

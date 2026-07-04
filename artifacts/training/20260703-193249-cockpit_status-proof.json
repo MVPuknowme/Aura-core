@@ -1,0 +1,14 @@
+{
+    "format":  "aura.training.proof",
+    "version":  "0.1.0",
+    "created_at":  "2026-07-03T19:32:49.1058283-07:00",
+    "intent":  "cockpit_status",
+    "phrase":  "cockpit status",
+    "meaning":  "Summarize Aura cockpit state: local telemetry, network telemetry, chat box, AWS connected state, route proof, and safe local/offline mode.",
+    "expected_command":  "skygrid brief",
+    "safety":  "Status summary only; no deploy, no push, no wallet signing.",
+    "mode":  "local",
+    "openai_required":  false,
+    "raw_shell_execution":  false,
+    "wallet_mode":  "read-only"
+}

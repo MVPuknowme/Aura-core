@@ -1,6 +1,6 @@
 # AURA Proof Report
 
-Generated: 2026-07-03T15:07:23.1978154-07:00
+Generated: 2026-07-03T19:32:56.8241514-07:00
 
 ## Runtime
 
@@ -12,7 +12,7 @@ Generated: 2026-07-03T15:07:23.1978154-07:00
 ## Git
 
 - Branch: MVPuknowme
-- Commit: 34f51f7
+- Commit: 28f9161
 - Working Tree: changes present
 
 ## Commands
@@ -51,10 +51,26 @@ Generated: 2026-07-03T15:07:23.1978154-07:00
 
 - Name: vercel-production
 - URL: https://aura-core-t2t5.vercel.app
-- Average Latency: 198.67 ms
+- Average Latency: 201.67 ms
 - Reason: Passed all required endpoints with best latency/priority score.
 
 ## Training Proof Files
+
+- 20260703-193249-cockpit_status-proof.json
+  - Modified: 7/3/2026 7:32:49 PM
+  - Size: 601 bytes
+
+- 20260703-193248-cloudshell_handoff-proof.json
+  - Modified: 7/3/2026 7:32:48 PM
+  - Size: 591 bytes
+
+- 20260703-193247-support_console_status-proof.json
+  - Modified: 7/3/2026 7:32:47 PM
+  - Size: 545 bytes
+
+- 20260703-193246-aws_connected-proof.json
+  - Modified: 7/3/2026 7:32:46 PM
+  - Size: 596 bytes
 
 - 20260703-141023-user-phrase-road-less-traveled-proof.json
   - Modified: 7/3/2026 2:10:23 PM

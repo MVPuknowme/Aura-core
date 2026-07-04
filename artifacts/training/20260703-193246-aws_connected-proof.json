@@ -1,0 +1,14 @@
+{
+    "format":  "aura.training.proof",
+    "version":  "0.1.0",
+    "created_at":  "2026-07-03T19:32:46.0663003-07:00",
+    "intent":  "aws_connected",
+    "phrase":  "aws connected",
+    "meaning":  "Verify the current AWS CLI session, confirm the AWS account and caller ARN, and write local AWS connection state without storing credentials.",
+    "expected_command":  "aws connected",
+    "safety":  "Read-only identity check; no AWS keys stored by Aura.",
+    "mode":  "local",
+    "openai_required":  false,
+    "raw_shell_execution":  false,
+    "wallet_mode":  "read-only"
+}

@@ -1,0 +1,14 @@
+{
+    "format":  "aura.training.proof",
+    "version":  "0.1.0",
+    "created_at":  "2026-07-03T19:32:47.0738434-07:00",
+    "intent":  "support_console_status",
+    "phrase":  "support console status",
+    "meaning":  "Check whether the connected AWS IAM user or role has support console policies attached.",
+    "expected_command":  "support console status",
+    "safety":  "Read-only IAM policy listing.",
+    "mode":  "local",
+    "openai_required":  false,
+    "raw_shell_execution":  false,
+    "wallet_mode":  "read-only"
+}
