@@ -41,3 +41,6 @@ artifacts/receipts/filing-validation-report.md
 
 # Aura local PC telemetry - keep private/local
 artifacts/iot/
+
+# Aura AWS CloudShell local handoff artifacts
+artifacts/aws/cloudshell/
