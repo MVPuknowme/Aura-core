@@ -299,296 +299,6 @@
     color: rgba(234,248,255,0.52);
   }
 </style>
-<style id="aura-layout-top-right-pip-stack">
-  /* Intended Aura cockpit layout:
-     top-left logo/photo, top-right descending telemetry,
-     bottom-left command text/input. */
-
-  header,
-  .header,
-  .app-header,
-  .topbar,
-  .titlebar {
-    border-bottom: 0 !important;
-    box-shadow: none !important;
-  }
-
-  .aura-brand,
-  .brand,
-  .logo,
-  .aura-emblem {
-    position: relative !important;
-    z-index: 10000 !important;
-  }
-
-  #aura-pip-telemetry,
-  .aura-pip-telemetry {
-    position: fixed !important;
-    top: 16px !important;
-    right: 16px !important;
-    bottom: auto !important;
-    left: auto !important;
-    width: 270px !important;
-    max-height: calc(100vh - 36px) !important;
-    overflow: hidden !important;
-    z-index: 9999 !important;
-  }
-
-  #aura-live-pings,
-  .aura-live-pings {
-    margin-top: 12px !important;
-    padding-top: 10px !important;
-    border-top: 1px solid rgba(142,234,255,0.18) !important;
-    max-height: 170px !important;
-    overflow: hidden !important;
-  }
-
-  /* Keep command/input area down-left, away from top logo + top-right telemetry. */
-  .composer,
-  .chat-input,
-  .input-row,
-  .prompt-box,
-  .composer-panel,
-  .input-panel,
-  form {
-    position: fixed !important;
-    left: 18px !important;
-    bottom: 18px !important;
-    width: min(560px, calc(100vw - 330px)) !important;
-    max-width: 560px !important;
-    z-index: 9000 !important;
-  }
-
-  textarea,
-  input[type="text"] {
-    max-width: 100% !important;
-  }
-
-  /* Conversation/output area gets breathing room from logo, PiPs, and bottom command box. */
-  main,
-  .main,
-  .app-main,
-  .chat-shell,
-  .chat-container,
-  .conversation,
-  .conversation-box,
-  #chat,
-  #messages {
-    padding-top: 92px !important;
-    padding-right: 320px !important;
-    padding-bottom: 160px !important;
-    padding-left: 18px !important;
-    box-sizing: border-box !important;
-  }
-
-  @media (max-width: 900px) {
-    #aura-pip-telemetry,
-    .aura-pip-telemetry {
-      top: 10px !important;
-      right: 10px !important;
-      width: 235px !important;
-      transform: scale(0.92);
-      transform-origin: top right;
-    }
-
-    .composer,
-    .chat-input,
-    .input-row,
-    .prompt-box,
-    .composer-panel,
-    .input-panel,
-    form {
-      left: 10px !important;
-      bottom: 10px !important;
-      width: calc(100vw - 20px) !important;
-    }
-
-    main,
-    .main,
-    .app-main,
-    .chat-shell,
-    .chat-container,
-    .conversation,
-    .conversation-box,
-    #chat,
-    #messages {
-      padding-right: 10px !important;
-      padding-bottom: 150px !important;
-    }
-  }
-</style>
-<style id="aura-header-zindex-fix">
-  /* Keep header from covering Aura telemetry */
-  header,
-  .header,
-  .app-header,
-  .topbar,
-  .titlebar {
-    z-index: 100 !important;
-    position: relative !important;
-    pointer-events: auto !important;
-    border-bottom: 0 !important;
-    box-shadow: none !important;
-  }
-
-  /* Aura logo remains visible but below telemetry stack */
-  .aura-brand,
-  .brand,
-  .logo,
-  .aura-emblem {
-    z-index: 5000 !important;
-    position: relative !important;
-  }
-
-  /* Telemetry stack always floats above header */
-  #aura-pip-telemetry,
-  .aura-pip-telemetry {
-    z-index: 2147483000 !important;
-    position: fixed !important;
-    top: 72px !important;
-    right: 16px !important;
-    left: auto !important;
-    bottom: auto !important;
-  }
-
-  #aura-live-pings,
-  .aura-live-pings {
-    z-index: 2147483000 !important;
-    position: relative !important;
-  }
-</style>
-<style id="aura-separate-route-pip-and-chat-border">
-  /* Local telemetry PiP: top-right primary box */
-  #aura-pip-telemetry,
-  .aura-pip-telemetry {
-    position: fixed !important;
-    top: 72px !important;
-    right: 16px !important;
-    left: auto !important;
-    bottom: auto !important;
-    width: 270px !important;
-    z-index: 2147483000 !important;
-    overflow: visible !important;
-  }
-
-  /* Route telemetry / live pings: separate descending box */
-  #aura-live-pings,
-  .aura-live-pings {
-    position: fixed !important;
-    top: 330px;
-    right: 16px !important;
-    left: auto !important;
-    width: 270px !important;
-    margin-top: 0 !important;
-    padding: 12px 14px !important;
-    border-radius: 18px !important;
-    background: rgba(8, 12, 28, 0.84) !important;
-    border: 1px solid rgba(255, 190, 96, 0.34) !important;
-    box-shadow: 0 0 24px rgba(255, 160, 64, 0.12), inset 0 0 18px rgba(255,255,255,0.03) !important;
-    backdrop-filter: blur(14px) !important;
-    -webkit-backdrop-filter: blur(14px) !important;
-    z-index: 2147482999 !important;
-    box-sizing: border-box !important;
-  }
-
-  .aura-pings-title {
-    color: rgba(255, 210, 145, 0.95) !important;
-  }
-
-  /* Chat/conversation visual border */
-  main,
-  .main,
-  .app-main,
-  .chat-shell,
-  .chat-container,
-  .conversation,
-  .conversation-box,
-  #chat,
-  #messages {
-    border: 1px solid rgba(142,234,255,0.22) !important;
-    border-radius: 22px !important;
-    box-shadow: 0 0 30px rgba(66, 211, 255, 0.08), inset 0 0 20px rgba(255,255,255,0.025) !important;
-    background: rgba(8, 12, 28, 0.28) !important;
-    box-sizing: border-box !important;
-  }
-
-  /* Keep chat clear of right telemetry stack and bottom command area */
-  main,
-  .main,
-  .app-main,
-  .chat-shell,
-  .chat-container,
-  .conversation,
-  .conversation-box,
-  #chat,
-  #messages {
-    margin-right: 318px !important;
-    padding-right: 18px !important;
-    padding-bottom: 145px !important;
-  }
-
-  /* Keep command/input bottom-left */
-  .composer,
-  .chat-input,
-  .input-row,
-  .prompt-box,
-  .composer-panel,
-  .input-panel,
-  form {
-    left: 18px !important;
-    bottom: 18px !important;
-    max-width: 560px !important;
-    z-index: 9000 !important;
-  }
-</style>
-
-<script id="aura-route-pip-position-script">
-  (function () {
-    function positionRoutePip() {
-      var local = document.getElementById("aura-pip-telemetry");
-      var route = document.getElementById("aura-live-pings");
-      if (!local || !route) return;
-
-      var rect = local.getBoundingClientRect();
-      route.style.top = Math.ceil(rect.bottom + 12) + "px";
-      route.style.right = "16px";
-      route.style.width = Math.ceil(rect.width) + "px";
-    }
-
-    window.addEventListener("load", positionRoutePip);
-    window.addEventListener("resize", positionRoutePip);
-    setInterval(positionRoutePip, 2000);
-
-    document.addEventListener("click", function () {
-      setTimeout(positionRoutePip, 50);
-    });
-  })();
-</script>
-<style id="aura-single-chat-border-fix">
-  /* Remove duplicate borders from nested chat containers */
-  main,
-  .main,
-  .app-main,
-  .chat-shell,
-  .chat-container,
-  .conversation,
-  .conversation-box,
-  #chat,
-  #messages {
-    border: 0 !important;
-    box-shadow: none !important;
-  }
-
-  /* Apply ONE border to the visible conversation surface only */
-  #messages {
-    border: 1px solid rgba(142,234,255,0.24) !important;
-    border-radius: 22px !important;
-    box-shadow: 0 0 30px rgba(66, 211, 255, 0.08), inset 0 0 20px rgba(255,255,255,0.025) !important;
-    background: rgba(8, 12, 28, 0.28) !important;
-    box-sizing: border-box !important;
-    padding: 16px !important;
-  }
-</style>
 </head>
 <body>
 <div class="aura-brand">
@@ -802,8 +512,333 @@
     setInterval(refreshAuraPings, 30000);
   })();
 </script>
+<style id="aura-final-cockpit-force-v2">
+  /* FINAL COCKPIT FORCE PATCH */
+
+  header,
+  .header,
+  .app-header,
+  .topbar,
+  .titlebar {
+    border-bottom: 0 !important;
+    box-shadow: none !important;
+    z-index: 100 !important;
+  }
+
+  .aura-brand,
+  .brand,
+  .logo,
+  .aura-emblem {
+    position: relative !important;
+    z-index: 5000 !important;
+  }
+
+  /* Local PC telemetry: top-right */
+  #aura-pip-telemetry,
+  .aura-pip-telemetry {
+    position: fixed !important;
+    top: 72px !important;
+    right: 16px !important;
+    bottom: auto !important;
+    left: auto !important;
+    width: 270px !important;
+    max-height: none !important;
+    overflow: visible !important;
+    z-index: 2147483000 !important;
+  }
+
+  /* Network telemetry: separate bottom-left box */
+  body > #aura-live-pings,
+  body > .aura-live-pings {
+    position: fixed !important;
+    left: 16px !important;
+    bottom: 16px !important;
+    top: auto !important;
+    right: auto !important;
+    width: 310px !important;
+    max-height: 220px !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 12px 14px !important;
+    border-radius: 18px !important;
+    background: rgba(8, 12, 28, 0.90) !important;
+    border: 1px solid rgba(255, 190, 96, 0.42) !important;
+    box-shadow: 0 0 24px rgba(255, 160, 64, 0.16), inset 0 0 18px rgba(255,255,255,0.035) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    z-index: 2147482999 !important;
+    box-sizing: border-box !important;
+  }
+
+  body > #aura-live-pings .aura-pings-title,
+  body > .aura-live-pings .aura-pings-title {
+    color: rgba(255, 210, 145, 0.98) !important;
+  }
+
+  /* Strip duplicate borders from possible nested chat layers */
+  main,
+  .main,
+  .app-main,
+  .chat-shell,
+  .chat-container,
+  .conversation,
+  .conversation-box,
+  #chat,
+  #messages {
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* One clean chat border only, selected by JS */
+  .aura-chat-border-target,
+  main.aura-chat-border-target,
+  .main.aura-chat-border-target,
+  .app-main.aura-chat-border-target,
+  .chat-shell.aura-chat-border-target,
+  .chat-container.aura-chat-border-target,
+  .conversation.aura-chat-border-target,
+  .conversation-box.aura-chat-border-target,
+  #chat.aura-chat-border-target,
+  #messages.aura-chat-border-target {
+    border: 1px solid rgba(142,234,255,0.26) !important;
+    border-radius: 22px !important;
+    box-shadow: 0 0 30px rgba(66, 211, 255, 0.10), inset 0 0 20px rgba(255,255,255,0.03) !important;
+    background: rgba(8, 12, 28, 0.28) !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Make room for right-side local telemetry */
+  .aura-chat-border-target {
+    margin-right: 318px !important;
+  }
+
+  @media (max-width: 900px) {
+    #aura-pip-telemetry,
+    .aura-pip-telemetry {
+      top: 64px !important;
+      right: 10px !important;
+      width: 235px !important;
+    }
+
+    body > #aura-live-pings,
+    body > .aura-live-pings {
+      left: 10px !important;
+      bottom: 10px !important;
+      width: 265px !important;
+    }
+
+    .aura-chat-border-target {
+      margin-right: 0 !important;
+    }
+  }
+</style>
+
+<script id="aura-final-cockpit-force-v2-script">
+  (function () {
+    function moveNetworkTelemetry() {
+      var net = document.getElementById("aura-live-pings");
+      if (!net) return;
+
+      if (net.parentElement !== document.body) {
+        document.body.appendChild(net);
+      }
+
+      var title = net.querySelector(".aura-pings-title");
+      if (title) title.textContent = "NETWORK TELEMETRY";
+    }
+
+    function chooseChatBorderTarget() {
+      var selectors = [
+        ".chat-shell",
+        ".chat-container",
+        ".conversation-box",
+        ".conversation",
+        "#chat",
+        "#messages",
+        "main",
+        ".app-main",
+        ".main"
+      ];
+
+      var candidates = [];
+      selectors.forEach(function (selector) {
+        Array.prototype.forEach.call(document.querySelectorAll(selector), function (el) {
+          if (!el || el.id === "aura-pip-telemetry" || el.id === "aura-live-pings") return;
+          if (el.closest("#aura-pip-telemetry") || el.closest("#aura-live-pings")) return;
+
+          var rect = el.getBoundingClientRect();
+          if (rect.width < 250 || rect.height < 160) return;
+
+          candidates.push({
+            el: el,
+            area: rect.width * rect.height
+          });
+        });
+      });
+
+      Array.prototype.forEach.call(document.querySelectorAll(".aura-chat-border-target"), function (el) {
+        el.classList.remove("aura-chat-border-target");
+      });
+
+      if (!candidates.length) return;
+
+      candidates.sort(function (a, b) { return b.area - a.area; });
+      candidates[0].el.classList.add("aura-chat-border-target");
+    }
+
+    function applyAuraCockpitLayout() {
+      moveNetworkTelemetry();
+      chooseChatBorderTarget();
+    }
+
+    window.addEventListener("load", applyAuraCockpitLayout);
+    window.addEventListener("resize", applyAuraCockpitLayout);
+    document.addEventListener("DOMContentLoaded", applyAuraCockpitLayout);
+
+    setTimeout(applyAuraCockpitLayout, 100);
+    setTimeout(applyAuraCockpitLayout, 750);
+    setInterval(applyAuraCockpitLayout, 3000);
+  })();
+</script>
+<style id="aura-persistent-chat-flag-v1">
+  /*
+    Persistent chat control:
+    - keeps selected chat surface visible
+    - adds CHAT flag to recover/focus the chat if layout drifts
+  */
+
+  .aura-chat-border-target {
+    min-height: 260px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  #aura-chat-flag {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 2147483001;
+    border: 1px solid rgba(142,234,255,0.42);
+    border-radius: 999px;
+    padding: 9px 14px;
+    background: rgba(8, 12, 28, 0.90);
+    color: #eaf8ff;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    box-shadow: 0 0 22px rgba(66, 211, 255, 0.18), inset 0 0 14px rgba(255,255,255,0.035);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  #aura-chat-flag:hover {
+    border-color: rgba(142,234,255,0.78);
+    box-shadow: 0 0 28px rgba(66, 211, 255, 0.30), inset 0 0 14px rgba(255,255,255,0.05);
+  }
+
+  #aura-chat-flag.aura-chat-flag-pulse {
+    animation: auraChatFlagPulse 1.8s ease-in-out infinite;
+  }
+
+  @keyframes auraChatFlagPulse {
+    0%, 100% {
+      box-shadow: 0 0 18px rgba(66, 211, 255, 0.16);
+    }
+    50% {
+      box-shadow: 0 0 34px rgba(66, 211, 255, 0.48);
+    }
+  }
+</style>
+
+<script id="aura-persistent-chat-flag-script-v1">
+  (function () {
+    function getChatTarget() {
+      return document.querySelector(".aura-chat-border-target")
+        || document.querySelector(".chat-shell")
+        || document.querySelector(".chat-container")
+        || document.querySelector(".conversation-box")
+        || document.querySelector("#messages")
+        || document.querySelector("#chat")
+        || document.querySelector("main");
+    }
+
+    function getInputTarget() {
+      return document.querySelector("textarea")
+        || document.querySelector("input[type='text']")
+        || document.querySelector("[contenteditable='true']");
+    }
+
+    function ensureChatFlag() {
+      var existing = document.getElementById("aura-chat-flag");
+      if (existing) return existing;
+
+      var flag = document.createElement("button");
+      flag.id = "aura-chat-flag";
+      flag.type = "button";
+      flag.textContent = "CHAT";
+      flag.title = "Bring Aura chat into view";
+      document.body.appendChild(flag);
+
+      flag.addEventListener("click", function () {
+        var chat = getChatTarget();
+        if (chat) {
+          chat.classList.add("aura-chat-border-target");
+          chat.style.display = "";
+          chat.style.visibility = "visible";
+          chat.style.opacity = "1";
+          chat.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+        }
+
+        var input = getInputTarget();
+        if (input && input.focus) {
+          setTimeout(function () { input.focus(); }, 250);
+        }
+
+        flag.classList.remove("aura-chat-flag-pulse");
+      });
+
+      return flag;
+    }
+
+    function keepChatPersistent() {
+      var flag = ensureChatFlag();
+      var chat = getChatTarget();
+
+      if (!chat) {
+        flag.classList.add("aura-chat-flag-pulse");
+        return;
+      }
+
+      chat.classList.add("aura-chat-border-target");
+      chat.style.visibility = "visible";
+      chat.style.opacity = "1";
+
+      var rect = chat.getBoundingClientRect();
+      var offscreen = rect.bottom < 0 || rect.top > window.innerHeight || rect.width < 120 || rect.height < 80;
+
+      if (offscreen) {
+        flag.classList.add("aura-chat-flag-pulse");
+      } else {
+        flag.classList.remove("aura-chat-flag-pulse");
+      }
+    }
+
+    window.addEventListener("load", keepChatPersistent);
+    window.addEventListener("resize", keepChatPersistent);
+    document.addEventListener("DOMContentLoaded", keepChatPersistent);
+
+    setTimeout(keepChatPersistent, 100);
+    setTimeout(keepChatPersistent, 1000);
+    setInterval(keepChatPersistent, 3000);
+  })();
+</script>
 </body>
 </html>
+
+
+
 
 
 
