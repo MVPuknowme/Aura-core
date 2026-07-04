@@ -201,7 +201,7 @@ function Invoke-AuraRegistryCommand {
     }
 }
 
-function Invoke-AuraRuntime {
+function Invoke-AuraRuntimeBase {
     param([string]$InputText)
 
     switch -Regex ($InputText.ToLower()) {
@@ -390,3 +390,52 @@ Write-Host "Aura runtime repaired." -ForegroundColor Green
 
 
 
+
+
+# === AURA Exact Intent Wrapper ===
+function Invoke-AuraRuntime {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$Command
+    )
+
+    $normalized = $Command.Trim().ToLowerInvariant()
+
+    switch -Regex ($normalized) {
+        '^(aws connected|connect aws|aws whoami)$' {
+            . .\Aura\Skills\AwsConnected.ps1
+            Invoke-AuraAwsConnected
+            return
+        }
+
+        '^(support console status|aws support policies|support console policies)$' {
+            . .\Aura\Skills\AwsConnected.ps1
+            Test-AuraAwsSupportPolicies
+            return
+        }
+
+        '^(cloudshell handoff|aws cloud shell|link aws cloudshell)$' {
+            . .\Aura\Skills\AwsCloudShell.ps1
+            New-AuraCloudShellHandoff
+            return
+        }
+
+        '^(cloudshell status|aws handoff status)$' {
+            . .\Aura\Skills\AwsCloudShell.ps1
+            Show-AuraCloudShellStatus
+            return
+        }
+
+        '^(cockpit status|skygrid brief|system brief|morning brief|emergency on-ramp status)$' {
+            . .\Aura\Skills\SkygridBrief.ps1
+            Invoke-AuraSkygridBrief
+            return
+        }
+
+        default {
+            Invoke-AuraRuntimeBase $Command
+            return
+        }
+    }
+}
+# === End AURA Exact Intent Wrapper ===
