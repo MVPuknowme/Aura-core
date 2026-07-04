@@ -47,3 +47,6 @@ artifacts/aws/cloudshell/
 
 # Aura local/generated support artifacts
 artifacts/support/
+
+# Aura local/generated support artifacts
+artifacts/support/
