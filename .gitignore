@@ -44,3 +44,6 @@ artifacts/iot/
 
 # Aura AWS CloudShell local handoff artifacts
 artifacts/aws/cloudshell/
+
+# Aura local/generated support artifacts
+artifacts/support/

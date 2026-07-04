@@ -1,0 +1,16 @@
+﻿{
+  "mode": "aura-local-calm-mode",
+  "system": "SKYGRID Emergency Data On-Ramp / Aura Local Support",
+  "level": "downshift",
+  "scope": "local_device_support_only",
+  "rules": {
+    "no_psychic_confirmation_loop": true,
+    "no_unauthorized_scanning": true,
+    "no_private_data_movement": true,
+    "no_wallet_signing": true,
+    "no_transaction_broadcast": true,
+    "no_production_failover": true,
+    "treat_phone_issue_as_privacy_or_stress_signal_until_evidence": true,
+    "log_only_observable_facts": true
+  }
+}
