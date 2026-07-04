@@ -163,6 +163,24 @@ function Invoke-AuraRegistryCommand {
             Invoke-AuraSkygridBrief
             break
         }
+        "aws connected|connect aws|aws whoami" {
+            . .\Aura\Skills\AwsConnected.ps1
+            Invoke-AuraAwsConnected
+            break
+        }
+
+        "aws status|aws connection status" {
+            . .\Aura\Skills\AwsConnected.ps1
+            Show-AuraAwsConnection
+            break
+        }
+
+        "aws support policies|support console status" {
+            . .\Aura\Skills\AwsConnected.ps1
+            Test-AuraAwsSupportPolicies
+            break
+        }
+
 
 
 
@@ -318,6 +336,24 @@ function Invoke-AuraRuntime {
             Invoke-AuraSkygridBrief
             break
         }
+        "aws connected|connect aws|aws whoami" {
+            . .\Aura\Skills\AwsConnected.ps1
+            Invoke-AuraAwsConnected
+            break
+        }
+
+        "aws status|aws connection status" {
+            . .\Aura\Skills\AwsConnected.ps1
+            Show-AuraAwsConnection
+            break
+        }
+
+        "aws support policies|support console status" {
+            . .\Aura\Skills\AwsConnected.ps1
+            Test-AuraAwsSupportPolicies
+            break
+        }
+
 
 
 
@@ -340,6 +376,7 @@ function Invoke-AuraRuntime {
 }
 
 Write-Host "Aura runtime repaired." -ForegroundColor Green
+
 
 
 
