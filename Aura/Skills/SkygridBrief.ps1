@@ -54,6 +54,33 @@ function Invoke-AuraSkygridBrief {
     Write-Host ("PNPk Report:   {0}" -f $(if (Test-Path $pnpkReport) { "present" } else { "missing" }))
 
     Write-Host ""
+    Write-Host ""
+    Write-Host "AWS" -ForegroundColor Yellow
+    Write-Host "---"
+
+    $awsConnectionPath = "E:\Aura-core\Aura\State\aws-connected.json"
+    $awsSupportPath = "E:\Aura-core\Aura\State\aws-support-bootstrap.json"
+
+    if (Test-Path $awsConnectionPath) {
+        $aws = Get-Content $awsConnectionPath -Raw | ConvertFrom-Json
+        Write-Host ("Connected:     {0}" -f $aws.connected)
+        Write-Host ("Account:       {0}" -f $aws.account)
+        Write-Host ("Caller:        {0}" -f $aws.arn)
+        Write-Host "Aura keys:     not stored"
+    } else {
+        Write-Host "Connected:     not checked"
+    }
+
+    if (Test-Path $awsSupportPath) {
+        $support = Get-Content $awsSupportPath -Raw | ConvertFrom-Json
+        Write-Host ("Support User:  {0}" -f $support.iam_user)
+        Write-Host ("Support Group: {0}" -f $support.support_group)
+        Write-Host ("Policies:      {0}, {1}" -f $support.aws_managed_policy, $support.custom_policy)
+        Write-Host ("Bootstrap:     {0}" -f $support.status)
+    } else {
+        Write-Host "Support Setup: not recorded"
+    }
+
 
     Write-Host "Recommendation" -ForegroundColor Yellow
     Write-Host "--------------"
@@ -65,3 +92,4 @@ function Invoke-AuraSkygridBrief {
 
     Write-Host ""
 }
+
