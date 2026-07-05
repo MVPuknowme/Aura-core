@@ -1,9 +1,20 @@
+function getRequestUrl(req) {
+  const proto = req.headers["x-forwarded-proto"] || "https";
+  const host = req.headers.host || "localhost";
+  return new URL(req.url || "/api/pay/quote", `${proto}://${host}`);
+}
+
+function getSingleParam(searchParams, name, fallback = undefined) {
+  const value = searchParams.get(name);
+  return value ?? fallback;
+}
+
 export default function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
   res.setHeader("X-SKYGRID-Product", "SKYGRID Emergency Data On-Ramp");
 
-  if (req.method !== "GET") {
-    res.setHeader("Allow", "GET");
+  if (req.method !== "GET" && req.method !== "HEAD") {
+    res.setHeader("Allow", "GET, HEAD");
     return res.status(405).json({
       ok: false,
       system: "SKYGRID Emergency Data On-Ramp",
@@ -13,7 +24,8 @@ export default function handler(req, res) {
     });
   }
 
-  const rawAmount = Array.isArray(req.query?.amount) ? req.query.amount[0] : req.query?.amount;
+  const requestUrl = getRequestUrl(req);
+  const rawAmount = getSingleParam(requestUrl.searchParams, "amount");
   const amount = Number(rawAmount ?? 0);
 
   if (!Number.isFinite(amount) || amount <= 0) {
@@ -27,9 +39,7 @@ export default function handler(req, res) {
     });
   }
 
-  const currency = String(
-    Array.isArray(req.query?.currency) ? req.query.currency[0] : req.query?.currency || "USD"
-  ).toUpperCase();
+  const currency = String(getSingleParam(requestUrl.searchParams, "currency", "USD")).toUpperCase();
   const feePercent = 3;
   const fee = Number((amount * (feePercent / 100)).toFixed(2));
 
