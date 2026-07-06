@@ -44,6 +44,18 @@
     "xmcp": "^0.6.13",
     "zod": "^3.25.76"
   },
+  "pnpm": {
+    "ignoredBuiltDependencies": [
+      "@coinbase/x402",
+      "@opensea/seaport-js",
+      "bigint-buffer",
+      "bufferutil",
+      "keccak",
+      "opensea-js",
+      "secp256k1",
+      "utf-8-validate"
+    ]
+  },
   "bin": {
     "ng": "tools/ng/index.mjs",
     "xmcp": "tools/xmcp/index.mjs"
