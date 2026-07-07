@@ -48,5 +48,13 @@ artifacts/aws/cloudshell/
 # Aura local/generated support artifacts
 artifacts/support/
 
-# Aura local/generated support artifacts
-artifacts/support/
+# Apple Wallet Veteran Status pilot local secrets/certificates
+wallet/veteran-status/server/.env
+wallet/veteran-status/server/.env.*
+wallet/veteran-status/server/certs/*
+!wallet/veteran-status/server/certs/README.md
+wallet/veteran-status/server/**/*.p12
+wallet/veteran-status/server/**/*.key
+wallet/veteran-status/server/**/*.pem
+wallet/veteran-status/server/**/*.cer
+wallet/veteran-status/server/**/*.certSigningRequest
