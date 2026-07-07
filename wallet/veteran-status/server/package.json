@@ -1,0 +1,18 @@
+{
+  "name": "skygrid-veteran-wallet-pass-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Standalone Apple Wallet PassKit server for a privacy-preserving veteran-status pass pilot.",
+  "scripts": {
+    "dev": "node --env-file=.env server.mjs",
+    "start": "node server.mjs",
+    "smoke": "curl -i http://localhost:${PORT:-8787}/health"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "nanoid": "^5.0.9",
+    "passkit-generator": "^3.4.0"
+  }
+}
