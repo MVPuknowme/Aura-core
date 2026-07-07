@@ -2,13 +2,17 @@ const PRODUCT = "SKYGRID Emergency Data On-Ramp";
 const timeoutMs = Number(process.env.SKYGRID_ROUTE_CHECK_TIMEOUT_MS || 15000);
 
 const primaryBase = process.env.SKYGRID_PRIMARY_PUBLIC_URL || "https://aurcore.skygrid-protocol.net";
-const healthyVercelBase = process.env.SKYGRID_VERCEL_PUBLIC_URL || "https://aura-core-home-e539c0b1.vercel.app";
+const canonicalVercelBase = process.env.SKYGRID_CANONICAL_VERCEL_URL || "https://aura-core-home-e539c0b1.vercel.app";
+const mvpVercelBase = process.env.SKYGRID_MVP_VERCEL_URL || "https://aura-core-mvpuknowme-home-e539c0b1.vercel.app";
+const healthyVercelBase = process.env.SKYGRID_VERCEL_PUBLIC_URL || canonicalVercelBase;
 const legacyBase = process.env.SKYGRID_LEGACY_PUBLIC_URL || "https://aura-core.vercel.app";
 const allowPendingDomain = process.env.SKYGRID_ALLOW_PENDING_DOMAIN !== "false";
 
 const bases = unique([
   primaryBase,
   healthyVercelBase,
+  canonicalVercelBase,
+  mvpVercelBase,
   process.env.SKYGRID_EXTRA_PUBLIC_URL,
   process.env.SKYGRID_CHECK_LEGACY_ALIAS === "true" ? legacyBase : ""
 ].filter(Boolean).map(stripSlash));
