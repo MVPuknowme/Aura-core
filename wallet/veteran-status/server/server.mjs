@@ -10,7 +10,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 const port = Number(process.env.PORT || 8787);
-const PRODUCT = 'SKYGRID Veteran Status Wallet Pass';
+const PRODUCT = 'Veteran Status Wallet Service';
+const SERVICE_BOUNDARY = 'Standalone Wallet status-pass service; not part of the SKYGRID network console.';
 
 const MODEL_PATH = path.join(__dirname, 'pass-models', 'VeteranStatus.pass');
 
@@ -100,7 +101,7 @@ function passOverrides({ serialNumber, authToken }) {
   return {
     passTypeIdentifier: requiredEnv('PASS_TYPE_IDENTIFIER'),
     teamIdentifier: requiredEnv('TEAM_IDENTIFIER'),
-    organizationName: process.env.ORGANIZATION_NAME || 'SKYGRID Veteran Wallet Pilot',
+    organizationName: process.env.ORGANIZATION_NAME || 'Veteran Status Wallet Pilot',
     description: 'Veteran Status verification pass',
     serialNumber,
     authenticationToken: authToken,
@@ -116,12 +117,12 @@ function addSafeFields(pass, { displayName, serviceSummary, serialNumber }) {
   pass.primaryFields.push({ key: 'status', label: 'STATUS', value: 'Verified Veteran' });
   pass.secondaryFields.push({ key: 'name', label: 'NAME', value: displayName });
   pass.auxiliaryFields.push({ key: 'service', label: 'SERVICE', value: serviceSummary });
-  pass.auxiliaryFields.push({ key: 'issuer', label: 'ISSUER', value: 'SKYGRID / Aura pilot' });
+  pass.auxiliaryFields.push({ key: 'issuer', label: 'ISSUER', value: 'Veteran Status Wallet Pilot' });
 
   pass.backFields.push({
     key: 'boundary',
     label: 'Credential boundary',
-    value: 'This pass is a privacy-preserving veteran-status pilot card. It is not an official VA, DoD, or government identity credential unless issued through an authorized government program.',
+    value: 'This pass is a privacy-preserving veteran-status pilot card. It is separate from the SKYGRID network console and is not an official VA, DoD, or government identity credential unless issued through an authorized government program.',
   });
 
   pass.backFields.push({
@@ -165,6 +166,7 @@ app.get('/health', (_req, res) => {
   res.json({
     ok: true,
     product: PRODUCT,
+    service_boundary: SERVICE_BOUNDARY,
     mode: 'passkit_pilot',
     endpoint: '/api/wallet/veteran-pass',
     sensitive_data_policy: 'minimal_status_only',
@@ -200,7 +202,7 @@ app.get('/verify/veteran-status/:token', (req, res) => {
   res.json({
     valid: true,
     status: 'verified_veteran',
-    issuer: 'SKYGRID / Aura pilot',
+    issuer: 'Veteran Status Wallet Pilot',
     token_reference: String(req.params.token).slice(0, 12),
     sensitive_profile_fields_returned: false,
     timestamp: new Date().toISOString(),
