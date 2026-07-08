@@ -40,6 +40,12 @@ The QR/barcode payload is an opaque token or URL. Server-side records map that t
 - ALD / App License Delivery certificates are not used.
 - The pass uses `sharingProhibited: true` as a defense-in-depth setting; server-side revocation remains required.
 
+## Presentation readiness additions
+
+- Use `docs/apple/veteran-wallet-ios-presentation-pack.md` for the five-minute script, safe claims, and Apple/iOS review questions.
+- Use `wallet/veteran-status/ios/PRESENTATION_CHECKLIST.md` before showing the iPhone demo.
+- Run `npm run preflight` in `wallet/veteran-status/server` before starting the pass signer.
+
 ## Production requirements before release
 
 - Authorized issuer approval and legal review.
@@ -56,3 +62,4 @@ The QR/barcode payload is an opaque token or URL. Server-side records map that t
 - `wallet/veteran-status/server/` — standalone Node pass-signing server.
 - `wallet/veteran-status/README.md` — build/run instructions and certificate steps.
 - `docs/apple/veteran-wallet-passkit-brief.md` — this Apple developer presentation brief.
+- `docs/apple/veteran-wallet-ios-presentation-pack.md` — presentation script and meeting pack.
