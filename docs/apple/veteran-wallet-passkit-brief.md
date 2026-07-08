@@ -11,11 +11,12 @@ Veterans often need to prove service status in low-risk contexts such as discoun
 ## Proposed flow
 
 1. User authenticates in an iOS app.
-2. Backend verifies veteran status through an authorized eligibility provider.
-3. Backend creates a signed `.pkpass` with an Apple Wallet Pass Type ID certificate.
-4. iOS presents `PKAddPassesViewController` so the user can add the pass to Wallet.
-5. The QR code contains only an opaque verification URL.
-6. The verification endpoint returns minimal status metadata and never exposes sensitive profile details.
+2. iOS keeps Veteran Status details blurred until Face ID or Touch ID succeeds through LocalAuthentication.
+3. Backend verifies veteran status through an authorized eligibility provider.
+4. Backend creates a signed `.pkpass` with an Apple Wallet Pass Type ID certificate.
+5. iOS presents `PKAddPassesViewController` so the user can add the pass to Wallet.
+6. The QR code contains only an opaque verification URL.
+7. The verification endpoint returns minimal status metadata and never exposes sensitive profile details.
 
 ## Privacy position
 
@@ -32,10 +33,13 @@ The pass intentionally excludes:
 
 The QR/barcode payload is an opaque token or URL. Server-side records map that token to the current verification state.
 
+The iOS client does not receive or store raw biometric material. Face ID / Touch ID is used only as a local unlock gate before details are unblurred or before the pass is fetched.
+
 ## Apple Wallet implementation notes
 
 - iOS uses `PKPass(data:)` to parse signed pass data.
 - iOS uses `PKAddPassesViewController` to display Apple’s native add-pass sheet.
+- iOS uses `LocalAuthentication` to keep status details blurred until biometric unlock succeeds.
 - Backend signs the `.pkpass` package with an Apple Wallet Pass Type ID certificate.
 - ALD / App License Delivery certificates are not used.
 - The pass uses `sharingProhibited: true` as a defense-in-depth setting; server-side revocation remains required.
@@ -44,6 +48,7 @@ The QR/barcode payload is an opaque token or URL. Server-side records map that t
 
 - Use `docs/apple/veteran-wallet-ios-presentation-pack.md` for the five-minute script, safe claims, and Apple/iOS review questions.
 - Use `wallet/veteran-status/ios/PRESENTATION_CHECKLIST.md` before showing the iPhone demo.
+- Confirm `NSFaceIDUsageDescription` is in the iOS target `Info.plist`.
 - Run `npm run preflight` in `wallet/veteran-status/server` before starting the pass signer.
 
 ## Production requirements before release
@@ -54,7 +59,7 @@ The QR/barcode payload is an opaque token or URL. Server-side records map that t
 - Key management and certificate rotation plan.
 - App Store privacy disclosures.
 - Accessibility review.
-- Security review for token generation, storage, and verification responses.
+- Security review for token generation, storage, verification responses, and biometric lock/reset behavior.
 
 ## Files added in this repo
 
