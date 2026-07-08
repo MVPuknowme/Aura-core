@@ -36,6 +36,10 @@ if (env('PASS_TYPE_IDENTIFIER') && !env('PASS_TYPE_IDENTIFIER').startsWith('pass
   failures.push('PASS_TYPE_IDENTIFIER should be an Apple Wallet Pass Type Identifier beginning with "pass."');
 }
 
+if (/skygrid/i.test(env('PASS_TYPE_IDENTIFIER')) || /skygrid/i.test(env('ORGANIZATION_NAME')) || /skygrid/i.test(env('PUBLIC_BASE_URL'))) {
+  failures.push('Veteran Status Wallet Service must use a separate non-SKYGRID identifier, organization name, and issuer URL.');
+}
+
 if (env('TEAM_IDENTIFIER') && env('TEAM_IDENTIFIER').length < 8) {
   warnings.push('TEAM_IDENTIFIER looks short. Confirm it is the Apple Developer Team ID, not a bundle ID.');
 }
@@ -75,4 +79,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log('\nPreflight passed. Certificate files are present and the Wallet pass lane is configured for presentation.');
+console.log('\nPreflight passed. Certificate files are present and the standalone Wallet pass lane is configured for presentation.');
