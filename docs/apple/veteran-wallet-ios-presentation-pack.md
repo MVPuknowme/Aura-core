@@ -11,12 +11,13 @@ Get Apple/iOS developer feedback on the PassKit direction, Wallet pass type, cer
 ## What to show first
 
 1. Open PR #131 and show the folder map.
-2. Show the iOS flow in `wallet/veteran-status/ios/VeteranWalletApp/`.
-3. Show that card details are blurred until Face ID or Touch ID succeeds.
-4. Show the pass server in `wallet/veteran-status/server/server.mjs`.
-5. Show that the QR code contains only an opaque verification URL.
-6. Show the data minimization rule in `wallet/veteran-status/README.md`.
-7. Show the certificate lane note: Pass Type ID certificate, not ALD.
+2. Show the rebuilt secure-service proposal in `docs/apple/veteran-wallet-secure-service-proposal.md`.
+3. Show the iOS flow in `wallet/veteran-status/ios/VeteranWalletApp/`.
+4. Show that card details are blurred until Face ID or Touch ID succeeds.
+5. Show the pass server in `wallet/veteran-status/server/server.mjs`.
+6. Show that the QR code contains only an opaque verification URL.
+7. Show the data minimization rule in `wallet/veteran-status/README.md`.
+8. Show the certificate lane note: Pass Type ID certificate, not ALD.
 
 ## 5-minute demo script
 
