@@ -6,16 +6,17 @@ A privacy-preserving PassKit pilot that lets an eligible veteran add a minimal *
 
 ## Meeting objective
 
-Get Apple/iOS developer feedback on the PassKit direction, Wallet pass type, certificate setup, issuer labeling, UX handoff, and the boundary between a normal signed Wallet pass and any future authorized government-backed identity credential.
+Get Apple/iOS developer feedback on the PassKit direction, Wallet pass type, certificate setup, issuer labeling, biometric local-display gating, UX handoff, and the boundary between a normal signed Wallet pass and any future authorized government-backed identity credential.
 
 ## What to show first
 
 1. Open PR #131 and show the folder map.
 2. Show the iOS flow in `wallet/veteran-status/ios/VeteranWalletApp/`.
-3. Show the pass server in `wallet/veteran-status/server/server.mjs`.
-4. Show that the QR code contains only an opaque verification URL.
-5. Show the data minimization rule in `wallet/veteran-status/README.md`.
-6. Show the certificate lane note: Pass Type ID certificate, not ALD.
+3. Show that card details are blurred until Face ID or Touch ID succeeds.
+4. Show the pass server in `wallet/veteran-status/server/server.mjs`.
+5. Show that the QR code contains only an opaque verification URL.
+6. Show the data minimization rule in `wallet/veteran-status/README.md`.
+7. Show the certificate lane note: Pass Type ID certificate, not ALD.
 
 ## 5-minute demo script
 
@@ -25,7 +26,7 @@ Get Apple/iOS developer feedback on the PassKit direction, Wallet pass type, cer
 
 ### Minute 1–2: iOS client
 
-"The SwiftUI client checks Wallet availability, fetches a signed `.pkpass` from the issuer backend, parses it with PassKit, and opens Apple's native add-pass sheet through `PKAddPassesViewController`."
+"The SwiftUI client keeps Veteran Status details blurred by default. It uses iOS LocalAuthentication so Face ID or Touch ID must succeed before any details are unblurred or before the app fetches the signed `.pkpass` for Apple Wallet. The app never receives or stores raw biometric data."
 
 ### Minute 2–3: backend issuer
 
@@ -37,7 +38,7 @@ Get Apple/iOS developer feedback on the PassKit direction, Wallet pass type, cer
 
 ### Minute 4–5: ask
 
-"We are asking Apple/iOS developers to validate the PassKit architecture, review issuer labeling, confirm the right Wallet pass style, and identify what would be required to move from a pilot pass to a formally authorized issuer workflow."
+"We are asking Apple/iOS developers to validate the PassKit architecture, biometric local-display gate, issuer labeling, Wallet pass style, and what would be required to move from a pilot pass to a formally authorized issuer workflow."
 
 ## Live demo order
 
@@ -64,8 +65,11 @@ curl -o veteran-status.pkpass http://localhost:8787/api/wallet/veteran-pass
 ```
 
 4. Run the SwiftUI app on a physical iPhone with the pass server exposed through an HTTPS tunnel.
-5. Tap **Add Veteran Status to Apple Wallet**.
-6. Present the native Apple add-pass sheet.
+5. Confirm details are blurred on launch.
+6. Tap **Unlock Details** and complete Face ID or Touch ID.
+7. Tap **Add Veteran Status to Apple Wallet**.
+8. Present the native Apple add-pass sheet.
+9. Background and reopen the app to confirm details lock again.
 
 ## Do not claim
 
@@ -74,6 +78,7 @@ curl -o veteran-status.pkpass http://localhost:8787/api/wallet/veteran-pass
 - Do not claim it replaces state/federal identity documents.
 - Do not claim Apple has approved the credential.
 - Do not show real veteran card screenshots or real IDs during the technical review.
+- Do not claim the app stores or transmits biometric material.
 
 ## Safe claims
 
@@ -82,6 +87,7 @@ curl -o veteran-status.pkpass http://localhost:8787/api/wallet/veteran-pass
 - It uses Wallet's signed `.pkpass` package format.
 - It uses the Pass Type ID certificate lane.
 - It avoids sensitive veteran data in the pass and barcode payload.
+- It uses iOS LocalAuthentication so biometric success is required before details are displayed or the pass is fetched.
 - It can support future authorized issuer verification, revocation, and update services.
 
 ## Questions for Apple/iOS developers
@@ -90,8 +96,9 @@ curl -o veteran-status.pkpass http://localhost:8787/api/wallet/veteran-pass
 2. Should the visible status wording be changed from "Verified Veteran" to a safer phrase for review?
 3. What issuer labeling would prevent confusion with official VA/DoD credentials?
 4. What pass update and revocation web-service endpoints should be implemented before pilot testing?
-5. What App Store review concerns would Apple expect around veteran status, eligibility proof, and identity language?
-6. What would be required if an authorized government or VA-adjacent issuer participates later?
+5. What App Store review concerns would Apple expect around veteran status, eligibility proof, biometric local display, and identity language?
+6. Should biometric gating be required before every status display, before every pass fetch, or both?
+7. What would be required if an authorized government or VA-adjacent issuer participates later?
 
 ## Technical red flags to resolve before a real pilot
 
@@ -100,8 +107,9 @@ curl -o veteran-status.pkpass http://localhost:8787/api/wallet/veteran-pass
 - Placeholder art must be replaced with authorized production assets.
 - Official government marks must not be used without written authorization.
 - The pass server needs production key management, rate limits, audit logs, and revocation support.
-- iOS needs a real app target, provisioning profile, and TestFlight plan.
+- iOS needs a real app target, provisioning profile, `NSFaceIDUsageDescription`, and TestFlight plan.
+- Biometric lock/reset behavior needs physical-device review across Face ID and Touch ID devices.
 
 ## Handoff phrase
 
-"We are not asking Apple to treat this as an approved government ID today. We are asking whether this PassKit architecture is the right privacy-preserving foundation for an authorized veteran-status pass workflow."
+"We are not asking Apple to treat this as an approved government ID today. We are asking whether this PassKit architecture, including local biometric display gating, is the right privacy-preserving foundation for an authorized veteran-status pass workflow."
