@@ -32,3 +32,7 @@ This is not presented as an official VA/DoD/government ID unless an authorized i
 - Confirm preferred pass style and review concerns.
 - Confirm expectations for veteran-status wording and issuer labeling.
 - Discuss requirements if this graduates from pilot status pass to an authorized government-backed credential.
+
+## 6. Link to full presentation pack
+
+Use `docs/apple/veteran-wallet-ios-presentation-pack.md` for the full script, demo order, safe claims, stop conditions, and Apple/iOS review questions.
