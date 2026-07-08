@@ -99,7 +99,7 @@ struct VeteranWalletView: View {
     private var protectedPassFields: some View {
         VStack(alignment: .leading, spacing: 10) {
             labeledValue(label: "Status", value: "Verified Veteran")
-            labeledValue(label: "Issuer", value: "SKYGRID / Aura pilot")
+            labeledValue(label: "Issuer", value: "Veteran Status Wallet Pilot")
             labeledValue(label: "Wallet payload", value: "Opaque verification token only")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
