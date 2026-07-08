@@ -3,8 +3,9 @@ import PassKit
 
 struct VeteranWalletConfiguration {
     /// Replace with the HTTPS host that signs and returns `.pkpass` files.
+    /// This is intentionally a standalone Wallet pass issuer, separate from SKYGRID network-console routes.
     /// For a local iPhone test, use a trusted tunnel URL instead of localhost.
-    var passBaseURL: URL = URL(string: "https://aura-sky.skygrid-protocol.net")!
+    var passBaseURL: URL = URL(string: "https://wallet-pass-issuer.example")!
     var demoUserToken: String = "replace-with-authenticated-session-token"
 }
 
