@@ -5,6 +5,7 @@
   "type": "module",
   "description": "Standalone Apple Wallet PassKit server for a privacy-preserving veteran-status pass pilot.",
   "scripts": {
+    "preflight": "node --env-file=.env scripts/preflight.mjs",
     "dev": "node --env-file=.env server.mjs",
     "start": "node server.mjs",
     "smoke": "curl -i http://localhost:${PORT:-8787}/health"
