@@ -9,6 +9,7 @@ Use this checklist before showing the Veteran Status Wallet pass to Apple/iOS de
 - Use demo identity data only.
 - Do not display screenshots of real veteran IDs or real government cards.
 - Keep the QR/barcode payload to an opaque token or verification URL.
+- Explain that biometrics are handled locally by iOS; the app never receives or stores raw Face ID / Touch ID data.
 
 ## iOS setup
 
@@ -16,9 +17,19 @@ Use this checklist before showing the Veteran Status Wallet pass to Apple/iOS de
 - New iOS SwiftUI app target created.
 - Files from `wallet/veteran-status/ios/VeteranWalletApp/` copied into the app target.
 - Wallet capability enabled.
+- LocalAuthentication framework available.
 - Entitlements include the Pass Type Identifier.
+- `Info.plist` includes `NSFaceIDUsageDescription`.
 - `WalletPassService.swift` points to an HTTPS pass server, not localhost.
-- Run on a physical iPhone for Wallet behavior.
+- Run on a physical iPhone for Wallet and biometric behavior.
+
+## Biometric privacy gate test
+
+- Launch the app and confirm card details are blurred by default.
+- Confirm the app asks for Face ID or Touch ID before showing Veteran Status fields.
+- Confirm tapping **Unlock Before Adding to Wallet** authenticates before fetching the pass.
+- Send the app to the background and reopen it; details should be locked again.
+- Confirm no sensitive details appear in screenshots, previews, logs, or QR/barcode payloads before biometric unlock.
 
 ## Backend setup
 
@@ -54,6 +65,7 @@ For iPhone testing, expose the pass server through a trusted HTTPS tunnel and up
 
 Do not continue the demo if:
 
+- Veteran Status details are visible before biometric authentication.
 - The pass contains real sensitive data.
 - The QR/barcode contains raw personal data.
 - The pass uses official VA/DoD/government marks without authorization.
@@ -67,3 +79,4 @@ Do not continue the demo if:
 - What update/revocation endpoints should be implemented before pilot issuance?
 - What App Store privacy disclosures and review risks should be addressed?
 - What authorization path is required for any future government-backed credential flow?
+- Should the biometric blur/unlock gate be required before every pass display, every pass fetch, or both?
