@@ -1,9 +1,9 @@
 {
-  "name": "skygrid-veteran-wallet-pass-server",
+  "name": "veteran-status-wallet-pass-server",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Standalone Apple Wallet PassKit server for a privacy-preserving veteran-status pass pilot.",
+  "description": "Standalone Apple Wallet PassKit server for a privacy-preserving veteran-status pass pilot, separate from SKYGRID network console functions.",
   "scripts": {
     "preflight": "node --env-file=.env scripts/preflight.mjs",
     "dev": "node --env-file=.env server.mjs",
