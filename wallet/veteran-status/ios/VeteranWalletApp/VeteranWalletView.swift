@@ -65,6 +65,7 @@ struct VeteranWalletView: View {
                 protectedPassFields
                     .blur(radius: biometricGate.isUnlocked ? 0 : 12)
                     .redacted(reason: biometricGate.isUnlocked ? [] : .placeholder)
+                    .accessibilityHidden(!biometricGate.isUnlocked)
                     .allowsHitTesting(biometricGate.isUnlocked)
                     .animation(.easeInOut(duration: 0.22), value: biometricGate.isUnlocked)
 
