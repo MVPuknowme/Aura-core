@@ -157,7 +157,9 @@ export default async function handler(req, res) {
 
   if (req.method === "GET" && path === "/") return landing(res);
   if (req.method === "GET" && ["/dashboard/command-center", "/dashboard/validation-panel", "/dashboard/deployment-review", "/dashboard/receipts"].includes(path)) return dashboard(res, path);
-  if (req.method === "GET" && ["/health.json", "/api/skygrid/status", "/api/highway/status"].includes(path)) return json(res, 200, healthPayload(path));
+  if (req.method === "GET" && ["/health.json", "/api/health", "/api/status", "/api/skygrid/status", "/api/highway/status"].includes(path)) {
+    return json(res, 200, healthPayload(path));
+  }
   if (req.method === "GET" && path === "/api/failover/status") return json(res, 200, failoverStatus());
   if (req.method === "GET" && path === "/api/panels/summary") return json(res, 200, panelSummary(path));
   if (req.method === "GET" && path === "/api/autodrill/latest") return json(res, 200, { ok: true, product: PRODUCT, route: path, proof_owner: "postman", result: "pass_with_warnings", checks: ["front_page", "health", "status", "dashboard", "failover"], timestamp: now() });
@@ -173,6 +175,42 @@ export default async function handler(req, res) {
   if (req.method === "POST" && path === "/api/node-lease/intake") {
     const body = await readBody(req);
     return json(res, 202, { accepted: true, product: PRODUCT, route: path, mode: "intake_only", intake_id: `lease_${Date.now()}`, region: body.region || "unspecified", timestamp: now() });
+  }
+
+  if (req.method === "POST" && path === "/api/pacific-heart/ingest") {
+    const body = await readBody(req);
+    const required = ["eventId", "source", "patientRef", "incidentType", "severity"];
+    const missing = required.filter((key) => !body[key]);
+
+    if (missing.length > 0) {
+      return json(res, 400, {
+        ok: false,
+        status: "invalid_payload",
+        product: PRODUCT,
+        route: path,
+        missing,
+        timestamp: now()
+      });
+    }
+
+    const severity = String(body.severity || "normal").toLowerCase();
+    const urgent = ["critical", "high", "sev1", "p1"].includes(severity);
+
+    return json(res, 202, {
+      ok: true,
+      status: "accepted",
+      product: PRODUCT,
+      route: path,
+      mode: "controlled_pilot_sandbox",
+      noDispatch: true,
+      noDiagnosis: true,
+      eventId: body.eventId,
+      handoff: {
+        humanReviewRequired: true,
+        priority: urgent ? "urgent_review" : "standard_review"
+      },
+      timestamp: now()
+    });
   }
 
   if (req.method === "POST" && ["/api/skygrid/intake", "/intake", "/api/aura-core/decide", "/api/agent/signals"].includes(path)) {
