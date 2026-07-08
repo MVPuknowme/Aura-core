@@ -12,6 +12,17 @@ It is intentionally framed as a PassKit status pass. It is **not** an official V
 - Opaque QR verification URL, not raw personal data.
 - Presentation docs for Apple developer review.
 
+## Presentation path
+
+Use these files when preparing for an Apple/iOS developer review:
+
+- `docs/apple/veteran-wallet-ios-presentation-pack.md` — meeting positioning, 5-minute script, demo order, safe claims, and Apple questions.
+- `docs/apple/veteran-wallet-passkit-brief.md` — architecture and privacy brief.
+- `docs/apple/veteran-wallet-presentation-outline.md` — short meeting outline.
+- `wallet/veteran-status/ios/PRESENTATION_CHECKLIST.md` — iOS/device/server checklist before showing the demo.
+
+For the meeting, keep the language precise: this is a **PassKit veteran-status pilot**, not an approved VA/DoD/government ID. The specific ask is for feedback on Wallet architecture, issuer wording, pass style, privacy posture, revocation/update expectations, and the authorization path for any future official issuer flow.
+
 ## Data minimization rule
 
 The Wallet pass may display only low-risk status fields:
@@ -57,6 +68,7 @@ Authorization: Bearer <authenticated-session-token>
 cd wallet/veteran-status/server
 cp .env.example .env
 npm install
+npm run preflight
 npm run dev
 ```
 
