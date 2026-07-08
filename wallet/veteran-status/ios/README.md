@@ -23,3 +23,7 @@ application/vnd.apple.pkpass
 ```
 
 Simulator is useful for UI layout, but final Wallet behavior should be tested on a real iPhone.
+
+## Presentation mode
+
+Before showing this to Apple/iOS developers, work through `PRESENTATION_CHECKLIST.md`. Keep the demo language scoped to a PassKit status-pass pilot and avoid presenting it as an official VA, DoD, or government credential.
