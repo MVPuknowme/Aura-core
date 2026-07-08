@@ -19,7 +19,8 @@ export default async function handler(req, res) {
   return json(res, 200, {
     valid: true,
     status: 'verified_veteran',
-    issuer: 'SKYGRID / Aura pilot',
+    issuer: 'Veteran Status Wallet Pilot',
+    service_boundary: 'Standalone Wallet status-pass service; not part of the SKYGRID network console.',
     token_reference: token.slice(0, 12),
     sensitive_profile_fields_returned: false,
     note: 'Pilot stub only. Production must validate token server-side and support revocation.',
