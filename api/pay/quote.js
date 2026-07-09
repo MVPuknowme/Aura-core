@@ -1,12 +1,16 @@
+const PRODUCT = "SKYGRID Emergency Data On-Ramp";
+
 export default function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
-  res.setHeader("X-SKYGRID-Product", "SKYGRID Emergency Data On-Ramp");
+  res.setHeader("X-SKYGRID-Product", PRODUCT);
 
   if (req.method !== "GET") {
     res.setHeader("Allow", "GET");
     return res.status(405).json({
       ok: false,
-      system: "SKYGRID Emergency Data On-Ramp",
+      product: PRODUCT,
+      service: PRODUCT,
+      system: PRODUCT,
       route: "/api/pay/quote",
       error: "method_not_allowed",
       timestamp: new Date().toISOString()
@@ -19,10 +23,14 @@ export default function handler(req, res) {
   if (!Number.isFinite(amount) || amount <= 0) {
     return res.status(400).json({
       ok: false,
-      system: "SKYGRID Emergency Data On-Ramp",
+      product: PRODUCT,
+      service: PRODUCT,
+      system: PRODUCT,
       route: "/api/pay/quote",
       error: "invalid_amount",
       message: "Provide a positive numeric amount, for example /api/pay/quote?amount=25.",
+      quoteOnly: true,
+      noPaymentExecuted: true,
       timestamp: new Date().toISOString()
     });
   }
@@ -35,7 +43,9 @@ export default function handler(req, res) {
 
   return res.status(200).json({
     ok: true,
-    system: "SKYGRID Emergency Data On-Ramp",
+    product: PRODUCT,
+    service: PRODUCT,
+    system: PRODUCT,
     route: "/api/pay/quote",
     status: "quote_ready",
     amount,
@@ -44,6 +54,8 @@ export default function handler(req, res) {
     fee,
     estimatedNet: Number((amount - fee).toFixed(2)),
     quoteOnly: true,
+    noPaymentExecuted: true,
+    paymentExecution: false,
     timestamp: new Date().toISOString()
   });
 }
