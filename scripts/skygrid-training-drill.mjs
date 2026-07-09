@@ -63,7 +63,11 @@ function findEventId(payload) {
     payload.receipt_id ||
     payload.receipt?.eventId ||
     payload.receipt?.event_id ||
+    payload.event?.eventId ||
+    payload.event?.event_id ||
     payload.event?.id ||
+    payload.data?.eventId ||
+    payload.data?.event_id ||
     null
   );
 }
