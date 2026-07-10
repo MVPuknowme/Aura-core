@@ -1,0 +1,182 @@
+{
+  "info": {
+    "name": "SKYGRID Emergency Data On-Ramp - Aura Desktop Generated",
+    "description": "Generated locally by Aura GPT Desktop.\nScope: read-only approved SKYGRID routes.\nGuardrails: no wallet signing, no transaction broadcast, no payment execution, no private data movement, no production failover unlock.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "/api/health",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "User-Agent",
+            "value": "Aura-GPT-Desktop-Postman-Gen"
+          }
+        ],
+        "url": {
+          "raw": "https://aura-core-t2t5.vercel.app/api/health",
+          "protocol": "https",
+          "host": [
+            "aura-core-t2t5",
+            "vercel",
+            "app"
+          ],
+          "path": [
+            "api",
+            "health"
+          ]
+        },
+        "description": "Read-only SKYGRID Emergency Data On-Ramp route check generated locally by Aura Desktop."
+      },
+      "response": []
+    },
+    {
+      "name": "/api/panels/summary",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "User-Agent",
+            "value": "Aura-GPT-Desktop-Postman-Gen"
+          }
+        ],
+        "url": {
+          "raw": "https://aura-core-t2t5.vercel.app/api/panels/summary",
+          "protocol": "https",
+          "host": [
+            "aura-core-t2t5",
+            "vercel",
+            "app"
+          ],
+          "path": [
+            "api",
+            "panels",
+            "summary"
+          ]
+        },
+        "description": "Read-only SKYGRID Emergency Data On-Ramp route check generated locally by Aura Desktop."
+      },
+      "response": []
+    },
+    {
+      "name": "/api/failover/status",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "User-Agent",
+            "value": "Aura-GPT-Desktop-Postman-Gen"
+          }
+        ],
+        "url": {
+          "raw": "https://aura-core-t2t5.vercel.app/api/failover/status",
+          "protocol": "https",
+          "host": [
+            "aura-core-t2t5",
+            "vercel",
+            "app"
+          ],
+          "path": [
+            "api",
+            "failover",
+            "status"
+          ]
+        },
+        "description": "Read-only SKYGRID Emergency Data On-Ramp route check generated locally by Aura Desktop."
+      },
+      "response": []
+    },
+    {
+      "name": "/api/highway/status",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "User-Agent",
+            "value": "Aura-GPT-Desktop-Postman-Gen"
+          }
+        ],
+        "url": {
+          "raw": "https://aura-core-t2t5.vercel.app/api/highway/status",
+          "protocol": "https",
+          "host": [
+            "aura-core-t2t5",
+            "vercel",
+            "app"
+          ],
+          "path": [
+            "api",
+            "highway",
+            "status"
+          ]
+        },
+        "description": "Read-only SKYGRID Emergency Data On-Ramp route check generated locally by Aura Desktop."
+      },
+      "response": []
+    },
+    {
+      "name": "/api/highway/postman",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "User-Agent",
+            "value": "Aura-GPT-Desktop-Postman-Gen"
+          }
+        ],
+        "url": {
+          "raw": "https://aura-core-t2t5.vercel.app/api/highway/postman",
+          "protocol": "https",
+          "host": [
+            "aura-core-t2t5",
+            "vercel",
+            "app"
+          ],
+          "path": [
+            "api",
+            "highway",
+            "postman"
+          ]
+        },
+        "description": "Read-only SKYGRID Emergency Data On-Ramp route check generated locally by Aura Desktop."
+      },
+      "response": []
+    },
+    {
+      "name": "/api/compat/ios",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "User-Agent",
+            "value": "Aura-GPT-Desktop-Postman-Gen"
+          }
+        ],
+        "url": {
+          "raw": "https://aura-core-t2t5.vercel.app/api/compat/ios",
+          "protocol": "https",
+          "host": [
+            "aura-core-t2t5",
+            "vercel",
+            "app"
+          ],
+          "path": [
+            "api",
+            "compat",
+            "ios"
+          ]
+        },
+        "description": "Read-only SKYGRID Emergency Data On-Ramp route check generated locally by Aura Desktop."
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://aura-core-t2t5.vercel.app"
+    }
+  ]
+}

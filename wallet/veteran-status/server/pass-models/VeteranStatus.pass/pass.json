@@ -1,0 +1,19 @@
+{
+  "formatVersion": 1,
+  "passTypeIdentifier": "pass.net.mvpuknowme.veteranstatus",
+  "serialNumber": "vsc-demo",
+  "teamIdentifier": "TEAMID",
+  "organizationName": "Veteran Status Wallet Pilot",
+  "description": "Veteran Status verification pass",
+  "logoText": "Veteran Status",
+  "foregroundColor": "rgb(255, 255, 255)",
+  "backgroundColor": "rgb(25, 48, 92)",
+  "labelColor": "rgb(218, 230, 255)",
+  "sharingProhibited": true,
+  "generic": {
+    "primaryFields": [],
+    "secondaryFields": [],
+    "auxiliaryFields": [],
+    "backFields": []
+  }
+}

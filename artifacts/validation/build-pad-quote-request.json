@@ -1,0 +1,9 @@
+﻿{
+  "node_type": "emergency-data-ramp",
+  "region": "klamath-falls-core",
+  "monthly_support_usd": 250,
+  "hardware_usd": 1200,
+  "connectivity_usd": 75,
+  "energy_usd": 60,
+  "setup_reserve_usd": 300
+}

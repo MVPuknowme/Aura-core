@@ -24,3 +24,37 @@ xcuserdata/
 .skygrid/
 
 .env.local
+desktop-gpt/.runtime/
+desktop-gpt/logs/
+desktop-gpt/.env.local
+desktop-gpt/*.backup.*.cjs
+mock-body.json
+Aura/Logs/
+Aura/State/
+!Aura/State/.gitkeep
+Aura/Inbox/*
+!Aura/Inbox/.gitkeep
+!Aura/Inbox/Unsorted/
+Aura/Inbox/Unsorted/*
+!Aura/Inbox/Unsorted/.gitkeep
+artifacts/receipts/filing-validation-report.md
+
+# Aura local PC telemetry - keep private/local
+artifacts/iot/
+
+# Aura AWS CloudShell local handoff artifacts
+artifacts/aws/cloudshell/
+
+# Aura local/generated support artifacts
+artifacts/support/
+
+# Apple Wallet Veteran Status pilot local secrets/certificates
+wallet/veteran-status/server/.env
+wallet/veteran-status/server/.env.*
+wallet/veteran-status/server/certs/*
+!wallet/veteran-status/server/certs/README.md
+wallet/veteran-status/server/**/*.p12
+wallet/veteran-status/server/**/*.key
+wallet/veteran-status/server/**/*.pem
+wallet/veteran-status/server/**/*.cer
+wallet/veteran-status/server/**/*.certSigningRequest

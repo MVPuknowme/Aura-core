@@ -1,0 +1,176 @@
+Build Aura FilePostman skill.
+
+Goal:
+Teach Aura to choose correct local paths for data, proof, training, validation, routes, reports, and `.pnpk` packages. Aura should file things like a careful postman: sort, route, deliver, and leave a receipt.
+
+Core idea:
+Human input or generated data should never be dumped randomly into the repo.
+Aura should classify the data type, choose the correct destination folder, save the file, and write a receipt/proof record.
+
+Aura rules:
+- Local mode only.
+- No OpenAI API required.
+- No raw shell execution from user text.
+- No secrets.
+- No wallet signing.
+- No deploy.
+- No push.
+- No destructive moves unless explicitly confirmed.
+- Do not overwrite existing files without adding timestamp or duplicate-safe name.
+- Every filed item gets a receipt.
+
+Create:
+Aura/Skills/FilePostman.ps1
+
+Add friendly commands:
+- file status
+- file this
+- sort proof
+- route data
+- postman file
+- show receipts
+- validate filing
+
+Function names:
+- Invoke-AuraFileStatus
+- New-AuraFiledItem
+- Invoke-AuraRouteData
+- Show-AuraFileReceipts
+- Test-AuraFilingRules
+
+Folder map:
+artifacts/
+  training/
+  validation/
+  reports/
+  prompts/
+  pnpk/
+    packages/
+    proofs/
+  receipts/
+Aura/
+  Config/
+  State/
+  Logs/
+  Skills/
+postman/
+
+Filing rules:
+1. Training prompts -> artifacts/prompts/
+2. Training proof/results -> artifacts/training/
+3. Newman/Postman validation -> artifacts/validation/
+4. Markdown reports -> artifacts/reports/
+5. `.pnpk` packages -> artifacts/pnpk/packages/
+6. `.pnpk` validation/proof reports -> artifacts/pnpk/proofs/
+7. Runtime state -> Aura/State/
+8. Runtime logs -> Aura/Logs/
+9. Aura configuration -> Aura/Config/
+10. Aura skill code -> Aura/Skills/
+11. Postman collections -> postman/
+
+Classification hints:
+- File names containing "prompt" -> artifacts/prompts/
+- File names containing "training" -> artifacts/training/
+- File names containing "proof" and ".json" -> artifacts/training/ unless pnpk-specific
+- File names containing "validation" -> artifacts/validation/
+- File names containing "newman" -> artifacts/validation/
+- File names ending ".md" and containing "report" -> artifacts/reports/
+- File names ending ".pnpk" -> artifacts/pnpk/packages/
+- File names containing "pnpk" and "proof" -> artifacts/pnpk/proofs/
+- File names containing "route" and ".json" -> Aura/State/ if active/generated, Aura/Config/ if static config
+- Files ending ".postman_collection.json" or containing "collection" -> postman/
+
+New-AuraFiledItem behavior:
+- Prompt user for:
+  - source path
+  - description
+  - data type hint
+- Classify target folder.
+- Copy file to target folder with duplicate-safe name.
+- Do not delete original.
+- Create receipt JSON under:
+  artifacts/receipts/
+- Receipt schema:
+{
+  "format": "aura.file.receipt",
+  "version": "0.1.0",
+  "source_path": "",
+  "destination_path": "",
+  "description": "",
+  "classification": "",
+  "created_at": "",
+  "raw_shell_execution": false,
+  "openai_required": false,
+  "checkpoint_recommendation": ""
+}
+
+Invoke-AuraRouteData behavior:
+- Accept source path parameter optionally.
+- If no source path, prompt user.
+- Run classification.
+- Print:
+  AURA FILE POSTMAN
+  -----------------
+  Source:
+  Destination:
+  Classification:
+  Receipt:
+  Recommendation:
+
+Invoke-AuraFileStatus behavior:
+- Count files in each managed folder.
+- Show newest 5 receipts.
+- Warn if files are loose in repo root matching known patterns.
+
+Show-AuraFileReceipts behavior:
+- List newest 10 receipts.
+
+Test-AuraFilingRules behavior:
+- Confirm all managed folders exist.
+- Confirm receipts folder exists.
+- Confirm no known generated file types are loose in repo root.
+- Save validation report:
+  artifacts/receipts/filing-validation-report.md
+
+Runtime integration:
+Wire these phrases into aura-runtime.ps1:
+- file status
+- file this
+- sort proof
+- route data
+- postman file
+- show receipts
+- validate filing
+
+All should call allowlisted functions in Aura/Skills/FilePostman.ps1.
+
+Update Aura/Config/commands.json with matching entries.
+
+Expected file changes:
+- Aura/Skills/FilePostman.ps1
+- aura-runtime.ps1
+- Aura/Config/commands.json
+- artifacts/receipts/
+- optional validation report under artifacts/receipts/
+
+Success test:
+. .\aura-runtime.ps1
+Invoke-AuraRuntime "file status"
+Invoke-AuraRuntime "validate filing"
+Invoke-AuraRuntime "show receipts"
+git status
+
+Expected:
+- No OpenAI token required.
+- No raw shell execution.
+- No deploy.
+- No push.
+- No destructive moves.
+- Managed folders exist.
+- Filing validation report created.
+- Final output recommends checkpoint.
+
+After successful test, recommend but do not automatically run:
+
+git add .\aura-runtime.ps1 .\Aura\Skills\FilePostman.ps1 .\Aura\Config\commands.json .\artifacts\receipts\
+git commit -m "Add Aura File Postman routing skill"

@@ -1,0 +1,33 @@
+﻿{
+  "version": "0.2.0",
+  "operator": {
+    "name": "Michael Vincent Patrick",
+    "handle": "MVPuknowme",
+    "short_name": "MVP"
+  },
+  "paths": {
+    "aura_core": "E:\\Aura-core",
+    "desktop_gpt": "E:\\Aura-core\\desktop-gpt",
+    "wallet_core": "E:\\aura_wallet_core"
+  },
+  "repos": {
+    "aura_core": "MVPuknowme/Aura-core",
+    "wallet_core": "MVPuknowme/aura_wallet_core"
+  },
+  "vercel": {
+    "project": "aura-core-t2t5",
+    "scope": "home-e539c0b1",
+    "public_url": "https://aura-core-t2t5.vercel.app"
+  },
+  "skygrid": {
+    "product_name": "SKYGRID Emergency Data On-Ramp",
+    "routes": [
+      "/api/health",
+      "/api/panels/summary",
+      "/api/failover/status",
+      "/api/highway/status",
+      "/api/highway/postman"
+    ],
+    "safe_failover_state": "blocked"
+  }
+}

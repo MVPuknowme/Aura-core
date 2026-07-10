@@ -1,0 +1,46 @@
+﻿{
+  "version": "0.2.0",
+  "mode": "safe_command_recognition",
+  "rules": [
+    {
+      "intent": "aura_vitals",
+      "triggers": ["check vitals", "run vitals", "check her vitals", "is she healthy", "system health", "health check"],
+      "response": "Run a read-only Aura-Core vitals check from E:\\\\Aura-core. Check git status, Node/Vercel versions, public SKYGRID routes, and panel readiness."
+    },
+    {
+      "intent": "skygrid_routes",
+      "triggers": ["check routes", "skygrid routes", "are routes alive", "public endpoints", "endpoint status"],
+      "response": "Check https://aura-core-t2t5.vercel.app routes: /api/health, /api/panels/summary, /api/failover/status, /api/highway/status, and /api/highway/postman. Expected: HTTP 200."
+    },
+    {
+      "intent": "vercel_readiness",
+      "triggers": ["check vercel", "vercel readiness", "panel readiness", "aws persistence", "proof lane", "env readiness"],
+      "response": "Check Vercel project aura-core-t2t5 under scope home-e539c0b1. Expected AWS persistence flags true, failoverState blocked, productionPolicyReady false."
+    },
+    {
+      "intent": "failover_lock",
+      "triggers": ["check failover", "is failover blocked", "failover lock", "production lock"],
+      "response": "Failover should remain blocked. Do not unlock production failover without explicit MVP approval and verified health quorum."
+    },
+    {
+      "intent": "git_status",
+      "triggers": ["git status", "repo status", "working tree", "check repo", "what changed", "latest commit"],
+      "response": "Run git status -sb and git log -1 --oneline from the active repo. For Aura-Core, use E:\\\\Aura-core."
+    },
+    {
+      "intent": "secret_scan",
+      "triggers": ["scan secrets", "secret smell", "check keys", "private keys", "find tokens", "security scan"],
+      "response": "Run a source-only secret smell check. Exclude node_modules and .git. Show path, line number, and pattern name only. Never print secret values."
+    },
+    {
+      "intent": "shell_prompt",
+      "triggers": ["prompt for shell", "give me the command", "powershell prompt", "shell command", "copy paste command"],
+      "response": "Provide one clean PowerShell block. State the folder to run it from. Avoid placeholders unless required."
+    },
+    {
+      "intent": "desktop_app",
+      "triggers": ["desktop app", "aura desktop", "windows app", "electron", "start aura"],
+      "response": "Use E:\\\\Aura-core\\\\desktop-gpt. Start with npm start, or use the detached launcher start-aura-desktop.cmd."
+    }
+  ]
+}

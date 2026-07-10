@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://skygrid-protocol.net/schemas/skygrid-power-mesh-telemetry.schema.json",
+  "title": "SKYGRID Power Mesh Telemetry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "node_id",
+    "mode",
+    "battery_soc",
+    "critical_load_minutes_remaining",
+    "solar_watts_now",
+    "ambient_harvest_mw",
+    "comms",
+    "emergency_ready",
+    "proof_timestamp"
+  ],
+  "properties": {
+    "node_id": {
+      "type": "string",
+      "pattern": "^skygrid-node-[a-z0-9-]+$"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "grid_connected",
+        "islanded",
+        "battery_only",
+        "ambient_trickle"
+      ]
+    },
+    "allowed_modes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "grid_connected",
+          "islanded",
+          "battery_only",
+          "ambient_trickle"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "battery_soc": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "critical_load_minutes_remaining": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "solar_watts_now": {
+      "type": "number",
+      "minimum": 0
+    },
+    "ambient_harvest_mw": {
+      "type": "number",
+      "minimum": 0
+    },
+    "comms": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "wifi",
+          "lte",
+          "lora",
+          "ethernet",
+          "satellite",
+          "ble"
+        ]
+      }
+    },
+    "emergency_ready": {
+      "type": "boolean"
+    },
+    "proof_timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

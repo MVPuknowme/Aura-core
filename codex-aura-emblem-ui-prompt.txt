@@ -1,0 +1,59 @@
+Task: Add the AURA emblem to the desktop widget and chat bot UI.
+
+Use the AURA emblem as the visual identity.
+
+Placement:
+- Top-left corner of the desktop widget.
+- Top-left corner of the chat bot interface.
+- Size: about 1/3 of the header height.
+- Recommended display size: 64px to 80px.
+- Keep 8px to 12px padding from the top and left edges.
+- Do not stretch, crop, or distort the emblem.
+- Preserve the full circular emblem.
+
+UI behavior:
+- Emblem should always be visible.
+- Text should align to the right of the emblem:
+  AURA
+  The Wind of Change
+- Use dark glass-style panels.
+- Keep status cards readable.
+- Do not use the emblem as a full background.
+- Do not cover chat messages.
+
+Suggested CSS:
+.aura-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+}
+
+.aura-emblem {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  flex: 0 0 auto;
+  border-radius: 50%;
+}
+
+.aura-title {
+  display: flex;
+  flex-direction: column;
+}
+
+.aura-title-main {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.aura-title-sub {
+  font-size: 14px;
+  color: #22f5e6;
+}
+
+Success:
+- Desktop widget shows emblem top-left at 1/3 header size.
+- Chat bot shows emblem top-left at 1/3 header size.
+- Layout remains readable and responsive.

@@ -1,0 +1,27 @@
+Proof-driven local training mode.
+
+Rules:
+- No OpenAI API required.
+- No raw shell execution from user text.
+- Every learned command must include:
+  1. user phrase
+  2. intended local action
+  3. allowed skill/function
+  4. safety level
+  5. proof file path
+  6. expected output pattern
+- Training data must be saved locally under artifacts/training.
+- Unknown commands should ask for clarification or show help.
+- Failed commands should generate a proof record, not retry blindly.
+- Wallet remains read-only.
+- Git push/deploy remain disabled unless explicitly enabled.
+
+Add commands:
+Invoke-Aura "training status"
+Invoke-Aura "learn phrase"
+Invoke-Aura "show proof"
+Invoke-Aura "validate training"
+Invoke-Aura "export training proof"
+
+Success:
+Aura can explain what it learned, why it is safe, and which proof file supports it.

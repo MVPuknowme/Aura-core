@@ -1,0 +1,852 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Aura GPT Desktop</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Segoe UI, Arial, sans-serif;
+      background: linear-gradient(180deg, #12091f, #072b33, #1f102a);
+      color: white;
+    }
+
+    header {
+      padding: 18px 22px;
+      border-bottom: 2px solid #ff7a18;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .subtitle {
+      margin-top: 6px;
+      color: #00f5d4;
+      font-size: 13px;
+    }
+
+    main {
+      display: grid;
+      grid-template-rows: 1fr auto;
+      height: calc(100vh - 76px);
+    }
+
+    #chat {
+      padding: 18px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      line-height: 1.45;
+    }
+
+    .msg {
+      margin: 0 0 14px 0;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(255, 79, 216, 0.10);
+    }
+
+    .user {
+      border-left: 4px solid #ff7a18; border-top: 1px solid rgba(255,122,24,0.55);
+    }
+
+    .assistant {
+      border-left: 4px solid #00f5d4; border-top: 1px solid rgba(255,122,24,0.55);
+    }
+
+    .bar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      padding: 14px;
+      border-top: 2px solid #ff7a18;
+      background: rgba(0,0,0,0.25);
+    }
+
+    textarea {
+      resize: none;
+      height: 76px;
+      border-radius: 10px;
+      padding: 10px;
+      border: 2px solid #ff7a18;
+      background: #101926;
+      color: white;
+      font-size: 14px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 0 20px;
+      color: white;
+      background: linear-gradient(135deg, #ff4fd8, #ff7a18);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: wait;
+    }
+
+    .quick {
+      padding: 0 14px 10px 14px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      background: rgba(0,0,0,0.25);
+    }
+
+    .quick button {
+      padding: 8px 10px;
+      background: linear-gradient(135deg, #00f5d4, #ff4fd8);
+      font-size: 12px;
+    }
+  
+.aura-brand {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 18px;
+  background: rgba(8, 12, 28, 0.72);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 0 24px rgba(34, 245, 230, 0.24);
+}
+
+.aura-emblem {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+.aura-name {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.aura-subtitle {
+  font-size: 13px;
+  color: #22f5e6;
+}
+</style>
+<style id="aura-pip-telemetry-style">
+  .aura-pip-telemetry {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    width: 260px;
+    z-index: 9999;
+    padding: 12px 14px;
+    border-radius: 18px;
+    background: rgba(8, 12, 28, 0.82);
+    border: 1px solid rgba(96, 215, 255, 0.34);
+    box-shadow: 0 0 24px rgba(66, 211, 255, 0.14), inset 0 0 18px rgba(255,255,255,0.03);
+    color: #eaf8ff;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  .aura-pip-telemetry.minimized .aura-pip-body { display: none; }
+
+  .aura-pip-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .aura-pip-title {
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    font-weight: 800;
+    color: #8eeaff;
+  }
+
+  .aura-pip-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #35f2a4;
+    box-shadow: 0 0 10px rgba(53, 242, 164, 0.9);
+  }
+
+  .aura-pip-body { margin-top: 10px; }
+
+  .aura-pip-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .aura-pip-metric {
+    border-radius: 12px;
+    padding: 8px;
+    background: rgba(255,255,255,0.055);
+    border: 1px solid rgba(255,255,255,0.075);
+  }
+
+  .aura-pip-label {
+    font-size: 10px;
+    color: rgba(234,248,255,0.68);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .aura-pip-value {
+    margin-top: 3px;
+    font-size: 16px;
+    font-weight: 800;
+  }
+
+  .aura-pip-line {
+    margin-top: 8px;
+    font-size: 11px;
+    color: rgba(234,248,255,0.8);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .aura-pip-pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 9px;
+  }
+
+  .aura-pip-pill {
+    border-radius: 999px;
+    padding: 4px 7px;
+    background: rgba(142,234,255,0.11);
+    border: 1px solid rgba(142,234,255,0.18);
+    font-size: 10px;
+    color: #dff8ff;
+  }
+
+  .aura-pip-footer {
+    margin-top: 8px;
+    font-size: 10px;
+    color: rgba(234,248,255,0.55);
+  }
+
+  .aura-pip-warn .aura-pip-dot {
+    background: #ffcf5a;
+    box-shadow: 0 0 10px rgba(255, 207, 90, 0.9);
+  }
+
+  .aura-pip-hot .aura-pip-dot {
+    background: #ff5a7a;
+    box-shadow: 0 0 10px rgba(255, 90, 122, 0.9);
+  }
+</style>
+<style id="aura-live-pings-style">
+  .aura-live-pings {
+    margin-top: 10px;
+    padding-top: 9px;
+    border-top: 1px solid rgba(142,234,255,0.16);
+  }
+
+  .aura-pings-title {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    font-weight: 800;
+    color: rgba(142,234,255,0.9);
+    margin-bottom: 7px;
+  }
+
+  .aura-ping-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 6px;
+    align-items: center;
+    font-size: 10px;
+    color: rgba(234,248,255,0.82);
+    margin-top: 5px;
+  }
+
+  .aura-ping-status {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: #ffcf5a;
+    box-shadow: 0 0 8px rgba(255,207,90,0.8);
+  }
+
+  .aura-ping-status.ok {
+    background: #35f2a4;
+    box-shadow: 0 0 8px rgba(53,242,164,0.85);
+  }
+
+  .aura-ping-status.fail {
+    background: #ff5a7a;
+    box-shadow: 0 0 8px rgba(255,90,122,0.85);
+  }
+
+  .aura-pings-footer {
+    margin-top: 7px;
+    font-size: 10px;
+    color: rgba(234,248,255,0.52);
+  }
+</style>
+</head>
+<body>
+<div class="aura-brand">
+  <img src="./assets/aura-emblem.png" class="aura-emblem" />
+  <div>
+    <div class="aura-name">AURA</div>
+    <div class="aura-subtitle">The Wind of Change</div>
+  </div>
+</div>
+
+  <header>
+    <h1>🩷 Aura GPT Desktop 🩵</h1>
+    <div class="subtitle">Windows 10 app shell Ã¢â‚¬Â¢ no Edge tab Ã¢â‚¬Â¢ no raw PowerShell execution</div>
+  </header>
+
+  <main>
+    <section id="chat">
+      <div class="msg assistant">Aura GPT Desktop online. Ask for SKYGRID vitals, patch plans, shell prompts, or repo triage.</div>
+    </section>
+
+    <section>
+      <div class="quick">
+        <button onclick="quick('Give me a safe read-only PowerShell vitals check for E:\\\\Aura-core.')">Vitals Prompt</button>
+        <button onclick="quick('Review SKYGRID production readiness. Keep failover blocked.')">Readiness Review</button>
+        <button onclick="quick('Give me a no-secrets troubleshooting plan for Vercel env readiness.')">Vercel Env Help</button>
+        <button onclick="quick('Give me a safe commit checklist for Aura-Core changes.')">Commit Checklist</button>
+      </div>
+
+      <div class="bar">
+        <textarea id="input" placeholder="Type to Aura GPT..."></textarea>
+        <button id="send" onclick="send()">Send</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const chat = document.getElementById("chat");
+    const input = document.getElementById("input");
+    const sendButton = document.getElementById("send");
+
+    function add(role, text) {
+      const div = document.createElement("div");
+      div.className = `msg ${role}`;
+      div.textContent = text;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function quick(text) {
+      input.value = text;
+      send();
+    }
+
+    async function send() {
+      const text = input.value.trim();
+      if (!text) return;
+
+      input.value = "";
+      add("user", text);
+      sendButton.disabled = true;
+
+      try {
+        const answer = await window.auraGPT.ask(text);
+        add("assistant", answer || "(No response text returned.)");
+      } catch (error) {
+        add("assistant", `Error: ${error.message}`);
+      } finally {
+        sendButton.disabled = false;
+        input.focus();
+      }
+    }
+
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        send();
+      }
+    });
+  </script>
+<div id="aura-pip-telemetry" class="aura-pip-telemetry">
+  <div class="aura-pip-head" onclick="document.getElementById('aura-pip-telemetry').classList.toggle('minimized')">
+    <div class="aura-pip-title">AURA LIVE</div>
+    <div class="aura-pip-dot"></div>
+  </div>
+
+  <div class="aura-pip-body">
+    <div class="aura-pip-grid">
+      <div class="aura-pip-metric">
+        <div class="aura-pip-label">CPU</div>
+        <div class="aura-pip-value" id="aura-pip-cpu">--%</div>
+      </div>
+      <div class="aura-pip-metric">
+        <div class="aura-pip-label">Memory</div>
+        <div class="aura-pip-value" id="aura-pip-memory">--%</div>
+      </div>
+      <div class="aura-pip-metric">
+        <div class="aura-pip-label">Disk</div>
+        <div class="aura-pip-value" id="aura-pip-disk">--%</div>
+      </div>
+      <div class="aura-pip-metric">
+        <div class="aura-pip-label">Proofs</div>
+        <div class="aura-pip-value" id="aura-pip-proofs">--</div>
+      </div>
+    </div>
+
+    <div class="aura-pip-line" id="aura-pip-route">Route: checking...</div>
+    <div class="aura-pip-pill-row">
+      <span class="aura-pip-pill" id="aura-pip-mode">mode: local</span>
+      <span class="aura-pip-pill" id="aura-pip-openai">openai: offline</span>
+      <span class="aura-pip-pill" id="aura-pip-safe">safe: yes</span>
+    </div>
+    <div class="aura-pip-footer" id="aura-pip-refresh">Telemetry starting...</div>
+  </div>
+</div>
+
+<script id="aura-pip-telemetry-script">
+  (function () {
+    function setText(id, value) {
+      var el = document.getElementById(id);
+      if (el) el.textContent = value;
+    }
+
+    function classify(cpu, mem, disk) {
+      var hud = document.getElementById("aura-pip-telemetry");
+      if (!hud) return;
+      hud.classList.remove("aura-pip-warn", "aura-pip-hot");
+      var max = Math.max(Number(cpu || 0), Number(mem || 0), Number(disk || 0));
+      if (max >= 90) hud.classList.add("aura-pip-hot");
+      else if (max >= 75) hud.classList.add("aura-pip-warn");
+    }
+
+    async function refreshAuraTelemetry() {
+      try {
+        if (!window.auraTelemetry || !window.auraTelemetry.getSnapshot) {
+          setText("aura-pip-refresh", "Telemetry bridge unavailable");
+          return;
+        }
+
+        var snap = await window.auraTelemetry.getSnapshot();
+
+        if (!snap || !snap.ok) {
+          setText("aura-pip-refresh", "Telemetry unavailable");
+          return;
+        }
+
+        setText("aura-pip-cpu", String(snap.cpuPercent || 0) + "%");
+        setText("aura-pip-memory", String(snap.memoryUsedPercent || 0) + "%");
+        setText("aura-pip-disk", String(snap.diskUsedPercent || 0) + "%");
+        setText("aura-pip-proofs", String(snap.proofFiles || 0));
+        setText("aura-pip-route", "Route: " + (snap.activeRoute || "not selected"));
+        setText("aura-pip-mode", "mode: " + (snap.auraMode || "local"));
+        setText("aura-pip-openai", "openai: " + (snap.openAiMode || "offline"));
+        setText("aura-pip-safe", "safe: " + (snap.safeMode ? "yes" : "check"));
+        setText("aura-pip-refresh", "Updated: " + new Date().toLocaleTimeString() + " � " + (snap.source || "local"));
+
+        classify(snap.cpuPercent, snap.memoryUsedPercent, snap.diskUsedPercent);
+      } catch (error) {
+        setText("aura-pip-refresh", "Telemetry error");
+      }
+    }
+
+    refreshAuraTelemetry();
+    setInterval(refreshAuraTelemetry, 10000);
+  })();
+</script>
+<script id="aura-live-pings-script">
+  (function () {
+    function pingStatusClass(check) {
+      if (!check) return "";
+      return check.ok ? "ok" : "fail";
+    }
+
+    function renderPings(snapshot) {
+      var rows = document.getElementById("aura-ping-rows");
+      var footer = document.getElementById("aura-pings-footer");
+      if (!rows || !footer) return;
+
+      if (!snapshot || !snapshot.checks || !snapshot.checks.length) {
+        rows.innerHTML = '<div class="aura-ping-row"><span>no active route</span><span>--</span><span class="aura-ping-status fail"></span></div>';
+        footer.textContent = "Pings unavailable";
+        return;
+      }
+
+      rows.innerHTML = snapshot.checks.map(function (check) {
+        return ''
+          + '<div class="aura-ping-row">'
+          + '<span>' + check.label + '</span>'
+          + '<span>' + check.statusCode + ' � ' + check.latencyMs + 'ms</span>'
+          + '<span class="aura-ping-status ' + pingStatusClass(check) + '"></span>'
+          + '</div>';
+      }).join("");
+
+      footer.textContent = (snapshot.routeName || "route") + " � " + (snapshot.status || "unknown") + " � " + new Date().toLocaleTimeString();
+    }
+
+    async function refreshAuraPings() {
+      try {
+        if (!window.auraPings || !window.auraPings.getSnapshot) {
+          renderPings(null);
+          return;
+        }
+
+        var snapshot = await window.auraPings.getSnapshot();
+        renderPings(snapshot);
+      } catch (_) {
+        renderPings(null);
+      }
+    }
+
+    refreshAuraPings();
+    setInterval(refreshAuraPings, 30000);
+  })();
+</script>
+<style id="aura-final-cockpit-force-v2">
+  /* FINAL COCKPIT FORCE PATCH */
+
+  header,
+  .header,
+  .app-header,
+  .topbar,
+  .titlebar {
+    border-bottom: 0 !important;
+    box-shadow: none !important;
+    z-index: 100 !important;
+  }
+
+  .aura-brand,
+  .brand,
+  .logo,
+  .aura-emblem {
+    position: relative !important;
+    z-index: 5000 !important;
+  }
+
+  /* Local PC telemetry: top-right */
+  #aura-pip-telemetry,
+  .aura-pip-telemetry {
+    position: fixed !important;
+    top: 72px !important;
+    right: 16px !important;
+    bottom: auto !important;
+    left: auto !important;
+    width: 270px !important;
+    max-height: none !important;
+    overflow: visible !important;
+    z-index: 2147483000 !important;
+  }
+
+  /* Network telemetry: separate bottom-left box */
+  body > #aura-live-pings,
+  body > .aura-live-pings {
+    position: fixed !important;
+    left: 16px !important;
+    bottom: 16px !important;
+    top: auto !important;
+    right: auto !important;
+    width: 310px !important;
+    max-height: 220px !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 12px 14px !important;
+    border-radius: 18px !important;
+    background: rgba(8, 12, 28, 0.90) !important;
+    border: 1px solid rgba(255, 190, 96, 0.42) !important;
+    box-shadow: 0 0 24px rgba(255, 160, 64, 0.16), inset 0 0 18px rgba(255,255,255,0.035) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    z-index: 2147482999 !important;
+    box-sizing: border-box !important;
+  }
+
+  body > #aura-live-pings .aura-pings-title,
+  body > .aura-live-pings .aura-pings-title {
+    color: rgba(255, 210, 145, 0.98) !important;
+  }
+
+  /* Strip duplicate borders from possible nested chat layers */
+  main,
+  .main,
+  .app-main,
+  .chat-shell,
+  .chat-container,
+  .conversation,
+  .conversation-box,
+  #chat,
+  #messages {
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* One clean chat border only, selected by JS */
+  .aura-chat-border-target,
+  main.aura-chat-border-target,
+  .main.aura-chat-border-target,
+  .app-main.aura-chat-border-target,
+  .chat-shell.aura-chat-border-target,
+  .chat-container.aura-chat-border-target,
+  .conversation.aura-chat-border-target,
+  .conversation-box.aura-chat-border-target,
+  #chat.aura-chat-border-target,
+  #messages.aura-chat-border-target {
+    border: 1px solid rgba(142,234,255,0.26) !important;
+    border-radius: 22px !important;
+    box-shadow: 0 0 30px rgba(66, 211, 255, 0.10), inset 0 0 20px rgba(255,255,255,0.03) !important;
+    background: rgba(8, 12, 28, 0.28) !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Make room for right-side local telemetry */
+  .aura-chat-border-target {
+    margin-right: 318px !important;
+  }
+
+  @media (max-width: 900px) {
+    #aura-pip-telemetry,
+    .aura-pip-telemetry {
+      top: 64px !important;
+      right: 10px !important;
+      width: 235px !important;
+    }
+
+    body > #aura-live-pings,
+    body > .aura-live-pings {
+      left: 10px !important;
+      bottom: 10px !important;
+      width: 265px !important;
+    }
+
+    .aura-chat-border-target {
+      margin-right: 0 !important;
+    }
+  }
+</style>
+
+<script id="aura-final-cockpit-force-v2-script">
+  (function () {
+    function moveNetworkTelemetry() {
+      var net = document.getElementById("aura-live-pings");
+      if (!net) return;
+
+      if (net.parentElement !== document.body) {
+        document.body.appendChild(net);
+      }
+
+      var title = net.querySelector(".aura-pings-title");
+      if (title) title.textContent = "NETWORK TELEMETRY";
+    }
+
+    function chooseChatBorderTarget() {
+      var selectors = [
+        ".chat-shell",
+        ".chat-container",
+        ".conversation-box",
+        ".conversation",
+        "#chat",
+        "#messages",
+        "main",
+        ".app-main",
+        ".main"
+      ];
+
+      var candidates = [];
+      selectors.forEach(function (selector) {
+        Array.prototype.forEach.call(document.querySelectorAll(selector), function (el) {
+          if (!el || el.id === "aura-pip-telemetry" || el.id === "aura-live-pings") return;
+          if (el.closest("#aura-pip-telemetry") || el.closest("#aura-live-pings")) return;
+
+          var rect = el.getBoundingClientRect();
+          if (rect.width < 250 || rect.height < 160) return;
+
+          candidates.push({
+            el: el,
+            area: rect.width * rect.height
+          });
+        });
+      });
+
+      Array.prototype.forEach.call(document.querySelectorAll(".aura-chat-border-target"), function (el) {
+        el.classList.remove("aura-chat-border-target");
+      });
+
+      if (!candidates.length) return;
+
+      candidates.sort(function (a, b) { return b.area - a.area; });
+      candidates[0].el.classList.add("aura-chat-border-target");
+    }
+
+    function applyAuraCockpitLayout() {
+      moveNetworkTelemetry();
+      chooseChatBorderTarget();
+    }
+
+    window.addEventListener("load", applyAuraCockpitLayout);
+    window.addEventListener("resize", applyAuraCockpitLayout);
+    document.addEventListener("DOMContentLoaded", applyAuraCockpitLayout);
+
+    setTimeout(applyAuraCockpitLayout, 100);
+    setTimeout(applyAuraCockpitLayout, 750);
+    setInterval(applyAuraCockpitLayout, 3000);
+  })();
+</script>
+<style id="aura-persistent-chat-flag-v1">
+  /*
+    Persistent chat control:
+    - keeps selected chat surface visible
+    - adds CHAT flag to recover/focus the chat if layout drifts
+  */
+
+  .aura-chat-border-target {
+    min-height: 260px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  #aura-chat-flag {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 2147483001;
+    border: 1px solid rgba(142,234,255,0.42);
+    border-radius: 999px;
+    padding: 9px 14px;
+    background: rgba(8, 12, 28, 0.90);
+    color: #eaf8ff;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    box-shadow: 0 0 22px rgba(66, 211, 255, 0.18), inset 0 0 14px rgba(255,255,255,0.035);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  #aura-chat-flag:hover {
+    border-color: rgba(142,234,255,0.78);
+    box-shadow: 0 0 28px rgba(66, 211, 255, 0.30), inset 0 0 14px rgba(255,255,255,0.05);
+  }
+
+  #aura-chat-flag.aura-chat-flag-pulse {
+    animation: auraChatFlagPulse 1.8s ease-in-out infinite;
+  }
+
+  @keyframes auraChatFlagPulse {
+    0%, 100% {
+      box-shadow: 0 0 18px rgba(66, 211, 255, 0.16);
+    }
+    50% {
+      box-shadow: 0 0 34px rgba(66, 211, 255, 0.48);
+    }
+  }
+</style>
+
+<script id="aura-persistent-chat-flag-script-v1">
+  (function () {
+    function getChatTarget() {
+      return document.querySelector(".aura-chat-border-target")
+        || document.querySelector(".chat-shell")
+        || document.querySelector(".chat-container")
+        || document.querySelector(".conversation-box")
+        || document.querySelector("#messages")
+        || document.querySelector("#chat")
+        || document.querySelector("main");
+    }
+
+    function getInputTarget() {
+      return document.querySelector("textarea")
+        || document.querySelector("input[type='text']")
+        || document.querySelector("[contenteditable='true']");
+    }
+
+    function ensureChatFlag() {
+      var existing = document.getElementById("aura-chat-flag");
+      if (existing) return existing;
+
+      var flag = document.createElement("button");
+      flag.id = "aura-chat-flag";
+      flag.type = "button";
+      flag.textContent = "CHAT";
+      flag.title = "Bring Aura chat into view";
+      document.body.appendChild(flag);
+
+      flag.addEventListener("click", function () {
+        var chat = getChatTarget();
+        if (chat) {
+          chat.classList.add("aura-chat-border-target");
+          chat.style.display = "";
+          chat.style.visibility = "visible";
+          chat.style.opacity = "1";
+          chat.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+        }
+
+        var input = getInputTarget();
+        if (input && input.focus) {
+          setTimeout(function () { input.focus(); }, 250);
+        }
+
+        flag.classList.remove("aura-chat-flag-pulse");
+      });
+
+      return flag;
+    }
+
+    function keepChatPersistent() {
+      var flag = ensureChatFlag();
+      var chat = getChatTarget();
+
+      if (!chat) {
+        flag.classList.add("aura-chat-flag-pulse");
+        return;
+      }
+
+      chat.classList.add("aura-chat-border-target");
+      chat.style.visibility = "visible";
+      chat.style.opacity = "1";
+
+      var rect = chat.getBoundingClientRect();
+      var offscreen = rect.bottom < 0 || rect.top > window.innerHeight || rect.width < 120 || rect.height < 80;
+
+      if (offscreen) {
+        flag.classList.add("aura-chat-flag-pulse");
+      } else {
+        flag.classList.remove("aura-chat-flag-pulse");
+      }
+    }
+
+    window.addEventListener("load", keepChatPersistent);
+    window.addEventListener("resize", keepChatPersistent);
+    document.addEventListener("DOMContentLoaded", keepChatPersistent);
+
+    setTimeout(keepChatPersistent, 100);
+    setTimeout(keepChatPersistent, 1000);
+    setInterval(keepChatPersistent, 3000);
+  })();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

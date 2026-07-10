@@ -95,6 +95,7 @@ check_required "/health.json"
 check_required "/api/skygrid/status"
 check_required "/api/highway/status"
 check_required "/api/failover/status"
+check_required "/api/panels/summary"
 check_required "/api/autodrill/latest"
 
 # Required POST acceptance routes for proof-of-intake and advisory routing.

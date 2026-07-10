@@ -1,0 +1,45 @@
+﻿{
+  "pnpk_version": "0.1",
+  "system": "SKYGRID Emergency Data On-Ramp",
+  "payload_type": "safe-demo",
+  "classification": "public-demo",
+  "redaction_status": "dummy-only",
+  "source": {
+    "origin": "local-demo",
+    "captured_utc": "2026-06-23T00:00:00Z",
+    "operator": "MVP",
+    "notes": "Dummy payload only. No secrets or private extracted data."
+  },
+  "postman": {
+    "collection": "skygrid-highway-compatibility",
+    "environment": "demo",
+    "expected_status": 200
+  },
+  "kafka": {
+    "topic": "skygrid.auto_drill.demo",
+    "partition_key": "demo-only",
+    "routing_intent": "verify payload envelope compatibility"
+  },
+  "auto_drill": {
+    "enabled": true,
+    "mode": "verify-only",
+    "replay_safe": true
+  },
+  "protection": {
+    "contains_secrets": false,
+    "hash_algorithm": "SHA256",
+    "payload_sha256": "demo-placeholder-hash",
+    "encryption": "none-demo-only",
+    "storage_rule": "safe to commit because payload is dummy-only"
+  },
+  "payload": {
+    "ok": true,
+    "event_type": "demo.pnpk.verify",
+    "message": "PNPk safe demo payload for SKYGRID Auto-Drill verification."
+  },
+  "audit": {
+    "created_utc": "2026-06-23T00:00:00Z",
+    "created_by": "SKYGRID",
+    "review_status": "safe-demo"
+  }
+}

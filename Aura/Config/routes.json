@@ -1,0 +1,20 @@
+[
+  {
+    "name": "custom-domain",
+    "url": "https://aurcore.skygrid-protocol.net",
+    "priority": 1,
+    "enabled": true
+  },
+  {
+    "name": "vercel-production",
+    "url": "https://aura-core-t2t5.vercel.app",
+    "priority": 2,
+    "enabled": true
+  },
+  {
+    "name": "skygrid-apex",
+    "url": "https://skygrid-protocol.net",
+    "priority": 3,
+    "enabled": true
+  }
+]

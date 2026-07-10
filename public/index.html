@@ -3,179 +3,371 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>SKYGRID Emergency Data On-Ramp</title>
+    <title>SKYGRID Spartan Command Console</title>
     <style>
       :root {
         color-scheme: dark;
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        background: #07111f;
-        color: #f6fbff;
+        --bg: #020403;
+        --panel: rgba(3, 14, 10, 0.78);
+        --panel-strong: rgba(4, 22, 15, 0.92);
+        --green: #18ff62;
+        --green-soft: rgba(24, 255, 98, 0.18);
+        --cyan: #00e5ff;
+        --cyan-soft: rgba(0, 229, 255, 0.16);
+        --amber: #ffba3a;
+        --red: #ff4655;
+        --text: #eafff1;
+        --muted: #8cf7b6;
+        --line: rgba(24, 255, 98, 0.42);
+        font-family: "IBM Plex Mono", "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+        background: var(--bg);
+        color: var(--text);
       }
+
+      * { box-sizing: border-box; }
+
       body {
         margin: 0;
         min-height: 100vh;
+        overflow-x: hidden;
         background:
-          radial-gradient(circle at top left, rgba(0, 213, 255, 0.22), transparent 32rem),
-          linear-gradient(135deg, #07111f 0%, #0d1d35 48%, #111827 100%);
+          radial-gradient(circle at 14% 10%, rgba(24, 255, 98, 0.20), transparent 24rem),
+          radial-gradient(circle at 80% 18%, rgba(0, 229, 255, 0.15), transparent 28rem),
+          linear-gradient(135deg, #020403 0%, #05130d 48%, #020707 100%);
       }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+          linear-gradient(rgba(24, 255, 98, 0.05) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(24, 255, 98, 0.035) 1px, transparent 1px);
+        background-size: 34px 34px;
+        mask-image: radial-gradient(circle at center, black, transparent 72%);
+      }
+
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background: repeating-linear-gradient(
+          0deg,
+          rgba(255, 255, 255, 0.025),
+          rgba(255, 255, 255, 0.025) 1px,
+          transparent 1px,
+          transparent 4px
+        );
+        mix-blend-mode: screen;
+        opacity: 0.32;
+      }
+
       main {
-        max-width: 980px;
+        width: min(1440px, 100%);
         margin: 0 auto;
-        padding: 56px 24px;
-      }
-      .badge {
-        display: inline-flex;
-        gap: 8px;
-        align-items: center;
-        border: 1px solid rgba(125, 211, 252, 0.42);
-        border-radius: 999px;
-        padding: 8px 12px;
-        color: #bae6fd;
-        background: rgba(8, 47, 73, 0.55);
-        font-size: 14px;
-      }
-      h1 {
-        margin: 28px 0 16px;
-        font-size: clamp(42px, 7vw, 76px);
-        line-height: 0.95;
-        letter-spacing: -0.055em;
-      }
-      .lead {
-        max-width: 760px;
-        color: #dbeafe;
-        font-size: clamp(18px, 2.4vw, 24px);
-        line-height: 1.48;
-      }
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-        gap: 16px;
-        margin-top: 36px;
-      }
-      .card {
-        border: 1px solid rgba(148, 163, 184, 0.28);
-        border-radius: 22px;
         padding: 22px;
-        background: rgba(15, 23, 42, 0.74);
-        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
       }
-      .card h2 {
-        margin: 0 0 8px;
-        font-size: 18px;
+
+      .shell {
+        min-height: calc(100vh - 44px);
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        background: linear-gradient(180deg, rgba(3, 17, 11, 0.82), rgba(0, 0, 0, 0.72));
+        box-shadow: 0 0 60px rgba(24, 255, 98, 0.12), inset 0 0 90px rgba(24, 255, 98, 0.04);
+        overflow: hidden;
+        position: relative;
       }
-      .card p {
-        margin: 0;
-        color: #cbd5e1;
-        line-height: 1.55;
+
+      .shell::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(120deg, transparent 0%, rgba(24, 255, 98, 0.08) 48%, transparent 52%);
+        transform: translateX(-100%);
+        animation: sweep 7s linear infinite;
+        pointer-events: none;
       }
-      .actions {
+
+      @keyframes sweep {
+        0% { transform: translateX(-100%); }
+        44%, 100% { transform: translateX(100%); }
+      }
+
+      .topbar, .bottombar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        padding: 16px 18px;
+        border-bottom: 1px solid rgba(24, 255, 98, 0.24);
+        background: rgba(0, 0, 0, 0.35);
+      }
+
+      .bottombar {
+        border-top: 1px solid rgba(24, 255, 98, 0.24);
+        border-bottom: 0;
+        color: var(--muted);
+        font-size: 12px;
+        flex-wrap: wrap;
+      }
+
+      .brand { display: grid; gap: 3px; }
+      .eyebrow { color: var(--cyan); font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; }
+      h1 { margin: 0; font-size: clamp(22px, 3vw, 40px); letter-spacing: -0.04em; text-shadow: 0 0 18px rgba(24, 255, 98, 0.28); }
+
+      .status-strip {
         display: flex;
         flex-wrap: wrap;
-        gap: 12px;
-        margin-top: 34px;
+        justify-content: flex-end;
+        gap: 8px;
       }
-      a.button {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 46px;
-        border-radius: 14px;
-        padding: 0 18px;
-        color: #07111f;
-        background: #67e8f9;
-        text-decoration: none;
-        font-weight: 750;
+
+      .pill {
+        border: 1px solid rgba(24, 255, 98, 0.42);
+        border-radius: 999px;
+        padding: 7px 10px;
+        background: rgba(24, 255, 98, 0.08);
+        color: var(--green);
+        font-size: 12px;
+        white-space: nowrap;
       }
-      a.button.secondary {
-        color: #e0f2fe;
-        background: rgba(15, 23, 42, 0.72);
-        border: 1px solid rgba(125, 211, 252, 0.35);
-      }
-      .contact {
-        margin-top: 38px;
-        border: 1px solid rgba(103, 232, 249, 0.28);
-        border-radius: 24px;
-        padding: 24px;
-        background: rgba(8, 47, 73, 0.34);
-      }
-      .contact h2 {
-        margin: 0 0 10px;
-        font-size: 24px;
-      }
-      .contact p {
-        margin: 0 0 14px;
-        color: #dbeafe;
-        line-height: 1.55;
-      }
-      .contact-list {
+
+      .layout {
         display: grid;
-        gap: 10px;
-        margin: 16px 0 0;
-        padding: 0;
-        list-style: none;
+        grid-template-columns: 300px minmax(320px, 1fr) 330px;
+        gap: 16px;
+        padding: 16px;
       }
-      .contact-list a {
-        color: #bae6fd;
+
+      .panel {
+        border: 1px solid rgba(24, 255, 98, 0.28);
+        border-radius: 22px;
+        background: var(--panel);
+        box-shadow: inset 0 0 24px rgba(24, 255, 98, 0.035);
+        padding: 16px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .panel::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 16px;
+        right: 16px;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--green), transparent);
+        opacity: 0.72;
+      }
+
+      .panel h2 {
+        margin: 0 0 14px;
+        color: var(--green);
+        font-size: 13px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      .metric, .feed-row, .command-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(24, 255, 98, 0.12);
+        color: #d7ffe4;
+        font-size: 13px;
+      }
+
+      .metric:last-child, .feed-row:last-child, .command-row:last-child { border-bottom: 0; }
+      .metric strong, .feed-row strong { color: var(--green); font-weight: 700; }
+      .amber { color: var(--amber); }
+      .cyan { color: var(--cyan); }
+      .red { color: var(--red); }
+
+      .spartan-stage {
+        min-height: 530px;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        background:
+          radial-gradient(circle at center, rgba(24, 255, 98, 0.16), transparent 20rem),
+          linear-gradient(180deg, rgba(0, 229, 255, 0.04), transparent);
+      }
+
+      .helmet {
+        width: min(380px, 82vw);
+        aspect-ratio: 1;
+        display: grid;
+        place-items: center;
+        border: 1px solid rgba(0, 229, 255, 0.24);
+        border-radius: 999px;
+        background: radial-gradient(circle, rgba(24, 255, 98, 0.16), transparent 62%);
+        box-shadow: 0 0 80px rgba(24, 255, 98, 0.16), inset 0 0 42px rgba(0, 229, 255, 0.08);
+      }
+
+      .helmet svg {
+        width: 72%;
+        filter: drop-shadow(0 0 18px rgba(24, 255, 98, 0.55));
+      }
+
+      .stage-title {
+        margin-top: 18px;
+        color: var(--green);
+        font-size: clamp(22px, 4vw, 44px);
+        letter-spacing: -0.05em;
+      }
+
+      .stage-copy {
+        max-width: 680px;
+        margin: 12px auto 0;
+        color: #c9ffda;
+        line-height: 1.6;
+        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      }
+
+      .console {
+        margin-top: 16px;
+        border: 1px solid rgba(0, 229, 255, 0.22);
+        border-radius: 18px;
+        background: rgba(0, 0, 0, 0.42);
+        padding: 14px;
+        text-align: left;
+      }
+
+      .prompt { color: var(--green); }
+      .cursor { display: inline-block; width: 8px; height: 16px; background: var(--green); vertical-align: -3px; animation: blink 1s steps(2) infinite; }
+      @keyframes blink { 50% { opacity: 0; } }
+
+      .routes {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+        margin-top: 16px;
+      }
+
+      .routes a {
+        color: var(--text);
         text-decoration: none;
-        font-weight: 700;
+        border: 1px solid rgba(24, 255, 98, 0.24);
+        border-radius: 14px;
+        padding: 11px 10px;
+        background: rgba(24, 255, 98, 0.07);
+        font-size: 12px;
+        text-align: center;
       }
-      .contact-list span {
-        color: #cbd5e1;
+
+      .routes a:hover { border-color: var(--cyan); color: var(--cyan); }
+
+      .bar {
+        height: 8px;
+        border: 1px solid rgba(24, 255, 98, 0.22);
+        border-radius: 999px;
+        overflow: hidden;
+        background: rgba(24, 255, 98, 0.05);
+        min-width: 90px;
       }
-      footer {
-        margin-top: 36px;
-        color: #93c5fd;
-        font-size: 14px;
+
+      .bar span { display: block; height: 100%; background: linear-gradient(90deg, var(--green), var(--cyan)); box-shadow: 0 0 12px var(--green); }
+
+      @media (max-width: 1040px) {
+        .layout { grid-template-columns: 1fr; }
+        .spartan-stage { min-height: auto; }
+        .routes { grid-template-columns: repeat(2, 1fr); }
       }
     </style>
   </head>
   <body>
     <main>
-      <span class="badge">Controlled pilot · Sentinel fail_closed · Vercel fallback</span>
-      <h1>SKYGRID Emergency Data On-Ramp</h1>
-      <p class="lead">
-        A secure entry point for emergency, outage, responder, system-health, and continuity data to be validated, logged, routed, proved, and surfaced to dashboards and partners.
-      </p>
+      <section class="shell" aria-label="SKYGRID Spartan command console">
+        <header class="topbar">
+          <div class="brand">
+            <span class="eyebrow">Controlled pilot · Sentinel fail_closed</span>
+            <h1>SKYGRID Local Command Console</h1>
+          </div>
+          <div class="status-strip" aria-label="System status">
+            <span class="pill">🟢 ACTIVE</span>
+            <span class="pill">🔵 SYNCING</span>
+            <span class="pill">🟣 VALIDATING</span>
+            <span class="pill">Runtime: Vercel</span>
+          </div>
+        </header>
 
-      <section class="grid" aria-label="SKYGRID status cards">
-        <article class="card">
-          <h2>Validation-first</h2>
-          <p>Every ramp check starts with PNPK validation before deployment artifacts are created.</p>
-        </article>
-        <article class="card">
-          <h2>Fail-closed posture</h2>
-          <p>Production failover, private data movement, device activation, and payment execution remain disabled in pilot mode.</p>
-        </article>
-        <article class="card">
-          <h2>AWS-ready routing</h2>
-          <p>B12 can present the public trust layer while Vercel and AWS handle live routes, health checks, and emergency validation.</p>
-        </article>
+        <div class="layout">
+          <aside class="panel" aria-label="Diagnostics">
+            <h2>Diagnostics</h2>
+            <div class="metric"><span>PNPK validation</span><strong>READY</strong></div>
+            <div class="metric"><span>Manifest sync</span><strong>ONLINE</strong></div>
+            <div class="metric"><span>Emergency gate</span><strong>ARMED</strong></div>
+            <div class="metric"><span>Private movement</span><strong class="amber">DISABLED</strong></div>
+            <div class="metric"><span>Device activation</span><strong class="amber">DISABLED</strong></div>
+            <div class="metric"><span>Payment execution</span><strong class="amber">DISABLED</strong></div>
+            <div class="metric"><span>Production failover</span><strong class="amber">PILOT</strong></div>
+            <div class="metric"><span>Route proof</span><strong class="cyan">CHECKABLE</strong></div>
+
+            <h2 style="margin-top:22px">Commands</h2>
+            <div class="command-row"><span>status</span><span class="cyan">system health</span></div>
+            <div class="command-row"><span>scan</span><span class="cyan">local mesh</span></div>
+            <div class="command-row"><span>validators</span><span class="cyan">sync state</span></div>
+            <div class="command-row"><span>bridge</span><span class="cyan">route audit</span></div>
+            <div class="command-row"><span>recover</span><span class="cyan">fail-closed plan</span></div>
+          </aside>
+
+          <section class="panel spartan-stage" aria-label="Spartan Sentinel HUD">
+            <div>
+              <div class="helmet" aria-hidden="true">
+                <svg viewBox="0 0 512 512" role="img" aria-label="Spartan helmet emblem">
+                  <path d="M256 38c82 0 151 44 188 110-58-10-106-7-145 9-43 18-72 53-88 104h196c-7 80-54 147-120 183v-86h-63v86c-67-36-113-103-120-183h78c13-74 49-126 109-154 15-7 31-12 48-15-25-16-53-24-83-24-89 0-161 72-161 161 0 23 5 45 14 65H66c-6-21-9-43-9-65C57 124 146 38 256 38Z" fill="none" stroke="#18ff62" stroke-width="18" stroke-linejoin="round"/>
+                  <path d="M183 283h146l-30 45h-86l-30-45Z" fill="none" stroke="#00e5ff" stroke-width="14" stroke-linejoin="round"/>
+                  <path d="M256 38v95" stroke="#18ff62" stroke-width="18" stroke-linecap="round"/>
+                  <path d="M183 261c11-44 34-76 70-96" stroke="#00e5ff" stroke-width="14" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div class="stage-title">SPARTAN SENTINEL ONLINE</div>
+              <p class="stage-copy">
+                A tactical interface for the SKYGRID Emergency Data On-Ramp: emergency, outage, responder, system-health, and continuity data can be validated, logged, routed, proved, and surfaced to dashboards and partners.
+              </p>
+              <div class="console" aria-label="Command prompt preview">
+                <span class="prompt">SKYGRID&gt;</span> verify routes --mode controlled-pilot<br />
+                <span class="prompt">✓</span> sentinel fail_closed · canonical domain ready · health proof exposed<br />
+                <span class="prompt">SKYGRID&gt;</span> <span class="cursor"></span>
+              </div>
+              <nav class="routes" aria-label="SKYGRID deployment routes">
+                <a href="/api/health">API Health</a>
+                <a href="/health.json">Health JSON</a>
+                <a href="/dispatch">Dispatcher</a>
+                <a href="/scenarios">Scenarios</a>
+                <a href="/api/highway/status">Highway</a>
+              </nav>
+            </div>
+          </section>
+
+          <aside class="panel" aria-label="Live status">
+            <h2>Live Status</h2>
+            <div class="metric"><span>CPU</span><div class="bar"><span style="width:64%"></span></div></div>
+            <div class="metric"><span>Memory</span><div class="bar"><span style="width:52%"></span></div></div>
+            <div class="metric"><span>Network</span><div class="bar"><span style="width:82%"></span></div></div>
+            <div class="metric"><span>Route confidence</span><div class="bar"><span style="width:91%"></span></div></div>
+            <div class="metric"><span>Emergency posture</span><strong>GUARDIAN</strong></div>
+            <div class="metric"><span>Canonical site</span><strong class="cyan">AURA-SKY</strong></div>
+
+            <h2 style="margin-top:22px">Event Feed</h2>
+            <div class="feed-row"><span>00:00:01</span><strong>Mesh heartbeat</strong></div>
+            <div class="feed-row"><span>00:00:04</span><strong>Node discovered</strong></div>
+            <div class="feed-row"><span>00:00:10</span><strong>Validator synchronized</strong></div>
+            <div class="feed-row"><span>00:00:18</span><strong>Emergency route verified</strong></div>
+            <div class="feed-row"><span>00:00:21</span><strong>Latency nominal</strong></div>
+          </aside>
+        </div>
+
+        <footer class="bottombar">
+          <span>Service: SKYGRID Emergency Data On-Ramp</span>
+          <span>Operator: MVPuknowme</span>
+          <span>Guardian Mode · Mesh Ready · Emergency Ready · Sentinel Active</span>
+          <span>Contact: mike_p32@icloud.com</span>
+        </footer>
       </section>
-
-      <section class="contact" aria-label="Contact SKYGRID">
-        <h2>Contact SKYGRID</h2>
-        <p>
-          For partner review, emergency-operator discussion, leasee node onboarding, or proof access, contact the SKYGRID operator. Please use the live Vercel link until the custom domain is fully routed off B12.
-        </p>
-        <ul class="contact-list">
-          <li><strong>Email:</strong> <a href="mailto:mike_p32@icloud.com?subject=SKYGRID%20Emergency%20Data%20On-Ramp%20Inquiry">mike_p32@icloud.com</a></li>
-          <li><strong>GitHub proof:</strong> <a href="https://github.com/MVPuknowme/Aura-core" target="_blank" rel="noopener noreferrer">github.com/MVPuknowme/Aura-core</a></li>
-          <li><strong>Live site:</strong> <a href="https://aura-core.vercel.app" target="_blank" rel="noopener noreferrer">aura-core.vercel.app</a></li>
-          <li><span>Inquiry types: carrier partnership, emergency save/offload review, leasee device-owner node participation, Postman API proof, and Auto-Drill space availability.</span></li>
-        </ul>
-      </section>
-
-      <nav class="actions" aria-label="SKYGRID deployment routes">
-        <a class="button" href="/api/health">Check API Health</a>
-        <a class="button secondary" href="/health.json">Raw Health JSON</a>
-        <a class="button secondary" href="/dispatch">Dispatcher Route</a>
-        <a class="button secondary" href="/scenarios">Scenarios Route</a>
-        <a class="button secondary" href="/api/highway/status">Highway Status Route</a>
-      </nav>
-
-      <footer>
-        Service: SKYGRID Emergency Data On-Ramp · Operator: MVPuknowme · Runtime: vercel-static · Contact: mike_p32@icloud.com
-      </footer>
     </main>
   </body>
 </html>

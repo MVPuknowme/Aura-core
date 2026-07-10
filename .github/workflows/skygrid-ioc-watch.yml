@@ -1,0 +1,24 @@
+name: SKYGRID IOC Watch
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  ioc-watch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Show Node version
+        run: node --version
+
+      - name: Run IOC watch
+        run: npm run security:ioc-check

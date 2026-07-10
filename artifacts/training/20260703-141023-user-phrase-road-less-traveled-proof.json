@@ -1,0 +1,12 @@
+{
+    "phrase":  "User phrase: road less traveled",
+    "intent":  "Intent name: network_route_recommendation",
+    "skill":  "Allowed skill/function: Invoke-AuraNetworkRoute",
+    "safety_level":  "safe-local",
+    "proof_file":  "E:\\Aura-core\\artifacts\\training\\20260703-141023-user-phrase-road-less-traveled-proof.json",
+    "expected_output":  "Expected output pattern: Tests approved configured routes and recommends the safest available route without raw shell execution.",
+    "raw_shell_execution":  false,
+    "openai_required":  false,
+    "wallet_mode":  "read-only",
+    "created_at":  "2026-07-03T14:10:23.0823712-07:00"
+}

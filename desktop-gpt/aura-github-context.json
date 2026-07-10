@@ -1,0 +1,25 @@
+﻿{
+  "version": "0.1.0",
+  "provider": "github",
+  "owner": "MVPuknowme",
+  "repo": "Aura-core",
+  "full_name": "MVPuknowme/Aura-core",
+  "local_root": "E:\\Aura-core",
+  "desktop_root": "E:\\Aura-core\\desktop-gpt",
+  "primary_branch": "MVPuknowme",
+  "active_dev_branch": "dev/aura-shield-ios-blocker",
+  "remote": "origin",
+  "repo_url": "https://github.com/MVPuknowme/Aura-core",
+  "safe_rules": [
+    "Do not force push.",
+    "Do not commit .env.local, runtime cache, logs, API keys, private keys, seed phrases, or wallet material.",
+    "Use git status -sb before every commit.",
+    "Use pull --rebase --autostash before pushing when remote changed.",
+    "Push current dev branch with git push -u origin HEAD.",
+    "Merge to MVPuknowme only after branch status is clean."
+  ],
+  "proof_files": [
+    "postman/skygrid-aura-desktop.generated.collection.json",
+    "artifacts/postman/"
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "snapshot_id": "klamath-core-review-2026-05-14",
+  "record_id": "rec454piNH86zxcy2",
+  "node_id": "klamath-falls-core",
+  "region": "Klamath Falls / Klamath County",
+  "status": "Needs Review",
+  "reported_daily_output_usd": 1463,
+  "pending_payout_usd": 1463,
+  "verified_paid_usd": 0,
+  "projection_family": {
+    "weekly_usd": 945,
+    "monthly_usd": 4095,
+    "annual_usd": 49140,
+    "implied_daily_from_weekly_usd": 135,
+    "implied_daily_from_monthly_30d_usd": 136.5,
+    "implied_daily_from_annual_usd": 134.63
+  },
+  "projected_allocations": [
+    {
+      "record_id": "recKQHA8RhYqRUEYu",
+      "payout_id": "spx-alloc-20260514-001",
+      "type": "Infrastructure Reinvestment",
+      "amount_usd_per_day": 585.2,
+      "status": "Projected"
+    },
+    {
+      "record_id": "recv4otLkPt41QQ0B",
+      "payout_id": "spx-founder-20260514-001",
+      "type": "Founder Allocation 3%",
+      "amount_usd_per_day": 43.89,
+      "status": "Projected"
+    }
+  ],
+  "required_evidence_before_verification": [
+    "Airtable raw record export",
+    "linked Route Map rows",
+    "linked Income Dashboard rows",
+    "AWS region and resource IDs",
+    "CloudWatch telemetry",
+    "deployment manifest",
+    "U.S. Bank ACH trace or statement evidence",
+    "wallet or on-chain transaction evidence if applicable",
+    "source trace reconciliation note"
+  ],
+  "safe_conclusion": "Planning values exist, but verified payout evidence does not. Keep Needs Review."
+}

@@ -1,0 +1,430 @@
+
+function Get-AuraCommandRegistry {
+    $registryPath = "E:\Aura-core\Aura\Config\commands.json"
+
+    if (-not (Test-Path $registryPath)) {
+        Write-Host "Aura command registry not found: $registryPath" -ForegroundColor Yellow
+        return @()
+    }
+
+    try {
+        $commands = Get-Content $registryPath -Raw | ConvertFrom-Json
+        return @($commands)
+    }
+    catch {
+        Write-Host "Aura command registry failed to load: $($_.Exception.Message)" -ForegroundColor Red
+        return @()
+    }
+}
+
+function Invoke-AuraRegistryCommand {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$InputText
+    )
+
+    $normalized = $InputText.ToLower().Trim()
+    $commands = Get-AuraCommandRegistry
+
+    $match = $commands | Where-Object {
+        $_.enabled -eq $true -and $_.phrase.ToLower().Trim() -eq $normalized
+    } | Select-Object -First 1
+
+    if (-not $match) {
+        return $false
+    }
+
+    Write-Host "Aura registry matched phrase: $($match.phrase)" -ForegroundColor Cyan
+    Write-Host "Intent: $($match.intent)"
+    Write-Host "Skill: $($match.skill)"
+    Write-Host "Safety: $($match.safety_level)"
+
+    switch ($match.skill) {
+        "Invoke-AuraTrainingStatus" {
+            . .\Aura\Skills\Training.ps1
+            Invoke-AuraTrainingStatus
+            return $true
+        }
+
+        "Invoke-AuraShowProof" {
+            . .\Aura\Skills\Training.ps1
+            Invoke-AuraShowProof
+            return $true
+        }
+
+        "Invoke-AuraValidateTraining" {
+            . .\Aura\Skills\Training.ps1
+            Invoke-AuraValidateTraining
+            return $true
+        }
+
+        "Invoke-AuraRuntime" {
+            . .\Aura\Skills\Diagnostics.ps1
+            Invoke-AuraWhereAreWe
+            return $true
+        }
+
+        "Invoke-AuraNetworkRoute" {
+            . .\Aura\Skills\NetworkRoute.ps1
+            Invoke-AuraNetworkRoute
+            return $true
+        }
+        "vitals" {
+            . .\Aura\Skills\Vitals.ps1
+            Invoke-AuraVitals
+            break
+        }
+        "help|commands|what can you do" {
+            . .\Aura\Skills\Help.ps1
+            Invoke-AuraHelp
+            break
+        }
+        "export proof report|proof report|export training proof" {
+            . .\Aura\Skills\ProofReport.ps1
+            Invoke-AuraExportProofReport
+            break
+        }
+        "operating profile|safe mode status|profile" {
+            . .\Aura\Skills\OperatingProfile.ps1
+            Invoke-AuraOperatingProfile
+            break
+        }
+
+        "safe mode|enable safe mode|local mode" {
+            . .\Aura\Skills\OperatingProfile.ps1
+            Invoke-AuraSafeMode
+            break
+        }
+        "inbox status|file status" {
+            . .\Aura\Skills\FilePostman.ps1
+            Invoke-AuraInboxStatus
+            break
+        }
+
+        "show inbox" {
+            . .\Aura\Skills\FilePostman.ps1
+            Show-AuraInbox
+            break
+        }
+
+        "validate filing" {
+            . .\Aura\Skills\FilePostman.ps1
+            Test-AuraFilingRules
+            break
+        }
+
+        "show receipts" {
+            . .\Aura\Skills\FilePostman.ps1
+            Show-AuraFileReceipts
+            break
+        }
+
+        "sort inbox|route inbox|postman file|route data|file this|sort proof" {
+            . .\Aura\Skills\FilePostman.ps1
+            Invoke-AuraSortInbox
+            break
+        }
+        "run proof|postman proof|test api routes|validate emergency on-ramp" {
+            . .\Aura\Skills\PostmanProof.ps1
+            Invoke-AuraPostmanProof
+            break
+        }
+        "pnpk status" {
+            . .\Aura\Skills\Pnpk.ps1
+            Invoke-AuraPnpkStatus
+            break
+        }
+
+        "create pnpk|autodrill package" {
+            . .\Aura\Skills\Pnpk.ps1
+            New-AuraPnpkPackage
+            break
+        }
+
+        "validate pnpk" {
+            . .\Aura\Skills\Pnpk.ps1
+            Test-AuraPnpkPackage
+            break
+        }
+
+        "show pnpk" {
+            . .\Aura\Skills\Pnpk.ps1
+            Show-AuraPnpkPackages
+            break
+        }
+
+        "export pnpk proof" {
+            . .\Aura\Skills\Pnpk.ps1
+            Export-AuraPnpkProof
+            break
+        }
+        "skygrid brief|system brief|morning brief|emergency on-ramp status" {
+            . .\Aura\Skills\SkygridBrief.ps1
+            Invoke-AuraSkygridBrief
+            break
+        }
+        "aws connected|connect aws|aws whoami" {
+            . .\Aura\Skills\AwsConnected.ps1
+            Invoke-AuraAwsConnected
+            break
+        }
+
+        "aws status|aws connection status" {
+            . .\Aura\Skills\AwsConnected.ps1
+            Show-AuraAwsConnection
+            break
+        }
+
+        "aws support policies|support console status" {
+            . .\Aura\Skills\AwsConnected.ps1
+            Test-AuraAwsSupportPolicies
+            break
+        }
+
+
+
+
+
+
+
+
+
+
+        default {
+            if (Invoke-AuraRegistryCommand -InputText $InputText) {
+                break
+            }
+
+            Write-Host "Registered skill is not allowlisted: $($match.skill)" -ForegroundColor Red
+            return $true
+        }
+    }
+}
+
+function Invoke-AuraRuntimeBase {
+    param([string]$InputText)
+
+    switch -Regex ($InputText.ToLower()) {
+        "config|settings" {
+            @{ DryRun = $true; AllowGitPush = $false; AllowDeploy = $false } | ConvertTo-Json
+            break
+        }
+
+        "status|git status" {
+            git status
+            break
+        }
+
+        "checkpoint|commit" {
+            git status --short
+            Write-Host "Checkpoint available. DryRun safe mode active." -ForegroundColor Yellow
+            break
+        }
+        "training status" {
+            . .\Aura\Skills\Training.ps1
+            Invoke-AuraTrainingStatus
+            break
+        }
+
+        "show proof" {
+            . .\Aura\Skills\Training.ps1
+            Invoke-AuraShowProof
+            break
+        }
+
+        "validate training" {
+            . .\Aura\Skills\Training.ps1
+            Invoke-AuraValidateTraining
+            break
+        }
+        "learn phrase" {
+            . .\Aura\Skills\Training.ps1
+            Invoke-AuraLearnPhrase
+            break
+        }
+        "vitals" {
+            . .\Aura\Skills\Vitals.ps1
+            Invoke-AuraVitals
+            break
+        }
+        "help|commands|what can you do" {
+            . .\Aura\Skills\Help.ps1
+            Invoke-AuraHelp
+            break
+        }
+        "export proof report|proof report|export training proof" {
+            . .\Aura\Skills\ProofReport.ps1
+            Invoke-AuraExportProofReport
+            break
+        }
+        "operating profile|safe mode status|profile" {
+            . .\Aura\Skills\OperatingProfile.ps1
+            Invoke-AuraOperatingProfile
+            break
+        }
+
+        "safe mode|enable safe mode|local mode" {
+            . .\Aura\Skills\OperatingProfile.ps1
+            Invoke-AuraSafeMode
+            break
+        }
+        "inbox status|file status" {
+            . .\Aura\Skills\FilePostman.ps1
+            Invoke-AuraInboxStatus
+            break
+        }
+
+        "show inbox" {
+            . .\Aura\Skills\FilePostman.ps1
+            Show-AuraInbox
+            break
+        }
+
+        "validate filing" {
+            . .\Aura\Skills\FilePostman.ps1
+            Test-AuraFilingRules
+            break
+        }
+
+        "show receipts" {
+            . .\Aura\Skills\FilePostman.ps1
+            Show-AuraFileReceipts
+            break
+        }
+
+        "sort inbox|route inbox|postman file|route data|file this|sort proof" {
+            . .\Aura\Skills\FilePostman.ps1
+            Invoke-AuraSortInbox
+            break
+        }
+        "run proof|postman proof|test api routes|validate emergency on-ramp" {
+            . .\Aura\Skills\PostmanProof.ps1
+            Invoke-AuraPostmanProof
+            break
+        }
+        "pnpk status" {
+            . .\Aura\Skills\Pnpk.ps1
+            Invoke-AuraPnpkStatus
+            break
+        }
+
+        "create pnpk|autodrill package" {
+            . .\Aura\Skills\Pnpk.ps1
+            New-AuraPnpkPackage
+            break
+        }
+
+        "validate pnpk" {
+            . .\Aura\Skills\Pnpk.ps1
+            Test-AuraPnpkPackage
+            break
+        }
+
+        "show pnpk" {
+            . .\Aura\Skills\Pnpk.ps1
+            Show-AuraPnpkPackages
+            break
+        }
+
+        "export pnpk proof" {
+            . .\Aura\Skills\Pnpk.ps1
+            Export-AuraPnpkProof
+            break
+        }
+        "skygrid brief|system brief|morning brief|emergency on-ramp status" {
+            . .\Aura\Skills\SkygridBrief.ps1
+            Invoke-AuraSkygridBrief
+            break
+        }
+        "aws connected|connect aws|aws whoami" {
+            . .\Aura\Skills\AwsConnected.ps1
+            Invoke-AuraAwsConnected
+            break
+        }
+
+        "aws status|aws connection status" {
+            . .\Aura\Skills\AwsConnected.ps1
+            Show-AuraAwsConnection
+            break
+        }
+
+        "aws support policies|support console status" {
+            . .\Aura\Skills\AwsConnected.ps1
+            Test-AuraAwsSupportPolicies
+            break
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+        default {
+            if (Invoke-AuraRegistryCommand -InputText $InputText) {
+                break
+            }
+
+            Write-Host "Aura runtime loaded, but command not recognized: $InputText" -ForegroundColor Yellow
+        }
+    }
+}
+
+Write-Host "Aura runtime repaired." -ForegroundColor Green
+
+
+# === AURA Exact Intent Wrapper ===
+function Invoke-AuraRuntime {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$Command
+    )
+
+    $normalized = $Command.Trim().ToLowerInvariant()
+    $repo = "E:\Aura-core"
+
+    if ($normalized -match '^(aws connected|connect aws|aws whoami)$') {
+        . (Join-Path $repo "Aura\Skills\AwsConnected.ps1")
+        Invoke-AuraAwsConnected
+        return
+    }
+
+    if ($normalized -match '^(support console status|aws support policies|support console policies)$') {
+        . (Join-Path $repo "Aura\Skills\AwsConnected.ps1")
+        Test-AuraAwsSupportPolicies
+        return
+    }
+
+    if ($normalized -match '^(cloudshell handoff|aws cloud shell|link aws cloudshell)$') {
+        . (Join-Path $repo "Aura\Skills\AwsCloudShell.ps1")
+        New-AuraCloudShellHandoff
+        return
+    }
+
+    if ($normalized -match '^(cloudshell status|aws handoff status)$') {
+        . (Join-Path $repo "Aura\Skills\AwsCloudShell.ps1")
+        Show-AuraCloudShellStatus
+        return
+    }
+
+    if ($normalized -match '^(cockpit status|skygrid brief|system brief|morning brief|emergency on-ramp status)$') {
+        . (Join-Path $repo "Aura\Skills\SkygridBrief.ps1")
+        Invoke-AuraSkygridBrief
+        return
+    }
+
+    if ($normalized -match '^(config needs|configuration needs|aura config|config doctor|doctor)$') {
+        . (Join-Path $repo "Aura\Skills\ConfigDoctor.ps1")
+        Invoke-AuraConfigDoctor
+        return
+    }
+
+    Invoke-AuraRuntimeBase $Command
+}
+# === End AURA Exact Intent Wrapper ===
+

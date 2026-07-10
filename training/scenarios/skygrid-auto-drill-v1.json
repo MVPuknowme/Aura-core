@@ -1,0 +1,149 @@
+{
+  "name": "SKYGRID Auto-Drill Training v1",
+  "product": "SKYGRID Emergency Data On-Ramp",
+  "mode": "controlled_pilot",
+  "sentinel": "fail_closed",
+  "trainingOnly": true,
+  "safetyContract": {
+    "productionFailover": false,
+    "paymentExecution": false,
+    "privateDataMovement": false,
+    "walletSigning": false,
+    "transactionBroadcast": false,
+    "operatorReviewRequired": true
+  },
+  "endpoint": {
+    "method": "POST",
+    "path": "/api/skygrid/intake"
+  },
+  "scenarios": [
+    {
+      "id": "outage-local-network",
+      "title": "Local outage report",
+      "category": "outage",
+      "severity": "medium",
+      "input": {
+        "event_type": "local_network_outage",
+        "source": "training.node.lapine.001",
+        "region": "Oregon / Local Pilot",
+        "summary": "Simulated neighborhood node reports WAN degradation and requests continuity logging.",
+        "signals": {
+          "wan_status": "degraded",
+          "mesh_status": "available",
+          "packet_loss_pct": 18,
+          "latency_ms": 420
+        }
+      },
+      "expected": {
+        "accepted_statuses": [202],
+        "requires_event_id": true,
+        "classification": "controlled_pilot",
+        "receipt_required": true,
+        "operator_review_required": true,
+        "forbidden_actions": ["production_failover", "payment_execution", "private_data_movement", "wallet_signing", "transaction_broadcast"]
+      }
+    },
+    {
+      "id": "emergency-intake-basic",
+      "title": "Emergency intake basic",
+      "category": "emergency",
+      "severity": "high",
+      "input": {
+        "event_type": "emergency_intake_test",
+        "source": "training.dispatch.console",
+        "region": "Oregon / Controlled Pilot",
+        "summary": "Simulated emergency intake enters the ramp for validation and receipt generation only.",
+        "signals": {
+          "caller_count": 3,
+          "priority": "training_high",
+          "requires_operator_review": true
+        }
+      },
+      "expected": {
+        "accepted_statuses": [202],
+        "requires_event_id": true,
+        "classification": "controlled_pilot",
+        "receipt_required": true,
+        "operator_review_required": true,
+        "forbidden_actions": ["production_failover", "private_data_movement"]
+      }
+    },
+    {
+      "id": "responder-routing-basic",
+      "title": "Responder routing basic",
+      "category": "responder_routing",
+      "severity": "medium",
+      "input": {
+        "event_type": "responder_route_training",
+        "source": "training.responder.portal",
+        "region": "Oregon / Controlled Pilot",
+        "summary": "Simulated responder route request validates routing metadata without dispatching a real responder.",
+        "signals": {
+          "route_priority": "normal",
+          "destination_type": "training_checkpoint",
+          "requires_dispatch": false
+        }
+      },
+      "expected": {
+        "accepted_statuses": [202],
+        "requires_event_id": true,
+        "classification": "controlled_pilot",
+        "receipt_required": true,
+        "operator_review_required": true,
+        "forbidden_actions": ["real_dispatch", "production_failover", "private_data_movement"]
+      }
+    },
+    {
+      "id": "system-health-degraded",
+      "title": "System health degraded",
+      "category": "system_health",
+      "severity": "low",
+      "input": {
+        "event_type": "system_health_degraded",
+        "source": "training.health.monitor",
+        "region": "SKYGRID Pilot",
+        "summary": "Simulated subsystem reports degraded health and requests dashboard-ready status proof.",
+        "signals": {
+          "api_status": "healthy",
+          "bridge_status": "degraded",
+          "queue_depth": 7,
+          "last_successful_receipt_age_sec": 35
+        }
+      },
+      "expected": {
+        "accepted_statuses": [202],
+        "requires_event_id": true,
+        "classification": "controlled_pilot",
+        "receipt_required": true,
+        "operator_review_required": true,
+        "forbidden_actions": ["production_failover", "private_data_movement"]
+      }
+    },
+    {
+      "id": "failover-readiness-no-action",
+      "title": "Failover readiness with no action",
+      "category": "failover_readiness",
+      "severity": "medium",
+      "input": {
+        "event_type": "failover_readiness_training",
+        "source": "training.failover.guard",
+        "region": "SKYGRID Pilot",
+        "summary": "Simulated failover readiness check proves the guard stops before real-world action.",
+        "signals": {
+          "primary_route": "available",
+          "backup_route": "available",
+          "manual_review_gate": "required",
+          "execute_failover": false
+        }
+      },
+      "expected": {
+        "accepted_statuses": [202],
+        "requires_event_id": true,
+        "classification": "controlled_pilot",
+        "receipt_required": true,
+        "operator_review_required": true,
+        "forbidden_actions": ["production_failover", "payment_execution", "wallet_signing", "transaction_broadcast"]
+      }
+    }
+  ]
+}

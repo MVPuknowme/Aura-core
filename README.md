@@ -12,7 +12,7 @@ The system does **not** blindly move data. It follows **PNPK policy**, Aura-Core
 
 For public-facing readers, start here:
 
-- [SkyGrid Dispatcher Public Demo](articles/skygrid-dispatcher-public-demo.md)
+- [SKYGRID Dispatcher Public Demo](https://aurcore.skygrid-protocol.net/articles/skygrid-dispatcher-public-demo)
 
 This article explains the Dispatcher demo in plain language for partners, community readers, infrastructure collaborators, and non-technical visitors.
 
@@ -78,28 +78,3 @@ Simulated outage drills for ISP failure, power loss, hurricane/cellular loss, DN
 
 **`/settings`**  
 Thresholds, ping targets, transport toggles, and agent endpoint contract.
-
-## What v1 does not do
-
-- It does not force OS-level network switching.
-- It does not directly control Tor, LoRa, or Satellite hardware.
-- It does not move private data without policy.
-- It does not sign wallets or broadcast transactions.
-- It does not execute payments.
-- It does not enable production failover without future signed policy.
-
-## Technical foundation
-
-- TanStack Start
-- Mobile-first responsive UI
-- Browser-side ping engine
-- Rolling 20-sample health windows
-- Lovable AI for handoff rationale and post-mortems
-- Auto-Drill for partitioned space simulation
-- PNPK as the policy traffic layer
-- Aura-Core AI as the trust decider inside PNPK law
-- Fail-closed routing by default
-
-## One-line summary
-
-**SKYGRID is a PNPK-controlled emergency save/offload network where Aura-Core AI opens routes only when policy, approved space, owner consent, emergency operator approval, and leasee quorum agree.**

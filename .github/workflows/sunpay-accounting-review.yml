@@ -1,0 +1,38 @@
+name: Sun Pay Accounting Review
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "configs/sunpay/**"
+      - "docs/accounting/**"
+      - "scripts/sunpay-accounting-review.mjs"
+      - ".github/workflows/sunpay-accounting-review.yml"
+  push:
+    branches:
+      - MVPuknowme
+    paths:
+      - "configs/sunpay/**"
+      - "docs/accounting/**"
+      - "scripts/sunpay-accounting-review.mjs"
+      - ".github/workflows/sunpay-accounting-review.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  review-accounting:
+    name: Review projected vs verified accounting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run Sun Pay accounting review
+        run: node scripts/sunpay-accounting-review.mjs

@@ -1,0 +1,164 @@
+Build Aura Pnpk skill.
+
+Goal:
+Teach Aura to understand `.pnpk` as a local proof-driven AutoDrill package format.
+
+Definition:
+`.pnpk` means a local Aura/SKYGRID proof package used to preserve:
+- prompt
+- node/package purpose
+- permitted actions
+- expected output
+- validation proof
+- route/test result
+- checkpoint recommendation
+
+Aura rules:
+- Local mode only.
+- No OpenAI API required.
+- No raw shell execution from user text.
+- No secrets.
+- No wallet signing.
+- No deploy.
+- No push.
+- Read/validate/export only unless explicitly confirmed.
+- `.pnpk` packages are proof records, not executable scripts.
+
+Create:
+Aura/Skills/Pnpk.ps1
+
+Add friendly commands:
+- pnpk status
+- create pnpk
+- validate pnpk
+- show pnpk
+- export pnpk proof
+- autodrill package
+
+Function names:
+- Invoke-AuraPnpkStatus
+- New-AuraPnpkPackage
+- Test-AuraPnpkPackage
+- Show-AuraPnpkPackages
+- Export-AuraPnpkProof
+
+Folder structure:
+artifacts/pnpk/
+artifacts/pnpk/packages/
+artifacts/pnpk/proofs/
+
+Package format:
+Each `.pnpk` file should be JSON-compatible text with extension `.pnpk`.
+
+Minimum schema:
+{
+  "format": "aura.pnpk",
+  "version": "0.1.0",
+  "name": "",
+  "purpose": "",
+  "created_at": "",
+  "created_by": "Aura Local Runtime",
+  "mode": "local",
+  "openai_required": false,
+  "raw_shell_execution": false,
+  "wallet_mode": "read-only",
+  "permitted_actions": [],
+  "blocked_actions": [
+    "raw_shell",
+    "push",
+    "deploy",
+    "wallet_sign",
+    "wallet_send",
+    "secret_print"
+  ],
+  "inputs": [],
+  "expected_outputs": [],
+  "proof_files": [],
+  "checkpoint_recommendation": ""
+}
+
+Behavior:
+
+Invoke-AuraPnpkStatus:
+- Count .pnpk packages.
+- Show newest 5 packages.
+- Show proofs directory status.
+- Human-friendly output.
+
+New-AuraPnpkPackage:
+- Prompt user for:
+  - package name
+  - purpose
+  - permitted actions
+  - expected output
+  - proof file path
+- Create a timestamped `.pnpk` file under:
+  artifacts/pnpk/packages/
+- Do not execute anything.
+- End with checkpoint recommendation.
+
+Test-AuraPnpkPackage:
+- Validate every `.pnpk` file under artifacts/pnpk/packages/
+- Confirm required fields exist.
+- Confirm raw_shell_execution is false.
+- Confirm openai_required is false.
+- Confirm wallet_mode is read-only.
+- Confirm blocked actions include push, deploy, raw_shell, wallet_sign, wallet_send, secret_print.
+- Save validation proof to:
+  artifacts/pnpk/proofs/pnpk-validation-proof.json
+- Print pass/fail summary.
+
+Show-AuraPnpkPackages:
+- List known packages with name, purpose, created_at, path.
+
+Export-AuraPnpkProof:
+- Generate Markdown report:
+  artifacts/pnpk/proofs/pnpk-proof-report.md
+- Include:
+  - package count
+  - validation status
+  - latest packages
+  - safety summary
+  - checkpoint recommendation
+
+Runtime integration:
+Wire these phrases into aura-runtime.ps1:
+- pnpk status
+- create pnpk
+- validate pnpk
+- show pnpk
+- export pnpk proof
+- autodrill package
+
+Update Aura/Config/commands.json with matching entries.
+
+Expected file changes:
+- Aura/Skills/Pnpk.ps1
+- aura-runtime.ps1
+- Aura/Config/commands.json
+- artifacts/pnpk/packages/
+- artifacts/pnpk/proofs/
+
+Success test:
+. .\aura-runtime.ps1
+Invoke-AuraRuntime "pnpk status"
+Invoke-AuraRuntime "create pnpk"
+Invoke-AuraRuntime "validate pnpk"
+Invoke-AuraRuntime "show pnpk"
+Invoke-AuraRuntime "export pnpk proof"
+git status
+
+Expected:
+- No API token required.
+- No raw shell execution.
+- No deploy.
+- No push.
+- `.pnpk` package created locally.
+- Validation proof created locally.
+- Markdown proof report created locally.
+- Final output recommends checkpoint.
+
+After successful test, recommend but do not automatically run:
+
+git add .\aura-runtime.ps1 .\Aura\Skills\Pnpk.ps1 .\Aura\Config\commands.json .\artifacts\pnpk\
+git commit -m "Add Aura PNPk proof package skill"

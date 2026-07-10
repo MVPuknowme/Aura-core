@@ -1,13 +1,16 @@
 {
   "service": "SKYGRID Emergency Data On-Ramp",
-  "owned_deployment_domain": "https://aura-core-home-e539c0b1.vercel.app",
-  "domain_role": "primary_public_deployable_site",
+  "owned_deployment_domain": "https://aura-sky.skygrid-protocol.net",
+  "canonical_public_front_page": "https://aura-sky.skygrid-protocol.net",
+  "supporting_alias_domain": "https://aurasky.skygrid-protocol.net",
+  "fallback_vercel_domain": "https://aura-core-home-e539c0b1.vercel.app",
+  "domain_role": "primary_public_landing_page_and_project_hub",
   "platform": "vercel",
   "mode": "controlled_pilot",
   "sentinel": "fail_closed",
-  "route_watch_command": "SKYGRID_BASE_URL=https://aura-core-home-e539c0b1.vercel.app pnpm run aura:selection:watch",
-  "route_verify_command": "SKYGRID_BASE_URL=https://aura-core-home-e539c0b1.vercel.app pnpm run skygrid:verify",
-  "routing_test_command": "SKYGRID_BASE_URL=https://aura-core-home-e539c0b1.vercel.app pnpm run skygrid:test:routing",
+  "route_watch_command": "SKYGRID_BASE_URL=https://aura-sky.skygrid-protocol.net pnpm run aura:selection:watch",
+  "route_verify_command": "SKYGRID_BASE_URL=https://aura-sky.skygrid-protocol.net pnpm run skygrid:verify",
+  "routing_test_command": "SKYGRID_BASE_URL=https://aura-sky.skygrid-protocol.net pnpm run skygrid:test:routing",
   "required_routes": [
     "/",
     "/health.json",
@@ -17,9 +20,22 @@
     "/api/highway/status",
     "/api/skygrid/intake"
   ],
+  "linking_plan": {
+    "front_page": "https://aura-sky.skygrid-protocol.net",
+    "command_center": "/dashboard/command-center",
+    "validation_panel": "/dashboard/validation-panel",
+    "deployment_review": "/dashboard/deployment-review",
+    "receipts": "/dashboard/receipts",
+    "health": "/health.json",
+    "proof_lane": "/api/highway/postman",
+    "autodrill": "/api/autodrill/latest",
+    "failover_status": "/api/failover/status"
+  },
   "notes": [
-    "This config marks AuraSky as the owned deployable public site target.",
-    "Vercel domain attachment and DNS must point aurasky.skygrid-protocol.net to the Aura-core Vercel project.",
+    "Aura-Sky is the public landing page where visitors learn the idea first.",
+    "All other public SKYGRID routes should be linked from the front page or redirected to it when appropriate.",
+    "Vercel domain attachment and DNS must point aura-sky.skygrid-protocol.net to the Aura-core Vercel project.",
+    "The aurasky.skygrid-protocol.net alias may redirect to aura-sky.skygrid-protocol.net after it is attached to the same project.",
     "Route tests should pass with selection_fail_count=0 and endpoint_fail_count=0 once DNS/TLS/binding are complete."
   ]
 }

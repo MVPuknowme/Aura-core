@@ -1,0 +1,87 @@
+﻿{
+    "generated_at":  "2026-07-03T03:53:43.1402352Z",
+    "system":  "SKYGRID Emergency Data On-Ramp",
+    "proof_type":  "aura_chatbot_training_command_deck",
+    "route":  "/api/chatbot/call-circle",
+    "mode":  "decision_only_fail_closed",
+    "command_count":  7,
+    "results":  [
+                    {
+                        "command_id":  "aura-training-001-route-health",
+                        "sent_at":  "2026-07-03T03:53:37.2332636Z",
+                        "ok":  null,
+                        "mode":  null,
+                        "execution_mode":  null,
+                        "selected_provider":  null,
+                        "requested_execute_ignored":  null,
+                        "guardrails":  null,
+                        "response":  null
+                    },
+                    {
+                        "command_id":  "aura-training-002-vercel-sso",
+                        "sent_at":  "2026-07-03T03:53:38.2172625Z",
+                        "ok":  null,
+                        "mode":  null,
+                        "execution_mode":  null,
+                        "selected_provider":  null,
+                        "requested_execute_ignored":  null,
+                        "guardrails":  null,
+                        "response":  null
+                    },
+                    {
+                        "command_id":  "aura-training-003-builder-quote",
+                        "sent_at":  "2026-07-03T03:53:39.2083218Z",
+                        "ok":  null,
+                        "mode":  null,
+                        "execution_mode":  null,
+                        "selected_provider":  null,
+                        "requested_execute_ignored":  null,
+                        "guardrails":  null,
+                        "response":  null
+                    },
+                    {
+                        "command_id":  "aura-training-004-accounting-guardrail",
+                        "sent_at":  "2026-07-03T03:53:40.1969883Z",
+                        "ok":  null,
+                        "mode":  null,
+                        "execution_mode":  null,
+                        "selected_provider":  null,
+                        "requested_execute_ignored":  null,
+                        "guardrails":  null,
+                        "response":  null
+                    },
+                    {
+                        "command_id":  "aura-training-005-token-approval-hold",
+                        "sent_at":  "2026-07-03T03:53:41.1829095Z",
+                        "ok":  null,
+                        "mode":  null,
+                        "execution_mode":  null,
+                        "selected_provider":  null,
+                        "requested_execute_ignored":  null,
+                        "guardrails":  null,
+                        "response":  null
+                    },
+                    {
+                        "command_id":  "aura-training-006-node-heartbeat",
+                        "sent_at":  "2026-07-03T03:53:42.1622892Z",
+                        "ok":  null,
+                        "mode":  null,
+                        "execution_mode":  null,
+                        "selected_provider":  null,
+                        "requested_execute_ignored":  null,
+                        "guardrails":  null,
+                        "response":  null
+                    },
+                    {
+                        "command_id":  "aura-training-007-failover-policy",
+                        "sent_at":  "2026-07-03T03:53:43.1391797Z",
+                        "ok":  null,
+                        "mode":  null,
+                        "execution_mode":  null,
+                        "selected_provider":  null,
+                        "requested_execute_ignored":  null,
+                        "guardrails":  null,
+                        "response":  null
+                    }
+                ]
+}
