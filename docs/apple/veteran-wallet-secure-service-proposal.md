@@ -1,32 +1,48 @@
-# SKYGRID Veteran Status Pass — secure service proposal
+# Veteran Status Wallet Service — secure service proposal
 
 ## Executive summary
 
-SKYGRID Veteran Status Pass is proposed as a privacy-preserving Apple Wallet service that lets an eligible veteran carry a minimal, verified status pass while keeping sensitive veteran, military, medical, benefit, and claim data out of the Wallet payload.
+Veteran Status Wallet Service is proposed as a privacy-preserving Apple Wallet service that lets an eligible veteran carry a minimal, verified status pass while keeping sensitive veteran, military, medical, benefit, and claim data out of the Wallet payload.
 
-This proposal rebuilds the earlier PassKit pilot as a more secure service: biometric-gated local display, minimal signed Wallet pass issuance, opaque QR verification, certificate custody controls, and server-side revocation/update readiness.
+This proposal rebuilds the earlier PassKit pilot as a more secure and separate service: biometric-gated local display, minimal signed Wallet pass issuance, opaque QR verification, certificate custody controls, and server-side revocation/update readiness.
+
+This service is conceptually and operationally separate from the SKYGRID Emergency Data On-Ramp and SKYGRID network console. SKYGRID remains for emergency/network functions; this Wallet service is an identity/status-pass workflow.
 
 This is not an official VA, DoD, military, state, or federal identity credential unless an authorized issuer approves and provisions that credential flow.
 
 ## Product positioning
 
-**Service name:** SKYGRID Veteran Status Pass
+**Service name:** Veteran Status Wallet Service
 
 **Service type:** Secure PassKit issuer and iOS companion flow for veteran-status verification.
 
+**Concept boundary:** Standalone Wallet status-pass service. Not part of the SKYGRID network console, mesh routing console, emergency on-ramp dashboard, validator tooling, or network operations interface.
+
 **Core promise:** prove only what needs to be proven, reveal only after local biometric unlock, and keep sensitive source records out of Apple Wallet.
 
-**Best meeting phrase:** We are not asking Apple to treat this as an approved government ID today. We are asking whether this PassKit architecture, including local biometric display gating, is the right privacy-preserving foundation for an authorized veteran-status pass workflow.
+**Best meeting phrase:** We are not asking Apple to treat this as an approved government ID today. We are asking whether this standalone PassKit architecture, including local biometric display gating, is the right privacy-preserving foundation for an authorized veteran-status pass workflow.
 
 ## What changed from the earlier proposal
 
-The service is now more secure in five important ways:
+The service is now more secure and more clearly separated in six important ways:
 
-1. **Biometric-gated display:** Veteran Status details are blurred by default in the iOS app and are only unblurred after Face ID or Touch ID succeeds.
-2. **Biometric-gated pass fetch:** The app authenticates locally before fetching the signed `.pkpass` from the issuer service.
-3. **No biometric custody:** iOS performs the biometric check locally; the app receives only success or failure and never receives or stores raw biometric material.
-4. **Foreground re-lock:** When the app leaves active state, it locks details again, clears the prepared pass, and closes the add-pass sheet.
-5. **Accessibility-safe lock state:** Locked Veteran Status fields are hidden from the accessibility tree so screen readers do not expose protected details before unlock.
+1. **Separate product boundary:** The Wallet service is not branded as or routed through the SKYGRID network console.
+2. **Biometric-gated display:** Veteran Status details are blurred by default in the iOS app and are only unblurred after Face ID or Touch ID succeeds.
+3. **Biometric-gated pass fetch:** The app authenticates locally before fetching the signed `.pkpass` from the issuer service.
+4. **No biometric custody:** iOS performs the biometric check locally; the app receives only success or failure and never receives or stores raw biometric material.
+5. **Foreground re-lock:** When the app leaves active state, it locks details again, clears the prepared pass, and closes the add-pass sheet.
+6. **Accessibility-safe lock state:** Locked Veteran Status fields are hidden from the accessibility tree so screen readers do not expose protected details before unlock.
+
+## Separation of concepts
+
+Do not present this as a SKYGRID console feature.
+
+| Concept | Scope | Interface |
+| --- | --- | --- |
+| SKYGRID Emergency Data On-Ramp | emergency, outage, responder, system-health, continuity, routing, proof-of-intake | network console / operations dashboard |
+| Veteran Status Wallet Service | veteran-status verification, PassKit issuance, biometric local display, opaque QR verification | iOS app + Wallet issuer service |
+
+This separation should remain visible in naming, docs, routes, Apple presentation language, certificate identifiers, and UI copy.
 
 ## Security architecture
 
@@ -36,11 +52,11 @@ Veteran / iPhone
   | 1. App launches with details blurred
   | 2. Face ID / Touch ID succeeds locally through LocalAuthentication
   v
-SKYGRID Veteran Wallet iOS client
+Veteran Wallet iOS client
   |
   | 3. Fetch signed .pkpass after biometric unlock
   v
-SKYGRID Pass Issuer API
+Veteran Status Pass Issuer API
   |
   | 4. Verify eligibility through authorized provider
   | 5. Generate minimal signed pass
@@ -54,7 +70,7 @@ Verifier
   |
   | 8. Scans opaque QR URL/token
   v
-SKYGRID Verification API
+Veteran Status Verification API
   |
   | 9. Returns valid/invalid status only
 ```
@@ -105,6 +121,7 @@ The issuer service should be treated as a high-trust signing and verification sy
 Recommended controls:
 
 - Store pass signing keys outside the repo.
+- Use a non-SKYGRID Apple Pass Type Identifier for this Wallet service.
 - Use Apple Wallet Pass Type ID certificates only; do not use ALD certificates.
 - Use AWS KMS or an equivalent HSM-backed custody layer for encryption where available.
 - Use Secrets Manager or equivalent secret storage for certificate paths, passphrases, and issuer configuration.
@@ -131,7 +148,7 @@ A verifier response should be intentionally small:
 {
   "valid": true,
   "status": "verified_veteran",
-  "issuer": "SKYGRID / Aura pilot",
+  "issuer": "Veteran Status Wallet Pilot",
   "expires": "2027-01-01T00:00:00Z",
   "sensitive_profile_fields_returned": false
 }
@@ -145,7 +162,7 @@ There are two service tiers:
 
 ### Tier 1 — Pilot status pass
 
-A signed Apple Wallet pass issued by the SKYGRID/Aura pilot service for review, architecture validation, and partner discussion. It is explicitly not an official government credential.
+A signed Apple Wallet pass issued by the standalone Veteran Status Wallet Pilot service for review, architecture validation, and partner discussion. It is explicitly not an official government credential.
 
 ### Tier 2 — Authorized issuer flow
 
@@ -203,6 +220,7 @@ Ask Apple/iOS developers to review:
 
 Before any Apple/iOS presentation, confirm:
 
+- The presenter says this is standalone and separate from SKYGRID network functions.
 - Details are blurred on launch.
 - Details are not exposed through accessibility before unlock.
 - Face ID or Touch ID is required before details show.
@@ -216,4 +234,4 @@ Before any Apple/iOS presentation, confirm:
 
 ## Proposal conclusion
 
-The rebuilt service is stronger because it treats veteran-status proof as a minimal, privacy-preserving claim rather than an identity-data container. The app gates local display with Face ID or Touch ID, the backend signs only minimal Wallet passes, the QR code exposes only an opaque verification token, and the production path is explicitly reserved for an authorized issuer model.
+The rebuilt service is stronger because it treats veteran-status proof as a minimal, privacy-preserving claim rather than an identity-data container. The app gates local display with Face ID or Touch ID, the backend signs only minimal Wallet passes, the QR code exposes only an opaque verification token, and the production path is explicitly reserved for an authorized issuer model. This service stays separate from the SKYGRID Emergency Data On-Ramp and SKYGRID network console.
