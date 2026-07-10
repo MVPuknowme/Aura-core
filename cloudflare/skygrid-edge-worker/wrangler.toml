@@ -5,3 +5,8 @@ workers_dev = true
 
 [vars]
 SKYGRID_ORIGIN = "https://aurcore.skygrid-protocol.net"
+
+[[d1_databases]]
+binding = "MY_DB"
+database_name = "skygrid-edge-proof-db"
+database_id = "c8412b71-35f3-42b2-bbd6-916cec7f67fd"
