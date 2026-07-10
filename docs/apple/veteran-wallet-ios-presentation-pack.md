@@ -12,7 +12,7 @@ This is intentionally separated from the SKYGRID Emergency Data On-Ramp and SKYG
 
 ## What to show first
 
-1. Open PR #132 and show that this is a standalone Wallet-service proposal.
+1. Open PR #133 and show that this is a standalone Wallet-service proposal.
 2. Show the rebuilt secure-service proposal in `docs/apple/veteran-wallet-secure-service-proposal.md`.
 3. Show the iOS flow in `wallet/veteran-status/ios/VeteranWalletApp/`.
 4. Show that card details are blurred until Face ID or Touch ID succeeds.
