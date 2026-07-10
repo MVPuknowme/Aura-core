@@ -11,6 +11,8 @@
     "ramp:switch": "node scripts/aura-core-ai-ramp-switch.mjs",
     "partition:verify": "node scripts/skygrid-partition-router.mjs",
     "autodrill:sim": "node scripts/skygrid-autodrill-sim.mjs",
+    "training:drill": "node scripts/skygrid-training-drill.mjs",
+    "skygrid:training": "node scripts/skygrid-training-drill.mjs",
     "build": "npm run pnpk:validate && npm run manifest:sync && node scripts/vercel-build.mjs",
     "build:xmcp": "node tools/xmcp/index.mjs build --vercel",
     "xmcp:build": "node tools/xmcp/index.mjs build --vercel",

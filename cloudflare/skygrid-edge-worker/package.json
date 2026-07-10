@@ -1,0 +1,12 @@
+{
+  "name": "skygrid-edge-worker",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "wrangler": "latest"
+  },
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  }
+}

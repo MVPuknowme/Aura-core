@@ -18,14 +18,14 @@ const bases = unique([
 ].filter(Boolean).map(stripSlash));
 
 const checks = [
-  { method: "GET", path: "/", required: true },
-  { method: "GET", path: "/health.json", required: true },
-  { method: "GET", path: "/api/highway/status", required: true },
-  { method: "GET", path: "/api/highway/postman", required: true },
-  { method: "GET", path: "/api/pay/quote?amount=25", required: true }
+  { method: "GET", path: "/", required: true, expectedType: "text/html" },
+  { method: "GET", path: "/health.json", required: true, expectedType: "application/json" },
+  { method: "GET", path: "/api/highway/status", required: true, expectedType: "application/json" },
+  { method: "GET", path: "/api/highway/postman", required: true, expectedType: "application/json" },
+  { method: "GET", path: "/api/pay/quote?amount=25", required: true, expectedType: "application/json" }
 ];
 
-const okStatuses = new Set([200, 202, 204, 301, 302, 307, 308]);
+const okStatuses = new Set([200, 202, 204]);
 const pendingDomainStatuses = new Set([401, 403, 404]);
 const resultsByPath = new Map();
 
@@ -37,6 +37,11 @@ function unique(values) {
   return [...new Set(values)];
 }
 
+function contentTypeMatches(actual, expected) {
+  if (!expected) return true;
+  return String(actual || "").toLowerCase().includes(expected.toLowerCase());
+}
+
 async function probe(base, check) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -46,17 +51,25 @@ async function probe(base, check) {
     const res = await fetch(url, {
       method: check.method,
       signal: controller.signal,
-      headers: { "User-Agent": "skygrid-public-route-check/1.0" }
+      headers: {
+        "Accept": check.expectedType || "*/*",
+        "User-Agent": "skygrid-public-route-check/1.1"
+      }
     });
 
     const type = res.headers.get("content-type") || "unknown";
+    const statusOk = okStatuses.has(res.status);
+    const typeOk = contentTypeMatches(type, check.expectedType);
+
     return {
       base,
       url,
       ...check,
       status: res.status,
       type,
-      ok: okStatuses.has(res.status),
+      statusOk,
+      typeOk,
+      ok: statusOk && typeOk,
       pendingDomain: pendingDomainStatuses.has(res.status)
     };
   } catch (error) {
@@ -66,6 +79,8 @@ async function probe(base, check) {
       ...check,
       error: error?.message || String(error),
       ok: false,
+      statusOk: false,
+      typeOk: false,
       pendingDomain: false
     };
   } finally {
@@ -76,8 +91,13 @@ async function probe(base, check) {
 function logResult(result) {
   const status = result.error ? `ERROR ${result.error}` : `${result.status}`;
   const detail = result.type ? ` ${result.type}` : "";
+  const expected = result.expectedType ? ` expected=${result.expectedType}` : "";
+  const reason = !result.ok && !result.pendingDomain && !result.error
+    ? ` statusOk=${result.statusOk} typeOk=${result.typeOk}`
+    : "";
   const verdict = result.ok ? "PASS" : result.pendingDomain ? "WARN" : "FAIL";
-  console.log(`${verdict} ${status} ${result.path} ${result.url}${detail}`);
+
+  console.log(`${verdict} ${status} ${result.path} ${result.url}${detail}${expected}${reason}`);
 }
 
 for (const base of bases) {
@@ -109,9 +129,12 @@ for (const check of checks) {
 
   const hardFailures = results.filter((result) => !result.pendingDomain || !allowPendingDomain);
   if (hardFailures.length) {
-    failures.push(...hardFailures.map((result) => result.error
-      ? `${result.url}: ${result.error}`
-      : `${result.url}: expected healthy status, received ${result.status}`));
+    failures.push(...hardFailures.map((result) => {
+      if (result.error) return `${result.url}: ${result.error}`;
+      if (!result.statusOk) return `${result.url}: expected healthy status, received ${result.status}`;
+      if (!result.typeOk) return `${result.url}: expected ${result.expectedType}, received ${result.type}`;
+      return `${result.url}: unhealthy route`;
+    }));
     continue;
   }
 
@@ -129,4 +152,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log("\nSKYGRID public route check passed: at least one healthy public base served every required route.");
+console.log("\nSKYGRID public route check passed: at least one healthy public base served every required route with the expected content type.");

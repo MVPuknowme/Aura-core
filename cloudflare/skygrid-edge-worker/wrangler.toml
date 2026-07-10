@@ -1,0 +1,7 @@
+name = "mute-thunder-aa20"
+main = "src/index.js"
+compatibility_date = "2026-07-09"
+workers_dev = true
+
+[vars]
+SKYGRID_ORIGIN = "https://aurcore.skygrid-protocol.net"
