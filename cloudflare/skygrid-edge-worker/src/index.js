@@ -20,7 +20,8 @@ function json(data, status = 200) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    const origin = env.SKYGRID_ORIGIN || "https://aurcore.skygrid-protocol.net";
+    const origin =
+      env.SKYGRID_ORIGIN || "https://aurcore.skygrid-protocol.net";
 
     if (url.pathname === "/edge/health") {
       return json({
@@ -30,6 +31,63 @@ export default {
         origin,
         timestamp: new Date().toISOString(),
       });
+    }
+
+    if (url.pathname === "/edge/d1/health") {
+      if (!env.MY_DB) {
+        return json(
+          {
+            ok: false,
+            system: "SKYGRID Emergency Data On-Ramp",
+            edge: "cloudflare-worker",
+            database: {
+              binding: "MY_DB",
+              table: "SkygridOrders",
+              tableExists: false,
+            },
+            message: "D1 binding MY_DB is unavailable.",
+            timestamp: new Date().toISOString(),
+          },
+          503
+        );
+      }
+
+      try {
+        const result = await env.MY_DB
+          .prepare("SELECT COUNT(*) AS orderCount FROM SkygridOrders")
+          .first();
+
+        return json({
+          ok: true,
+          system: "SKYGRID Emergency Data On-Ramp",
+          edge: "cloudflare-worker",
+          database: {
+            binding: "MY_DB",
+            table: "SkygridOrders",
+            tableExists: true,
+            orderCount: Number(result?.orderCount ?? 0),
+          },
+          timestamp: new Date().toISOString(),
+        });
+      } catch (error) {
+        console.error("D1 health check failed", error);
+
+        return json(
+          {
+            ok: false,
+            system: "SKYGRID Emergency Data On-Ramp",
+            edge: "cloudflare-worker",
+            database: {
+              binding: "MY_DB",
+              table: "SkygridOrders",
+              tableExists: false,
+            },
+            message: "D1 health check failed.",
+            timestamp: new Date().toISOString(),
+          },
+          503
+        );
+      }
     }
 
     if (url.pathname === "/edge/proof") {
@@ -43,7 +101,10 @@ export default {
           const response = await fetch(target.toString(), {
             method: "GET",
             headers: {
-              "accept": route === "/" ? "text/html,application/json" : "application/json",
+              accept:
+                route === "/"
+                  ? "text/html,application/json"
+                  : "application/json",
               "user-agent": "SKYGRID-Cloudflare-Edge-Proof/1.0",
             },
           });
@@ -81,7 +142,8 @@ export default {
       {
         ok: false,
         system: "SKYGRID Emergency Data On-Ramp",
-        message: "Use /edge/health or /edge/proof for Cloudflare edge validation.",
+        message:
+          "Use /edge/health, /edge/d1/health, or /edge/proof for Cloudflare edge validation.",
       },
       404
     );
