@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "status": "online",
+  "service": "SKYGRID Emergency Data On-Ramp",
+  "verification": "public",
+  "sentinel": "fail_closed",
+  "payment_required": false,
+  "private_data_movement": false,
+  "operator": "Michael Vincent Patrick",
+  "schema_version": "1.0"
+}
