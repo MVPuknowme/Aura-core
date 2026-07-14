@@ -1,53 +1,54 @@
-{
-  "private": true,
-  "type": "module",
-  "packageManager": "pnpm@10.23.0",
-  "engines": {
-    "node": "24.x"
-  },
-  "scripts": {
-    "pnpk:validate": "node scripts/validate-pnpk.mjs",
-    "manifest:sync": "node scripts/verify-skygrid-manifest-sync.mjs",
-    "ramp:switch": "node scripts/aura-core-ai-ramp-switch.mjs",
-    "partition:verify": "node scripts/skygrid-partition-router.mjs",
-    "autodrill:sim": "node scripts/skygrid-autodrill-sim.mjs",
-    "training:drill": "node scripts/skygrid-training-drill.mjs",
-    "skygrid:training": "node scripts/skygrid-training-drill.mjs",
-    "build": "npm run pnpk:validate && npm run manifest:sync && node scripts/vercel-build.mjs",
-    "build:xmcp": "node tools/xmcp/index.mjs build --vercel",
-    "xmcp:build": "node tools/xmcp/index.mjs build --vercel",
-    "skygrid:verify": "node scripts/verify-skygrid-routes.mjs",
-    "skygrid:test:routing": "node scripts/test-skygrid-routing-success.mjs",
-    "aura:selection:watch": "node scripts/aura-core-ai-selection-watch.mjs",
-    "mcp:check": "node scripts/check-mcp-sdk.mjs",
-    "emergency:gate": "node scripts/skygrid-emergency-gate.mjs",
-    "local:worker:start": "node scripts/skygrid-local-worker-start.mjs --approve-owner-test",
-    "eth:collection:draft": "node scripts/skygrid-ethereum-collection-draft.mjs",
-    "local:ethereum:proof": "pnpm run local:worker:start && pnpm run eth:collection:draft",
-    "local:worker:proof": "node scripts/skygrid-local-worker-start.mjs",
-    "local:worker:fallback": "node scripts/skygrid-local-worker-start.mjs --approve-owner-test --fallback",
-    "local:owner:selftest": "node scripts/skygrid-owner-self-test-execute.mjs",
-    "smoke:ai-gateway": "node --env-file=.env.local ./scripts/ai-gateway-smoke.mjs",
-    "local:runtime": "node scripts/skygrid-local-runtime-server.mjs",
-    "agentkit:basepay:smoke": "node --env-file=.env.local scripts/agentkit-basepay-smoke.mjs",
-    "route:probe": "node scripts/skygrid-route-option-probe.mjs",
-    "route:probe:primary": "node scripts/skygrid-route-option-probe.mjs --scenario=primary",
-    "route:probe:local": "node scripts/skygrid-route-option-probe.mjs --scenario=local",
-    "route:probe:queue": "node scripts/skygrid-route-option-probe.mjs --scenario=queue",
-    "route:probe:proof": "pnpm run route:probe:primary && pnpm run route:probe:local && pnpm run route:probe:queue",
-    "security:ioc-check": "node scripts/check-iocs.mjs"
-  },
-  "dependencies": {
-    "@coinbase/agentkit": "^0.10.4",
-    "@modelcontextprotocol/sdk": "latest",
-    "@vercel/sandbox": "^2.2.1",
-    "ai": "^6.0.208",
-    "express": "^5.2.1",
-    "xmcp": "^0.6.13",
-    "zod": "^3.25.76"
-  },
-  "bin": {
-    "ng": "tools/ng/index.mjs",
-    "xmcp": "tools/xmcp/index.mjs"
-  }
+﻿{
+    "private":  true,
+    "type":  "module",
+    "packageManager":  "pnpm@10.23.0",
+    "engines":  {
+                    "node":  "24.x"
+                },
+    "scripts":  {
+                    "pnpk:validate":  "node scripts/validate-pnpk.mjs",
+                    "manifest:sync":  "node scripts/verify-skygrid-manifest-sync.mjs",
+                    "ramp:switch":  "node scripts/aura-core-ai-ramp-switch.mjs",
+                    "partition:verify":  "node scripts/skygrid-partition-router.mjs",
+                    "autodrill:sim":  "node scripts/skygrid-autodrill-sim.mjs",
+                    "training:drill":  "node scripts/skygrid-training-drill.mjs",
+                    "skygrid:training":  "node scripts/skygrid-training-drill.mjs",
+                    "build":  "npm run pnpk:validate \u0026\u0026 npm run manifest:sync \u0026\u0026 node scripts/vercel-build.mjs",
+                    "build:xmcp":  "node tools/xmcp/index.mjs build --vercel",
+                    "xmcp:build":  "node tools/xmcp/index.mjs build --vercel",
+                    "skygrid:verify":  "node scripts/verify-skygrid-routes.mjs",
+                    "skygrid:test:routing":  "node scripts/test-skygrid-routing-success.mjs",
+                    "aura:selection:watch":  "node scripts/aura-core-ai-selection-watch.mjs",
+                    "mcp:check":  "node scripts/check-mcp-sdk.mjs",
+                    "emergency:gate":  "node scripts/skygrid-emergency-gate.mjs",
+                    "local:worker:start":  "node scripts/skygrid-local-worker-start.mjs --approve-owner-test",
+                    "eth:collection:draft":  "node scripts/skygrid-ethereum-collection-draft.mjs",
+                    "local:ethereum:proof":  "pnpm run local:worker:start \u0026\u0026 pnpm run eth:collection:draft",
+                    "local:worker:proof":  "node scripts/skygrid-local-worker-start.mjs",
+                    "local:worker:fallback":  "node scripts/skygrid-local-worker-start.mjs --approve-owner-test --fallback",
+                    "local:owner:selftest":  "node scripts/skygrid-owner-self-test-execute.mjs",
+                    "smoke:ai-gateway":  "node --env-file=.env.local ./scripts/ai-gateway-smoke.mjs",
+                    "local:runtime":  "node scripts/skygrid-local-runtime-server.mjs",
+                    "agentkit:basepay:smoke":  "node --env-file=.env.local scripts/agentkit-basepay-smoke.mjs",
+                    "route:probe":  "node scripts/skygrid-route-option-probe.mjs",
+                    "route:probe:primary":  "node scripts/skygrid-route-option-probe.mjs --scenario=primary",
+                    "route:probe:local":  "node scripts/skygrid-route-option-probe.mjs --scenario=local",
+                    "route:probe:queue":  "node scripts/skygrid-route-option-probe.mjs --scenario=queue",
+                    "route:probe:proof":  "pnpm run route:probe:primary \u0026\u0026 pnpm run route:probe:local \u0026\u0026 pnpm run route:probe:queue",
+                    "security:ioc-check":  "node scripts/check-iocs.mjs",
+                    "skygrid:verify:public":  "node scripts/verify-skygrid-public.mjs"
+                },
+    "dependencies":  {
+                         "@coinbase/agentkit":  "^0.10.4",
+                         "@modelcontextprotocol/sdk":  "latest",
+                         "@vercel/sandbox":  "^2.2.1",
+                         "ai":  "^6.0.208",
+                         "express":  "^5.2.1",
+                         "xmcp":  "^0.6.13",
+                         "zod":  "^3.25.76"
+                     },
+    "bin":  {
+                "ng":  "tools/ng/index.mjs",
+                "xmcp":  "tools/xmcp/index.mjs"
+            }
 }
