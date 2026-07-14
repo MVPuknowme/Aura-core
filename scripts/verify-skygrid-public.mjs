@@ -62,7 +62,8 @@ for (const path of checks) {
 }
 
 if (failed) {
+  console.error("SKYGRID public verification failed.");
   process.exitCode = 1;
+} else {
+  console.log("SKYGRID public verification passed.");
 }
-
-console.log("SKYGRID public verification passed.");
