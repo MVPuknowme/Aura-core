@@ -1,0 +1,194 @@
+{
+  "ok": false,
+  "product": "SKYGRID Emergency Data On-Ramp",
+  "mode": "controlled_pilot",
+  "sentinel": "fail_closed",
+  "trainingOnly": true,
+  "noProductionFailover": true,
+  "noPaymentExecuted": true,
+  "noPrivateDataMovement": true,
+  "noWalletSigning": true,
+  "noTransactionBroadcast": true,
+  "operatorReviewRequired": true,
+  "baseUrl": "https://aura-core-git-mvpuknowme-home-e539c0b1.vercel.app",
+  "scenarioFile": "training/scenarios/skygrid-auto-drill-v1.json",
+  "runId": "skygrid-training-2026-07-14T18-56-21-984Z",
+  "summary": {
+    "scenarios": 5,
+    "passed": 0,
+    "failed": 5
+  },
+  "results": [
+    {
+      "id": "outage-local-network",
+      "title": "Local outage report",
+      "category": "outage",
+      "severity": "medium",
+      "passed": false,
+      "assertions": {
+        "statusPassed": false,
+        "eventIdPassed": false,
+        "safetyPassed": true,
+        "expectedStatuses": [
+          202
+        ],
+        "eventId": null,
+        "forbiddenTrueField": null,
+        "operatorReviewRequired": true
+      },
+      "request": {
+        "method": "POST",
+        "url": "https://aura-core-git-mvpuknowme-home-e539c0b1.vercel.app/api/skygrid/intake",
+        "training": true,
+        "simulated": true
+      },
+      "response": {
+        "status": 402,
+        "json": null,
+        "text": "Payment required\n\nDEPLOYMENT_DISABLED\n\npdx1::8pwgm-1784055381754-6c11df22e1ae\n",
+        "error": null
+      },
+      "timing": {
+        "startedAt": "2026-07-14T18:56:21.995Z",
+        "durationMs": 816
+      }
+    },
+    {
+      "id": "emergency-intake-basic",
+      "title": "Emergency intake basic",
+      "category": "emergency",
+      "severity": "high",
+      "passed": false,
+      "assertions": {
+        "statusPassed": false,
+        "eventIdPassed": false,
+        "safetyPassed": true,
+        "expectedStatuses": [
+          202
+        ],
+        "eventId": null,
+        "forbiddenTrueField": null,
+        "operatorReviewRequired": true
+      },
+      "request": {
+        "method": "POST",
+        "url": "https://aura-core-git-mvpuknowme-home-e539c0b1.vercel.app/api/skygrid/intake",
+        "training": true,
+        "simulated": true
+      },
+      "response": {
+        "status": 402,
+        "json": null,
+        "text": "Payment required\n\nDEPLOYMENT_DISABLED\n\npdx1::x6wjf-1784055382094-35e49b3e4a20\n",
+        "error": null
+      },
+      "timing": {
+        "startedAt": "2026-07-14T18:56:22.817Z",
+        "durationMs": 252
+      }
+    },
+    {
+      "id": "responder-routing-basic",
+      "title": "Responder routing basic",
+      "category": "responder_routing",
+      "severity": "medium",
+      "passed": false,
+      "assertions": {
+        "statusPassed": false,
+        "eventIdPassed": false,
+        "safetyPassed": true,
+        "expectedStatuses": [
+          202
+        ],
+        "eventId": null,
+        "forbiddenTrueField": null,
+        "operatorReviewRequired": true
+      },
+      "request": {
+        "method": "POST",
+        "url": "https://aura-core-git-mvpuknowme-home-e539c0b1.vercel.app/api/skygrid/intake",
+        "training": true,
+        "simulated": true
+      },
+      "response": {
+        "status": 402,
+        "json": null,
+        "text": "Payment required\n\nDEPLOYMENT_DISABLED\n\npdx1::fvxms-1784055382262-a99597833cc3\n",
+        "error": null
+      },
+      "timing": {
+        "startedAt": "2026-07-14T18:56:23.074Z",
+        "durationMs": 37
+      }
+    },
+    {
+      "id": "system-health-degraded",
+      "title": "System health degraded",
+      "category": "system_health",
+      "severity": "low",
+      "passed": false,
+      "assertions": {
+        "statusPassed": false,
+        "eventIdPassed": false,
+        "safetyPassed": true,
+        "expectedStatuses": [
+          202
+        ],
+        "eventId": null,
+        "forbiddenTrueField": null,
+        "operatorReviewRequired": true
+      },
+      "request": {
+        "method": "POST",
+        "url": "https://aura-core-git-mvpuknowme-home-e539c0b1.vercel.app/api/skygrid/intake",
+        "training": true,
+        "simulated": true
+      },
+      "response": {
+        "status": 402,
+        "json": null,
+        "text": "Payment required\n\nDEPLOYMENT_DISABLED\n\npdx1::x6wjf-1784055382322-5883d7938dff\n",
+        "error": null
+      },
+      "timing": {
+        "startedAt": "2026-07-14T18:56:23.113Z",
+        "durationMs": 50
+      }
+    },
+    {
+      "id": "failover-readiness-no-action",
+      "title": "Failover readiness with no action",
+      "category": "failover_readiness",
+      "severity": "medium",
+      "passed": false,
+      "assertions": {
+        "statusPassed": false,
+        "eventIdPassed": false,
+        "safetyPassed": true,
+        "expectedStatuses": [
+          202
+        ],
+        "eventId": null,
+        "forbiddenTrueField": null,
+        "operatorReviewRequired": true
+      },
+      "request": {
+        "method": "POST",
+        "url": "https://aura-core-git-mvpuknowme-home-e539c0b1.vercel.app/api/skygrid/intake",
+        "training": true,
+        "simulated": true
+      },
+      "response": {
+        "status": 402,
+        "json": null,
+        "text": "Payment required\n\nDEPLOYMENT_DISABLED\n\npdx1::fvxms-1784055382352-5d35e3a992f6\n",
+        "error": null
+      },
+      "timing": {
+        "startedAt": "2026-07-14T18:56:23.164Z",
+        "durationMs": 27
+      }
+    }
+  ],
+  "timestamp": "2026-07-14T18:56:23.191Z"
+}
