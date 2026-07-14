@@ -1,4 +1,6 @@
 {
+  "name": "aura-core",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.23.0",
@@ -14,7 +16,7 @@
     "training:drill": "node scripts/skygrid-training-drill.mjs",
     "skygrid:training": "node scripts/skygrid-training-drill.mjs",
     "security:test": "node --check api/runtime-hardened.mjs && node scripts/test-runtime-security.mjs",
-    "build": "npm run pnpk:validate && npm run manifest:sync && npm run security:test && node scripts/vercel-build.mjs",
+    "build": "pnpm run pnpk:validate && pnpm run manifest:sync && pnpm run security:test && node scripts/vercel-build.mjs",
     "build:xmcp": "node tools/xmcp/index.mjs build --vercel",
     "xmcp:build": "node tools/xmcp/index.mjs build --vercel",
     "skygrid:verify": "node scripts/verify-skygrid-routes.mjs",
@@ -40,7 +42,7 @@
   },
   "dependencies": {
     "@coinbase/agentkit": "^0.10.4",
-    "@modelcontextprotocol/sdk": "latest",
+    "@modelcontextprotocol/sdk": "1.29.0",
     "@vercel/sandbox": "^2.2.1",
     "ai": "^6.0.208",
     "express": "^5.2.1",
