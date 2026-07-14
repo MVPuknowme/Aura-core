@@ -24,6 +24,8 @@
     { "source": "/dashboard/validation-panel", "destination": "/api/runtime" },
     { "source": "/dashboard/deployment-review", "destination": "/api/runtime" },
     { "source": "/dashboard/receipts", "destination": "/api/runtime" },
+    { "source": "/api/health", "destination": "/api/runtime" },
+    { "source": "/api/status", "destination": "/api/runtime" },
     { "source": "/api/skygrid/status", "destination": "/api/runtime" },
     { "source": "/api/skygrid/intake", "destination": "/api/runtime" },
     { "source": "/api/aura-core/decide", "destination": "/api/runtime" },
@@ -38,6 +40,7 @@
     { "source": "/api/autodrill/latest", "destination": "/api/runtime" },
     { "source": "/api/build-pad/quote", "destination": "/api/runtime" },
     { "source": "/api/node-lease/intake", "destination": "/api/runtime" },
+    { "source": "/api/pacific-heart/ingest", "destination": "/api/runtime" },
     { "source": "/api/failover/status", "destination": "/api/runtime" },
     { "source": "/api/panels/summary", "destination": "/api/runtime" }
   ]
