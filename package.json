@@ -18,6 +18,8 @@
     "xmcp:build": "node tools/xmcp/index.mjs build --vercel",
     "skygrid:verify": "node scripts/verify-skygrid-routes.mjs",
     "skygrid:test:routing": "node scripts/test-skygrid-routing-success.mjs",
+    "test:runtime-security": "node scripts/test-runtime-security.mjs",
+    "test:security": "node scripts/test-runtime-security.mjs && node scripts/check-iocs.mjs",
     "aura:selection:watch": "node scripts/aura-core-ai-selection-watch.mjs",
     "mcp:check": "node scripts/check-mcp-sdk.mjs",
     "emergency:gate": "node scripts/skygrid-emergency-gate.mjs",
