@@ -1,0 +1,177 @@
+﻿name: SKYGRID Controlled Pilot Verification
+
+on:
+  push:
+    branches: [ "MVPuknowme" ]
+  pull_request:
+    branches: [ "MVPuknowme" ]
+  workflow_dispatch: {}
+
+jobs:
+  verify:
+    name: Controlled Pilot checks on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js (matches package.json engines)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+
+      - name: Enable Corepack and prepare pnpm (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.23.0 --activate
+
+      - name: Enable Corepack and prepare pnpm (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.23.0 --activate
+
+      - name: Install dependencies (pnpm --frozen-lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: PNPK validation
+        run: pnpm run pnpk:validate
+
+      - name: Manifest sync
+        run: pnpm run manifest:sync
+
+      - name: Partition verification
+        run: pnpm run partition:verify
+
+      - name: Autodrill simulation
+        run: pnpm run autodrill:sim
+
+      - name: Emergency gate
+        run: pnpm run emergency:gate
+
+      - name: Security IOC check
+        run: pnpm run security:ioc-check
+
+      - name: Intake policy test
+        run: pnpm run intake:policy-test
+
+      - name: Start SKYGRID local runtime (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          # start runtime in background and capture PID
+          nohup pnpm run local:runtime > runtime.log 2>&1 &
+          echo $! > /tmp/skygrid_pid
+
+      - name: Start SKYGRID local runtime (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          # Start runtime as background process and capture PID
+          $p = Start-Process -FilePath pnpm -ArgumentList 'run','local:runtime' -NoNewWindow -PassThru
+          $p.Id | Out-File -FilePath "$env:RUNNER_TEMP\skygrid_pid" -Encoding ascii
+
+      - name: Wait for SKYGRID health (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          echo "Waiting for http://127.0.0.1:3000/api/health to return 200..."
+          for i in {1..60}; do
+            if curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/api/health | grep -q '^200$'; then
+              echo "runtime healthy"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "runtime did not become healthy in time"
+          cat runtime.log || true
+          exit 1
+
+      - name: Wait for SKYGRID health (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Write-Host "Waiting for http://127.0.0.1:3000/api/health to return 200..."
+          $ok = $false
+          for ($i=0; $i -lt 60; $i++) {
+            try {
+              $r = Invoke-WebRequest -UseBasicParsing -Uri 'http://127.0.0.1:3000/api/health' -TimeoutSec 5 -ErrorAction Stop
+              if ($r.StatusCode -eq 200) { $ok = $true; break }
+            } catch {}
+            Start-Sleep -Seconds 2
+          }
+          if (-not $ok) {
+            Write-Host "runtime did not become healthy in time"
+            if (Test-Path runtime.log) { Get-Content runtime.log -Tail 200 }
+            Exit 1
+          }
+          Write-Host "runtime healthy"
+
+      - name: Training drill
+        run: pnpm run training:drill -- --base-url=http://127.0.0.1:3000
+
+      - name: Verify training receipts and drill results
+        id: verify_receipts
+        run: |
+          node -e "
+          const fs=require('fs');
+          const path=require('path');
+          const receiptsDir=path.join(process.cwd(),'training','receipts');
+          const failedDir=path.join(process.cwd(),'training','receipts','failed-external');
+          let files=[];
+          if (fs.existsSync(receiptsDir)) files = files.concat(fs.readdirSync(receiptsDir).filter(f=>f.endsWith('.json')).map(f=>path.join(receiptsDir,f)));
+          if (fs.existsSync(failedDir)) files = files.concat(fs.readdirSync(failedDir).filter(f=>f.endsWith('.json')).map(f=>path.join(failedDir,f)));
+          if (files.length===0) { console.error('No receipt files found.'); process.exit(1); }
+          let okCount=0; let anyFailed=false; let details=[];
+          for(const f of files){ try{ const j=JSON.parse(fs.readFileSync(f,'utf8')); details.push({file:f,ok:!!j.ok,raw:j}); if (j.ok) okCount++; else anyFailed=true; }catch(e){ console.error('Failed parsing',f,e); anyFailed=true; }}
+          console.log('okCount='+okCount);
+          if (anyFailed) { console.error('One or more receipts report ok: false'); process.exit(1); }
+          if (okCount !== 5) { console.error('Training drill did not reach 5/5 (okCount='+okCount+')'); process.exit(1); }
+          console.log('Training drill success 5/5');
+          "
+
+      - name: Create controlled-pilot summary
+        if: always()
+        run: |
+          echo "PNPK validation" >> $GITHUB_STEP_SUMMARY
+          echo "Partition verification" >> $GITHUB_STEP_SUMMARY
+          echo "Autodrill result" >> $GITHUB_STEP_SUMMARY
+          echo "Emergency-gate result" >> $GITHUB_STEP_SUMMARY
+          echo "Intake-policy result" >> $GITHUB_STEP_SUMMARY
+          echo "Training-drill result" >> $GITHUB_STEP_SUMMARY
+          echo "Controlled-pilot status: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload training receipts (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: training-receipts
+          path: |
+            training/receipts/*.json
+            training/receipts/failed-external/*.json
+
+      - name: Stop SKYGRID runtime (Ubuntu)
+        if: runner.os == 'Linux' && always()
+        run: |
+          if [ -f /tmp/skygrid_pid ]; then
+            PID=$(cat /tmp/skygrid_pid)
+            echo "Killing $PID"
+            kill $PID || true
+          fi
+
+      - name: Stop SKYGRID runtime (Windows)
+        if: runner.os == 'Windows' && always()
+        shell: pwsh
+        run: |
+          $pfile = "$env:RUNNER_TEMP\skygrid_pid"
+          if (Test-Path $pfile) {
+            $pid = Get-Content $pfile
+            Write-Host "Stopping process $pid"
+            Stop-Process -Id $pid -ErrorAction SilentlyContinue
+          }
