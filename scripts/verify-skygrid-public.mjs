@@ -1,4 +1,4 @@
-﻿const baseUrl =
+const baseUrl =
   process.env.SKYGRID_BASE_URL ||
   "https://skygrid-protocol.net";
 
@@ -62,7 +62,7 @@ for (const path of checks) {
 }
 
 if (failed) {
-  process.exit(1);
+  process.exitCode = 1;
 }
 
 console.log("SKYGRID public verification passed.");
