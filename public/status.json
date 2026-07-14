@@ -1,0 +1,9 @@
+{
+  "ok": true,
+  "status": "operational",
+  "service": "SKYGRID Emergency Data On-Ramp",
+  "verification_layer": "public",
+  "payment_required": false,
+  "private_data_movement": false,
+  "schema_version": "1.0"
+}
