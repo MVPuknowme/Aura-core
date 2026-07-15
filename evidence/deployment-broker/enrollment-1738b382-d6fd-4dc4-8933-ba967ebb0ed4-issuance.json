@@ -1,0 +1,19 @@
+{
+    "schema_version":  "1.0",
+    "service":  "SKYGRID Emergency Data On-Ramp",
+    "component":  "deployment_broker",
+    "mode":  "controlled_pilot",
+    "event_type":  "engineer_enrollment_issued",
+    "enrollment_id":  "1738b382-d6fd-4dc4-8933-ba967ebb0ed4",
+    "allowed_platforms":  [
+                              "windows-x64"
+                          ],
+    "deployment_profile":  "diagnostic",
+    "expires_at":  "2026-07-15T19:10:36.000Z",
+    "maximum_uses":  1,
+    "single_use_enforcement":  "requires_persistent_store_before_production",
+    "no_installation_executed":  true,
+    "token_redacted":  true,
+    "recorded_at":  "2026-07-15T11:21:56.1903098-07:00",
+    "ok":  true
+}
