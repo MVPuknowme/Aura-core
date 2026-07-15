@@ -1,3 +1,4 @@
+import { handlePilotIntake } from "./pilot-intake.js";
 const REQUIRED_ROUTES = [
   "/",
   "/health.json",
@@ -23,6 +24,22 @@ export default {
     const origin =
       env.SKYGRID_ORIGIN || "https://aurcore.skygrid-protocol.net";
 
+    if (url.pathname === "/edge/intake") {
+      if (request.method !== "POST") {
+        return json(
+          {
+            ok: false,
+            system: "SKYGRID Emergency Data On-Ramp",
+            message: "POST is required for /edge/intake."
+          },
+          405
+        );
+      }
+
+      return handlePilotIntake(request, env, {
+        origin
+      });
+    }
     if (url.pathname === "/edge/health") {
       return json({
         ok: true,
@@ -143,7 +160,7 @@ export default {
         ok: false,
         system: "SKYGRID Emergency Data On-Ramp",
         message:
-          "Use /edge/health, /edge/d1/health, or /edge/proof for Cloudflare edge validation.",
+          "Use /edge/intake, /edge/health, /edge/d1/health, or /edge/proof.",
       },
       404
     );
