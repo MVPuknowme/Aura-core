@@ -95,7 +95,7 @@ jobs:
           $ok = $false
           for ($i=0; $i -lt 60; $i++) {
             try {
-              $r = Invoke-WebRequest -UseBasicParsing -Uri 'http://127.0.0.1:3000/api/health' -TimeoutSec 5 -ErrorAction Stop
+              $r = Invoke-WebRequest -UseBasicParsing -NoProxy -Uri 'http://127.0.0.1:3000/api/health' -TimeoutSec 5 -ErrorAction Stop
               if ($r.StatusCode -eq 200) { $ok = $true; break }
             } catch {}
             Start-Sleep -Seconds 2
