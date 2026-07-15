@@ -1,22 +1,33 @@
-﻿import { generateText } from 'ai'
+﻿import OpenAI from 'openai'
 
-const model = process.env.AI_GATEWAY_MODEL || 'openai/gpt-4o-mini'
+const model = process.env.OPENAI_MODEL || 'gpt-4o-mini'
 
-console.error('SKYGRID AI Gateway smoke')
+console.error('SKYGRID OpenAI smoke')
 console.error('Model:', model)
-console.error('VERCEL_OIDC_TOKEN:', process.env.VERCEL_OIDC_TOKEN ? 'present' : 'missing')
-console.error('AI_GATEWAY_API_KEY:', process.env.AI_GATEWAY_API_KEY ? 'present' : 'missing')
+console.error(
+  'OPENAI_API_KEY:',
+  process.env.OPENAI_API_KEY ? 'present' : 'missing',
+)
 
-const result = await generateText({
-  model,
-  prompt: 'Reply with exactly this sentence: SKYGRID AI Gateway is online.',
+if (!process.env.OPENAI_API_KEY) {
+  console.error('OPENAI_API_KEY is required.')
+  process.exit(1)
+}
+
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 })
 
-console.log(result.text)
-console.error('Usage:', result.usage)
-console.error('Finish reason:', result.finishReason)
+const response = await client.responses.create({
+  model,
+  input: 'Reply with exactly this sentence: SKYGRID OpenAI is online.',
+})
 
-if (!result.text.includes('SKYGRID AI Gateway is online')) {
+const text = response.output_text ?? ''
+
+console.log(text)
+
+if (!text.includes('SKYGRID OpenAI is online')) {
   console.error('Unexpected response text.')
   process.exit(1)
 }
