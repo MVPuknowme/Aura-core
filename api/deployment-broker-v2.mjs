@@ -50,9 +50,13 @@ function escapeHtml(value) {
 async function readBody(req) {
   const chunks = [];
   for await (const chunk of req) chunks.push(chunk);
-  if (chunks.length === 0) return {};
-  try { return JSON.parse(Buffer.concat(chunks).toString("utf8")); }
-  catch { return {}; }
+  if (chunks.length === 0) return { ok: true, value: {} };
+  const raw = Buffer.concat(chunks).toString("utf8");
+  try {
+    return { ok: true, value: JSON.parse(raw) };
+  } catch {
+    return { ok: false, reason: "malformed_json_body" };
+  }
 }
 
 function routeContext(req) {
@@ -134,9 +138,12 @@ export default async function handler(req, res) {
       return json(res, 503, { ok: false, reason: "enrollment_ledger_not_configured" });
     }
 
-    const body = await readBody(req);
+    const parsedBody = await readBody(req);
+    if (!parsedBody.ok) {
+      return json(res, 400, { ok: false, reason: parsedBody.reason, no_enrollment_issued: true });
+    }
     try {
-      const enrollment = createEnrollmentToken(body);
+      const enrollment = createEnrollmentToken(parsedBody.value);
       await createEnrollmentRecord(enrollment.payload);
       const origin = process.env.SKYGRID_DEPLOYMENT_ORIGIN || "https://deploy.skygrid-protocol.net";
       return json(res, 201, {
@@ -188,8 +195,11 @@ export default async function handler(req, res) {
     const verification = verifyEnrollmentToken(route.token);
     if (!verification.ok) return json(res, 403, verification);
 
-    const body = await readBody(req);
-    const platform = detectPlatform(req.headers["user-agent"] || "", body.platform || "");
+    const parsedBody = await readBody(req);
+    if (!parsedBody.ok) {
+      return json(res, 400, { ok: false, reason: parsedBody.reason, no_installation_executed: true });
+    }
+    const platform = detectPlatform(req.headers["user-agent"] || "", parsedBody.value.platform || "");
     if (!platform || !verification.payload.allowed_platforms.includes(platform)) {
       return json(res, 403, { ok: false, reason: "platform_not_authorized", platform });
     }
