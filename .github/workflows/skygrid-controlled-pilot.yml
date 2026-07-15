@@ -64,7 +64,6 @@ jobs:
       - name: Start SKYGRID local runtime (Ubuntu)
         if: runner.os == 'Linux'
         run: |
-          # start runtime in background and capture PID
           nohup pnpm run local:runtime > runtime.log 2>&1 &
           echo $! > /tmp/skygrid_pid
 
@@ -88,6 +87,7 @@ jobs:
             -Encoding ascii
 
           Write-Host "Started SKYGRID runtime PID $($p.Id)"
+
       - name: Wait for SKYGRID health (Ubuntu)
         if: runner.os == 'Linux'
         run: |
@@ -108,7 +108,6 @@ jobs:
         shell: pwsh
         run: |
           Write-Host "Waiting for SKYGRID runtime health..."
-
           $ok = $false
 
           for ($i = 0; $i -lt 60; $i++) {
@@ -142,21 +141,31 @@ jobs:
             }
 
             $pidPath = "$env:RUNNER_TEMP\skygrid_pid"
-
             if (Test-Path $pidPath) {
               $runtimePid = Get-Content $pidPath
-
-              Get-Process `
-                -Id $runtimePid `
-                -ErrorAction SilentlyContinue
+              Get-Process -Id $runtimePid -ErrorAction SilentlyContinue
             }
 
             exit 1
           }
 
           Write-Host "SKYGRID runtime healthy"
-      - name: Training drill
-        run: pnpm run training:drill -- --base-url=http://127.0.0.1:3000 --out-dir=training/receipts/ci-${{ runner.os }}
+
+      - name: Training drill - accepted paths
+        run: >-
+          pnpm run training:drill --
+          --base-url=http://127.0.0.1:3000
+          --scenario-file=training/scenarios/skygrid-auto-drill-v1.json
+          --out-dir=training/receipts/ci-${{ runner.os }}
+          --run-id=accepted-paths
+
+      - name: Training drill - fail-closed paths
+        run: >-
+          pnpm run training:fail-closed --
+          --base-url=http://127.0.0.1:3000
+          --scenario-file=training/scenarios/skygrid-fail-closed-v1.json
+          --out-dir=training/receipts/ci-${{ runner.os }}
+          --run-id=fail-closed
 
       - name: Verify training receipts and drill results
         shell: bash
@@ -172,39 +181,76 @@ jobs:
             'ci-${{ runner.os }}'
           );
 
+          const expected = new Map([
+            ['accepted-paths.json', 5],
+            ['fail-closed.json', 11],
+          ]);
+
           if (!fs.existsSync(dir)) {
             console.error('CI receipt directory not found:', dir);
             process.exit(1);
           }
 
           const files = fs.readdirSync(dir)
-            .filter((file) => file.endsWith('.json'));
+            .filter((file) => file.endsWith('.json'))
+            .sort();
 
-          if (files.length !== 1) {
-            console.error('Expected exactly one current-run receipt, found:', files.length);
+          if (files.length !== expected.size) {
+            console.error('Expected two current-run receipts, found:', files);
             process.exit(1);
           }
 
-          const receipt = JSON.parse(
-            fs.readFileSync(path.join(dir, files[0]), 'utf8')
-          );
+          let totalScenarios = 0;
+          let totalPassed = 0;
 
-          if (receipt.ok !== true) {
-            console.error('Receipt reports ok !== true');
+          for (const [file, expectedScenarios] of expected) {
+            if (!files.includes(file)) {
+              console.error('Missing expected training receipt:', file);
+              process.exit(1);
+            }
+
+            const receipt = JSON.parse(
+              fs.readFileSync(path.join(dir, file), 'utf8')
+            );
+
+            if (receipt.ok !== true) {
+              console.error(file, 'reports ok !== true');
+              process.exit(1);
+            }
+
+            if (
+              receipt.summary?.scenarios !== expectedScenarios ||
+              receipt.summary?.passed !== expectedScenarios ||
+              receipt.summary?.failed !== 0
+            ) {
+              console.error(file, 'has an unexpected summary:', receipt.summary);
+              process.exit(1);
+            }
+
+            if (!Array.isArray(receipt.results) || receipt.results.some((result) => result.passed !== true)) {
+              console.error(file, 'contains a failed scenario');
+              process.exit(1);
+            }
+
+            if (file === 'fail-closed.json') {
+              if (receipt.sentinel !== 'fail_closed' || receipt.allRequestsRejected !== true) {
+                console.error('Fail-closed receipt did not prove rejection safety');
+                process.exit(1);
+              }
+            }
+
+            totalScenarios += receipt.summary.scenarios;
+            totalPassed += receipt.summary.passed;
+          }
+
+          if (totalScenarios !== 16 || totalPassed !== 16) {
+            console.error('Combined training result is not 16/16:', { totalScenarios, totalPassed });
             process.exit(1);
           }
 
-          if (
-            receipt.summary?.scenarios !== 5 ||
-            receipt.summary?.passed !== 5 ||
-            receipt.summary?.failed !== 0
-          ) {
-            console.error('Training drill result is not 5/5:', receipt.summary);
-            process.exit(1);
-          }
-
-          console.log('Training drill verified: 5/5');
+          console.log('Training drills verified: 16/16 across accepted and fail-closed lanes');
           "
+
       - name: Create controlled-pilot summary
         if: always()
         run: |
@@ -213,7 +259,9 @@ jobs:
           echo "Autodrill result" >> $GITHUB_STEP_SUMMARY
           echo "Emergency-gate result" >> $GITHUB_STEP_SUMMARY
           echo "Intake-policy result" >> $GITHUB_STEP_SUMMARY
-          echo "Training-drill result" >> $GITHUB_STEP_SUMMARY
+          echo "Accepted-path training: 5 scenarios" >> $GITHUB_STEP_SUMMARY
+          echo "Fail-closed training: 11 scenarios" >> $GITHUB_STEP_SUMMARY
+          echo "Combined training target: 16/16" >> $GITHUB_STEP_SUMMARY
           echo "Controlled-pilot status: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload training receipts (always)
