@@ -16,7 +16,7 @@
     "training:drill": "node scripts/skygrid-training-drill.mjs",
     "skygrid:training": "node scripts/skygrid-training-drill.mjs",
     "aerodrome:rpc:test": "node --check api/aerodrome/wallet.mjs && node scripts/test-aerodrome-wallet-rpc.mjs",
-    "wallet:dual-lane:test": "node --check api/wallet/dual-lane.mjs && node --check config/skygrid-wallet-lanes.mjs && node scripts/test-dual-lane-wallet-rpc.mjs",
+    "wallet:dual-lane:test": "node --check api/wallet/dual-lane.mjs && node --check config/skygrid-wallet-lanes.mjs && node --check scripts/skygrid-local-runtime-router.mjs && node scripts/test-dual-lane-wallet-rpc.mjs && node scripts/test-local-wallet-routing.mjs",
     "security:test": "node --check api/runtime-hardened.mjs && node scripts/test-runtime-security.mjs && pnpm run aerodrome:rpc:test && pnpm run wallet:dual-lane:test",
     "build": "pnpm run pnpk:validate && pnpm run manifest:sync && pnpm run security:test && node scripts/vercel-build.mjs",
     "build:xmcp": "node tools/xmcp/index.mjs build --vercel",
