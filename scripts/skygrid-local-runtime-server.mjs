@@ -1,5 +1,6 @@
 import express from "express";
-import handler from "../api/runtime.mjs";
+import runtimeHandler from "../api/runtime.mjs";
+import deploymentBrokerHandler from "../api/deployment-broker.mjs";
 
 const args = process.argv.slice(2);
 let cliPort = null;
@@ -13,7 +14,21 @@ for (let i = 0; i < args.length; i++) {
 const port = Number(process.env.PORT || cliPort || 3000);
 const app = express();
 
+function isDeploymentBrokerRoute(url = "") {
+  const pathname = new URL(url || "/", "http://127.0.0.1").pathname;
+  return (
+    pathname === "/api/deployment-broker/health" ||
+    pathname === "/api/enrollments" ||
+    /^\/enroll\/[^/]+$/.test(pathname) ||
+    /^\/api\/enrollments\/[^/]+\/redeem$/.test(pathname)
+  );
+}
+
 app.use((req, res) => {
+  const handler = isDeploymentBrokerRoute(req.url)
+    ? deploymentBrokerHandler
+    : runtimeHandler;
+
   handler(req, res).catch((error) => {
     res.statusCode = 500;
     res.setHeader("Content-Type", "application/json; charset=utf-8");
