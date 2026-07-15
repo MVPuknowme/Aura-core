@@ -1,0 +1,14 @@
+{
+    "schema_version":  "1.0",
+    "service":  "SKYGRID Emergency Data On-Ramp",
+    "component":  "deployment_broker",
+    "mode":  "controlled_pilot",
+    "event_type":  "enrollment_reuse_rejected",
+    "enrollment_id":  "dd103641-d713-4cd7-858f-9f20edad19f2",
+    "lifecycle_state":  "redeemed",
+    "reuse_accepted":  false,
+    "reason":  "enrollment_link_already_redeemed",
+    "no_installation_executed":  true,
+    "recorded_at":  "2026-07-15T11:33:40.8312251-07:00",
+    "ok":  true
+}
