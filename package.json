@@ -13,6 +13,7 @@
         "autodrill:sim": "node scripts/skygrid-autodrill-sim.mjs",
         "training:drill": "node scripts/skygrid-training-drill.mjs",
         "training:fail-closed": "node scripts/skygrid-fail-closed-drill.mjs",
+        "training:verify-receipts": "node scripts/verify-skygrid-training-receipts.mjs",
         "training:all": "pnpm run training:drill && pnpm run training:fail-closed",
         "skygrid:training": "node scripts/skygrid-training-drill.mjs",
         "build": "npm run pnpk:validate && npm run manifest:sync && node scripts/vercel-build.mjs",
