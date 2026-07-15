@@ -3,7 +3,7 @@
   "service": "SKYGRID Emergency Data On-Ramp",
   "component": "controlled_pilot_evidence",
   "event_type": "controlled_pilot_manifest_built",
-  "source_commit": "17c3a4933fff15bb5957ca2e5331e05e2aac0ecd",
+  "source_commit": "76372c9d4f1bffc1e1058a88a50bd12e86ebbdb9",
   "artifact_count": 5,
   "artifacts": [
     {
@@ -32,8 +32,8 @@
     },
     {
       "path": "evidence/deployment-broker/newman-deployment-broker-proof-expanded.json",
-      "sha256": "6A9EB5264E8317388078425A94F69E3B7390BF2368D07A9501D8875BFDB51BBE",
-      "bytes": 1141,
+      "sha256": "5AAC0BF9A1B4EF3366F74DA486CCD0A44B711B57FB63F3134E497D3EEC78B57F",
+      "bytes": 1226,
       "event_type": "postman_regression_completed",
       "ok": true,
       "token_redacted": true
@@ -54,6 +54,6 @@
     "admin keys",
     "enrollment tokens"
   ],
-  "generated_at": "2026-07-15T21:46:31.149Z",
+  "generated_at": "2026-07-15T22:08:56.589Z",
   "ok": true
 }

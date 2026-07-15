@@ -5,10 +5,10 @@
   "mode": "controlled_pilot",
   "event_type": "postman_regression_completed",
   "collection": "skygrid-deployment-broker.collection.json",
-  "source_report_sha256": "72C1BBE7B7716AA0A54046B649DEA3BB3801AD02BC786B4AA777C7A7FF7BC8D0",
-  "requests_executed": 9,
+  "source_report_sha256": "11EED9FA57091CBA57920A578D9518F181F1DAE525D5057251156DB7DF1FDAC7",
+  "requests_executed": 11,
   "requests_failed": 0,
-  "assertions_executed": 21,
+  "assertions_executed": 25,
   "assertions_failed": 0,
   "iterations_executed": 1,
   "request_names": [
@@ -16,11 +16,13 @@
     "02 Reject issuance without admin key",
     "03 Reject issuance with wrong admin key",
     "04 Reject wrong method",
-    "05 Issue one-time enrollment",
-    "06 Reject tampered token",
-    "07 Reject unauthorized platform",
-    "08 Redeem enrollment once",
-    "09 Reject enrollment reuse"
+    "05 Reject malformed issuance JSON",
+    "06 Issue one-time enrollment",
+    "07 Reject tampered token",
+    "08 Reject malformed redemption JSON",
+    "09 Reject unauthorized platform",
+    "10 Redeem enrollment once",
+    "11 Reject enrollment reuse"
   ],
   "secrets_removed": [
     "admin keys",
@@ -31,6 +33,6 @@
     "request and response bodies"
   ],
   "raw_tokens_excluded_from_receipt": true,
-  "recorded_at": "2026-07-15T21:44:16.607Z",
+  "recorded_at": "2026-07-15T22:08:56.462Z",
   "ok": true
 }
