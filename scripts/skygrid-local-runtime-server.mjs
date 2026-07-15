@@ -1,6 +1,6 @@
 import express from "express";
 import runtimeHandler from "../api/runtime.mjs";
-import deploymentBrokerHandler from "../api/deployment-broker.mjs";
+import deploymentBrokerHandler from "../api/deployment-broker-v2.mjs";
 
 const args = process.argv.slice(2);
 let cliPort = null;
