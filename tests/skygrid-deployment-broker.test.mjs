@@ -120,6 +120,20 @@ test("requires deployment-admin authorization and persists issued state", async 
   assert.equal(record.use_count, 0);
 });
 
+test("rejects malformed JSON before issuing an enrollment", async () => {
+  const response = await invoke({
+    method: "POST",
+    path: "/api/enrollments",
+    headers: { "x-skygrid-admin-key": process.env.SKYGRID_DEPLOYMENT_ADMIN_KEY },
+    body: "{\"allowed_platforms\":[\"windows-x64\"]"
+  });
+  const payload = JSON.parse(response.body);
+  assert.equal(response.statusCode, 400);
+  assert.equal(payload.ok, false);
+  assert.equal(payload.reason, "malformed_json_body");
+  assert.equal(payload.no_enrollment_issued, true);
+});
+
 test("shows the enrollment page but refuses redemption until a signed artifact is configured", async () => {
   delete process.env.SKYGRID_WINDOWS_X64_URL;
   delete process.env.SKYGRID_WINDOWS_X64_SHA256;
@@ -141,6 +155,24 @@ test("shows the enrollment page but refuses redemption until a signed artifact i
   const rejected = JSON.parse(redemption.body);
   assert.equal(redemption.statusCode, 503);
   assert.equal(rejected.reason, "signed_artifact_not_configured");
+  assert.equal(rejected.no_installation_executed, true);
+});
+
+test("rejects malformed JSON before redeeming an enrollment", async () => {
+  process.env.SKYGRID_WINDOWS_X64_URL = "https://artifacts.example.test/skygrid-node.msi";
+  process.env.SKYGRID_WINDOWS_X64_SHA256 = "a".repeat(64);
+  const { payload } = await issueEnrollment();
+  const token = new URL(payload.enrollment_url).pathname.replace("/enroll/", "");
+
+  const response = await invoke({
+    method: "POST",
+    path: `/api/enrollments/${token}/redeem`,
+    body: "{\"platform\":\"windows-x64\""
+  });
+  const rejected = JSON.parse(response.body);
+  assert.equal(response.statusCode, 400);
+  assert.equal(rejected.ok, false);
+  assert.equal(rejected.reason, "malformed_json_body");
   assert.equal(rejected.no_installation_executed, true);
 });
 
