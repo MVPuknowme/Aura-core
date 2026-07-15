@@ -1,0 +1,184 @@
+{
+  "name": "SKYGRID Fail-Closed Training v1",
+  "product": "SKYGRID Emergency Data On-Ramp",
+  "mode": "controlled_pilot",
+  "sentinel": "fail_closed",
+  "trainingOnly": true,
+  "endpoint": {
+    "method": "POST",
+    "path": "/api/skygrid/intake"
+  },
+  "scenarios": [
+    {
+      "id": "missing-routing-fields",
+      "title": "Reject missing routing fields",
+      "category": "input_validation",
+      "severity": "medium",
+      "input": {
+        "requested_ramp": "postman",
+        "requested_node": "home"
+      },
+      "expected": {
+        "status": 400,
+        "reason": "missing_routing_fields"
+      }
+    },
+    {
+      "id": "missing-owner-approval",
+      "title": "Reject emergency route without owner approval",
+      "category": "approval_gate",
+      "severity": "high",
+      "input": {
+        "route_type": "emergency",
+        "requested_ramp": "aws_lambda",
+        "requested_node": "validator",
+        "emergency_operator_approval": true
+      },
+      "expected": {
+        "status": 403,
+        "reason": "owner_approval_required"
+      }
+    },
+    {
+      "id": "missing-emergency-operator-approval",
+      "title": "Reject emergency route without operator approval",
+      "category": "approval_gate",
+      "severity": "high",
+      "input": {
+        "route_type": "emergency",
+        "requested_ramp": "aws_lambda",
+        "requested_node": "validator",
+        "owner_approval": true
+      },
+      "expected": {
+        "status": 403,
+        "reason": "emergency_operator_approval_required"
+      }
+    },
+    {
+      "id": "unknown-partition",
+      "title": "Reject unknown partition",
+      "category": "route_policy",
+      "severity": "medium",
+      "input": {
+        "route_type": "unknown",
+        "requested_ramp": "postman",
+        "requested_node": "home"
+      },
+      "expected": {
+        "status": 403,
+        "reason": "unknown_partition"
+      }
+    },
+    {
+      "id": "unapproved-ramp",
+      "title": "Reject unapproved ramp",
+      "category": "route_policy",
+      "severity": "medium",
+      "input": {
+        "route_type": "diagnostic",
+        "requested_ramp": "aws_lambda",
+        "requested_node": "home"
+      },
+      "expected": {
+        "status": 403,
+        "reason": "unapproved_ramp"
+      }
+    },
+    {
+      "id": "unapproved-node",
+      "title": "Reject unapproved node",
+      "category": "route_policy",
+      "severity": "medium",
+      "input": {
+        "route_type": "diagnostic",
+        "requested_ramp": "postman",
+        "requested_node": "unknown"
+      },
+      "expected": {
+        "status": 403,
+        "reason": "unapproved_node"
+      }
+    },
+    {
+      "id": "wallet-signing-prohibited",
+      "title": "Reject wallet signing request",
+      "category": "prohibited_action",
+      "severity": "critical",
+      "input": {
+        "route_type": "diagnostic",
+        "requested_ramp": "postman",
+        "requested_node": "home",
+        "wallet_signing_requested": true
+      },
+      "expected": {
+        "status": 403,
+        "reason": "wallet_signing_prohibited"
+      }
+    },
+    {
+      "id": "transaction-broadcast-prohibited",
+      "title": "Reject transaction broadcast request",
+      "category": "prohibited_action",
+      "severity": "critical",
+      "input": {
+        "route_type": "diagnostic",
+        "requested_ramp": "postman",
+        "requested_node": "home",
+        "transaction_broadcast_requested": true
+      },
+      "expected": {
+        "status": 403,
+        "reason": "transaction_broadcast_prohibited"
+      }
+    },
+    {
+      "id": "payment-execution-prohibited",
+      "title": "Reject payment execution request",
+      "category": "prohibited_action",
+      "severity": "critical",
+      "input": {
+        "route_type": "diagnostic",
+        "requested_ramp": "postman",
+        "requested_node": "home",
+        "payment_execution_requested": true
+      },
+      "expected": {
+        "status": 403,
+        "reason": "payment_execution_prohibited"
+      }
+    },
+    {
+      "id": "production-failover-prohibited",
+      "title": "Reject production failover request",
+      "category": "prohibited_action",
+      "severity": "critical",
+      "input": {
+        "route_type": "diagnostic",
+        "requested_ramp": "postman",
+        "requested_node": "home",
+        "production_failover_requested": true
+      },
+      "expected": {
+        "status": 403,
+        "reason": "production_failover_prohibited"
+      }
+    },
+    {
+      "id": "private-data-movement-prohibited",
+      "title": "Reject private data movement request",
+      "category": "prohibited_action",
+      "severity": "critical",
+      "input": {
+        "route_type": "diagnostic",
+        "requested_ramp": "postman",
+        "requested_node": "home",
+        "private_data_movement_requested": true
+      },
+      "expected": {
+        "status": 403,
+        "reason": "private_data_movement_prohibited"
+      }
+    }
+  ]
+}
