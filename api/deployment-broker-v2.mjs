@@ -14,9 +14,7 @@ import {
 const PRODUCT = "SKYGRID Emergency Data On-Ramp";
 const MODE = "controlled_pilot";
 
-function nowIso() {
-  return new Date().toISOString();
-}
+function nowIso() { return new Date().toISOString(); }
 
 function constantTimeEqual(left, right) {
   const a = Buffer.from(String(left));
@@ -95,9 +93,18 @@ function artifact(platform) {
   return { configured: Boolean(url && sha256), url, sha256, format, signature_required: true };
 }
 
+function enforcementLabel(ledger) {
+  return ledger.adapter === "dynamodb"
+    ? "dynamodb_conditional_write"
+    : ledger.adapter === "atomic_filesystem"
+      ? "atomic_filesystem_ledger"
+      : "disabled";
+}
+
 export default async function handler(req, res) {
   const route = routeContext(req);
   const ledger = enrollmentLedgerStatus();
+  const enforcement = enforcementLabel(ledger);
 
   if (req.method === "GET" && route.url.pathname === "/api/deployment-broker/health") {
     return json(res, ledger.configured ? 200 : 503, {
@@ -106,12 +113,14 @@ export default async function handler(req, res) {
       component: "deployment_broker",
       mode: MODE,
       sentinel: "fail_closed",
-      durable_single_use_store: ledger.durable_for_local_pilot,
+      durable_single_use_store: ledger.configured,
       ledger: {
         adapter: ledger.adapter,
         configured: ledger.configured,
         production_ready: ledger.production_ready,
-        hosted_serverless: ledger.hosted_serverless
+        hosted_serverless: ledger.hosted_serverless,
+        table_name: ledger.table_name,
+        region: ledger.region
       },
       timestamp: nowIso()
     });
@@ -141,7 +150,7 @@ export default async function handler(req, res) {
         deployment_profile: enrollment.payload.deployment_profile,
         lifecycle_state: "issued",
         maximum_uses: 1,
-        single_use_enforcement: "atomic_filesystem_ledger",
+        single_use_enforcement: enforcement,
         no_installation_executed: true
       });
     } catch (error) {
@@ -215,7 +224,7 @@ export default async function handler(req, res) {
       artifact: selectedArtifact,
       receipt_id: receiptId,
       redeemed_at: redemption.record.redeemed_at,
-      single_use_enforcement: "atomic_filesystem_ledger",
+      single_use_enforcement: enforcement,
       private_key_generated_on_device: true,
       no_wallet_signing: true,
       no_payment_execution: true,
