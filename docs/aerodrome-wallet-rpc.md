@@ -57,6 +57,14 @@ Use private or authenticated provider URLs for production. The adapter falls bac
 
 Lane-specific timeout variables override `SKYGRID_WALLET_RPC_TIMEOUT_MS`. Valid timeout values are 500 through 30000 milliseconds; the default is 8000.
 
+## Controlled-pilot placement
+
+The dual-lane test uses mocked JSON-RPC responses so the controlled pilot remains deterministic and does not fail because of public-provider downtime or rate limits.
+
+`pnpm run security:test` includes both the existing Base/Aerodrome regression and the new Base/Optimism dual-lane regression. The emergency training drill remains exactly five scenarios; wallet lane verification is an additional security check, not a sixth emergency scenario.
+
+After PR #137 is rebased onto the current `MVPuknowme` branch, add an explicit controlled-pilot step for `pnpm run wallet:dual-lane:test` or rely on the build's `security:test` chain. Live RPC verification belongs in the deployment smoke test, not the deterministic CI gate.
+
 ## PowerShell local setup
 
 ```powershell
