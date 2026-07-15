@@ -1,0 +1,224 @@
+{
+  "info": {
+    "name": "SKYGRID Deployment Broker Controlled Pilot",
+    "description": "Controlled-pilot regression suite for SKYGRID Emergency Data On-Ramp deployment broker. Tests health, admin authorization, signed enrollment issuance, platform restriction, first redemption, and single-use rejection. Never commit real admin keys or enrollment tokens.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:3000", "type": "string" },
+    { "key": "admin_key", "value": "", "type": "string" },
+    { "key": "allowed_platform", "value": "windows-x64", "type": "string" },
+    { "key": "expected_ledger_adapter", "value": "atomic_filesystem", "type": "string" },
+    { "key": "enrollment_id", "value": "", "type": "string" },
+    { "key": "enrollment_token", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "01 Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/deployment-broker/health",
+          "host": ["{{base_url}}"],
+          "path": ["api", "deployment-broker", "health"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Health returns 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('Broker is healthy and fail closed', () => {",
+              "  pm.expect(body.ok).to.eql(true);",
+              "  pm.expect(body.product).to.eql('SKYGRID Emergency Data On-Ramp');",
+              "  pm.expect(body.component).to.eql('deployment_broker');",
+              "  pm.expect(body.sentinel).to.eql('fail_closed');",
+              "  pm.expect(body.durable_single_use_store).to.eql(true);",
+              "});",
+              "pm.test('Expected ledger adapter is active', () => {",
+              "  pm.expect(body.ledger.adapter).to.eql(pm.collectionVariables.get('expected_ledger_adapter'));",
+              "  pm.expect(body.ledger.configured).to.eql(true);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Reject issuance without admin key",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"organization_id\": \"skygrid-negative-test\",\n  \"deployment_profile\": \"diagnostic\",\n  \"allowed_platforms\": [\"windows-x64\"],\n  \"ttl_seconds\": 600\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/enrollments",
+          "host": ["{{base_url}}"],
+          "path": ["api", "enrollments"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Missing admin key is rejected', () => pm.response.to.have.status(403));",
+              "const body = pm.response.json();",
+              "pm.test('Failure reason is explicit', () => {",
+              "  pm.expect(body.ok).to.eql(false);",
+              "  pm.expect(body.reason).to.eql('deployment_admin_authorization_required');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 Issue one-time enrollment",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-SKYGRID-Admin-Key", "value": "{{admin_key}}", "type": "text" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"organization_id\": \"skygrid-postman-pilot\",\n  \"engineer_email\": \"mvpuknowme@skygrid-protocol.net\",\n  \"deployment_profile\": \"diagnostic\",\n  \"allowed_platforms\": [\"{{allowed_platform}}\"],\n  \"ttl_seconds\": 3600\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/enrollments",
+          "host": ["{{base_url}}"],
+          "path": ["api", "enrollments"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Enrollment is issued', () => pm.response.to.have.status(201));",
+              "const body = pm.response.json();",
+              "pm.test('Issuance contract is complete', () => {",
+              "  pm.expect(body.ok).to.eql(true);",
+              "  pm.expect(body.product).to.eql('SKYGRID Emergency Data On-Ramp');",
+              "  pm.expect(body.mode).to.eql('controlled_pilot');",
+              "  pm.expect(body.lifecycle_state).to.eql('issued');",
+              "  pm.expect(body.maximum_uses).to.eql(1);",
+              "  pm.expect(body.no_installation_executed).to.eql(true);",
+              "  pm.expect(body.allowed_platforms).to.include(pm.collectionVariables.get('allowed_platform'));",
+              "});",
+              "const marker = '/enroll/';",
+              "const tokenIndex = body.enrollment_url.indexOf(marker);",
+              "pm.expect(tokenIndex).to.be.above(-1);",
+              "pm.collectionVariables.set('enrollment_id', body.enrollment_id);",
+              "pm.collectionVariables.set('enrollment_token', body.enrollment_url.substring(tokenIndex + marker.length));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 Reject unauthorized platform",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"platform\": \"linux-x64\"\n}" },
+        "url": {
+          "raw": "{{base_url}}/api/enrollments/{{enrollment_token}}/redeem",
+          "host": ["{{base_url}}"],
+          "path": ["api", "enrollments", "{{enrollment_token}}", "redeem"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Unauthorized platform is rejected', () => pm.response.to.have.status(403));",
+              "const body = pm.response.json();",
+              "pm.test('Platform rejection does not claim installation', () => {",
+              "  pm.expect(body.ok).to.eql(false);",
+              "  pm.expect(body.reason).to.eql('platform_not_authorized');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Redeem enrollment once",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"platform\": \"{{allowed_platform}}\"\n}" },
+        "url": {
+          "raw": "{{base_url}}/api/enrollments/{{enrollment_token}}/redeem",
+          "host": ["{{base_url}}"],
+          "path": ["api", "enrollments", "{{enrollment_token}}", "redeem"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('First redemption is accepted', () => pm.response.to.have.status(202));",
+              "const body = pm.response.json();",
+              "pm.test('Redemption contract is complete', () => {",
+              "  pm.expect(body.ok).to.eql(true);",
+              "  pm.expect(body.event_type).to.eql('enrollment_redemption_approved');",
+              "  pm.expect(body.enrollment_id).to.eql(pm.collectionVariables.get('enrollment_id'));",
+              "  pm.expect(body.lifecycle_state).to.eql('redeemed');",
+              "  pm.expect(body.platform).to.eql(pm.collectionVariables.get('allowed_platform'));",
+              "  pm.expect(body.no_wallet_signing).to.eql(true);",
+              "  pm.expect(body.no_payment_execution).to.eql(true);",
+              "  pm.expect(body.no_production_failover).to.eql(true);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 Reject enrollment reuse",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"platform\": \"{{allowed_platform}}\"\n}" },
+        "url": {
+          "raw": "{{base_url}}/api/enrollments/{{enrollment_token}}/redeem",
+          "host": ["{{base_url}}"],
+          "path": ["api", "enrollments", "{{enrollment_token}}", "redeem"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Second redemption is rejected', () => pm.response.to.have.status(409));",
+              "const body = pm.response.json();",
+              "pm.test('Reuse rejection is explicit and safe', () => {",
+              "  pm.expect(body.ok).to.eql(false);",
+              "  pm.expect(body.reason).to.eql('enrollment_link_already_redeemed');",
+              "  pm.expect(body.enrollment_id).to.eql(pm.collectionVariables.get('enrollment_id'));",
+              "  pm.expect(body.no_installation_executed).to.eql(true);",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
