@@ -1,0 +1,20 @@
+{
+    "schema_version":  "1.0",
+    "service":  "SKYGRID Emergency Data On-Ramp",
+    "mode":  "controlled_pilot",
+    "event_type":  "node_revocation",
+    "node_id":  "b0ef83f8ebdac23a26fd0edb78227343e28d0e68b9e0802c4af58064c2328788",
+    "prior_state":  "active",
+    "lifecycle_state":  "revoked",
+    "centrally_assignable":  false,
+    "heartbeat_status":  "disabled",
+    "revoked_at":  "2026-07-15T10:28:49.4585258-07:00",
+    "revocation_reason":  "controlled pilot lifecycle verification",
+    "enrollment_receipt":  "node-b0ef83f8ebdac23a26fd0edb78227343e28d0e68b9e0802c4af58064c2328788-enrollment.json",
+    "enrollment_sha256":  "F80244BB17E63104F3FB28533DE384266FA5A8C8AD913819BC758A896BD3F974",
+    "payment_execution":  false,
+    "wallet_signing":  false,
+    "transaction_broadcast":  false,
+    "production_failover":  false,
+    "ok":  true
+}

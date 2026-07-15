@@ -1,0 +1,37 @@
+{
+    "schema_version":  "1.0",
+    "service":  "SKYGRID Emergency Data On-Ramp",
+    "mode":  "controlled_pilot",
+    "proof_type":  "leased_node_lifecycle",
+    "node_id":  "b0ef83f8ebdac23a26fd0edb78227343e28d0e68b9e0802c4af58064c2328788",
+    "completed_at":  "2026-07-15T10:31:14.4582875-07:00",
+    "lifecycle":  [
+                      {
+                          "sequence":  1,
+                          "event":  "enrollment",
+                          "file":  "node-b0ef83f8ebdac23a26fd0edb78227343e28d0e68b9e0802c4af58064c2328788-enrollment.json",
+                          "sha256":  "F80244BB17E63104F3FB28533DE384266FA5A8C8AD913819BC758A896BD3F974"
+                      },
+                      {
+                          "sequence":  2,
+                          "event":  "revocation",
+                          "file":  "node-b0ef83f8ebdac23a26fd0edb78227343e28d0e68b9e0802c4af58064c2328788-revocation.json",
+                          "sha256":  "F44B2AE10A13F9DFE882DFE2A75C5FB2FD10162345E94DD1B0E2E376957B3CC9"
+                      },
+                      {
+                          "sequence":  3,
+                          "event":  "reassignment_rejection",
+                          "file":  "node-b0ef83f8ebdac23a26fd0edb78227343e28d0e68b9e0802c4af58064c2328788-rejection.json",
+                          "sha256":  "C5B0C9A55272AA48A91E1FBA738FF3D97452A956F5E248A8FEEF3E3FAD017CEF"
+                      }
+                  ],
+    "assertions":  {
+                       "capacity_verified":  true,
+                       "bounded_workload_completed":  true,
+                       "centralized_revocation":  true,
+                       "revoked_node_rejected":  true,
+                       "post_revocation_workload_executed":  false
+                   },
+    "result":  "pass",
+    "ok":  true
+}

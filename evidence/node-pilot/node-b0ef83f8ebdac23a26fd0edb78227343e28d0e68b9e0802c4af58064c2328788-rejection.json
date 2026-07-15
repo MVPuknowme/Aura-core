@@ -1,0 +1,15 @@
+{
+    "schema_version":  "1.0",
+    "service":  "SKYGRID Emergency Data On-Ramp",
+    "mode":  "controlled_pilot",
+    "event_type":  "workload_assignment_rejection",
+    "node_id":  "b0ef83f8ebdac23a26fd0edb78227343e28d0e68b9e0802c4af58064c2328788",
+    "requested_partition":  "diagnostic",
+    "assignment_accepted":  false,
+    "reason":  "node_revoked",
+    "evaluated_at":  "2026-07-15T10:30:31.7696887-07:00",
+    "revocation_receipt":  "node-b0ef83f8ebdac23a26fd0edb78227343e28d0e68b9e0802c4af58064c2328788-revocation.json",
+    "revocation_sha256":  "F44B2AE10A13F9DFE882DFE2A75C5FB2FD10162345E94DD1B0E2E376957B3CC9",
+    "workload_executed":  false,
+    "ok":  true
+}

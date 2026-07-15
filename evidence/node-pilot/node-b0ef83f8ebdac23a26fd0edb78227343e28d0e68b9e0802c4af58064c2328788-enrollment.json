@@ -1,0 +1,40 @@
+{
+    "schema_version":  "1.0",
+    "service":  "SKYGRID Emergency Data On-Ramp",
+    "mode":  "controlled_pilot",
+    "node_id":  "b0ef83f8ebdac23a26fd0edb78227343e28d0e68b9e0802c4af58064c2328788",
+    "node_owner":  "Michael Vincent Patrick",
+    "hostname":  "LGPC-25V2942",
+    "platform":  "windows",
+    "operating_system":  "Microsoft Windows 10 Pro",
+    "operating_system_version":  "10.0.19045",
+    "manufacturer":  "Dell Inc.",
+    "model":  "XPS 8700",
+    "cpu":  "Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz",
+    "logical_processors":  8,
+    "memory_gb":  15.95,
+    "free_disk_gb":  248.82,
+    "partition":  "diagnostic",
+    "capacity_verified":  true,
+    "workload":  {
+                     "type":  "diagnostic_sha256",
+                     "production":  false,
+                     "started_at":  "2026-07-15T10:27:14.8756839-07:00",
+                     "completed_at":  "2026-07-15T10:27:14.8925052-07:00",
+                     "output_sha256":  "4df888e1c3ee96e6915749f7ab11e5d974b7d7cde9e50b1898c3510134d35ffd",
+                     "success":  true
+                 },
+    "heartbeat":  {
+                      "status":  "healthy",
+                      "timestamp":  "2026-07-15T10:27:14.9124231-07:00"
+                  },
+    "guardrails":  {
+                       "payment_execution":  false,
+                       "wallet_signing":  false,
+                       "transaction_broadcast":  false,
+                       "production_failover":  false,
+                       "private_data_movement":  false
+                   },
+    "lifecycle_state":  "active",
+    "ok":  true
+}
