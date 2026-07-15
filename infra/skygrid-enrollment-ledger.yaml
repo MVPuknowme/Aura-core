@@ -1,0 +1,78 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: SKYGRID Emergency Data On-Ramp shared single-use enrollment ledger
+
+Parameters:
+  TableName:
+    Type: String
+    Default: skygrid-enrollment-ledger
+    AllowedPattern: '[A-Za-z0-9_.-]+'
+  RuntimeRoleName:
+    Type: String
+    Default: skygrid-deployment-broker-runtime
+    AllowedPattern: '[A-Za-z0-9+=,.@_-]+'
+
+Resources:
+  EnrollmentLedger:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: !Ref TableName
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: enrollment_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: enrollment_id
+          KeyType: HASH
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+      TimeToLiveSpecification:
+        AttributeName: expires_epoch
+        Enabled: true
+      Tags:
+        - Key: Service
+          Value: SKYGRID Emergency Data On-Ramp
+        - Key: Component
+          Value: Deployment Broker
+        - Key: DataClassification
+          Value: controlled-pilot-metadata
+
+  DeploymentBrokerRuntimeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref RuntimeRoleName
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: EnrollmentLedgerConditionalAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: EnrollmentLedgerReadWrite
+                Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                Resource: !GetAtt EnrollmentLedger.Arn
+
+Outputs:
+  EnrollmentLedgerTableName:
+    Value: !Ref EnrollmentLedger
+  EnrollmentLedgerTableArn:
+    Value: !GetAtt EnrollmentLedger.Arn
+  DeploymentBrokerRuntimeRoleArn:
+    Value: !GetAtt DeploymentBrokerRuntimeRole.Arn
+  RequiredEnvironment:
+    Value: !Sub 'SKYGRID_ENROLLMENT_DYNAMODB_TABLE=${EnrollmentLedger};AWS_REGION=${AWS::Region}'
