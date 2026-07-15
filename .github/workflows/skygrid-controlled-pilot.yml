@@ -72,10 +72,22 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          # Start runtime as background process and capture PID
-          $p = Start-Process -FilePath "pnpm.cmd" -ArgumentList "run","local:runtime" -RedirectStandardOutput "runtime.log" -RedirectStandardError "runtime-error.log" -PassThru
-          $p.Id | Out-File -FilePath "$env:RUNNER_TEMP\skygrid_pid" -Encoding ascii
+          $node = (Get-Command node.exe -ErrorAction Stop).Source
+          $script = Join-Path $PWD.Path "scripts\skygrid-local-runtime-server.mjs"
 
+          $p = Start-Process `
+            -FilePath $node `
+            -ArgumentList $script `
+            -WorkingDirectory $PWD.Path `
+            -RedirectStandardOutput "runtime.log" `
+            -RedirectStandardError "runtime-error.log" `
+            -PassThru
+
+          $p.Id | Out-File `
+            -FilePath "$env:RUNNER_TEMP\skygrid_pid" `
+            -Encoding ascii
+
+          Write-Host "Started SKYGRID runtime PID $($p.Id)"
       - name: Wait for SKYGRID health (Ubuntu)
         if: runner.os == 'Linux'
         run: |
@@ -95,22 +107,54 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Write-Host "Waiting for http://127.0.0.1:3000/api/health to return 200..."
+          Write-Host "Waiting for SKYGRID runtime health..."
+
           $ok = $false
-          for ($i=0; $i -lt 60; $i++) {
-            try {
-              $r = Invoke-WebRequest -UseBasicParsing -NoProxy -Uri 'http://127.0.0.1:3000/api/health' -TimeoutSec 5 -ErrorAction Stop
-              if ($r.StatusCode -eq 200) { $ok = $true; break }
-            } catch {}
+
+          for ($i = 0; $i -lt 60; $i++) {
+            $status = & curl.exe `
+              --noproxy "*" `
+              --silent `
+              --show-error `
+              --output NUL `
+              --write-out "%{http_code}" `
+              "http://127.0.0.1:3000/api/health"
+
+            if ($status -eq "200") {
+              $ok = $true
+              break
+            }
+
             Start-Sleep -Seconds 2
           }
-          if (-not $ok) {
-            Write-Host "runtime did not become healthy in time"
-            if (Test-Path runtime.log) { Get-Content runtime.log -Tail 200 }
-            Exit 1
-          }
-          Write-Host "runtime healthy"
 
+          if (-not $ok) {
+            Write-Host "Runtime did not become healthy."
+
+            if (Test-Path runtime.log) {
+              Write-Host "--- runtime.log ---"
+              Get-Content runtime.log -Tail 200
+            }
+
+            if (Test-Path runtime-error.log) {
+              Write-Host "--- runtime-error.log ---"
+              Get-Content runtime-error.log -Tail 200
+            }
+
+            $pidPath = "$env:RUNNER_TEMP\skygrid_pid"
+
+            if (Test-Path $pidPath) {
+              $runtimePid = Get-Content $pidPath
+
+              Get-Process `
+                -Id $runtimePid `
+                -ErrorAction SilentlyContinue
+            }
+
+            exit 1
+          }
+
+          Write-Host "SKYGRID runtime healthy"
       - name: Training drill
         run: pnpm run training:drill -- --base-url=http://127.0.0.1:3000 --out-dir=training/receipts/ci-${{ runner.os }}
 
