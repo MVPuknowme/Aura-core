@@ -1,0 +1,110 @@
+name: SKYGRID Deployment Broker Pilot
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "api/deployment-broker*.mjs"
+      - "lib/deployment-enrollment-ledger.mjs"
+      - "lib/skygrid-dynamodb-client.mjs"
+      - "postman/skygrid-deployment-broker.collection.json"
+      - "scripts/prove-concurrent-enrollment-redemption.mjs"
+      - "scripts/sanitize-newman-report.mjs"
+      - "tests/skygrid-deployment-broker.test.mjs"
+      - "tests/skygrid-dynamodb-enrollment-ledger.test.mjs"
+      - ".github/workflows/skygrid-deployment-broker-pilot.yml"
+  push:
+    branches:
+      - feature/pilot-evidence-ledger
+    paths:
+      - "api/deployment-broker*.mjs"
+      - "lib/deployment-enrollment-ledger.mjs"
+      - "lib/skygrid-dynamodb-client.mjs"
+      - "postman/skygrid-deployment-broker.collection.json"
+      - "scripts/prove-concurrent-enrollment-redemption.mjs"
+      - "scripts/sanitize-newman-report.mjs"
+      - "tests/skygrid-deployment-broker.test.mjs"
+      - "tests/skygrid-dynamodb-enrollment-ledger.test.mjs"
+      - ".github/workflows/skygrid-deployment-broker-pilot.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  controlled-pilot-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SKYGRID_DEPLOYMENT_BROKER_SECRET: ci-only-broker-secret-0123456789abcdef0123456789abcdef
+      SKYGRID_DEPLOYMENT_ADMIN_KEY: ci-only-admin-key-0123456789abcdef
+      SKYGRID_DEPLOYMENT_ORIGIN: http://127.0.0.1:3000
+      SKYGRID_ENROLLMENT_LEDGER_DIR: ${{ github.workspace }}/.tmp/skygrid-enrollment-ledger
+      SKYGRID_WINDOWS_X64_URL: https://artifacts.invalid/skygrid-node-test.msi
+      SKYGRID_WINDOWS_X64_SHA256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      SKYGRID_TEST_BASE_URL: http://127.0.0.1:3000
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: npm exec --yes --package=pnpm@10.23.0 -- pnpm install --frozen-lockfile
+
+      - name: Run Node contract tests
+        run: |
+          node --test tests/skygrid-deployment-broker.test.mjs
+          node --test tests/skygrid-dynamodb-enrollment-ledger.test.mjs
+          node --test tests/skygrid-intake-policy.test.mjs
+
+      - name: Start controlled-pilot runtime
+        run: |
+          mkdir -p "$SKYGRID_ENROLLMENT_LEDGER_DIR" evidence/deployment-broker
+          npm exec --yes --package=pnpm@10.23.0 -- pnpm run local:runtime > .tmp/skygrid-runtime.log 2>&1 &
+          echo $! > .tmp/skygrid-runtime.pid
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:3000/api/deployment-broker/health > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat .tmp/skygrid-runtime.log
+          exit 1
+
+      - name: Run Newman negative and lifecycle regression
+        run: |
+          npx --yes newman run postman/skygrid-deployment-broker.collection.json \
+            --env-var "base_url=http://127.0.0.1:3000" \
+            --env-var "admin_key=$SKYGRID_DEPLOYMENT_ADMIN_KEY" \
+            --env-var "expected_ledger_adapter=atomic_filesystem" \
+            --reporters "cli,json" \
+            --reporter-json-export .tmp/newman-deployment-broker-results.json
+
+      - name: Produce sanitized Newman receipt
+        run: node scripts/sanitize-newman-report.mjs .tmp/newman-deployment-broker-results.json evidence/deployment-broker/newman-deployment-broker-proof-ci.json
+
+      - name: Prove concurrent single-use enforcement
+        run: node scripts/prove-concurrent-enrollment-redemption.mjs evidence/deployment-broker/concurrent-redemption-proof-ci.json
+
+      - name: Verify evidence contains no configured secrets
+        run: |
+          ! grep -R --fixed-strings "$SKYGRID_DEPLOYMENT_ADMIN_KEY" evidence/deployment-broker
+          ! grep -R --fixed-strings "$SKYGRID_DEPLOYMENT_BROKER_SECRET" evidence/deployment-broker
+
+      - name: Upload sanitized controlled-pilot evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: skygrid-deployment-broker-sanitized-evidence
+          path: evidence/deployment-broker/*-ci.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Stop runtime
+        if: always()
+        run: |
+          if [ -f .tmp/skygrid-runtime.pid ]; then
+            kill "$(cat .tmp/skygrid-runtime.pid)" || true
+          fi
