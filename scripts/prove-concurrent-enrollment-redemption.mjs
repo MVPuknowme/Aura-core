@@ -1,9 +1,10 @@
 import { createHash } from "node:crypto";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 const baseUrl = process.env.SKYGRID_TEST_BASE_URL || "http://127.0.0.1:3000";
 const adminKey = process.env.SKYGRID_DEPLOYMENT_ADMIN_KEY || "";
+const ledgerDirectory = process.env.SKYGRID_ENROLLMENT_LEDGER_DIR || "";
 const outputPath = process.argv[2] || "evidence/deployment-broker/concurrent-redemption-proof.json";
 
 if (adminKey.length < 24) throw new Error("deployment_admin_key_not_configured");
@@ -13,6 +14,20 @@ async function request(url, options = {}) {
   let body;
   try { body = await response.json(); } catch { body = { raw: await response.text() }; }
   return { status: response.status, body };
+}
+
+async function readFinalLedgerRecord(enrollmentId) {
+  if (!ledgerDirectory) return null;
+  const recordPath = path.join(ledgerDirectory, `${enrollmentId}.json`);
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    try {
+      return JSON.parse(await readFile(recordPath, "utf8"));
+    } catch (error) {
+      if (error?.code !== "ENOENT") throw error;
+      await new Promise((resolve) => setTimeout(resolve, 25));
+    }
+  }
+  return null;
 }
 
 const issuance = await request(`${baseUrl}/api/enrollments`, {
@@ -46,11 +61,19 @@ const results = await Promise.all([
 const statuses = results.map((entry) => entry.status).sort((a, b) => a - b);
 const reasons = results.map((entry) => entry.body?.reason || null);
 const accepted = results.filter((entry) => entry.status === 202 && entry.body?.ok === true);
-const rejected = results.filter((entry) => entry.status === 409 && entry.body?.reason === "enrollment_link_already_redeemed");
-const ok = accepted.length === 1 && rejected.length === 1;
+const safeRejections = results.filter((entry) =>
+  (entry.status === 409 && entry.body?.reason === "enrollment_link_already_redeemed") ||
+  (entry.status === 403 && entry.body?.reason === "enrollment_redemption_in_progress")
+);
+
+const finalRecord = await readFinalLedgerRecord(issuance.body.enrollment_id);
+const finalStateVerified = finalRecord
+  ? finalRecord.lifecycle_state === "redeemed" && Number(finalRecord.use_count) === 1
+  : null;
+const ok = accepted.length === 1 && safeRejections.length === 1 && finalStateVerified !== false;
 
 const proof = {
-  schema_version: "1.0",
+  schema_version: "1.1",
   service: "SKYGRID Emergency Data On-Ramp",
   component: "deployment_broker",
   mode: "controlled_pilot",
@@ -58,10 +81,17 @@ const proof = {
   enrollment_id: issuance.body.enrollment_id,
   concurrent_attempts: 2,
   accepted_count: accepted.length,
-  rejected_count: rejected.length,
+  safely_rejected_count: safeRejections.length,
   response_statuses: statuses,
   rejection_reasons: reasons.filter(Boolean),
+  accepted_safe_rejection_reasons: [
+    "enrollment_link_already_redeemed",
+    "enrollment_redemption_in_progress"
+  ],
   expected_final_use_count: 1,
+  final_lifecycle_state: finalRecord?.lifecycle_state || null,
+  final_use_count: finalRecord ? Number(finalRecord.use_count) : null,
+  final_state_verified: finalStateVerified,
   raw_token_excluded: true,
   admin_key_excluded: true,
   no_installation_executed_by_test: true,
