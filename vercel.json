@@ -39,6 +39,10 @@
     { "source": "/api/build-pad/quote", "destination": "/api/runtime" },
     { "source": "/api/node-lease/intake", "destination": "/api/runtime" },
     { "source": "/api/failover/status", "destination": "/api/runtime" },
-    { "source": "/api/panels/summary", "destination": "/api/runtime" }
+    { "source": "/api/panels/summary", "destination": "/api/runtime" },
+    { "source": "/api/deployment-broker/health", "destination": "/api/deployment-broker" },
+    { "source": "/api/enrollments", "destination": "/api/deployment-broker" },
+    { "source": "/enroll/:token", "destination": "/api/deployment-broker?action=view&token=:token" },
+    { "source": "/api/enrollments/:token/redeem", "destination": "/api/deployment-broker?action=redeem&token=:token" }
   ]
 }
