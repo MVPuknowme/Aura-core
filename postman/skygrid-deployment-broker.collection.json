@@ -52,7 +52,16 @@
       ] }}]
     },
     {
-      "name": "05 Issue one-time enrollment",
+      "name": "05 Reject malformed issuance JSON",
+      "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "X-SKYGRID-Admin-Key", "value": "{{admin_key}}" }], "body": { "mode": "raw", "raw": "{\"allowed_platforms\":[\"windows-x64\"]" }, "url": "{{base_url}}/api/enrollments" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Malformed issuance JSON returns 400', () => pm.response.to.have.status(400));",
+        "const body = pm.response.json();",
+        "pm.test('Malformed issuance fails closed', () => { pm.expect(body.ok).to.eql(false); pm.expect(body.reason).to.eql('malformed_json_body'); pm.expect(body.no_enrollment_issued).to.eql(true); });"
+      ] }}]
+    },
+    {
+      "name": "06 Issue one-time enrollment",
       "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "X-SKYGRID-Admin-Key", "value": "{{admin_key}}" }], "body": { "mode": "raw", "raw": "{\n  \"organization_id\": \"skygrid-postman-pilot\",\n  \"engineer_email\": \"mvpuknowme@skygrid-protocol.net\",\n  \"deployment_profile\": \"diagnostic\",\n  \"allowed_platforms\": [\"{{allowed_platform}}\"],\n  \"ttl_seconds\": 3600\n}" }, "url": "{{base_url}}/api/enrollments" },
       "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
         "pm.test('Enrollment is issued', () => pm.response.to.have.status(201));",
@@ -62,7 +71,7 @@
       ] }}]
     },
     {
-      "name": "06 Reject tampered token",
+      "name": "07 Reject tampered token",
       "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"platform\":\"{{allowed_platform}}\"}" }, "url": "{{base_url}}/api/enrollments/{{tampered_token}}/redeem" },
       "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
         "pm.test('Tampered token is rejected', () => pm.response.to.have.status(403));",
@@ -70,7 +79,16 @@
       ] }}]
     },
     {
-      "name": "07 Reject unauthorized platform",
+      "name": "08 Reject malformed redemption JSON",
+      "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"platform\":\"{{allowed_platform}}\"" }, "url": "{{base_url}}/api/enrollments/{{enrollment_token}}/redeem" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Malformed redemption JSON returns 400', () => pm.response.to.have.status(400));",
+        "const body = pm.response.json();",
+        "pm.test('Malformed redemption fails closed', () => { pm.expect(body.ok).to.eql(false); pm.expect(body.reason).to.eql('malformed_json_body'); pm.expect(body.no_installation_executed).to.eql(true); });"
+      ] }}]
+    },
+    {
+      "name": "09 Reject unauthorized platform",
       "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"platform\":\"linux-x64\"}" }, "url": "{{base_url}}/api/enrollments/{{enrollment_token}}/redeem" },
       "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
         "pm.test('Unauthorized platform is rejected', () => pm.response.to.have.status(403));",
@@ -78,7 +96,7 @@
       ] }}]
     },
     {
-      "name": "08 Redeem enrollment once",
+      "name": "10 Redeem enrollment once",
       "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"platform\":\"{{allowed_platform}}\"}" }, "url": "{{base_url}}/api/enrollments/{{enrollment_token}}/redeem" },
       "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
         "pm.test('First redemption is accepted', () => pm.response.to.have.status(202));",
@@ -86,7 +104,7 @@
       ] }}]
     },
     {
-      "name": "09 Reject enrollment reuse",
+      "name": "11 Reject enrollment reuse",
       "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"platform\":\"{{allowed_platform}}\"}" }, "url": "{{base_url}}/api/enrollments/{{enrollment_token}}/redeem" },
       "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
         "pm.test('Second redemption is rejected', () => pm.response.to.have.status(409));",
