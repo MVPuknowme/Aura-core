@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "service": "SKYGRID Emergency Data On-Ramp",
+  "component": "deployment_broker",
+  "mode": "controlled_pilot",
+  "event_type": "postman_regression_completed",
+  "collection": "skygrid-deployment-broker.collection.json",
+  "source_report_sha256": "72C1BBE7B7716AA0A54046B649DEA3BB3801AD02BC786B4AA777C7A7FF7BC8D0",
+  "requests_executed": 9,
+  "requests_failed": 0,
+  "assertions_executed": 21,
+  "assertions_failed": 0,
+  "iterations_executed": 1,
+  "request_names": [
+    "01 Health and schema",
+    "02 Reject issuance without admin key",
+    "03 Reject issuance with wrong admin key",
+    "04 Reject wrong method",
+    "05 Issue one-time enrollment",
+    "06 Reject tampered token",
+    "07 Reject unauthorized platform",
+    "08 Redeem enrollment once",
+    "09 Reject enrollment reuse"
+  ],
+  "secrets_removed": [
+    "admin keys",
+    "authorization headers",
+    "collection and environment variable values",
+    "raw enrollment URLs",
+    "enrollment tokens",
+    "request and response bodies"
+  ],
+  "raw_tokens_excluded_from_receipt": true,
+  "recorded_at": "2026-07-15T21:44:16.607Z",
+  "ok": true
+}

@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0",
+  "service": "SKYGRID Emergency Data On-Ramp",
+  "component": "controlled_pilot_evidence",
+  "event_type": "controlled_pilot_manifest_built",
+  "source_commit": "17c3a4933fff15bb5957ca2e5331e05e2aac0ecd",
+  "artifact_count": 5,
+  "artifacts": [
+    {
+      "path": "evidence/deployment-broker/concurrent-redemption-proof.json",
+      "sha256": "86741C4B30D982118194B73553E826B65E2097C49B54EEDF2FCAC96778640911",
+      "bytes": 874,
+      "event_type": "concurrent_enrollment_redemption_tested",
+      "ok": true,
+      "token_redacted": true
+    },
+    {
+      "path": "evidence/deployment-broker/enrollment-1738b382-d6fd-4dc4-8933-ba967ebb0ed4-issuance.json",
+      "sha256": "B11A1B53A478394FD0C96DCA4A3BF2402242920A05C4B3734BF46F35B6B45195",
+      "bytes": 716,
+      "event_type": "engineer_enrollment_issued",
+      "ok": true,
+      "token_redacted": true
+    },
+    {
+      "path": "evidence/deployment-broker/enrollment-dd103641-d713-4cd7-858f-9f20edad19f2-reuse-rejection.json",
+      "sha256": "C0C33DC69DD8FE30036C5898D4737923CD751850CE147132764EAEDDF5DA38EB",
+      "bytes": 507,
+      "event_type": "enrollment_reuse_rejected",
+      "ok": true,
+      "token_redacted": null
+    },
+    {
+      "path": "evidence/deployment-broker/newman-deployment-broker-proof-expanded.json",
+      "sha256": "6A9EB5264E8317388078425A94F69E3B7390BF2368D07A9501D8875BFDB51BBE",
+      "bytes": 1141,
+      "event_type": "postman_regression_completed",
+      "ok": true,
+      "token_redacted": true
+    },
+    {
+      "path": "evidence/deployment-broker/newman-deployment-broker-proof.json",
+      "sha256": "32E6AB39AE94957E7A9E066DD4D1C857A52DE61E177CDD7ACDEB10A51458CA3B",
+      "bytes": 641,
+      "event_type": "postman_regression_completed",
+      "ok": true,
+      "token_redacted": true
+    }
+  ],
+  "exclusions": [
+    "raw Newman execution reports",
+    "console logs",
+    "ledger records",
+    "admin keys",
+    "enrollment tokens"
+  ],
+  "generated_at": "2026-07-15T21:46:31.149Z",
+  "ok": true
+}

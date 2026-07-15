@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.1",
+  "service": "SKYGRID Emergency Data On-Ramp",
+  "component": "deployment_broker",
+  "mode": "controlled_pilot",
+  "event_type": "concurrent_enrollment_redemption_tested",
+  "enrollment_id": "36e9ac01-ea00-4be5-9233-6267ceb0c216",
+  "concurrent_attempts": 2,
+  "accepted_count": 1,
+  "safely_rejected_count": 1,
+  "response_statuses": [
+    202,
+    403
+  ],
+  "rejection_reasons": [
+    "enrollment_redemption_in_progress"
+  ],
+  "accepted_safe_rejection_reasons": [
+    "enrollment_link_already_redeemed",
+    "enrollment_redemption_in_progress"
+  ],
+  "expected_final_use_count": 1,
+  "final_lifecycle_state": "redeemed",
+  "final_use_count": 1,
+  "final_state_verified": true,
+  "raw_token_excluded": true,
+  "admin_key_excluded": true,
+  "no_installation_executed_by_test": true,
+  "recorded_at": "2026-07-15T21:46:18.271Z",
+  "ok": true
+}
