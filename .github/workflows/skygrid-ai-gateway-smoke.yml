@@ -11,8 +11,8 @@ jobs:
     runs-on: windows-latest
 
     env:
-      AI_GATEWAY_API_KEY: ${{ secrets.AI_GATEWAY_API_KEY }}
-      AI_GATEWAY_MODEL: openai/gpt-4o-mini
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_MODEL: gpt-4o-mini
 
     steps:
       - name: Checkout
@@ -33,3 +33,5 @@ jobs:
 
       - name: Run SKYGRID AI Gateway smoke
         run: node ./scripts/ai-gateway-smoke.mjs
+
+

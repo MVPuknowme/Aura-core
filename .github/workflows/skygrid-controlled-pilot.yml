@@ -64,17 +64,8 @@ jobs:
       - name: Start SKYGRID local runtime (Ubuntu)
         if: runner.os == 'Linux'
         run: |
-          # start runtime in background and capture PID
           nohup pnpm run local:runtime > runtime.log 2>&1 &
           echo $! > /tmp/skygrid_pid
-
-      - name: Start SKYGRID local runtime (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          # Start runtime as background process and capture PID
-          $p = Start-Process -FilePath "pnpm.cmd" -ArgumentList "run","local:runtime" -RedirectStandardOutput "runtime.log" -RedirectStandardError "runtime-error.log" -PassThru
-          $p.Id | Out-File -FilePath "$env:RUNNER_TEMP\skygrid_pid" -Encoding ascii
 
       - name: Wait for SKYGRID health (Ubuntu)
         if: runner.os == 'Linux'
@@ -91,76 +82,133 @@ jobs:
           cat runtime.log || true
           exit 1
 
-      - name: Wait for SKYGRID health (Windows)
+      - name: Training drill - accepted paths (Ubuntu)
+        if: runner.os == 'Linux'
+        run: >-
+          pnpm run training:drill --
+          --base-url=http://127.0.0.1:3000
+          --scenario-file=training/scenarios/skygrid-auto-drill-v1.json
+          --out-dir=training/receipts/ci-${{ runner.os }}
+          --run-id=accepted-paths
+
+      - name: Training drill - fail-closed paths (Ubuntu)
+        if: runner.os == 'Linux'
+        run: >-
+          pnpm run training:fail-closed --
+          --base-url=http://127.0.0.1:3000
+          --scenario-file=training/scenarios/skygrid-fail-closed-v1.json
+          --out-dir=training/receipts/ci-${{ runner.os }}
+          --run-id=fail-closed
+
+      - name: Verify training receipts (Ubuntu)
+        if: runner.os == 'Linux'
+        run: >-
+          pnpm run training:verify-receipts --
+          --dir=training/receipts/ci-${{ runner.os }}
+
+      - name: Run Windows runtime and training drills
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Write-Host "Waiting for http://127.0.0.1:3000/api/health to return 200..."
-          $ok = $false
-          for ($i=0; $i -lt 60; $i++) {
-            try {
-              $r = Invoke-WebRequest -UseBasicParsing -NoProxy -Uri 'http://127.0.0.1:3000/api/health' -TimeoutSec 5 -ErrorAction Stop
-              if ($r.StatusCode -eq 200) { $ok = $true; break }
-            } catch {}
-            Start-Sleep -Seconds 2
+          $ErrorActionPreference = "Stop"
+
+          $node = (Get-Command node.exe -ErrorAction Stop).Source
+          $script = Join-Path $PWD.Path "scripts\skygrid-local-runtime-server.mjs"
+          $stdout = Join-Path $PWD.Path "runtime.log"
+          $stderr = Join-Path $PWD.Path "runtime-error.log"
+          $receiptDir = "training/receipts/ci-${{ runner.os }}"
+
+          $runtime = Start-Process `
+            -FilePath $node `
+            -ArgumentList $script `
+            -WorkingDirectory $PWD.Path `
+            -RedirectStandardOutput $stdout `
+            -RedirectStandardError $stderr `
+            -PassThru
+
+          try {
+            Write-Host "Started SKYGRID runtime PID $($runtime.Id)"
+            Write-Host "Waiting for SKYGRID runtime health..."
+
+            $healthy = $false
+            for ($i = 0; $i -lt 60; $i++) {
+              if ($runtime.HasExited) {
+                break
+              }
+
+              $status = & curl.exe `
+                --noproxy "*" `
+                --silent `
+                --show-error `
+                --output NUL `
+                --write-out "%{http_code}" `
+                "http://127.0.0.1:3000/api/health"
+
+              if ($status -eq "200") {
+                $healthy = $true
+                break
+              }
+
+              Start-Sleep -Seconds 2
+            }
+
+            if (-not $healthy) {
+              Write-Host "Runtime did not become healthy."
+              Write-Host "Process exited: $($runtime.HasExited)"
+
+              if ($runtime.HasExited) {
+                Write-Host "Process exit code: $($runtime.ExitCode)"
+              }
+
+              if (Test-Path $stdout) {
+                Write-Host "--- runtime.log ---"
+                Get-Content $stdout -Tail 200
+              }
+
+              if (Test-Path $stderr) {
+                Write-Host "--- runtime-error.log ---"
+                Get-Content $stderr -Tail 200
+              }
+
+              throw "SKYGRID Windows runtime health check failed."
+            }
+
+            Write-Host "SKYGRID runtime healthy"
+
+            & pnpm run training:drill -- `
+              --base-url=http://127.0.0.1:3000 `
+              --scenario-file=training/scenarios/skygrid-auto-drill-v1.json `
+              --out-dir=$receiptDir `
+              --run-id=accepted-paths
+
+            if ($LASTEXITCODE -ne 0) {
+              throw "Accepted-path training drill failed with exit code $LASTEXITCODE."
+            }
+
+            & pnpm run training:fail-closed -- `
+              --base-url=http://127.0.0.1:3000 `
+              --scenario-file=training/scenarios/skygrid-fail-closed-v1.json `
+              --out-dir=$receiptDir `
+              --run-id=fail-closed
+
+            if ($LASTEXITCODE -ne 0) {
+              throw "Fail-closed training drill failed with exit code $LASTEXITCODE."
+            }
+
+            & pnpm run training:verify-receipts -- --dir=$receiptDir
+
+            if ($LASTEXITCODE -ne 0) {
+              throw "Training receipt verification failed with exit code $LASTEXITCODE."
+            }
           }
-          if (-not $ok) {
-            Write-Host "runtime did not become healthy in time"
-            if (Test-Path runtime.log) { Get-Content runtime.log -Tail 200 }
-            Exit 1
-          }
-          Write-Host "runtime healthy"
-
-      - name: Training drill
-        run: pnpm run training:drill -- --base-url=http://127.0.0.1:3000 --out-dir=training/receipts/ci-${{ runner.os }}
-
-      - name: Verify training receipts and drill results
-        shell: bash
-        run: |
-          node -e "
-          const fs = require('fs');
-          const path = require('path');
-
-          const dir = path.join(
-            process.cwd(),
-            'training',
-            'receipts',
-            'ci-${{ runner.os }}'
-          );
-
-          if (!fs.existsSync(dir)) {
-            console.error('CI receipt directory not found:', dir);
-            process.exit(1);
+          finally {
+            if ($runtime -and -not $runtime.HasExited) {
+              Write-Host "Stopping SKYGRID runtime PID $($runtime.Id)"
+              Stop-Process -Id $runtime.Id -Force -ErrorAction SilentlyContinue
+              $runtime.WaitForExit(10000) | Out-Null
+            }
           }
 
-          const files = fs.readdirSync(dir)
-            .filter((file) => file.endsWith('.json'));
-
-          if (files.length !== 1) {
-            console.error('Expected exactly one current-run receipt, found:', files.length);
-            process.exit(1);
-          }
-
-          const receipt = JSON.parse(
-            fs.readFileSync(path.join(dir, files[0]), 'utf8')
-          );
-
-          if (receipt.ok !== true) {
-            console.error('Receipt reports ok !== true');
-            process.exit(1);
-          }
-
-          if (
-            receipt.summary?.scenarios !== 5 ||
-            receipt.summary?.passed !== 5 ||
-            receipt.summary?.failed !== 0
-          ) {
-            console.error('Training drill result is not 5/5:', receipt.summary);
-            process.exit(1);
-          }
-
-          console.log('Training drill verified: 5/5');
-          "
       - name: Create controlled-pilot summary
         if: always()
         run: |
@@ -169,7 +217,9 @@ jobs:
           echo "Autodrill result" >> $GITHUB_STEP_SUMMARY
           echo "Emergency-gate result" >> $GITHUB_STEP_SUMMARY
           echo "Intake-policy result" >> $GITHUB_STEP_SUMMARY
-          echo "Training-drill result" >> $GITHUB_STEP_SUMMARY
+          echo "Accepted-path training: 5 scenarios" >> $GITHUB_STEP_SUMMARY
+          echo "Fail-closed training: 11 scenarios" >> $GITHUB_STEP_SUMMARY
+          echo "Combined training target: 16/16" >> $GITHUB_STEP_SUMMARY
           echo "Controlled-pilot status: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload training receipts (always)
@@ -188,14 +238,3 @@ jobs:
             echo "Killing $PID"
             kill $PID || true
           fi
-
-      - name: Stop SKYGRID runtime (Windows)
-        if: runner.os == 'Windows' && always()
-        shell: pwsh
-        run: |
-          $pfile = "$env:RUNNER_TEMP\skygrid_pid"
-          if (Test-Path $pfile) {
-            $runtimePid = [int](Get-Content $pfile)
-            Write-Host "Stopping process $runtimePid"
-            Stop-Process -Id $runtimePid -ErrorAction SilentlyContinue
-          }
