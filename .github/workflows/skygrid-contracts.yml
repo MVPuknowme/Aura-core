@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   forge-test:
@@ -26,8 +26,10 @@ jobs:
         working-directory: contracts/skygrid-funding
 
     steps:
-      - name: Check out repository
+      - name: Check out pull-request branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
@@ -49,15 +51,20 @@ jobs:
       - name: Format Solidity sources
         run: forge fmt
 
-      - name: Upload formatted Solidity sources
-        uses: actions/upload-artifact@v4
-        with:
-          name: skygrid-formatted-solidity
-          path: |
-            contracts/skygrid-funding/src
-            contracts/skygrid-funding/test
-          if-no-files-found: error
-          retention-days: 1
+      - name: Commit Foundry formatting
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- src test; then
+            echo "Solidity sources already formatted."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src test
+          git commit -m "Format SKYGRID funding contracts"
+          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
 
       - name: Run unit, fuzz, and invariant tests
         run: forge test -vvv
