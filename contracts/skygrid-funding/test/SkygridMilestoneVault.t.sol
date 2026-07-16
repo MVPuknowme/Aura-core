@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import {StdInvariant} from "forge-std/StdInvariant.sol";
-import {Test} from "forge-std/Test.sol";
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { StdInvariant } from "forge-std/StdInvariant.sol";
+import { Test } from "forge-std/Test.sol";
+import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import {SkygridMilestoneVault} from "../src/SkygridMilestoneVault.sol";
+import { SkygridMilestoneVault } from "../src/SkygridMilestoneVault.sol";
 
 contract MockUSDC is ERC20 {
-    constructor() ERC20("Mock USD Coin", "mUSDC") {}
+    constructor() ERC20("Mock USD Coin", "mUSDC") { }
 
     function decimals() public pure override returns (uint8) {
         return 6;
@@ -194,10 +194,7 @@ contract SkygridMilestoneVaultTest is Test {
         vm.warp(uint256(firstDeadline) + 1);
         vm.prank(sponsor);
         vm.expectRevert(
-            abi.encodeWithSelector(
-                SkygridMilestoneVault.MilestoneAlreadyResolved.selector,
-                0
-            )
+            abi.encodeWithSelector(SkygridMilestoneVault.MilestoneAlreadyResolved.selector, 0)
         );
         vault.refundMilestone(0);
     }
@@ -241,7 +238,7 @@ contract SkygridMilestoneVaultTest is Test {
     function testRejectsNativeCurrency() public {
         vm.deal(address(this), 1 ether);
 
-        (bool success, bytes memory revertData) = address(vault).call{value: 1 ether}("");
+        (bool success, bytes memory revertData) = address(vault).call{ value: 1 ether }("");
 
         assertFalse(success);
         assertEq(bytes4(revertData), SkygridMilestoneVault.NativeCurrencyNotAccepted.selector);
@@ -308,7 +305,7 @@ contract SkygridVaultHandler is Test {
         if (approvalRef == bytes32(0)) approvalRef = bytes32(uint256(2));
 
         vm.prank(approver);
-        try vault.releaseMilestone(milestoneId, evidenceHash, approvalRef) {} catch {}
+        try vault.releaseMilestone(milestoneId, evidenceHash, approvalRef) { } catch { }
     }
 
     function refund(uint256 rawId) external {
@@ -322,7 +319,7 @@ contract SkygridVaultHandler is Test {
         ) return;
 
         vm.prank(sponsor);
-        try vault.refundMilestone(milestoneId) {} catch {}
+        try vault.refundMilestone(milestoneId) { } catch { }
     }
 }
 
@@ -380,8 +377,8 @@ contract SkygridMilestoneVaultInvariantTest is StdInvariant, Test {
     }
 
     function invariantBudgetIsAlwaysConserved() public {
-        uint256 accounted = token.balanceOf(address(vault)) + vault.totalReleased()
-            + vault.totalRefunded();
+        uint256 accounted =
+            token.balanceOf(address(vault)) + vault.totalReleased() + vault.totalRefunded();
         assertEq(accounted, vault.totalBudget());
     }
 

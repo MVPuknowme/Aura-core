@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import { AccessControl } from "@openzeppelin/contracts/access/AccessControl.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import { Pausable } from "@openzeppelin/contracts/utils/Pausable.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /// @title SKYGRID Milestone Vault
 /// @notice Holds one approved ERC-20 payment asset for a defined SKYGRID pilot and
@@ -64,7 +64,9 @@ contract SkygridMilestoneVault is AccessControl, Pausable, ReentrancyGuard {
         uint256 beneficiaryAmount
     );
     event MilestoneRefunded(uint256 indexed milestoneId, address indexed sponsor, uint256 amount);
-    event UnsupportedTokenRecovered(address indexed token, address indexed recipient, uint256 amount);
+    event UnsupportedTokenRecovered(
+        address indexed token, address indexed recipient, uint256 amount
+    );
 
     bytes32 public immutable projectId;
     IERC20 public immutable paymentToken;
@@ -123,7 +125,10 @@ contract SkygridMilestoneVault is AccessControl, Pausable, ReentrancyGuard {
         for (uint256 i; i < milestoneCount_; ++i) {
             uint128 amount = milestoneAmounts_[i];
             uint64 deadline = milestoneDeadlines_[i];
-            if (amount == 0 || deadline <= block.timestamp || (i > 0 && deadline <= previousDeadline)) {
+            if (
+                amount == 0 || deadline <= block.timestamp
+                    || (i > 0 && deadline <= previousDeadline)
+            ) {
                 revert InvalidMilestoneConfiguration();
             }
 
@@ -207,12 +212,7 @@ contract SkygridMilestoneVault is AccessControl, Pausable, ReentrancyGuard {
         if (fee != 0) paymentToken.safeTransfer(platformTreasury, fee);
 
         emit MilestoneReleased(
-            milestoneId,
-            evidenceHash,
-            approvalRef,
-            grossAmount,
-            fee,
-            beneficiaryAmount
+            milestoneId, evidenceHash, approvalRef, grossAmount, fee, beneficiaryAmount
         );
     }
 
@@ -252,7 +252,9 @@ contract SkygridMilestoneVault is AccessControl, Pausable, ReentrancyGuard {
         onlyRole(DEFAULT_ADMIN_ROLE)
         nonReentrant
     {
-        if (address(token) == address(paymentToken)) revert PaymentTokenRecoveryForbidden();
+        if (address(token) == address(paymentToken)) {
+            revert PaymentTokenRecoveryForbidden();
+        }
         if (recipient == address(0)) revert ZeroAddress();
 
         uint256 amount = token.balanceOf(address(this));
