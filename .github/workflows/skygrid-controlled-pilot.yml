@@ -76,64 +76,6 @@ jobs:
           echo "$!" > /tmp/skygrid_pid
           echo "Started SKYGRID runtime PID $(cat /tmp/skygrid_pid)"
 
-      - name: Start SKYGRID local runtime on Windows
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = "Stop"
-
-          $node = (Get-Command node.exe -ErrorAction Stop).Source
-          $script = Join-Path `
-            $env:GITHUB_WORKSPACE `
-            "scripts\skygrid-local-runtime-server.mjs"
-
-          $stdout = Join-Path `
-            $env:RUNNER_TEMP `
-            "skygrid-runtime.log"
-
-          $stderr = Join-Path `
-            $env:RUNNER_TEMP `
-            "skygrid-runtime-error.log"
-
-          $pidFile = Join-Path `
-            $env:RUNNER_TEMP `
-            "skygrid_pid"
-
-          Remove-Item `
-            $stdout, $stderr, $pidFile `
-            -Force `
-            -ErrorAction SilentlyContinue
-
-          # Preserve the runtime across GitHub Actions steps.
-          $env:RUNNER_TRACKING_ID = ""
-
-          $process = Start-Process `
-            -FilePath $node `
-            -ArgumentList @($script) `
-            -WorkingDirectory $env:GITHUB_WORKSPACE `
-            -RedirectStandardOutput $stdout `
-            -RedirectStandardError $stderr `
-            -PassThru
-
-          $process.Id |
-            Set-Content `
-              -LiteralPath $pidFile `
-              -Encoding ascii
-
-          "SKYGRID_RUNTIME_STDOUT=$stdout" |
-            Out-File `
-              -FilePath $env:GITHUB_ENV `
-              -Encoding utf8 `
-              -Append
-
-          "SKYGRID_RUNTIME_STDERR=$stderr" |
-            Out-File `
-              -FilePath $env:GITHUB_ENV `
-              -Encoding utf8 `
-              -Append
-
-          Write-Host "Started SKYGRID Node runtime PID $($process.Id)"
-
       - name: Wait for SKYGRID health on Ubuntu
         if: runner.os == 'Linux'
         shell: bash
@@ -160,101 +102,157 @@ jobs:
           cat runtime.log || true
           exit 1
 
-      - name: Wait for SKYGRID health on Windows
+      - name: Run Windows runtime and training drills
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
-          $pidFile = Join-Path `
+          $node = (Get-Command node.exe -ErrorAction Stop).Source
+          $pnpm = (Get-Command pnpm.cmd -ErrorAction Stop).Source
+
+          $script = Join-Path `
+            $env:GITHUB_WORKSPACE `
+            "scripts\skygrid-local-runtime-server.mjs"
+
+          $stdout = Join-Path `
             $env:RUNNER_TEMP `
-            "skygrid_pid"
+            "skygrid-runtime.log"
 
-          if (-not (Test-Path -LiteralPath $pidFile)) {
-            throw "SKYGRID runtime PID file was not created."
-          }
+          $stderr = Join-Path `
+            $env:RUNNER_TEMP `
+            "skygrid-runtime-error.log"
 
-          $runtimePid = [int](
-            Get-Content -LiteralPath $pidFile
-          )
+          $receiptDir = "training/receipts/ci-${{ runner.os }}"
 
-          $healthy = $false
+          Remove-Item `
+            $stdout, $stderr `
+            -Force `
+            -ErrorAction SilentlyContinue
 
-          Write-Host `
-            "Waiting for http://127.0.0.1:3000/api/health..."
+          $runtime = Start-Process `
+            -FilePath $node `
+            -ArgumentList @($script) `
+            -WorkingDirectory $env:GITHUB_WORKSPACE `
+            -RedirectStandardOutput $stdout `
+            -RedirectStandardError $stderr `
+            -PassThru
 
-          for ($attempt = 1; $attempt -le 60; $attempt++) {
-            $runtime = Get-Process `
-              -Id $runtimePid `
-              -ErrorAction SilentlyContinue
+          try {
+            Write-Host "Started SKYGRID runtime PID $($runtime.Id)"
+            Write-Host "Waiting for SKYGRID Windows runtime health..."
 
-            if (-not $runtime) {
-              Write-Host `
-                "Runtime process $runtimePid exited before becoming healthy."
-              break
-            }
+            $healthy = $false
 
-            try {
-              $response = Invoke-WebRequest `
-                -UseBasicParsing `
-                -Uri "http://127.0.0.1:3000/api/health" `
-                -TimeoutSec 2 `
-                -ErrorAction Stop
+            for ($attempt = 1; $attempt -le 60; $attempt++) {
+              if ($runtime.HasExited) {
+                Write-Host "Runtime exited with code $($runtime.ExitCode)."
+                break
+              }
 
-              if ($response.StatusCode -eq 200) {
+              $status = & curl.exe `
+                --noproxy "*" `
+                --silent `
+                --show-error `
+                --output NUL `
+                --write-out "%{http_code}" `
+                "http://127.0.0.1:3000/api/health"
+
+              if (
+                $LASTEXITCODE -eq 0 -and
+                $status -eq "200"
+              ) {
                 $healthy = $true
                 break
               }
-            }
-            catch {
-              Write-Host `
-                "Health attempt $attempt failed: $($_.Exception.Message)"
+
+              Write-Host "Health attempt $attempt returned: $status"
+              Start-Sleep -Seconds 2
             }
 
-            Start-Sleep -Seconds 2
+            if (-not $healthy) {
+              Write-Host "`n--- runtime stdout ---"
+
+              if (Test-Path -LiteralPath $stdout) {
+                Get-Content -LiteralPath $stdout -Tail 200
+              }
+
+              Write-Host "`n--- runtime stderr ---"
+
+              if (Test-Path -LiteralPath $stderr) {
+                Get-Content -LiteralPath $stderr -Tail 200
+              }
+
+              throw "SKYGRID Windows runtime did not become healthy."
+            }
+
+            Write-Host "SKYGRID Windows runtime healthy."
+
+            & $pnpm run training:drill -- `
+              "--base-url=http://127.0.0.1:3000" `
+              "--scenario-file=training/scenarios/skygrid-auto-drill-v1.json" `
+              "--out-dir=$receiptDir" `
+              "--run-id=accepted-paths"
+
+            if ($LASTEXITCODE -ne 0) {
+              throw "Accepted-path training drill failed."
+            }
+
+            & $pnpm run training:fail-closed -- `
+              "--base-url=http://127.0.0.1:3000" `
+              "--scenario-file=training/scenarios/skygrid-fail-closed-v1.json" `
+              "--out-dir=$receiptDir" `
+              "--run-id=fail-closed"
+
+            if ($LASTEXITCODE -ne 0) {
+              throw "Fail-closed training drill failed."
+            }
+
+            & $pnpm run training:verify-receipts -- `
+              "--dir=$receiptDir"
+
+            if ($LASTEXITCODE -ne 0) {
+              throw "Windows training receipt verification failed."
+            }
+
+            Write-Host "SKYGRID Windows controlled pilot verified: 16/16."
           }
-
-          if (-not $healthy) {
-            Write-Host "`n--- runtime stdout ---"
-
+          finally {
             if (
-              $env:SKYGRID_RUNTIME_STDOUT -and
-              (Test-Path -LiteralPath $env:SKYGRID_RUNTIME_STDOUT)
+              $runtime -and
+              -not $runtime.HasExited
             ) {
-              Get-Content `
-                -LiteralPath $env:SKYGRID_RUNTIME_STDOUT `
-                -Tail 200
-            }
-            else {
-              Write-Host "No runtime stdout file found."
+              Write-Host "Stopping SKYGRID runtime PID $($runtime.Id)"
+
+              Stop-Process `
+                -Id $runtime.Id `
+                -Force `
+                -ErrorAction SilentlyContinue
             }
 
-            Write-Host "`n--- runtime stderr ---"
+            Write-Host "`n--- final runtime stdout ---"
 
-            if (
-              $env:SKYGRID_RUNTIME_STDERR -and
-              (Test-Path -LiteralPath $env:SKYGRID_RUNTIME_STDERR)
-            ) {
-              Get-Content `
-                -LiteralPath $env:SKYGRID_RUNTIME_STDERR `
-                -Tail 200
-            }
-            else {
-              Write-Host "No runtime stderr file found."
+            if (Test-Path -LiteralPath $stdout) {
+              Get-Content -LiteralPath $stdout -Tail 200
             }
 
-            throw "SKYGRID Windows runtime health check failed."
+            Write-Host "`n--- final runtime stderr ---"
+
+            if (Test-Path -LiteralPath $stderr) {
+              Get-Content -LiteralPath $stderr -Tail 200
+            }
           }
-
-          Write-Host "SKYGRID Windows runtime healthy."
 
       - name: Accepted-path training drill
+        if: runner.os == 'Linux'
         run: pnpm run training:drill -- --base-url=http://127.0.0.1:3000 --scenario-file=training/scenarios/skygrid-auto-drill-v1.json --out-dir=training/receipts/ci-${{ runner.os }} --run-id=accepted-paths
 
       - name: Fail-closed training drill
+        if: runner.os == 'Linux'
         run: pnpm run training:fail-closed -- --base-url=http://127.0.0.1:3000 --scenario-file=training/scenarios/skygrid-fail-closed-v1.json --out-dir=training/receipts/ci-${{ runner.os }} --run-id=fail-closed
 
       - name: Verify training receipts
+        if: runner.os == 'Linux'
         run: pnpm run training:verify-receipts -- --dir=training/receipts/ci-${{ runner.os }}
 
       - name: Create controlled-pilot summary
