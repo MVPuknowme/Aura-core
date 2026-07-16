@@ -68,10 +68,183 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          # Start runtime as background process and capture PID
-          $p = Start-Process -FilePath "pnpm.cmd" -ArgumentList "run","local:runtime" -RedirectStandardOutput "runtime.log" -RedirectStandardError "runtime-error.log" -PassThru
-          $p.Id | Out-File -FilePath "$env:RUNNER_TEMP\skygrid_pid" -Encoding ascii
+          $ErrorActionPreference = "Stop"
 
+          $node = (Get-Command node.exe -ErrorAction Stop).Source
+          $script = Join-Path $env:GITHUB_WORKSPACE "scripts\skygrid-local-runtime-server.mjs"
+          $stdout = Join-Path $env:RUNNER_TEMP "skygrid-runtime.log"
+          $stderr = Join-Path $env:RUNNER_TEMP "skygrid-runtime-error.log"
+          $pidFile = Join-Path $env:RUNNER_TEMP "skygrid_pid"
+
+          Remove-Item $stdout, $stderr, $pidFile -Force -ErrorAction SilentlyContinue
+
+          $process = Start-Process `
+            -FilePath $node `
+            -ArgumentList @($script) `
+            -WorkingDirectory $env:GITHUB_WORKSPACE `
+            -RedirectStandardOutput $stdout `
+            -RedirectStandardError $stderr `
+            -PassThru
+
+          $process.Id | Set-Content -Path $pidFile -Encoding ascii
+
+          "SKYGRID_RUNTIME_STDOUT=$stdout" |
+            Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+          "SKYGRID_RUNTIME_STDERR=$stderr" |
+            Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+          Write-Host "Started SKYGRID Node runtime PID $($process.Id)"
+      - name: Wait for SKYGRID health (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          echo "Waiting for http://127.0.0.1:3000/api/health to return 200..."
+          for i in {1..60}; do
+            if curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/api/health | grep -q '^200$'; then
+              echo "runtime healthy"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "runtime did not become healthy in time"
+          cat runtime.log || true
+          exit 1
+
+      - name: Wait for SKYGRID health (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $pidFile = Join-Path $env:RUNNER_TEMP "skygrid_pid"
+
+          if (-not (Test-Path -LiteralPath $pidFile)) {
+            throw "SKYGRID runtime PID file was not created."
+          }
+
+          $runtimePid = [int](Get-Content -LiteralPath $pidFile)
+          $healthy = $false
+
+          Write-Host "Waiting for http://127.0.0.1:3000/api/health..."
+
+          for ($attempt = 1; $attempt -le 60; $attempt++) {
+            $runtime = Get-Process -Id $runtimePid -ErrorAction SilentlyContinue
+
+            if (-not $runtime) {
+              Write-Host "Runtime process $runtimePid exited before becoming healthy."
+              break
+            }
+
+            try {
+              $response = Invoke-WebRequest `
+                -UseBasicParsing `
+                -Uri "http://127.0.0.1:3000/api/health" `
+                -TimeoutSec 2 `
+                -ErrorAction Stop
+
+              if ($response.StatusCode -eq 200) {
+                $healthy = $true
+                break
+              }
+            }
+            catch {
+              Write-Host "Health attempt $attempt failed: $(name: SKYGRID Controlled Pilot Verification
+
+on:
+  push:
+    branches: [ "MVPuknowme" ]
+  pull_request:
+    branches: [ "MVPuknowme" ]
+  workflow_dispatch: {}
+
+jobs:
+  verify:
+    name: Controlled Pilot checks on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.23.0
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: pnpm
+
+      - name: Install dependencies (pnpm --frozen-lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: PNPK validation
+        run: pnpm run pnpk:validate
+
+      - name: Manifest sync
+        run: pnpm run manifest:sync
+
+      - name: Partition verification
+        run: pnpm run partition:verify
+
+      - name: Autodrill simulation
+        run: pnpm run autodrill:sim
+
+      - name: Emergency gate
+        run: pnpm run emergency:gate
+
+      - name: Security IOC check
+        run: pnpm run security:ioc-check
+
+      - name: Intake policy test
+        run: pnpm run intake:policy-test
+
+      - name: Start SKYGRID local runtime (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          # start runtime in background and capture PID
+          nohup pnpm run local:runtime > runtime.log 2>&1 &
+          echo $! > /tmp/skygrid_pid
+
+      - name: Start SKYGRID local runtime (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $node = (Get-Command node.exe -ErrorAction Stop).Source
+          $script = Join-Path $env:GITHUB_WORKSPACE "scripts\skygrid-local-runtime-server.mjs"
+          $stdout = Join-Path $env:RUNNER_TEMP "skygrid-runtime.log"
+          $stderr = Join-Path $env:RUNNER_TEMP "skygrid-runtime-error.log"
+          $pidFile = Join-Path $env:RUNNER_TEMP "skygrid_pid"
+
+          Remove-Item $stdout, $stderr, $pidFile -Force -ErrorAction SilentlyContinue
+
+          $process = Start-Process `
+            -FilePath $node `
+            -ArgumentList @($script) `
+            -WorkingDirectory $env:GITHUB_WORKSPACE `
+            -RedirectStandardOutput $stdout `
+            -RedirectStandardError $stderr `
+            -PassThru
+
+          $process.Id | Set-Content -Path $pidFile -Encoding ascii
+
+          "SKYGRID_RUNTIME_STDOUT=$stdout" |
+            Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+          "SKYGRID_RUNTIME_STDERR=$stderr" |
+            Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+          Write-Host "Started SKYGRID Node runtime PID $($process.Id)"
       - name: Wait for SKYGRID health (Ubuntu)
         if: runner.os == 'Linux'
         run: |
@@ -107,6 +280,123 @@ jobs:
           }
           Write-Host "runtime healthy"
 
+      - name: Training drill
+        run: pnpm run training:drill -- --base-url=http://127.0.0.1:3000 --out-dir=training/receipts/ci-${{ runner.os }}
+
+      - name: Verify training receipts and drill results
+        shell: bash
+        run: |
+          node -e "
+          const fs = require('fs');
+          const path = require('path');
+
+          const dir = path.join(
+            process.cwd(),
+            'training',
+            'receipts',
+            'ci-${{ runner.os }}'
+          );
+
+          if (!fs.existsSync(dir)) {
+            console.error('CI receipt directory not found:', dir);
+            process.exit(1);
+          }
+
+          const files = fs.readdirSync(dir)
+            .filter((file) => file.endsWith('.json'));
+
+          if (files.length !== 1) {
+            console.error('Expected exactly one current-run receipt, found:', files.length);
+            process.exit(1);
+          }
+
+          const receipt = JSON.parse(
+            fs.readFileSync(path.join(dir, files[0]), 'utf8')
+          );
+
+          if (receipt.ok !== true) {
+            console.error('Receipt reports ok !== true');
+            process.exit(1);
+          }
+
+          if (
+            receipt.summary?.scenarios !== 5 ||
+            receipt.summary?.passed !== 5 ||
+            receipt.summary?.failed !== 0
+          ) {
+            console.error('Training drill result is not 5/5:', receipt.summary);
+            process.exit(1);
+          }
+
+          console.log('Training drill verified: 5/5');
+          "
+      - name: Create controlled-pilot summary
+        if: always()
+        run: |
+          echo "PNPK validation" >> $GITHUB_STEP_SUMMARY
+          echo "Partition verification" >> $GITHUB_STEP_SUMMARY
+          echo "Autodrill result" >> $GITHUB_STEP_SUMMARY
+          echo "Emergency-gate result" >> $GITHUB_STEP_SUMMARY
+          echo "Intake-policy result" >> $GITHUB_STEP_SUMMARY
+          echo "Training-drill result" >> $GITHUB_STEP_SUMMARY
+          echo "Controlled-pilot status: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload training receipts (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: training-receipts-${{ runner.os }}
+          path: training/receipts/ci-${{ runner.os }}/*.json
+          if-no-files-found: warn
+
+      - name: Stop SKYGRID runtime (Ubuntu)
+        if: runner.os == 'Linux' && always()
+        run: |
+          if [ -f /tmp/skygrid_pid ]; then
+            PID=$(cat /tmp/skygrid_pid)
+            echo "Killing $PID"
+            kill $PID || true
+          fi
+
+      - name: Stop SKYGRID runtime (Windows)
+        if: runner.os == 'Windows' && always()
+        shell: pwsh
+        run: |
+          $pfile = "$env:RUNNER_TEMP\skygrid_pid"
+          if (Test-Path $pfile) {
+            $runtimePid = [int](Get-Content $pfile)
+            Write-Host "Stopping process $runtimePid"
+            Stop-Process -Id $runtimePid -ErrorAction SilentlyContinue
+          }
+.Exception.Message)"
+            }
+
+            Start-Sleep -Seconds 2
+          }
+
+          if (-not $healthy) {
+            Write-Host "`n--- runtime stdout ---"
+
+            if (Test-Path -LiteralPath $env:SKYGRID_RUNTIME_STDOUT) {
+              Get-Content -LiteralPath $env:SKYGRID_RUNTIME_STDOUT -Tail 200
+            }
+            else {
+              Write-Host "No runtime stdout file found."
+            }
+
+            Write-Host "`n--- runtime stderr ---"
+
+            if (Test-Path -LiteralPath $env:SKYGRID_RUNTIME_STDERR) {
+              Get-Content -LiteralPath $env:SKYGRID_RUNTIME_STDERR -Tail 200
+            }
+            else {
+              Write-Host "No runtime stderr file found."
+            }
+
+            throw "SKYGRID Windows runtime health check failed."
+          }
+
+          Write-Host "SKYGRID Windows runtime healthy."
       - name: Training drill
         run: pnpm run training:drill -- --base-url=http://127.0.0.1:3000 --out-dir=training/receipts/ci-${{ runner.os }}
 
