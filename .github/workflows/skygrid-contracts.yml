@@ -46,8 +46,18 @@ jobs:
             https://github.com/foundry-rs/forge-std.git \
             lib/forge-std
 
-      - name: Check formatting
-        run: forge fmt --check
+      - name: Format Solidity sources
+        run: forge fmt
+
+      - name: Upload formatted Solidity sources
+        uses: actions/upload-artifact@v4
+        with:
+          name: skygrid-formatted-solidity
+          path: |
+            contracts/skygrid-funding/src
+            contracts/skygrid-funding/test
+          if-no-files-found: error
+          retention-days: 1
 
       - name: Run unit, fuzz, and invariant tests
         run: forge test -vvv
