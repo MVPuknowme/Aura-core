@@ -104,6 +104,9 @@ jobs:
             -Force `
             -ErrorAction SilentlyContinue
 
+          # Preserve the runtime across GitHub Actions steps.
+          $env:RUNNER_TRACKING_ID = ""
+
           $process = Start-Process `
             -FilePath $node `
             -ArgumentList @($script) `
