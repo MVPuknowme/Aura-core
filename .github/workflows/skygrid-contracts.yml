@@ -1,0 +1,53 @@
+name: SKYGRID contract validation
+
+on:
+  pull_request:
+    paths:
+      - "contracts/skygrid-funding/**"
+      - ".github/workflows/skygrid-contracts.yml"
+  push:
+    branches:
+      - MVPuknowme
+    paths:
+      - "contracts/skygrid-funding/**"
+      - ".github/workflows/skygrid-contracts.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  forge-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: contracts/skygrid-funding
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+
+      - name: Install pinned Solidity dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p lib
+          git clone --depth 1 --branch v5.4.0 \
+            https://github.com/OpenZeppelin/openzeppelin-contracts.git \
+            lib/openzeppelin-contracts
+          git clone --depth 1 --branch v1.10.0 \
+            https://github.com/foundry-rs/forge-std.git \
+            lib/forge-std
+
+      - name: Check formatting
+        run: forge fmt --check
+
+      - name: Run unit, fuzz, and invariant tests
+        run: forge test -vvv
