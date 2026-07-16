@@ -240,9 +240,12 @@ contract SkygridMilestoneVaultTest is Test {
 
     function testRejectsNativeCurrency() public {
         vm.deal(address(this), 1 ether);
-        vm.expectRevert(SkygridMilestoneVault.NativeCurrencyNotAccepted.selector);
-        (bool success,) = address(vault).call{value: 1 ether}("");
-        success;
+
+        (bool success, bytes memory revertData) = address(vault).call{value: 1 ether}("");
+
+        assertFalse(success);
+        assertEq(bytes4(revertData), SkygridMilestoneVault.NativeCurrencyNotAccepted.selector);
+        assertEq(address(vault).balance, 0);
     }
 
     function testConstructorRejectsFeeAboveHardCeiling() public {
@@ -376,13 +379,13 @@ contract SkygridMilestoneVaultInvariantTest is StdInvariant, Test {
         targetContract(address(handler));
     }
 
-    function invariantBudgetIsAlwaysConserved() public view {
+    function invariantBudgetIsAlwaysConserved() public {
         uint256 accounted = token.balanceOf(address(vault)) + vault.totalReleased()
             + vault.totalRefunded();
         assertEq(accounted, vault.totalBudget());
     }
 
-    function invariantResolvedAmountsNeverExceedBudget() public view {
+    function invariantResolvedAmountsNeverExceedBudget() public {
         assertLe(vault.totalReleased() + vault.totalRefunded(), vault.totalBudget());
     }
 }
