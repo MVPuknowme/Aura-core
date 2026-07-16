@@ -1,8 +1,29 @@
-﻿$StateDir = "E:\Aura-core\Aura\State"
-$StateFile = Join-Path $StateDir "active-route.json"
+﻿param(
+    [string]$RepoPath
+)
+
+$ErrorActionPreference = "Stop"
+
+if ([string]::IsNullOrWhiteSpace($RepoPath)) {
+    if ([string]::IsNullOrWhiteSpace($PSScriptRoot)) {
+        throw "Repository path was not supplied and PSScriptRoot is unavailable."
+    }
+
+    $RepoPath = [System.IO.Path]::GetFullPath(
+        (Join-Path -Path $PSScriptRoot -ChildPath "..\..")
+    )
+}
+
+$RepoPath = [System.IO.Path]::GetFullPath($RepoPath)
+
+if (-not (Test-Path -LiteralPath (Join-Path $RepoPath ".git"))) {
+    throw "Aura-Core repository not found at: $RepoPath"
+}
+
+$StateDir = Join-Path -Path $RepoPath -ChildPath "Aura\State"
+$StateFile = Join-Path -Path $StateDir -ChildPath "active-route.json"
 
 New-Item -ItemType Directory -Path $StateDir -Force | Out-Null
-
 $LocalIp = (
     Get-NetIPAddress -AddressFamily IPv4 |
     Where-Object {

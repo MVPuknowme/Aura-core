@@ -1,10 +1,40 @@
-﻿$ErrorActionPreference = "Stop"
+﻿param(
+    [string]$RepoPath,
+    [string]$Branch
+)
 
-$RepoPath = "E:\Aura-core"
-$Branch = "agent/aerodrome-wallet-rpc"
+$ErrorActionPreference = "Stop"
+
+if ([string]::IsNullOrWhiteSpace($RepoPath)) {
+    $RepoPath = $PSScriptRoot
+}
+
+if ([string]::IsNullOrWhiteSpace($RepoPath)) {
+    throw "Repository path was not supplied and PSScriptRoot is unavailable."
+}
+
+$RepoPath = [System.IO.Path]::GetFullPath($RepoPath)
+
+if (-not (Test-Path -LiteralPath (Join-Path $RepoPath ".git"))) {
+    throw "Aura-Core repository not found at: $RepoPath"
+}
+
+if ([string]::IsNullOrWhiteSpace($Branch)) {
+    $BranchOutput = & git.exe -C $RepoPath branch --show-current
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Unable to determine the current Git branch."
+    }
+
+    $Branch = ([string]$BranchOutput).Trim()
+}
+
+if ([string]::IsNullOrWhiteSpace($Branch)) {
+    throw "The repository is in detached-HEAD state. Supply -Branch explicitly."
+}
+
 $Port = 3000
 $BaseUrl = "http://127.0.0.1:$Port"
-
 Write-Host ""
 Write-Host "SKYGRID Emergency Data On-Ramp"
 Write-Host "Base + Optimism dual-lane restart"
