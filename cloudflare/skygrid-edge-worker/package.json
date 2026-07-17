@@ -2,10 +2,18 @@
   "name": "skygrid-edge-worker",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": "22.16.0"
+  },
   "devDependencies": {
-    "wrangler": "latest"
+    "wrangler": "4.110.0"
   },
   "scripts": {
+    "check": "node --check src/index.js && node --check src/pilot-intake.js && node --check src/pilot-evidence.js",
+    "test": "node --test test/*.test.mjs",
+    "validate:schema": "node validate-pilot-schema.mjs && node validate-pilot-constraints.mjs",
+    "validate": "npm run check && npm test && npm run validate:schema",
+    "build": "npm run validate && wrangler deploy --dry-run --outdir=dist",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy"
   }
