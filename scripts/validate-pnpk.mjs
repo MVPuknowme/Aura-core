@@ -46,6 +46,43 @@ for (const key of [
   }
 }
 
+const capacityDelivery = pnpk.provisioning_router?.capacity_lease_delivery;
+
+if (!capacityDelivery?.enabled) {
+  console.error("PNPK validation failed: capacity lease delivery must be enabled");
+  process.exit(1);
+}
+
+if (
+  capacityDelivery.execution_authority !== "none" ||
+  capacityDelivery.activation_grant_required !== true
+) {
+  console.error("PNPK validation failed: capacity leases require a separate activation grant and no PNPK execution authority");
+  process.exit(1);
+}
+
+for (const key of [
+  "automatic_shrink_allowed",
+  "delete_existing_partition_allowed",
+  "system_or_boot_disk_allowed"
+]) {
+  if (capacityDelivery.partition_policy?.[key] !== false) {
+    console.error(`PNPK validation failed: capacity partition policy ${key} must be false`);
+    process.exit(1);
+  }
+}
+
+const capacityPartition = pnpk.partitions?.capacity_lease;
+
+if (
+  capacityPartition?.sentinel !== "fail_closed" ||
+  capacityPartition?.execution_authority !== "none" ||
+  capacityPartition?.activation_grant_required !== true
+) {
+  console.error("PNPK validation failed: capacity lease partition must fail closed without execution authority");
+  process.exit(1);
+}
+
 console.log("PNPK validation passed:", {
   service: pnpk.service,
   mode: pnpk.mode,

@@ -12,6 +12,7 @@
   "private_data_movement": false,
   "routes": [
     "/",
+    "/lease",
     "/health.json",
     "/api/health",
     "/api/skygrid/status",
@@ -20,6 +21,8 @@
     "/api/highway/postman",
     "/api/pay/quote?amount=25",
     "/api/autodrill/latest",
+    "/api/node-lease/preflight",
+    "/api/node-lease/agreements",
     "/api/failover/status"
   ]
 }

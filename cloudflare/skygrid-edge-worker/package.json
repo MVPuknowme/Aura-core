@@ -9,7 +9,7 @@
     "wrangler": "4.110.0"
   },
   "scripts": {
-    "check": "node --check src/index.js && node --check src/pilot-intake.js && node --check src/pilot-evidence.js",
+    "check": "node --check src/index.js && node --check src/pilot-intake.js && node --check src/pilot-evidence.js && node --check src/capacity-lease.js && node --check src/lease-page.js",
     "test": "node --test test/*.test.mjs",
     "validate:schema": "node validate-pilot-schema.mjs && node validate-pilot-constraints.mjs",
     "validate": "npm run check && npm test && npm run validate:schema",

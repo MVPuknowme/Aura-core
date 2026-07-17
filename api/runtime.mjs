@@ -1,5 +1,10 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import {
+  createCapacityAgreementPacket,
+  createCapacityOffer
+} from "../cloudflare/skygrid-edge-worker/src/capacity-lease.js";
+import { capacityLeasePage } from "../cloudflare/skygrid-edge-worker/src/lease-page.js";
 const PRODUCT = "SKYGRID Emergency Data On-Ramp";
 const VERSION = "2026-07-04-aura-sky-front-door";
 const CANONICAL_HOST = "aura-sky.skygrid-protocol.net";
@@ -35,18 +40,25 @@ function html(res, status, title, body) {
   res.end(`<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><link rel="canonical" href="${CANONICAL_URL}/"/><title>${title}</title><style>:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:radial-gradient(circle at top left,#172554,#07101f 42%,#050816);color:#edf6ff}main{max-width:1120px;margin:0 auto;padding:42px 18px}.card{border:1px solid rgba(125,211,252,.3);border-radius:28px;padding:30px;background:linear-gradient(135deg,rgba(14,30,58,.94),rgba(43,26,72,.76));box-shadow:0 24px 80px rgba(0,0,0,.35)}h1{font-size:clamp(2.1rem,7vw,4.8rem);line-height:.96;letter-spacing:-.05em;margin:.2rem 0 1rem}p{line-height:1.65;color:#dbeafe}.badge{display:inline-block;border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:.35rem .7rem;color:#f0abfc}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:20px}.tile{border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:17px;background:rgba(255,255,255,.055)}.tile strong{display:block;color:#fff;margin-bottom:.3rem}a{color:#67e8f9}code{background:rgba(255,255,255,.09);padding:.15rem .35rem;border-radius:.4rem}nav{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0 8px}nav a,.button{border:1px solid rgba(255,255,255,.16);border-radius:999px;padding:10px 14px;text-decoration:none;background:rgba(255,255,255,.06);color:#cffafe;display:inline-block}.button.primary{background:rgba(34,211,238,.18);border-color:rgba(103,232,249,.44)}.notice{border-left:4px solid #f59e0b;padding:12px 14px;background:rgba(245,158,11,.11);border-radius:12px;margin-top:20px}.small{font-size:.94rem;color:#bdd7ee}</style></head><body><main><section class="card">${body}</section></main></body></html>`);
 }
 
+function rawHtml(res, status, content) {
+  headers(res);
+  res.statusCode = status;
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.end(content);
+}
+
 function routeMap() {
   return [
-    "/", "/health.json", "/dispatch", "/incidents", "/settings", "/highway", "/scenarios", "/rates", "/base", "/pay",
+    "/", "/lease", "/health.json", "/dispatch", "/incidents", "/settings", "/highway", "/scenarios", "/rates", "/base", "/pay",
     "/dashboard/command-center", "/dashboard/validation-panel", "/dashboard/deployment-review", "/dashboard/receipts",
     "/api/skygrid/status", "/api/skygrid/intake", "/api/aura-core/decide", "/api/agent/signals", "/api/highway/status",
     "/api/highway/flasks", "/api/highway/postman", "/api/pay/quote?amount=25", "/api/autodrill/latest",
-    "/api/build-pad/quote", "/api/node-lease/intake", "/api/failover/status", "/api/panels/summary", "/api/stripe/device-link"
+    "/api/build-pad/quote", "/api/node-lease/intake", "/api/node-lease/preflight", "/api/node-lease/agreements", "/api/failover/status", "/api/panels/summary", "/api/stripe/device-link"
   ];
 }
 
 function nav() {
-  return `<nav><a href="/">Front Page</a><a href="/dashboard/command-center">Command Center</a><a href="/dashboard/validation-panel">Validation</a><a href="/dashboard/deployment-review">Deployment Review</a><a href="/dashboard/receipts">Receipts</a><a href="/dispatch">Dispatch</a><a href="/health.json">Health</a></nav>`;
+  return `<nav><a href="/">Front Page</a><a href="/lease">Capacity Lease</a><a href="/dashboard/command-center">Command Center</a><a href="/dashboard/validation-panel">Validation</a><a href="/dashboard/deployment-review">Deployment Review</a><a href="/dashboard/receipts">Receipts</a><a href="/dispatch">Dispatch</a><a href="/health.json">Health</a></nav>`;
 }
 
 function configured() {
@@ -91,6 +103,7 @@ function landing(res) {
       <div class="tile"><strong>Status</strong><a href="/api/skygrid/status">SKYGRID status</a><br><a href="/api/failover/status">Failover gate</a></div>
       <div class="tile"><strong>Build pad</strong><code>POST /api/build-pad/quote</code><br><span class="small">Quote-only review route.</span></div>
       <div class="tile"><strong>Node lease</strong><code>POST /api/node-lease/intake</code><br><span class="small">Intake-only readiness route.</span></div>
+      <div class="tile"><strong>Capacity lease</strong><a href="/lease">Evaluate resources and review the pilot agreement</a><br><span class="small">PNPK preflight and owner-approval workflow.</span></div>
       <div class="tile"><strong>Dispatch</strong><a href="/dispatch">Dispatch overview</a><br><a href="/highway">Emergency highway</a></div>
       <div class="tile"><strong>Canonical URL</strong><code>${CANONICAL_URL}</code></div>
     </div>
@@ -122,6 +135,41 @@ async function readBody(req) {
   const raw = Buffer.concat(chunks).toString("utf8");
   if (!raw) return {};
   try { return JSON.parse(raw); } catch { return { raw }; }
+}
+
+async function callEdgeLeaseApi(pathname, body) {
+  const configuredBase = String(process.env.SKYGRID_EDGE_LEASE_URL || "").trim();
+  if (!configuredBase) return null;
+
+  try {
+    const target = new URL(pathname, `${configuredBase.replace(/\/$/, "")}/`);
+    const response = await fetch(target, {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        "content-type": "application/json",
+        "user-agent": "SKYGRID-Vercel-Lease-Proxy/1.0"
+      },
+      body: JSON.stringify(body)
+    });
+    let payload;
+    try {
+      payload = await response.json();
+    } catch {
+      payload = { ok: false, reason: "edge_lease_response_invalid" };
+    }
+    return { status: response.status, payload };
+  } catch (error) {
+    console.error("Capacity lease edge request failed", error);
+    return {
+      status: 503,
+      payload: {
+        ok: false,
+        reason: "edge_lease_unavailable",
+        sentinel: "fail_closed"
+      }
+    };
+  }
 }
 
 function normalizeRoutingInput(body = {}) {
@@ -271,6 +319,9 @@ export default async function handler(req, res) {
   const { path, url } = getPath(req);
 
   if (req.method === "GET" && path === "/") return landing(res);
+  if (req.method === "GET" && path === "/lease") {
+    return rawHtml(res, 200, capacityLeasePage({ apiBase: "/api/node-lease" }));
+  }
   if (req.method === "GET" && ["/dashboard/command-center", "/dashboard/validation-panel", "/dashboard/deployment-review", "/dashboard/receipts"].includes(path)) return dashboard(res, path);
   if (req.method === "GET" && ["/health.json", "/api/health", "/api/status", "/api/skygrid/status", "/api/highway/status"].includes(path)) {
     return json(res, 200, healthPayload(path));
@@ -287,9 +338,48 @@ export default async function handler(req, res) {
     return json(res, 200, { ok: true, product: PRODUCT, route: path, mode: "quote_only_review_required", quote_id: `buildpad_${Date.now()}`, noPaymentExecuted: true, amount, timestamp: now() });
   }
 
-  if (req.method === "POST" && path === "/api/node-lease/intake") {
+  if (req.method === "POST" && ["/api/node-lease/intake", "/api/node-lease/preflight"].includes(path)) {
     const body = await readBody(req);
-    return json(res, 202, { accepted: true, product: PRODUCT, route: path, mode: "intake_only", intake_id: `lease_${Date.now()}`, region: body.region || "unspecified", timestamp: now() });
+    const edge = await callEdgeLeaseApi("edge/lease/preflight", body);
+    if (edge) return json(res, edge.status, edge.payload);
+
+    const result = await createCapacityOffer(body);
+    return json(res, 201, {
+      ok: true,
+      accepted: true,
+      product: PRODUCT,
+      route: path,
+      mode: "controlled_pilot",
+      persistence: "stateless_vercel_fallback",
+      offer: result.offer,
+      agreement_token: result.agreementToken,
+      warning: "Set SKYGRID_EDGE_LEASE_URL to persist offers and agreements in Cloudflare D1.",
+      timestamp: now()
+    });
+  }
+
+  if (req.method === "POST" && path === "/api/node-lease/agreements") {
+    const body = await readBody(req);
+    const edge = await callEdgeLeaseApi("edge/lease/agreements", body);
+    if (edge) return json(res, edge.status, edge.payload);
+
+    const packet = await createCapacityAgreementPacket(body.offer, body);
+    if (!packet.ok) return json(res, packet.status, packet);
+    return json(res, 202, {
+      ok: true,
+      product: PRODUCT,
+      persistence: "stateless_vercel_receipt",
+      agreement: packet.agreement,
+      receipt: {
+        offer_id: packet.agreement.offer_id,
+        status: "owner_accepted_pending_operator",
+        agreement_version: packet.agreement.agreement_version,
+        receipt_hash: packet.receiptHash,
+        accepted_at: packet.acceptedAt,
+        execution_allowed: false
+      },
+      warning: "This receipt is downloadable but not durably stored until SKYGRID_EDGE_LEASE_URL is configured."
+    });
   }
 
   if (req.method === "POST" && path === "/api/pacific-heart/ingest") {

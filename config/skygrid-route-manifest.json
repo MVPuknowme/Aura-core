@@ -56,7 +56,10 @@
     { "id": "stripe_device_link_legacy", "method": "GET", "path": "/api/stripe/device-link", "owner": "vercel_and_cloudflare", "proof_owner": "postman", "required": false, "status": "legacy_compatibility" },
     { "id": "autodrill_latest", "method": "GET", "path": "/api/autodrill/latest", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
     { "id": "build_pad_quote", "method": "POST", "path": "/api/build-pad/quote", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented_quote_only" },
-    { "id": "node_lease_intake", "method": "POST", "path": "/api/node-lease/intake", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented_intake_only" },
+    { "id": "capacity_lease_page", "method": "GET", "path": "/lease", "owner": "vercel", "proof_owner": "github_actions", "required": false, "status": "implemented" },
+    { "id": "node_lease_intake", "method": "POST", "path": "/api/node-lease/intake", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented_capacity_preflight" },
+    { "id": "node_lease_preflight", "method": "POST", "path": "/api/node-lease/preflight", "owner": "vercel", "proof_owner": "github_actions", "required": false, "status": "implemented" },
+    { "id": "node_lease_agreements", "method": "POST", "path": "/api/node-lease/agreements", "owner": "vercel", "proof_owner": "github_actions", "required": false, "status": "implemented_owner_acceptance_only" },
     { "id": "failover_status", "method": "GET", "path": "/api/failover/status", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented_blocked_until_readiness" }
   ],
   "launch_ladder": [
