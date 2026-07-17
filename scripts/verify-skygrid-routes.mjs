@@ -24,7 +24,7 @@ const checks = [
 ];
 
 const okStatuses = new Set([200, 202, 204, 301, 302, 307, 308, 405]);
-const pendingStatuses = new Set([401, 403, 404]);
+const pendingStatuses = new Set([401, 402, 403, 404]);
 
 let failed = false;
 let pending = false;
@@ -62,8 +62,13 @@ for (const [method, path] of checks) {
   }
 
   if (result.pending) {
-    pending = true;
-    console.warn(`${method} ${result.url} -> ${result.status} WARN route_pending_domain_binding_or_protection`);
+    if (allowPendingDomain) {
+      pending = true;
+      console.warn(`${method} ${result.url} -> ${result.status} WARN route_pending_domain_binding_or_protection`);
+    } else {
+      failed = true;
+      console.error(`${method} ${result.url} -> ${result.status} FAIL pending_domain_response_not_allowed`);
+    }
     continue;
   }
 
