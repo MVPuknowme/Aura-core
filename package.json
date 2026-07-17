@@ -1,4 +1,4 @@
-{
+﻿{
   "name": "aura-core",
   "version": "0.1.0",
   "private": true,
@@ -14,9 +14,13 @@
     "partition:verify": "node scripts/skygrid-partition-router.mjs",
     "autodrill:sim": "node scripts/skygrid-autodrill-sim.mjs",
     "training:drill": "node scripts/skygrid-training-drill.mjs",
+    "training:fail-closed": "node scripts/skygrid-fail-closed-drill.mjs",
+    "training:verify-receipts": "node scripts/verify-skygrid-training-receipts.mjs",
+    "training:all": "pnpm run training:drill && pnpm run training:fail-closed",
     "skygrid:training": "node scripts/skygrid-training-drill.mjs",
     "security:test": "node --check api/runtime-hardened.mjs && node scripts/test-runtime-security.mjs",
-    "build": "pnpm run pnpk:validate && pnpm run manifest:sync && pnpm run security:test && node scripts/vercel-build.mjs",
+    "intake:policy-test": "node --test tests/skygrid-intake-policy.test.mjs",
+    "build": "pnpm run pnpk:validate && pnpm run manifest:sync && pnpm run security:test && pnpm run intake:policy-test && node scripts/vercel-build.mjs",
     "build:xmcp": "node tools/xmcp/index.mjs build --vercel",
     "xmcp:build": "node tools/xmcp/index.mjs build --vercel",
     "skygrid:verify": "node scripts/verify-skygrid-routes.mjs",
@@ -38,7 +42,8 @@
     "route:probe:local": "node scripts/skygrid-route-option-probe.mjs --scenario=local",
     "route:probe:queue": "node scripts/skygrid-route-option-probe.mjs --scenario=queue",
     "route:probe:proof": "pnpm run route:probe:primary && pnpm run route:probe:local && pnpm run route:probe:queue",
-    "security:ioc-check": "node scripts/check-iocs.mjs"
+    "security:ioc-check": "node scripts/check-iocs.mjs",
+    "skygrid:verify:public": "node scripts/verify-skygrid-public.mjs"
   },
   "dependencies": {
     "@coinbase/agentkit": "^0.10.4",
@@ -46,6 +51,7 @@
     "@vercel/sandbox": "^2.2.1",
     "ai": "^6.0.208",
     "express": "^5.2.1",
+    "openai": "^6.47.0",
     "xmcp": "^0.6.13",
     "zod": "^3.25.76"
   },

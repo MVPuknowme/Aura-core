@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 const PRODUCT = "SKYGRID Emergency Data On-Ramp";
 const VERSION = "2026-07-04-aura-sky-front-door";
 const CANONICAL_HOST = "aura-sky.skygrid-protocol.net";
@@ -122,11 +124,124 @@ async function readBody(req) {
   try { return JSON.parse(raw); } catch { return { raw }; }
 }
 
+function normalizeRoutingInput(body = {}) {
+  const event = body.event && typeof body.event === "object" ? body.event : {};
+  const payload = body.payload && typeof body.payload === "object" ? body.payload : {};
+
+  const value = (field) =>
+    body[field] ??
+    event[field] ??
+    payload[field] ??
+    event.payload?.[field] ??
+    null;
+
+  return {
+    route_type: value("route_type"),
+    requested_ramp: value("requested_ramp"),
+    requested_node: value("requested_node"),
+    owner_approval: value("owner_approval") === true,
+    emergency_operator_approval:
+      value("emergency_operator_approval") === true,
+    wallet_signing_requested:
+      value("wallet_signing_requested") === true,
+    transaction_broadcast_requested:
+      value("transaction_broadcast_requested") === true,
+    payment_execution_requested:
+      value("payment_execution_requested") === true,
+    production_failover_requested:
+      value("production_failover_requested") === true,
+    private_data_movement_requested:
+      value("private_data_movement_requested") === true
+  };
+}
+
+function loadPnpkPolicy() {
+  const policyPath = path.resolve(
+    process.cwd(),
+    "bridge",
+    "skygrid-emergency-onramp.pnpk"
+  );
+
+  return JSON.parse(readFileSync(policyPath, "utf8"));
+}
+
 function decision(body = {}) {
-  const need = String(body.need || body.type || "system-health").toLowerCase();
-  const severity = String(body.severity || "normal").toLowerCase();
-  const urgent = ["critical", "high", "sev1", "p1"].includes(severity) || need.includes("outage");
-  return { selected: urgent ? "lambda_router" : "advisory_response", reason: urgent ? "urgent_signal" : "safe_default", advisoryOnly: true };
+  const input = normalizeRoutingInput(body);
+  const policy = loadPnpkPolicy();
+  const mode = policy.mode || "controlled_pilot";
+  const sentinel = policy.sentinel || "fail_closed";
+
+  const reject = (reason) => ({
+    ok: false,
+    http_status: 403,
+    mode,
+    sentinel,
+    reason
+  });
+
+  const prohibitedActions = [
+    ["wallet_signing_requested", "wallet_signing_prohibited"],
+    ["transaction_broadcast_requested", "transaction_broadcast_prohibited"],
+    ["payment_execution_requested", "payment_execution_prohibited"],
+    ["production_failover_requested", "production_failover_prohibited"],
+    ["private_data_movement_requested", "private_data_movement_prohibited"]
+  ];
+
+  for (const [field, reason] of prohibitedActions) {
+    if (input[field]) return reject(reason);
+  }
+
+  if (
+    !input.route_type ||
+    !input.requested_ramp ||
+    !input.requested_node
+  ) {
+    return {
+      ok: false,
+      http_status: 400,
+      mode,
+      sentinel,
+      reason: "missing_routing_fields"
+    };
+  }
+
+  const partition = policy.partitions?.[input.route_type];
+
+  if (!partition) {
+    return reject("unknown_partition");
+  }
+
+  if (!partition.allowed_ramps?.includes(input.requested_ramp)) {
+    return reject("unapproved_ramp");
+  }
+
+  if (!partition.allowed_nodes?.includes(input.requested_node)) {
+    return reject("unapproved_node");
+  }
+
+  const approvalGate = policy.dual_approval_gate;
+  const approvalRequired =
+    approvalGate?.enabled === true &&
+    approvalGate.applies_to?.includes(input.route_type);
+
+  if (approvalRequired && !input.owner_approval) {
+    return reject("owner_approval_required");
+  }
+
+  if (approvalRequired && !input.emergency_operator_approval) {
+    return reject("emergency_operator_approval_required");
+  }
+
+  return {
+    ok: true,
+    http_status: 202,
+    selected_partition: input.route_type,
+    selected_ramp: input.requested_ramp,
+    selected_node_group: input.requested_node,
+    mode: partition.mode || mode,
+    sentinel: partition.sentinel || sentinel,
+    reason: "partition_route_approved"
+  };
 }
 
 function failoverStatus() {
@@ -215,8 +330,37 @@ export default async function handler(req, res) {
 
   if (req.method === "POST" && ["/api/skygrid/intake", "/intake", "/api/aura-core/decide", "/api/agent/signals"].includes(path)) {
     const body = await readBody(req);
-    const event = { eventId: `skygrid_${Date.now()}`, receivedAt: now(), product: PRODUCT, skygrid: PRODUCT, route: path, source: body.source || "postman-autodrill", type: body.type || body.need || "system-health", decision: decision(body), payload: body };
-    return json(res, 202, { accepted: true, advisoryOnly: true, event });
+    const routeDecision = decision(body);
+    const status = routeDecision.http_status || (routeDecision.ok ? 202 : 403);
+
+    const event = {
+      eventId: `skygrid_${Date.now()}`,
+      receivedAt: now(),
+      product: PRODUCT,
+      skygrid: {
+        product: PRODUCT,
+        mode: routeDecision.mode,
+        sentinel: routeDecision.sentinel,
+        training: body.training === true
+      },
+      route: path,
+      source: body.source || "postman-autodrill",
+      type:
+        body.type ||
+        body.need ||
+        body.route_type ||
+        body.event?.route_type ||
+        body.payload?.route_type ||
+        "system-health",
+      decision: routeDecision,
+      payload: body
+    };
+
+    return json(res, status, {
+      accepted: routeDecision.ok === true,
+      advisoryOnly: true,
+      event
+    });
   }
 
   if (req.method === "GET" && path === "/dispatch") return simplePage(res, "SKYGRID Dispatch", "Controlled-pilot dispatch page for status, routing review, and proof logging.");

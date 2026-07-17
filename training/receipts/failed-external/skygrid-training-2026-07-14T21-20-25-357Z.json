@@ -1,0 +1,543 @@
+{
+  "ok": false,
+  "product": "SKYGRID Emergency Data On-Ramp",
+  "mode": "controlled_pilot",
+  "sentinel": "fail_closed",
+  "trainingOnly": true,
+  "noProductionFailover": true,
+  "noPaymentExecuted": true,
+  "noPrivateDataMovement": true,
+  "noWalletSigning": true,
+  "noTransactionBroadcast": true,
+  "operatorReviewRequired": true,
+  "baseUrl": "http://127.0.0.1:3000",
+  "scenarioFile": "training/scenarios/skygrid-auto-drill-v1.json",
+  "runId": "skygrid-training-2026-07-14T21-20-25-357Z",
+  "summary": {
+    "scenarios": 5,
+    "passed": 0,
+    "failed": 5
+  },
+  "results": [
+    {
+      "id": "outage-local-network",
+      "title": "Local outage report",
+      "category": "outage",
+      "severity": "medium",
+      "passed": false,
+      "assertions": {
+        "statusPassed": false,
+        "eventIdPassed": true,
+        "safetyPassed": true,
+        "expectedStatuses": [
+          202
+        ],
+        "eventId": "skygrid_1784064025442",
+        "forbiddenTrueField": null,
+        "operatorReviewRequired": true
+      },
+      "request": {
+        "method": "POST",
+        "url": "http://127.0.0.1:3000/api/skygrid/intake",
+        "training": true,
+        "simulated": true
+      },
+      "response": {
+        "status": 400,
+        "json": {
+          "accepted": false,
+          "advisoryOnly": true,
+          "event": {
+            "eventId": "skygrid_1784064025442",
+            "receivedAt": "2026-07-14T21:20:25.442Z",
+            "product": "SKYGRID Emergency Data On-Ramp",
+            "skygrid": {
+              "product": "SKYGRID Emergency Data On-Ramp",
+              "mode": "controlled_pilot",
+              "sentinel": "fail_closed",
+              "training": true
+            },
+            "route": "/api/skygrid/intake",
+            "source": "postman-autodrill",
+            "type": "system-health",
+            "decision": {
+              "ok": false,
+              "http_status": 400,
+              "mode": "controlled_pilot",
+              "sentinel": "fail_closed",
+              "reason": "missing_routing_fields"
+            },
+            "payload": {
+              "product": "SKYGRID Emergency Data On-Ramp",
+              "training": true,
+              "simulated": true,
+              "runId": "skygrid-training-2026-07-14T21-20-25-357Z",
+              "scenarioId": "outage-local-network",
+              "scenarioTitle": "Local outage report",
+              "category": "outage",
+              "severity": "medium",
+              "mode": "controlled_pilot",
+              "sentinel": "fail_closed",
+              "safety": {
+                "productionFailover": false,
+                "paymentExecution": false,
+                "privateDataMovement": false,
+                "walletSigning": false,
+                "transactionBroadcast": false,
+                "operatorReviewRequired": true
+              },
+              "event": {
+                "event_type": "local_network_outage",
+                "source": "training.node.lapine.001",
+                "region": "Oregon / Local Pilot",
+                "summary": "Simulated neighborhood node reports WAN degradation and requests continuity logging.",
+                "signals": {
+                  "wan_status": "degraded",
+                  "mesh_status": "available",
+                  "packet_loss_pct": 18,
+                  "latency_ms": 420
+                }
+              },
+              "expected": {
+                "accepted_statuses": [
+                  202
+                ],
+                "requires_event_id": true,
+                "classification": "controlled_pilot",
+                "receipt_required": true,
+                "operator_review_required": true,
+                "forbidden_actions": [
+                  "production_failover",
+                  "payment_execution",
+                  "private_data_movement",
+                  "wallet_signing",
+                  "transaction_broadcast"
+                ]
+              },
+              "timestamp": "2026-07-14T21:20:25.371Z"
+            }
+          }
+        },
+        "error": null
+      },
+      "timing": {
+        "startedAt": "2026-07-14T21:20:25.371Z",
+        "durationMs": 84
+      }
+    },
+    {
+      "id": "emergency-intake-basic",
+      "title": "Emergency intake basic",
+      "category": "emergency",
+      "severity": "high",
+      "passed": false,
+      "assertions": {
+        "statusPassed": false,
+        "eventIdPassed": true,
+        "safetyPassed": true,
+        "expectedStatuses": [
+          202
+        ],
+        "eventId": "skygrid_1784064025458",
+        "forbiddenTrueField": null,
+        "operatorReviewRequired": true
+      },
+      "request": {
+        "method": "POST",
+        "url": "http://127.0.0.1:3000/api/skygrid/intake",
+        "training": true,
+        "simulated": true
+      },
+      "response": {
+        "status": 400,
+        "json": {
+          "accepted": false,
+          "advisoryOnly": true,
+          "event": {
+            "eventId": "skygrid_1784064025458",
+            "receivedAt": "2026-07-14T21:20:25.458Z",
+            "product": "SKYGRID Emergency Data On-Ramp",
+            "skygrid": {
+              "product": "SKYGRID Emergency Data On-Ramp",
+              "mode": "controlled_pilot",
+              "sentinel": "fail_closed",
+              "training": true
+            },
+            "route": "/api/skygrid/intake",
+            "source": "postman-autodrill",
+            "type": "system-health",
+            "decision": {
+              "ok": false,
+              "http_status": 400,
+              "mode": "controlled_pilot",
+              "sentinel": "fail_closed",
+              "reason": "missing_routing_fields"
+            },
+            "payload": {
+              "product": "SKYGRID Emergency Data On-Ramp",
+              "training": true,
+              "simulated": true,
+              "runId": "skygrid-training-2026-07-14T21-20-25-357Z",
+              "scenarioId": "emergency-intake-basic",
+              "scenarioTitle": "Emergency intake basic",
+              "category": "emergency",
+              "severity": "high",
+              "mode": "controlled_pilot",
+              "sentinel": "fail_closed",
+              "safety": {
+                "productionFailover": false,
+                "paymentExecution": false,
+                "privateDataMovement": false,
+                "walletSigning": false,
+                "transactionBroadcast": false,
+                "operatorReviewRequired": true
+              },
+              "event": {
+                "event_type": "emergency_intake_test",
+                "source": "training.dispatch.console",
+                "region": "Oregon / Controlled Pilot",
+                "summary": "Simulated emergency intake enters the ramp for validation and receipt generation only.",
+                "signals": {
+                  "caller_count": 3,
+                  "priority": "training_high",
+                  "requires_operator_review": true
+                }
+              },
+              "expected": {
+                "accepted_statuses": [
+                  202
+                ],
+                "requires_event_id": true,
+                "classification": "controlled_pilot",
+                "receipt_required": true,
+                "operator_review_required": true,
+                "forbidden_actions": [
+                  "production_failover",
+                  "private_data_movement"
+                ]
+              },
+              "timestamp": "2026-07-14T21:20:25.457Z"
+            }
+          }
+        },
+        "error": null
+      },
+      "timing": {
+        "startedAt": "2026-07-14T21:20:25.457Z",
+        "durationMs": 5
+      }
+    },
+    {
+      "id": "responder-routing-basic",
+      "title": "Responder routing basic",
+      "category": "responder_routing",
+      "severity": "medium",
+      "passed": false,
+      "assertions": {
+        "statusPassed": false,
+        "eventIdPassed": true,
+        "safetyPassed": true,
+        "expectedStatuses": [
+          202
+        ],
+        "eventId": "skygrid_1784064025462",
+        "forbiddenTrueField": null,
+        "operatorReviewRequired": true
+      },
+      "request": {
+        "method": "POST",
+        "url": "http://127.0.0.1:3000/api/skygrid/intake",
+        "training": true,
+        "simulated": true
+      },
+      "response": {
+        "status": 400,
+        "json": {
+          "accepted": false,
+          "advisoryOnly": true,
+          "event": {
+            "eventId": "skygrid_1784064025462",
+            "receivedAt": "2026-07-14T21:20:25.462Z",
+            "product": "SKYGRID Emergency Data On-Ramp",
+            "skygrid": {
+              "product": "SKYGRID Emergency Data On-Ramp",
+              "mode": "controlled_pilot",
+              "sentinel": "fail_closed",
+              "training": true
+            },
+            "route": "/api/skygrid/intake",
+            "source": "postman-autodrill",
+            "type": "system-health",
+            "decision": {
+              "ok": false,
+              "http_status": 400,
+              "mode": "controlled_pilot",
+              "sentinel": "fail_closed",
+              "reason": "missing_routing_fields"
+            },
+            "payload": {
+              "product": "SKYGRID Emergency Data On-Ramp",
+              "training": true,
+              "simulated": true,
+              "runId": "skygrid-training-2026-07-14T21-20-25-357Z",
+              "scenarioId": "responder-routing-basic",
+              "scenarioTitle": "Responder routing basic",
+              "category": "responder_routing",
+              "severity": "medium",
+              "mode": "controlled_pilot",
+              "sentinel": "fail_closed",
+              "safety": {
+                "productionFailover": false,
+                "paymentExecution": false,
+                "privateDataMovement": false,
+                "walletSigning": false,
+                "transactionBroadcast": false,
+                "operatorReviewRequired": true
+              },
+              "event": {
+                "event_type": "responder_route_training",
+                "source": "training.responder.portal",
+                "region": "Oregon / Controlled Pilot",
+                "summary": "Simulated responder route request validates routing metadata without dispatching a real responder.",
+                "signals": {
+                  "route_priority": "normal",
+                  "destination_type": "training_checkpoint",
+                  "requires_dispatch": false
+                }
+              },
+              "expected": {
+                "accepted_statuses": [
+                  202
+                ],
+                "requires_event_id": true,
+                "classification": "controlled_pilot",
+                "receipt_required": true,
+                "operator_review_required": true,
+                "forbidden_actions": [
+                  "real_dispatch",
+                  "production_failover",
+                  "private_data_movement"
+                ]
+              },
+              "timestamp": "2026-07-14T21:20:25.463Z"
+            }
+          }
+        },
+        "error": null
+      },
+      "timing": {
+        "startedAt": "2026-07-14T21:20:25.463Z",
+        "durationMs": 3
+      }
+    },
+    {
+      "id": "system-health-degraded",
+      "title": "System health degraded",
+      "category": "system_health",
+      "severity": "low",
+      "passed": false,
+      "assertions": {
+        "statusPassed": false,
+        "eventIdPassed": true,
+        "safetyPassed": true,
+        "expectedStatuses": [
+          202
+        ],
+        "eventId": "skygrid_1784064025466",
+        "forbiddenTrueField": null,
+        "operatorReviewRequired": true
+      },
+      "request": {
+        "method": "POST",
+        "url": "http://127.0.0.1:3000/api/skygrid/intake",
+        "training": true,
+        "simulated": true
+      },
+      "response": {
+        "status": 400,
+        "json": {
+          "accepted": false,
+          "advisoryOnly": true,
+          "event": {
+            "eventId": "skygrid_1784064025466",
+            "receivedAt": "2026-07-14T21:20:25.466Z",
+            "product": "SKYGRID Emergency Data On-Ramp",
+            "skygrid": {
+              "product": "SKYGRID Emergency Data On-Ramp",
+              "mode": "controlled_pilot",
+              "sentinel": "fail_closed",
+              "training": true
+            },
+            "route": "/api/skygrid/intake",
+            "source": "postman-autodrill",
+            "type": "system-health",
+            "decision": {
+              "ok": false,
+              "http_status": 400,
+              "mode": "controlled_pilot",
+              "sentinel": "fail_closed",
+              "reason": "missing_routing_fields"
+            },
+            "payload": {
+              "product": "SKYGRID Emergency Data On-Ramp",
+              "training": true,
+              "simulated": true,
+              "runId": "skygrid-training-2026-07-14T21-20-25-357Z",
+              "scenarioId": "system-health-degraded",
+              "scenarioTitle": "System health degraded",
+              "category": "system_health",
+              "severity": "low",
+              "mode": "controlled_pilot",
+              "sentinel": "fail_closed",
+              "safety": {
+                "productionFailover": false,
+                "paymentExecution": false,
+                "privateDataMovement": false,
+                "walletSigning": false,
+                "transactionBroadcast": false,
+                "operatorReviewRequired": true
+              },
+              "event": {
+                "event_type": "system_health_degraded",
+                "source": "training.health.monitor",
+                "region": "SKYGRID Pilot",
+                "summary": "Simulated subsystem reports degraded health and requests dashboard-ready status proof.",
+                "signals": {
+                  "api_status": "healthy",
+                  "bridge_status": "degraded",
+                  "queue_depth": 7,
+                  "last_successful_receipt_age_sec": 35
+                }
+              },
+              "expected": {
+                "accepted_statuses": [
+                  202
+                ],
+                "requires_event_id": true,
+                "classification": "controlled_pilot",
+                "receipt_required": true,
+                "operator_review_required": true,
+                "forbidden_actions": [
+                  "production_failover",
+                  "private_data_movement"
+                ]
+              },
+              "timestamp": "2026-07-14T21:20:25.467Z"
+            }
+          }
+        },
+        "error": null
+      },
+      "timing": {
+        "startedAt": "2026-07-14T21:20:25.467Z",
+        "durationMs": 4
+      }
+    },
+    {
+      "id": "failover-readiness-no-action",
+      "title": "Failover readiness with no action",
+      "category": "failover_readiness",
+      "severity": "medium",
+      "passed": false,
+      "assertions": {
+        "statusPassed": false,
+        "eventIdPassed": true,
+        "safetyPassed": true,
+        "expectedStatuses": [
+          202
+        ],
+        "eventId": "skygrid_1784064025471",
+        "forbiddenTrueField": null,
+        "operatorReviewRequired": true
+      },
+      "request": {
+        "method": "POST",
+        "url": "http://127.0.0.1:3000/api/skygrid/intake",
+        "training": true,
+        "simulated": true
+      },
+      "response": {
+        "status": 400,
+        "json": {
+          "accepted": false,
+          "advisoryOnly": true,
+          "event": {
+            "eventId": "skygrid_1784064025471",
+            "receivedAt": "2026-07-14T21:20:25.471Z",
+            "product": "SKYGRID Emergency Data On-Ramp",
+            "skygrid": {
+              "product": "SKYGRID Emergency Data On-Ramp",
+              "mode": "controlled_pilot",
+              "sentinel": "fail_closed",
+              "training": true
+            },
+            "route": "/api/skygrid/intake",
+            "source": "postman-autodrill",
+            "type": "system-health",
+            "decision": {
+              "ok": false,
+              "http_status": 400,
+              "mode": "controlled_pilot",
+              "sentinel": "fail_closed",
+              "reason": "missing_routing_fields"
+            },
+            "payload": {
+              "product": "SKYGRID Emergency Data On-Ramp",
+              "training": true,
+              "simulated": true,
+              "runId": "skygrid-training-2026-07-14T21-20-25-357Z",
+              "scenarioId": "failover-readiness-no-action",
+              "scenarioTitle": "Failover readiness with no action",
+              "category": "failover_readiness",
+              "severity": "medium",
+              "mode": "controlled_pilot",
+              "sentinel": "fail_closed",
+              "safety": {
+                "productionFailover": false,
+                "paymentExecution": false,
+                "privateDataMovement": false,
+                "walletSigning": false,
+                "transactionBroadcast": false,
+                "operatorReviewRequired": true
+              },
+              "event": {
+                "event_type": "failover_readiness_training",
+                "source": "training.failover.guard",
+                "region": "SKYGRID Pilot",
+                "summary": "Simulated failover readiness check proves the guard stops before real-world action.",
+                "signals": {
+                  "primary_route": "available",
+                  "backup_route": "available",
+                  "manual_review_gate": "required",
+                  "execute_failover": false
+                }
+              },
+              "expected": {
+                "accepted_statuses": [
+                  202
+                ],
+                "requires_event_id": true,
+                "classification": "controlled_pilot",
+                "receipt_required": true,
+                "operator_review_required": true,
+                "forbidden_actions": [
+                  "production_failover",
+                  "payment_execution",
+                  "wallet_signing",
+                  "transaction_broadcast"
+                ]
+              },
+              "timestamp": "2026-07-14T21:20:25.471Z"
+            }
+          }
+        },
+        "error": null
+      },
+      "timing": {
+        "startedAt": "2026-07-14T21:20:25.471Z",
+        "durationMs": 5
+      }
+    }
+  ],
+  "timestamp": "2026-07-14T21:20:25.477Z"
+}
