@@ -59,3 +59,4 @@ wallet/veteran-status/server/**/*.pem
 wallet/veteran-status/server/**/*.cer
 wallet/veteran-status/server/**/*.certSigningRequest
 cloudflare/skygrid-edge-worker/.tmp/
+cloudflare/skygrid-edge-worker/dist/
