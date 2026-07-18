@@ -3,12 +3,47 @@ import "./skygrid-ci-auth-bootstrap.mjs";
 
 const nativeFetch = globalThis.fetch;
 
+function normalizeTrainingBody(rawBody) {
+  try {
+    const payload = JSON.parse(rawBody);
+    const event = payload?.event;
+    if (!event || typeof event !== "object" || Array.isArray(event)) {
+      return rawBody;
+    }
+
+    for (const key of [
+      "route_type",
+      "requested_ramp",
+      "requested_node",
+      "owner_approval",
+      "emergency_operator_approval",
+      "wallet_signing_requested",
+      "transaction_broadcast_requested",
+      "payment_execution_requested",
+      "production_failover_requested",
+      "private_data_movement_requested"
+    ]) {
+      if (payload[key] === undefined && event[key] !== undefined) {
+        payload[key] = event[key];
+      }
+    }
+
+    if (!payload.type) {
+      payload.type = event.type || event.event_type || event.route_type || payload.category;
+    }
+
+    return JSON.stringify(payload);
+  } catch {
+    return rawBody;
+  }
+}
+
 if (nativeFetch && !globalThis.__skygridTrainingSignedFetchInstalled) {
   globalThis.fetch = (input, init = {}) => {
     const method = String(init.method || "GET").toUpperCase();
-    const rawBody = typeof init.body === "string" ? init.body : "";
+    const originalBody = typeof init.body === "string" ? init.body : "";
 
-    if (method !== "POST" || !rawBody) {
+    if (method !== "POST" || !originalBody) {
       return nativeFetch(input, init);
     }
 
@@ -19,6 +54,7 @@ if (nativeFetch && !globalThis.__skygridTrainingSignedFetchInstalled) {
       );
     }
 
+    const rawBody = normalizeTrainingBody(originalBody);
     const timestamp = String(Date.now());
     const nonce = randomBytes(18).toString("base64url");
     const signature = createHmac("sha256", secret)
@@ -32,6 +68,7 @@ if (nativeFetch && !globalThis.__skygridTrainingSignedFetchInstalled) {
 
     return nativeFetch(input, {
       ...init,
+      body: rawBody,
       headers
     });
   };
