@@ -1,5 +1,5 @@
 import express from "express";
-import handler from "../api/runtime.mjs";
+import handler from "./skygrid-local-runtime-router.mjs";
 
 const args = process.argv.slice(2);
 let cliPort = null;
