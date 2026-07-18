@@ -1,3 +1,4 @@
+import "./skygrid-ci-auth-bootstrap.mjs";
 import express from "express";
 import handler from "./skygrid-local-runtime-router.mjs";
 
