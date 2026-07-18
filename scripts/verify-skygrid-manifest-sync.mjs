@@ -2,24 +2,33 @@ import { readFile } from "node:fs/promises";
 
 const manifestPath = "config/skygrid-route-manifest.json";
 const runtimePath = "api/runtime.mjs";
+const runtimeCorePath = "api/runtime-core.mjs";
 const vercelPath = "vercel.json";
 const postmanPath = "postman/skygrid-autodrill.collection.json";
 
 const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
-const runtime = await readFile(runtimePath, "utf8");
+const runtimeEntry = await readFile(runtimePath, "utf8");
+const runtimeCore = await readFile(runtimeCorePath, "utf8").catch(() => "");
+const runtime = `${runtimeEntry}\n${runtimeCore}`;
 const vercel = JSON.parse(await readFile(vercelPath, "utf8"));
 const postman = JSON.parse(await readFile(postmanPath, "utf8"));
 
 const normalize = (path) => String(path || "").split("?")[0];
 const routePath = (route) => normalize(route.path || route.sample_path);
-const implementedRoutes = manifest.routes.filter((route) => String(route.status || "").includes("implemented"));
+const implementedRoutes = manifest.routes.filter((route) =>
+  String(route.status || "").includes("implemented")
+);
 const requiredImplementedRoutes = implementedRoutes.filter((route) => route.required);
 
-const vercelSources = new Set((vercel.rewrites || []).map((rewrite) => normalize(rewrite.source)));
+const vercelSources = new Set(
+  (vercel.rewrites || []).map((rewrite) => normalize(rewrite.source))
+);
 
 function collectPostmanUrls(items = [], out = []) {
   for (const item of items) {
-    if (item.request?.url) out.push(String(item.request.url).replace("{{base_url}}", ""));
+    if (item.request?.url) {
+      out.push(String(item.request.url).replace("{{base_url}}", ""));
+    }
     if (item.item) collectPostmanUrls(item.item, out);
   }
   return out;
@@ -34,12 +43,21 @@ for (const route of implementedRoutes) {
   const path = routePath(route);
   const hasDedicatedApiFile = path === "/api/sponsors/link";
 
-  if (route.owner.includes("vercel") && !vercelSources.has(path) && !hasDedicatedApiFile) {
+  if (
+    route.owner.includes("vercel") &&
+    !vercelSources.has(path) &&
+    !hasDedicatedApiFile
+  ) {
     failures.push(`vercel.json missing implemented route: ${path}`);
   }
 
-  if (route.owner.includes("vercel") && !runtime.includes(`"${path}"`) && !runtime.includes(`path === "${path}"`) && !hasDedicatedApiFile) {
-    failures.push(`api/runtime.mjs missing implemented route reference: ${path}`);
+  if (
+    route.owner.includes("vercel") &&
+    !runtime.includes(`"${path}"`) &&
+    !runtime.includes(`path === "${path}"`) &&
+    !hasDedicatedApiFile
+  ) {
+    failures.push(`runtime entry/core missing implemented route reference: ${path}`);
   }
 }
 
@@ -57,6 +75,7 @@ const report = {
   manifest_routes: manifest.routes.length,
   implemented_routes: implementedRoutes.length,
   required_implemented_routes: requiredImplementedRoutes.length,
+  runtime_files_scanned: runtimeCore ? [runtimePath, runtimeCorePath] : [runtimePath],
   vercel_rewrites: vercelSources.size,
   postman_urls: postmanUrls.size,
   failures,
