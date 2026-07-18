@@ -1,0 +1,50 @@
+name: Aura Work Agent Validation
+
+on:
+  pull_request:
+    paths:
+      - "apps/aura-work-agent/**"
+      - ".github/workflows/aura-work-agent-ci.yml"
+  push:
+    branches:
+      - MVPuknowme
+    paths:
+      - "apps/aura-work-agent/**"
+      - ".github/workflows/aura-work-agent-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/aura-work-agent
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.23.0
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: apps/aura-work-agent/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Build
+        run: pnpm build
