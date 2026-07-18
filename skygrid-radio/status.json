@@ -1,6 +1,0 @@
-{
-  "status": "DEPLOYED",
-  "mode": "staged",
-  "ack_mode": "hybrid",
-  "nack_config": "all"
-}
