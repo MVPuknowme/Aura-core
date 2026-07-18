@@ -42,7 +42,24 @@ jobs:
         run: pnpm install --no-frozen-lockfile
 
       - name: Typecheck
-        run: pnpm typecheck
+        id: typecheck
+        continue-on-error: true
+        run: pnpm typecheck > typecheck.log 2>&1
+
+      - name: Upload TypeScript diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aura-work-agent-typecheck
+          path: apps/aura-work-agent/typecheck.log
+          if-no-files-found: error
+          retention-days: 3
+
+      - name: Enforce typecheck
+        if: steps.typecheck.outcome != 'success'
+        run: |
+          cat typecheck.log
+          exit 1
 
       - name: Build
         run: pnpm build
