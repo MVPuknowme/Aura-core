@@ -25,6 +25,7 @@
     { "source": "/dashboard/validation-panel", "destination": "/api/runtime" },
     { "source": "/dashboard/deployment-review", "destination": "/api/runtime" },
     { "source": "/dashboard/receipts", "destination": "/api/runtime" },
+    { "source": "/dashboard/revenue-ledger", "destination": "/api/revenue/dashboard" },
     { "source": "/api/skygrid/status", "destination": "/api/runtime" },
     { "source": "/api/skygrid/intake", "destination": "/api/runtime" },
     { "source": "/api/aura-core/decide", "destination": "/api/runtime" },
