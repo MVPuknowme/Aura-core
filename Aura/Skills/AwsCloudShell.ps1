@@ -1,7 +1,26 @@
+function Resolve-AuraRepositoryRoot {
+    [CmdletBinding()]
+    param(
+        [string]$RepositoryRoot
+    )
+
+    if ([string]::IsNullOrWhiteSpace($RepositoryRoot)) {
+        $RepositoryRoot = Join-Path $PSScriptRoot "..\.."
+    }
+
+    return (Resolve-Path -LiteralPath $RepositoryRoot -ErrorAction Stop).Path
+}
+
 function New-AuraCloudShellHandoff {
-    $root = "E:\Aura-core"
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [string]$RepositoryRoot
+    )
+
+    $root = Resolve-AuraRepositoryRoot -RepositoryRoot $RepositoryRoot
     $outDir = Join-Path $root "artifacts\aws\cloudshell"
-    New-Item -ItemType Directory -Force $outDir | Out-Null
+    New-Item -ItemType Directory -Force -Path $outDir | Out-Null
 
     $scriptPath = Join-Path $outDir "aura-cloudshell-bootstrap.sh"
 
@@ -29,7 +48,7 @@ function New-AuraCloudShellHandoff {
 '  cd "$HOME/Aura-core"',
 '  git fetch origin "$AURA_BRANCH"',
 '  git checkout "$AURA_BRANCH"',
-'  git pull origin "$AURA_BRANCH"',
+'  git pull --ff-only origin "$AURA_BRANCH"',
 'else',
 '  cd "$HOME"',
 '  git clone --branch "$AURA_BRANCH" "$AURA_REPO" Aura-core',
@@ -38,37 +57,8 @@ function New-AuraCloudShellHandoff {
 '',
 'mkdir -p artifacts/aws/cloudshell',
 '',
-'echo ""',
-'echo "Optional IAM setup: SupportConsoleFullAccess"',
-'echo "-------------------------------------------"',
-'echo "This creates a customer-managed IAM policy allowing support-console:*."',
-'echo "Run only if this AWS account should have that support-console policy."',
-'',
-'cat > support-console-full-access-policy.json <<JSON',
-'{',
-'  "Version": "2012-10-17",',
-'  "Statement": [',
-'    {',
-'      "Effect": "Allow",',
-'      "Action": [',
-'        "support-console:*"',
-'      ],',
-'      "Resource": "*"',
-'    }',
-'  ]',
-'}',
-'JSON',
-'',
-'ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"',
-'POLICY_ARN="arn:aws:iam::${ACCOUNT_ID}:policy/SupportConsoleFullAccess"',
-'',
-'if aws iam get-policy --policy-arn "$POLICY_ARN" >/dev/null 2>&1; then',
-'  echo "Policy already exists: SupportConsoleFullAccess"',
-'else',
-'  aws iam create-policy \',
-'    --policy-name "SupportConsoleFullAccess" \',
-'    --policy-document file://support-console-full-access-policy.json',
-'fi',
+'echo "IAM provisioning: disabled in this bootstrap."',
+'echo "Use a separately reviewed, operator-approved least-privilege role or policy when additional AWS permissions are required."',
 '',
 'RUN_ID="$(date -u +%Y%m%dT%H%M%SZ)"',
 'PROOF="artifacts/aws/cloudshell/cloudshell-proof-$RUN_ID.json"',
@@ -76,14 +66,15 @@ function New-AuraCloudShellHandoff {
 'cat > "$PROOF" <<JSON',
 '{',
 '  "format": "aura.aws.cloudshell.proof",',
-'  "version": "0.1.0",',
+'  "version": "0.2.0",',
 '  "run_id": "$RUN_ID",',
 '  "created_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",',
 '  "mode": "aws-cloudshell",',
 '  "repo": "$AURA_REPO",',
 '  "branch": "$AURA_BRANCH",',
 '  "region": "$AWS_REGION",',
-'  "policy_name": "SupportConsoleFullAccess",',
+'  "execution_authority": "none",',
+'  "iam_provisioning": false,',
 '  "openai_required": false,',
 '  "local_private_keys_required": false,',
 '  "wallet_mode": "read-only",',
@@ -97,40 +88,51 @@ function New-AuraCloudShellHandoff {
 'cat "$PROOF"',
 '',
 'echo ""',
-'echo "Next safe checks:"',
+'echo "Next read-only checks:"',
 'echo "aws cloudformation list-stacks --region $AWS_REGION --max-items 10"',
 'echo "aws lambda list-functions --region $AWS_REGION --max-items 10"',
 'echo "aws apigateway get-rest-apis --region $AWS_REGION --limit 10"',
-'echo "aws iam list-policies --scope Local --output table"',
 'echo ""',
 'echo "AURA CloudShell handoff complete."'
     )
 
-    $lines | Set-Content $scriptPath
+    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllLines($scriptPath, [string[]]$lines, $utf8NoBom)
 
     Write-Host ""
     Write-Host "AURA AWS CLOUDSHELL HANDOFF" -ForegroundColor Cyan
     Write-Host "---------------------------"
+    Write-Host ("Repository root: {0}" -f $root)
     Write-Host ("Script: {0}" -f $scriptPath)
+    Write-Host "IAM provisioning included: false" -ForegroundColor Yellow
     Write-Host ""
     Write-Host "Open AWS Console CloudShell, then paste the bootstrap script contents." -ForegroundColor Yellow
     Write-Host ""
     Write-Host "Copy script to clipboard with:" -ForegroundColor Cyan
     Write-Host ("Get-Content `"{0}`" -Raw | Set-Clipboard" -f $scriptPath)
     Write-Host ""
+
+    return $scriptPath
 }
 
 function Show-AuraCloudShellStatus {
-    $root = "E:\Aura-core"
+    [CmdletBinding()]
+    param(
+        [string]$RepositoryRoot
+    )
+
+    $root = Resolve-AuraRepositoryRoot -RepositoryRoot $RepositoryRoot
     $scriptPath = Join-Path $root "artifacts\aws\cloudshell\aura-cloudshell-bootstrap.sh"
 
     Write-Host ""
     Write-Host "AURA CLOUDSHELL STATUS" -ForegroundColor Cyan
     Write-Host "----------------------"
-    Write-Host ("Bootstrap exists: {0}" -f (Test-Path $scriptPath))
+    Write-Host ("Repository root: {0}" -f $root)
+    Write-Host ("Bootstrap exists: {0}" -f (Test-Path -LiteralPath $scriptPath))
     Write-Host "AWS credentials stored locally: false"
     Write-Host "OpenAI required: false"
     Write-Host "Recommended mode: CloudShell handoff"
-    Write-Host "Policy included: SupportConsoleFullAccess"
+    Write-Host "IAM provisioning included: false"
+    Write-Host "Execution authority: none"
     Write-Host ""
 }
