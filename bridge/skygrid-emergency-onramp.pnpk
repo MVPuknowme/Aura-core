@@ -22,7 +22,10 @@
     "scenarios": "/scenarios",
     "rates": "/rates",
     "base": "/base",
-    "pay": "/pay"
+    "pay": "/pay",
+    "capacity_lease": "/lease",
+    "capacity_preflight": "/api/node-lease/preflight",
+    "capacity_agreement": "/api/node-lease/agreements"
   },
   "platforms": {
     "cloudflare_worker": {
@@ -155,6 +158,44 @@
       "production_failover_allowed": false,
       "description": "Auto-Drill receives route and compute-space planning envelopes only during controlled pilot, after the end user's lease-value decision is recorded."
     },
+    "capacity_lease_delivery": {
+      "enabled": true,
+      "packet_version": "1.1.0",
+      "agreement_version": "skygrid-capacity-lease-pilot-v1",
+      "website_route": "/lease",
+      "preflight_route": "/api/node-lease/preflight",
+      "agreement_route": "/api/node-lease/agreements",
+      "inventory_sources": [
+        "browser_preflight",
+        "signed_local_agent"
+      ],
+      "resource_classes": [
+        "storage",
+        "compute",
+        "gpu",
+        "diagnostic"
+      ],
+      "execution_authority": "none",
+      "owner_agreement_persistence": "cloudflare_d1",
+      "activation_grant_required": true,
+      "partition_policy": {
+        "unallocated_space_only": true,
+        "automatic_shrink_allowed": false,
+        "delete_existing_partition_allowed": false,
+        "system_or_boot_disk_allowed": false,
+        "storage_layout_hash_match_required": true,
+        "rollback_proof_required": true
+      },
+      "agreement_states": [
+        "offered",
+        "owner_accepted_pending_operator",
+        "approved_pending_activation",
+        "active",
+        "released",
+        "rejected",
+        "expired"
+      ]
+    },
     "guardrails": [
       "Advisory controlled pilot only",
       "End-user lease-value decision required for provisional lease planning",
@@ -176,6 +217,9 @@
       "select_planning_runtime",
       "create_gas_quote_envelope",
       "create_auto_drill_space_envelope",
+      "create_capacity_lease_offer",
+      "record_capacity_owner_agreement",
+      "create_capacity_agreement_receipt",
       "record_end_user_lease_value_decision",
       "report_active_ramp"
     ],
@@ -186,6 +230,10 @@
       "device_activation",
       "production_failover",
       "private_data_movement",
+      "disk_partition_without_activation_grant",
+      "system_or_boot_disk_partition",
+      "existing_partition_delete_or_shrink",
+      "gpu_enrollment_without_activation_grant",
       "rf_control",
       "nuisance_signal_output"
     ],
@@ -201,7 +249,10 @@
       "offered_lease_value_eth",
       "end_user_decision",
       "ethereum_gas_quote",
-      "auto_drill_space_request"
+      "auto_drill_space_request",
+      "capacity_inventory",
+      "selected_capacity_option",
+      "capacity_owner_agreement"
     ],
     "decision_output": {
       "active_ramp": null,
@@ -241,6 +292,20 @@
         "activate_device=true",
         "mode=live"
       ]
+    },
+    "capacity_lease_preflight": {
+      "enabled": true,
+      "method": "POST",
+      "route": "/api/node-lease/preflight",
+      "execution_authority": "none",
+      "expected_sentinel": "fail_closed"
+    },
+    "capacity_lease_agreement": {
+      "enabled": true,
+      "method": "POST",
+      "route": "/api/node-lease/agreements",
+      "result": "owner_accepted_pending_operator",
+      "activation_grant_required": true
     }
   },
   "partitions": {
@@ -303,6 +368,25 @@
       "wallet_signing_allowed": false,
       "transaction_broadcast_allowed": false,
       "payment_execution_allowed": false
+    },
+    "capacity_lease": {
+      "allowed_ramps": [
+        "cloudflare_worker",
+        "vercel"
+      ],
+      "allowed_nodes": [
+        "home",
+        "edge",
+        "field",
+        "validator"
+      ],
+      "mode": "preflight_and_agreement_only",
+      "sentinel": "fail_closed",
+      "execution_authority": "none",
+      "activation_grant_required": true,
+      "system_or_boot_disk_allowed": false,
+      "automatic_volume_shrink_allowed": false,
+      "partition_delete_allowed": false
     }
   },
   "dual_approval_gate": {
@@ -319,7 +403,8 @@
       "system_health",
       "recovery_proof",
       "continuity_log",
-      "web3_quote"
+      "web3_quote",
+      "capacity_lease"
     ],
     "trust_statement": "PNPK is the policy traffic layer. SKYGRID routes only when owner and emergency operator approval agree."
   }

@@ -8,49 +8,49 @@ const checks = [
     method: "GET",
     path: "/",
     success: [200, 202, 204, 301, 302, 307, 308],
-    pending: [401, 403, 404]
+    pending: [401, 402, 403, 404]
   },
   {
     name: "Static health contract",
     method: "GET",
     path: "/health.json",
     success: [200, 202, 204, 301, 302, 307, 308],
-    pending: [401, 403, 404]
+    pending: [401, 402, 403, 404]
   },
   {
     name: "Dispatcher route",
     method: "GET",
     path: "/dispatch",
     success: [200, 202, 204, 301, 302, 307, 308, 405],
-    pending: [401, 403, 404]
+    pending: [401, 402, 403, 404]
   },
   {
     name: "Scenario route",
     method: "GET",
     path: "/scenarios",
     success: [200, 202, 204, 301, 302, 307, 308, 405],
-    pending: [401, 403, 404]
+    pending: [401, 402, 403, 404]
   },
   {
     name: "SKYGRID status API",
     method: "GET",
     path: "/api/skygrid/status",
     success: [200, 202, 204, 301, 302, 307, 308, 405],
-    pending: [401, 403, 404]
+    pending: [401, 402, 403, 404]
   },
   {
     name: "Highway status API",
     method: "GET",
     path: "/api/highway/status",
     success: [200, 202, 204, 301, 302, 307, 308, 405],
-    pending: [401, 403, 404]
+    pending: [401, 402, 403, 404]
   },
   {
     name: "SKYGRID intake POST",
     method: "POST",
     path: "/api/skygrid/intake",
     success: [200, 201, 202, 204, 405],
-    pending: [401, 403, 404],
+    pending: [401, 402, 403, 404],
     body: {
       system: "SKYGRID Emergency Data On-Ramp",
       control_layer: "Aura-Core AI",

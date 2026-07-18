@@ -22,6 +22,8 @@
         "skygrid:verify": "node scripts/verify-skygrid-routes.mjs",
         "skygrid:test:routing": "node scripts/test-skygrid-routing-success.mjs",
         "intake:policy-test": "node --test tests/skygrid-intake-policy.test.mjs",
+        "capacity:lease-test": "node --test tests/skygrid-capacity-lease.test.mjs",
+        "capacity:lease-verify": "npm run pnpk:validate && npm run capacity:lease-test",
         "aura:selection:watch": "node scripts/aura-core-ai-selection-watch.mjs",
         "mcp:check": "node scripts/check-mcp-sdk.mjs",
         "emergency:gate": "node scripts/skygrid-emergency-gate.mjs",
