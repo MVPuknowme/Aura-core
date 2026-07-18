@@ -24,7 +24,7 @@ const checks = [
 ];
 
 const okStatuses = new Set([200, 202, 204, 301, 302, 307, 308, 405]);
-const pendingStatuses = new Set([401, 403, 404]);
+const pendingStatuses = new Set([401, 402, 403, 404]);
 
 let failed = false;
 let pending = false;
