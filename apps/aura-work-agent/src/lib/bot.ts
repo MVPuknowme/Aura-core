@@ -8,6 +8,7 @@ import { createRedisState } from "@chat-adapter/state-redis";
 import { runAuraAgent } from "@/lib/agent";
 
 let botInstance: Chat | undefined;
+let discordAdapterInstance: ReturnType<typeof createDiscordAdapter> | undefined;
 
 type AuthorLike = {
   id?: string;
@@ -103,12 +104,12 @@ function registerHandlers(bot: Chat): void {
   });
 }
 
-export function getBot(): Chat {
-  if (botInstance) {
-    return botInstance;
+export function getDiscordAdapter(): ReturnType<typeof createDiscordAdapter> {
+  if (discordAdapterInstance) {
+    return discordAdapterInstance;
   }
 
-  const discord = createDiscordAdapter({
+  discordAdapterInstance = createDiscordAdapter({
     botToken: process.env.DISCORD_BOT_TOKEN,
     publicKey: process.env.DISCORD_PUBLIC_KEY,
     applicationId: process.env.DISCORD_APPLICATION_ID,
@@ -122,9 +123,17 @@ export function getBot(): Chat {
         : undefined,
   });
 
+  return discordAdapterInstance;
+}
+
+export function getBot(): Chat {
+  if (botInstance) {
+    return botInstance;
+  }
+
   botInstance = new Chat({
     userName: "aura",
-    adapters: { discord },
+    adapters: { discord: getDiscordAdapter() },
     state: createState(),
     dedupeTtlMs: 30_000,
     streamingUpdateIntervalMs: 1_000,
