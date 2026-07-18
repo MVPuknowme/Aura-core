@@ -1,0 +1,31 @@
+name: AWS CloudShell skill validation
+
+on:
+  pull_request:
+    paths:
+      - "Aura/Skills/AwsCloudShell.ps1"
+      - "tests/AwsCloudShell.Tests.ps1"
+      - ".github/workflows/aws-cloudshell-skill-ci.yml"
+  push:
+    branches:
+      - MVPuknowme
+    paths:
+      - "Aura/Skills/AwsCloudShell.ps1"
+      - "tests/AwsCloudShell.Tests.ps1"
+      - ".github/workflows/aws-cloudshell-skill-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Test AWS CloudShell handoff
+        shell: pwsh
+        run: ./tests/AwsCloudShell.Tests.ps1
