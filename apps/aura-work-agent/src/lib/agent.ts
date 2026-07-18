@@ -1,5 +1,11 @@
 import { Agent, run } from "@openai/agents";
 import {
+  AURA_CORE_IDENTITY,
+  DEFAULT_AURA_LOCAL_PREFERENCES,
+  buildAuraPreferenceContext,
+  type AuraLocalPreferences,
+} from "@/lib/aura-profile";
+import {
   githubCommentOnIssue,
   githubCreateIssue,
   githubListOpenIssues,
@@ -13,8 +19,7 @@ const auraAgent = new Agent<AuraAgentContext>({
   name: "Aura Work Agent",
   model: process.env.OPENAI_MODEL ?? "gpt-5.4-mini",
   instructions: `
-You are Aura Work Agent for SKYGRID Emergency Data On-Ramp and Aura-Core.
-Be precise, concise, and operationally useful.
+${AURA_CORE_IDENTITY}
 
 GitHub policy:
 - You may read only repositories exposed by the provided GitHub tools.
@@ -56,9 +61,14 @@ export async function runAuraAgent(input: {
   prompt: string;
   actorId: string;
   actorName: string;
+  preferences?: AuraLocalPreferences;
+  feedbackCount?: number;
+  outputMode?: "discord" | "local";
 }): Promise<string> {
   const explicitWriteApproval = WRITE_APPROVAL_PREFIX.test(input.prompt);
   const operatorAuthorized = operatorUserIds().has(input.actorId);
+  const preferences = input.preferences ?? DEFAULT_AURA_LOCAL_PREFERENCES;
+  const feedbackCount = input.feedbackCount ?? 0;
 
   const context: AuraAgentContext = {
     actorId: input.actorId,
@@ -68,9 +78,13 @@ export async function runAuraAgent(input: {
   };
 
   const prompt = [
-    `Discord actor: ${input.actorName} (${input.actorId})`,
+    `Actor: ${input.actorName} (${input.actorId})`,
+    `Interface: ${input.outputMode ?? "discord"}`,
     `Operator authorized: ${operatorAuthorized ? "yes" : "no"}`,
     `Explicit write approval prefix: ${explicitWriteApproval ? "present" : "absent"}`,
+    "",
+    "Current explicit presentation preferences:",
+    buildAuraPreferenceContext(preferences, feedbackCount),
     "",
     input.prompt,
   ].join("\n");
@@ -87,7 +101,7 @@ export async function runAuraAgent(input: {
       } else {
         result.state.reject(interruption, {
           message:
-            "Write action rejected. The Discord user must be allowlisted and the request must begin with APPROVE WRITE:.",
+            "Write action rejected. The authenticated Discord user must be allowlisted and the request must begin with APPROVE WRITE:.",
         });
       }
     }
@@ -99,5 +113,6 @@ export async function runAuraAgent(input: {
     return "The agent stopped because a write action still requires approval.";
   }
 
-  return compactDiscordOutput(result.finalOutput);
+  const output = String(result.finalOutput ?? "No response generated.").trim();
+  return input.outputMode === "local" ? output : compactDiscordOutput(output);
 }
