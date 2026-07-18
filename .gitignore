@@ -23,6 +23,11 @@ xcuserdata/
 .skygrid/ethereum-collection-drafts/
 .skygrid/
 
+# SKYGRID local runtime process state
+.skygrid-runtime.pid
+.skygrid-runtime.log
+.skygrid-runtime-error.log
+
 .env.local
 desktop-gpt/.runtime/
 desktop-gpt/logs/

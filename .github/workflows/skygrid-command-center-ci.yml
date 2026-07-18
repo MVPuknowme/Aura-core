@@ -1,0 +1,52 @@
+name: SKYGRID Command Center Validation
+
+on:
+  pull_request:
+    paths:
+      - "Aura/Skills/LocalRouteScanner.ps1"
+      - "restart-skygrid-dual-lane.ps1"
+      - "scripts/skygrid-iphone-debug-server.mjs"
+      - "tests/CommandCenter.Tests.ps1"
+      - ".github/workflows/skygrid-command-center-ci.yml"
+      - "SECURITY.md"
+  push:
+    branches:
+      - MVPuknowme
+    paths:
+      - "Aura/Skills/LocalRouteScanner.ps1"
+      - "restart-skygrid-dual-lane.ps1"
+      - "scripts/skygrid-iphone-debug-server.mjs"
+      - "tests/CommandCenter.Tests.ps1"
+      - ".github/workflows/skygrid-command-center-ci.yml"
+      - "SECURITY.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  powershell-safety:
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate PowerShell command-center controls
+        shell: pwsh
+        run: ./tests/CommandCenter.Tests.ps1
+
+  node-syntax:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Validate guarded debug server
+        run: node --check scripts/skygrid-iphone-debug-server.mjs
