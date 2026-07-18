@@ -1,5 +1,5 @@
 import { after } from "next/server";
-import { getBot } from "@/lib/bot";
+import { getBot, getDiscordAdapter } from "@/lib/bot";
 
 export const runtime = "nodejs";
 export const maxDuration = 800;
@@ -14,14 +14,12 @@ export async function GET(request: Request): Promise<Response> {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  const bot = getBot();
-  await bot.initialize();
+  await getBot().initialize();
 
-  const discord = bot.getAdapter("discord");
   const webhookUrl = new URL("/api/webhooks/discord", request.url).toString();
 
-  return discord.startGatewayListener(
-    { waitUntil: (task) => after(() => task) },
+  return getDiscordAdapter().startGatewayListener(
+    { waitUntil: (task: Promise<unknown>) => after(() => task) },
     600_000,
     undefined,
     webhookUrl,
