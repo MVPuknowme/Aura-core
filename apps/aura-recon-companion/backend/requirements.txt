@@ -1,6 +1,6 @@
-fastapi==0.116.1
-uvicorn[standard]==0.35.0
-pydantic==2.11.7
-dnspython==2.7.0
-httpx==0.28.1
-pytest==8.4.1
+fastapi>=0.138,<0.139
+uvicorn[standard]>=0.51,<0.52
+pydantic>=2.12,<3
+dnspython>=2.8,<3
+httpx>=0.28,<0.29
+pytest>=8.4,<9
