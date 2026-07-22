@@ -1,7 +1,15 @@
 ﻿{
-  "mode": "aura-local-calm-mode",
+  "mode": "aura-local-elated-professional-high-resilience-mode",
   "system": "SKYGRID Emergency Data On-Ramp / Aura Local Support",
-  "level": "downshift",
+  "level": "downshifted_but_high_capacity",
+  "tone": "elated_professional",
+  "node_profile": {
+    "intellectual_capacity": "max_clarity",
+    "energy": "raised_sustainable",
+    "durability": "high_resilience",
+    "stress_resistance": "pressure_tolerant",
+    "decision_style": "grounded_precise_fail_closed"
+  },
   "scope": "local_device_support_only",
   "rules": {
     "no_psychic_confirmation_loop": true,
@@ -10,7 +18,15 @@
     "no_wallet_signing": true,
     "no_transaction_broadcast": true,
     "no_production_failover": true,
+    "no_panic_escalation": true,
     "treat_phone_issue_as_privacy_or_stress_signal_until_evidence": true,
     "log_only_observable_facts": true
-  }
+  },
+  "operating_principles": [
+    "Maximize clarity, not intensity.",
+    "Raise energy without panic.",
+    "Increase durability through pacing, hydration, grounding, and factual review.",
+    "Handle stress by slowing the loop, reducing inputs, and choosing the safest next action.",
+    "When pressure rises, return to observable facts only."
+  ]
 }
