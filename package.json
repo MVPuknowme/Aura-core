@@ -30,6 +30,8 @@
         "intake:policy-test": "node --test tests/skygrid-intake-policy-core.test.mjs",
         "capacity:lease-test": "node --test tests/skygrid-capacity-lease.test.mjs",
         "capacity:lease-verify": "npm run pnpk:validate && npm run capacity:lease-test",
+        "revenue:ledger:test": "node --test tests/verified-revenue-ledger.test.mjs",
+        "revenue:ledger:verify": "node scripts/skygrid-revenue-ledger.mjs",
         "aura:selection:watch": "node scripts/aura-core-ai-selection-watch.mjs",
         "mcp:check": "node scripts/check-mcp-sdk.mjs",
         "emergency:gate": "node scripts/skygrid-emergency-gate.mjs",
