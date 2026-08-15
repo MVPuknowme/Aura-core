@@ -1,0 +1,51 @@
+name: SKYGRID vault installer review
+
+on:
+  pull_request:
+    paths:
+      - "packages/vault/src/install.ts"
+      - "packages/operator/src/vault-installer.ts"
+      - "api/admin/vault/**"
+      - ".github/workflows/skygrid-vault-installer-review.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  policy-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Type-check isolated installer boundary
+        run: >-
+          npx --yes --package typescript --package @types/node tsc
+          --noEmit
+          --strict
+          --skipLibCheck
+          --module NodeNext
+          --moduleResolution NodeNext
+          --target ES2022
+          --types node
+          packages/vault/src/install.ts
+          packages/operator/src/vault-installer.ts
+          api/admin/vault/_auth.ts
+          api/admin/vault/install-methods.ts
+          api/admin/vault/install.ts
+      - name: Enforce installer trust-boundary invariants
+        shell: pwsh
+        run: |
+          $files = @(
+            'packages/vault/src/install.ts',
+            'packages/operator/src/vault-installer.ts',
+            'api/admin/vault/install.ts'
+          )
+          $text = ($files | ForEach-Object { Get-Content $_ -Raw }) -join "`n"
+          if ($text -match 'shell\s*:\s*true') { throw 'shell:true is forbidden in vault installer paths' }
+          $route = Get-Content 'api/admin/vault/install.ts' -Raw
+          if ($route -match 'body\.(package|command|args|url)') { throw 'install route must not accept caller-supplied package/command/args/url' }
+          if ($route -notmatch 'methodId') { throw 'install route must resolve by canonical methodId' }
+          Write-Host 'SKYGRID vault installer trust boundary passed.'
