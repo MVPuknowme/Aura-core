@@ -43,6 +43,11 @@ h1 { margin: 8px 0 10px; font-size: clamp(2rem, 7vw, 4.5rem); line-height: .98; 
   background: linear-gradient(145deg, rgba(26,31,59,.92), rgba(9,13,29,.88));
 }
 
+.calibration-card {
+  border-color: rgba(109, 168, 255, .3);
+  background: linear-gradient(145deg, rgba(16, 29, 58, .92), rgba(9,13,29,.88));
+}
+
 .compact { padding-block: 16px; }
 .section-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 h2 { margin: 0 0 12px; font-size: 1.2rem; }
@@ -120,6 +125,37 @@ h2 { margin: 0 0 12px; font-size: 1.2rem; }
   font-weight: 700;
 }
 
+.calibration-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  margin-top: 18px;
+}
+
+.calibration-label {
+  color: #9ba6ce;
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.calibration-target {
+  margin-top: 7px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #10162b;
+  border: 1px solid rgba(255,255,255,.12);
+  font-size: 1.15rem;
+  font-weight: 750;
+}
+
+.calibration-score-wrap { text-align: right; }
+.calibration-score { margin-top: 6px; font-size: 2rem; font-weight: 900; }
+.calibration-result { min-height: 1.5em; margin: 14px 0; }
+.calibration-button { width: 100%; min-height: 68px; }
+
 textarea, select {
   width: 100%;
   color: #f7f8ff;
@@ -181,9 +217,10 @@ button.danger { background: #47202b; }
 }
 
 @media (max-width: 680px) {
-  .two-col, .command-controls { grid-template-columns: 1fr; }
+  .two-col, .command-controls, .calibration-grid { grid-template-columns: 1fr; }
   .card { padding: 16px; border-radius: 18px; }
   .button-row button { flex: 1 1 140px; }
   .action-button { min-height: 72px; }
   .section-heading { flex-direction: column; }
+  .calibration-score-wrap { text-align: left; }
 }
