@@ -13,13 +13,26 @@ Speak is a local-first browser speech interface inside Aura-core.
 - Responsive mobile-first UI using the Aura dark-blue/orange visual direction.
 - No application-level network calls, analytics, background listening, or device discovery.
 
+## iPhone / iPad dev container
+
+The branch includes `.devcontainer/devcontainer.json` for GitHub Codespaces and other Dev Container clients.
+
+1. Create or rebuild a Codespace from the `agent/rebuild-speak` branch.
+2. The container automatically starts `node apps/speak/dev-server.mjs`.
+3. Port `8080` is automatically forwarded as a private port labeled **Aura Speak**.
+4. The preview is configured to open automatically. On iPhone/iPad, you can also open the forwarded port from the Codespaces **Ports** panel in Safari.
+5. Open `/health` on the forwarded URL to confirm the dev server is running; it returns JSON with `"ok": true`.
+
+The application itself remains static and the dev server has no external service dependencies.
+
+> iOS does not run this Linux dev container locally. The container runs remotely in Codespaces; Safari on iOS connects to its forwarded HTTPS port. This secure origin is also preferable for microphone APIs.
+
 ## Run locally
 
-From the repository root, serve the directory with any static HTTP server. For example in PowerShell:
+From the repository root, use the included Node development server:
 
 ```powershell
-Set-Location .\apps\speak
-python -m http.server 8080
+node .\apps\speak\dev-server.mjs
 ```
 
 Then open `http://localhost:8080`.
@@ -35,3 +48,5 @@ Speak is an assistive voice/text interface. It does not attempt to infer thought
 - `index.html` — application shell and accessible controls.
 - `styles.css` — mobile-first Aura styling.
 - `app.js` — speech synthesis, recognition, transcript, and control logic.
+- `dev-server.mjs` — dependency-free static dev server and `/health` endpoint.
+- `.devcontainer/devcontainer.json` — remote Codespaces/dev-container configuration with private port forwarding.
