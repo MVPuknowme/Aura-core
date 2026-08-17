@@ -25,14 +25,7 @@
       </div>
 
       <div class="command-controls">
-        <button
-          id="thought-toggle"
-          class="switch-button"
-          type="button"
-          role="switch"
-          aria-checked="false"
-          aria-describedby="thought-help"
-        >
+        <button id="thought-toggle" class="switch-button" type="button" role="switch" aria-checked="false" aria-describedby="thought-help">
           <span>Thought Command</span>
           <strong id="thought-state">OFF</strong>
         </button>
@@ -44,6 +37,28 @@
       </div>
     </section>
 
+    <section class="card calibration-card" aria-labelledby="calibration-heading">
+      <div class="section-heading">
+        <div>
+          <h2 id="calibration-heading">Calibration read</h2>
+          <p class="hint command-hint">Known-target one-shot microphone calibration. Read the displayed phrase exactly once.</p>
+        </div>
+        <span id="calibration-status" class="status" aria-live="polite">Ready</span>
+      </div>
+      <div class="calibration-grid">
+        <div>
+          <div class="calibration-label">Target phrase</div>
+          <div id="calibration-target" class="calibration-target">Preparing target…</div>
+        </div>
+        <div class="calibration-score-wrap">
+          <div class="calibration-label">Read confidence</div>
+          <div id="calibration-score" class="calibration-score">—/5</div>
+        </div>
+      </div>
+      <p id="calibration-result" class="hint calibration-result">No calibration read recorded yet.</p>
+      <button id="calibration-button" class="action-button calibration-button" type="button">ATTEMPT READ</button>
+    </section>
+
     <section class="card" aria-labelledby="speak-heading">
       <div class="section-heading">
         <h2 id="speak-heading">Text to speech</h2>
@@ -53,14 +68,8 @@
       <textarea id="speech-text" rows="7" maxlength="3000" placeholder="Type what you want Speak to say, or a command such as ‘listen’…"></textarea>
 
       <div class="controls two-col">
-        <label>
-          Voice
-          <select id="voice-select" aria-label="Voice"></select>
-        </label>
-        <label>
-          Rate <span id="rate-value">1.0×</span>
-          <input id="rate" type="range" min="0.5" max="2" value="1" step="0.1" />
-        </label>
+        <label>Voice<select id="voice-select" aria-label="Voice"></select></label>
+        <label>Rate <span id="rate-value">1.0×</span><input id="rate" type="range" min="0.5" max="2" value="1" step="0.1" /></label>
       </div>
 
       <div class="button-row">
@@ -77,7 +86,6 @@
         <span id="stt-status" class="status">Idle</span>
       </div>
       <p class="hint">Microphone access only starts after you press <strong>Start listening</strong>. Browser support varies, especially on iOS.</p>
-
       <div id="transcript" class="transcript" aria-live="polite" aria-label="Transcript"></div>
       <div class="button-row">
         <button id="listen-button" class="primary" type="button">Start listening</button>
@@ -89,10 +97,11 @@
 
     <section class="card compact" aria-labelledby="privacy-heading">
       <h2 id="privacy-heading">Privacy boundary</h2>
-      <p>Speak uses browser-provided speech APIs only. “Thought Command” is a user-controlled label for explicit text/speech command mode; it does not detect thoughts, hidden signals, nearby people, or devices. Microphone and speech behavior remain subject to the browser and operating system.</p>
+      <p>Speak uses browser-provided speech APIs only. “Thought Command” is a user-controlled label for explicit text/speech command mode; it does not detect thoughts, hidden signals, nearby people, or devices. Calibration confidence measures only how closely the browser transcript matches a displayed phrase.</p>
     </section>
   </main>
 
   <script src="./app.js" defer></script>
+  <script type="module" src="./calibration-ui.mjs"></script>
 </body>
 </html>
