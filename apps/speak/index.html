@@ -15,13 +15,42 @@
       <p class="lede">A local-first speech interface for text-to-speech and browser speech recognition. No background listening, no hidden network calls.</p>
     </header>
 
+    <section class="card command-card" aria-labelledby="command-heading">
+      <div class="section-heading">
+        <div>
+          <h2 id="command-heading">Command control</h2>
+          <p class="hint command-hint">“Thought Command” is an explicit input mode: it uses only text you type or speech your browser transcribes.</p>
+        </div>
+        <span id="command-status" class="status" aria-live="polite">Manual</span>
+      </div>
+
+      <div class="command-controls">
+        <button
+          id="thought-toggle"
+          class="switch-button"
+          type="button"
+          role="switch"
+          aria-checked="false"
+          aria-describedby="thought-help"
+        >
+          <span>Thought Command</span>
+          <strong id="thought-state">OFF</strong>
+        </button>
+        <button id="action-button" class="action-button" type="button">ACTION</button>
+      </div>
+      <p id="thought-help" class="hint small-hint">OFF: Action speaks the text box. ON: Action interprets an explicit typed/transcribed command.</p>
+      <div class="command-chips" aria-label="Supported commands">
+        <span>speak</span><span>listen</span><span>stop</span><span>pause</span><span>resume</span><span>clear</span><span>copy</span>
+      </div>
+    </section>
+
     <section class="card" aria-labelledby="speak-heading">
       <div class="section-heading">
         <h2 id="speak-heading">Text to speech</h2>
         <span id="tts-status" class="status">Ready</span>
       </div>
-      <label class="sr-only" for="speech-text">Text to speak</label>
-      <textarea id="speech-text" rows="7" maxlength="3000" placeholder="Type what you want Speak to say…"></textarea>
+      <label class="sr-only" for="speech-text">Text to speak or command</label>
+      <textarea id="speech-text" rows="7" maxlength="3000" placeholder="Type what you want Speak to say, or a command such as ‘listen’…"></textarea>
 
       <div class="controls two-col">
         <label>
@@ -60,7 +89,7 @@
 
     <section class="card compact" aria-labelledby="privacy-heading">
       <h2 id="privacy-heading">Privacy boundary</h2>
-      <p>Speak uses browser-provided speech APIs only. This build does not claim to detect thoughts, hidden signals, nearby people, or devices. Microphone and speech behavior remain subject to the browser and operating system.</p>
+      <p>Speak uses browser-provided speech APIs only. “Thought Command” is a user-controlled label for explicit text/speech command mode; it does not detect thoughts, hidden signals, nearby people, or devices. Microphone and speech behavior remain subject to the browser and operating system.</p>
     </section>
   </main>
 
