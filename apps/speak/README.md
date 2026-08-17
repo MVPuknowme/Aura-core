@@ -10,8 +10,21 @@ Speak is a local-first browser speech interface inside Aura-core.
 - Speech-to-text using `SpeechRecognition` or `webkitSpeechRecognition` when the browser exposes it.
 - Microphone capture begins only after an explicit button press.
 - Transcript copy and clear controls.
+- Large iOS-friendly **Action** button.
+- **Thought Command** ON/OFF control, OFF by default.
 - Responsive mobile-first UI using the Aura dark-blue/orange visual direction.
 - No application-level network calls, analytics, background listening, or device discovery.
+
+## Action + Thought Command
+
+“Thought Command” is the UI label for an explicit command mode. It does not detect or infer thoughts.
+
+- **OFF:** pressing **ACTION** speaks the contents of the text box.
+- **ON:** pressing **ACTION** interprets an explicit command from the text box, or from the browser transcript when the text box is empty.
+- Supported local commands: `speak`, `speak <text>`, `listen`, `stop`, `pause`, `resume`, `clear`, and `copy`.
+- Commands outside this allowlist are rejected and are not forwarded to the network, shell, operating system, Bluetooth, Wi-Fi, or nearby devices.
+
+The mode must be turned on by the user. It does not enable background listening.
 
 ## iPhone / iPad dev container
 
@@ -47,6 +60,6 @@ Speak is an assistive voice/text interface. It does not attempt to infer thought
 
 - `index.html` — application shell and accessible controls.
 - `styles.css` — mobile-first Aura styling.
-- `app.js` — speech synthesis, recognition, transcript, and control logic.
+- `app.js` — speech synthesis, recognition, Action button, command allowlist, transcript, and control logic.
 - `dev-server.mjs` — dependency-free static dev server and `/health` endpoint.
 - `.devcontainer/devcontainer.json` — remote Codespaces/dev-container configuration with private port forwarding.
