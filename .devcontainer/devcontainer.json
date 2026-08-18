@@ -1,0 +1,21 @@
+{
+  "name": "Aura Speak iOS Dev",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8080": {
+      "label": "Aura Speak",
+      "onAutoForward": "openPreview",
+      "visibility": "private"
+    }
+  },
+  "postStartCommand": "bash -lc 'pkill -f \"node apps/speak/dev-server.mjs\" >/dev/null 2>&1 || true; nohup node apps/speak/dev-server.mjs > /tmp/aura-speak.log 2>&1 &'",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "workbench.startupEditor": "none"
+      }
+    }
+  },
+  "remoteUser": "node"
+}
