@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-20",
+  "product": "SKYGRID Emergency Data On-Ramp",
+  "evidenceType": "historical-ci-artifact-rescore",
+  "sourceRun": {
+    "workflow": "SKYGRID Controlled Pilot Verification",
+    "runId": 29459954329,
+    "runNumber": 19,
+    "status": "completed",
+    "conclusion": "success",
+    "headBranch": "feature/pilot-evidence-ledger-intake-clean",
+    "headSha": "0fafefc1881ee13ca1ac17fa93e51d4ab1dbcb4a",
+    "sourceDate": "2026-07-15"
+  },
+  "rubric": {
+    "path": "training/evaluations/auto-drill-eval-rubric.md",
+    "minimumScore": 9,
+    "p95ThresholdMs": 1500,
+    "hardGates": [
+      "16/16 curriculum",
+      "fail-closed safety",
+      "minimum evidence score"
+    ]
+  },
+  "routeProof": {
+    "script": "scripts/skygrid-route-option-probe.mjs",
+    "scenarios": {
+      "primary": {"ok": true, "selected": "primary-vercel-onramp"},
+      "local": {"ok": true, "selected": "local-worker-fallback"},
+      "queue": {"ok": true, "selected": "safe-queue-preserve"}
+    }
+  },
+  "platforms": {
+    "linux": {
+      "artifactId": 8360769924,
+      "artifactName": "training-receipts-Linux",
+      "artifactSha256": "0c94155c46dc0806304a34eaa82f7f278971ab0f2cf9443b06605d0451780e6f",
+      "score": 10,
+      "passed": true,
+      "scenariosPassed": 16,
+      "scenariosTotal": 16,
+      "missingEventIds": 0,
+      "routeScenariosPassed": 3,
+      "p50Ms": 4,
+      "p95Ms": 49,
+      "p99Ms": 49,
+      "criteriaPassed": 10,
+      "criteriaTotal": 10
+    },
+    "windows": {
+      "artifactId": 8360787393,
+      "artifactName": "training-receipts-Windows",
+      "artifactSha256": "95d8efc29c87e612b077ad7d4c4b498077d08ae22faad22b214c612742666fe7",
+      "score": 10,
+      "passed": true,
+      "scenariosPassed": 16,
+      "scenariosTotal": 16,
+      "missingEventIds": 0,
+      "routeScenariosPassed": 3,
+      "p50Ms": 9,
+      "p95Ms": 57,
+      "p99Ms": 57,
+      "criteriaPassed": 10,
+      "criteriaTotal": 10
+    }
+  },
+  "crossPlatformResult": {
+    "score": 10,
+    "passed": true,
+    "summary": "10/10 controlled-pilot evidence on both Linux and Windows when the successful CI receipt artifacts are re-scored under the 2026-08-20 rubric."
+  },
+  "costEvidence": {
+    "scored": false,
+    "reason": "No same-run attributable infrastructure cost is attached to source run 29459954329. Historical AWS billing is intentionally not divided across this run."
+  },
+  "limitations": [
+    "This report was generated on 2026-08-20 by re-scoring the preserved artifacts from the successful 2026-07-15 CI run; it is not a fresh runtime execution on the 2026-08-20 evidence branch.",
+    "Loopback CI latency is a regression measure and is not a WAN, partner, AWS-region, RTO, production-availability, or field-SLA claim.",
+    "The result proves controlled-pilot functional, routing, safety, evidence, and local-runtime performance gates only. It does not authorize production failover or real-world execution."
+  ]
+}
