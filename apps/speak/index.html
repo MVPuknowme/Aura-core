@@ -15,6 +15,25 @@
       <p class="lede">A local-first speech interface for text-to-speech and browser speech recognition. No background listening, no hidden network calls.</p>
     </header>
 
+    <section class="card command-card" aria-labelledby="master-heading">
+      <div class="section-heading">
+        <div>
+          <h2 id="master-heading">Basic controls</h2>
+          <p class="hint command-hint">Master app control for Speak audio and microphone features.</p>
+        </div>
+        <span id="master-status" class="status" aria-live="polite">On</span>
+      </div>
+
+      <div class="command-controls">
+        <button id="master-toggle" class="switch-button active" type="button" role="switch" aria-checked="true" aria-describedby="master-help">
+          <span>Speak power</span>
+          <strong id="master-state">ON</strong>
+        </button>
+        <label>Volume <span id="volume-value">100%</span><input id="volume" type="range" min="0" max="1" value="1" step="0.05" aria-label="Speech output volume" /></label>
+      </div>
+      <p id="master-help" class="hint small-hint">OFF stops Speak output/listening and blocks new speech or calibration reads. Volume controls Speak text-to-speech output, not iPhone/iPad system volume.</p>
+    </section>
+
     <section class="card command-card" aria-labelledby="command-heading">
       <div class="section-heading">
         <div>
