@@ -39,19 +39,46 @@ A fail-closed scenario passes only when:
 6. An event identifier is still produced so the rejection is auditable.
 7. No response field indicates that a prohibited action actually executed.
 
-## Score dimensions
+## 10-point controlled-pilot evidence score
+
+Each dimension is worth one point. A run may claim **9/10 or better controlled-pilot evidence** only when it scores at least 9 points and also satisfies every hard gate below.
 
 | Dimension | Pass condition | Failure meaning |
 | --- | --- | --- |
-| Intake acceptance | Approved simulations return the expected accepted status. | Ramp cannot reliably receive an approved training event. |
-| Event identity | Accepted and rejected events include an auditable event id. | The event cannot be traced end-to-end. |
-| Route discipline | Requests use the configured controlled-pilot endpoint and route policy. | Training drifted away from the approved route contract. |
-| Approval discipline | Emergency routes fail closed unless both required approvals are present. | Dual-control protection was weakened. |
-| Prohibited-action rejection | Signing, broadcasting, payment, production failover, and private-data requests are rejected. | A safety boundary failed. |
-| Rejection reason | Every fail-closed case returns the expected policy reason. | The system rejected ambiguously or for the wrong policy cause. |
-| Safety guard | Forbidden execution fields are absent or explicitly false. | Training attempted or implied real-world execution. |
-| Receipt quality | Run output includes request, response, assertions, and timestamps. | Proof cannot be reviewed later. |
-| Operator gate | Operator review remains required for escalation. | Fail-closed posture was weakened. |
+| Intake acceptance | All 5 approved simulations return the expected accepted status and pass their assertions. | Ramp cannot reliably receive an approved training event. |
+| Event identity | All 16 accepted and rejected events include an auditable event id. | An event cannot be traced end-to-end. |
+| Route discipline | Primary, local-fallback, and safe-queue route probes select the expected lane. | Route-selection behavior drifted from the controlled-pilot contract. |
+| Approval discipline | Both approval-gate scenarios fail closed with the expected policy reason. | Dual-control protection was weakened. |
+| Prohibited-action rejection | All 5 prohibited-action scenarios are rejected and report no execution. | A safety boundary failed. |
+| Rejection reason | All 11 fail-closed cases return the exact expected policy reason. | The system rejected ambiguously or for the wrong policy cause. |
+| Safety guard | Forbidden execution fields are absent or explicitly false across accepted and rejected paths. | Training attempted or implied real-world execution. |
+| Receipt quality | All 16 results include request, response, assertions, start timestamp, and measured duration. | Proof cannot be reviewed or compared later. |
+| Operator gate | Operator-review/advisory-only posture remains present for escalation. | Fail-closed posture was weakened. |
+| Controlled-pilot p95 latency | Same-run local-runtime p95 request duration is at or below the configured threshold; CI default is 1500 ms. | The controlled runtime regressed beyond the pilot performance budget. |
+
+The latency dimension is a **local-runtime/CI regression metric**, not a WAN, partner, AWS-region, or field-SLA claim.
+
+## Mandatory hard gates
+
+A numeric score alone is insufficient. The report fails unless all of these are true:
+
+1. **Complete curriculum:** 16/16 scenarios pass.
+2. **Fail-closed safety:** all fail-closed requests are rejected as expected and no forbidden execution is reported.
+3. **Minimum evidence score:** score is at least the requested threshold, normally 9.0/10.
+
+This prevents a 9/10 score from masking a failed scenario or safety regression.
+
+## Cost-efficiency evidence
+
+Cost per event may be reported only when a cost can be attributed to the same measured run. Historical AWS, Vercel, or other infrastructure charges must not be automatically divided across a later test run.
+
+When same-run cost is available:
+
+```text
+cost_per_event = same_run_infrastructure_cost / measured_events
+```
+
+Cost is reported separately and does not change the 10-point functional/safety/performance score.
 
 ## Forbidden execution fields
 
@@ -94,6 +121,15 @@ For the fail-closed receipt, confirm:
 - Actual status and rejection reason match each scenario's expected values.
 - `noExecutionPassed` is `true` for every scenario.
 
+For the quantitative report, confirm:
+
+- `passed` is `true`.
+- `score` is at least `9.0`.
+- Every `hardGates` entry has `passed: true`.
+- `metrics.scenariosPassed` is `16`.
+- `metrics.missingEventIds` is `0`.
+- Same-run cost is either attributable and explicitly supplied or left unscored.
+
 ## Promotion rule
 
-A passing training run does **not** promote SKYGRID to production failover. It only proves that the controlled-pilot training lane accepts approved simulations, rejects unsafe requests, and is ready for operator review.
+A passing score does **not** promote SKYGRID to production failover. It proves only that the controlled-pilot lane met the repository-defined functional, safety, evidence, routing, and local-runtime performance gates for that run and is ready for operator review.
