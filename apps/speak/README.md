@@ -1,6 +1,12 @@
 # Speak
 
-Speak is a local-first browser speech interface inside Aura-core.
+Speak™ is a local-first browser speech interface inside Aura-core.
+
+## Authorship and claimed mark notice
+
+Speak™ is maintained in `MVPuknowme/Aura-core` as an MVPuknowme software proof of concept. Repository provenance for the implementation includes merged PR #164 and its associated commit history.
+
+The `™` symbol is used as notice of a claimed mark; this README does not assert federal trademark registration or use the `®` symbol. See [`docs/ip/AUTHORSHIP_AND_MARKS_PROOF_OF_CONCEPT.md`](../../docs/ip/AUTHORSHIP_AND_MARKS_PROOF_OF_CONCEPT.md) and [`docs/ip/authorship-manifest.json`](../../docs/ip/authorship-manifest.json) for the dated evidence record.
 
 ## Current rebuild
 
