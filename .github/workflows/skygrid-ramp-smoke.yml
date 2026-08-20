@@ -8,10 +8,14 @@ on:
       - main
     paths:
       - "api/runtime.mjs"
+      - "api/runtime-core.mjs"
       - "vercel.json"
       - "postman/**"
       - "config/skygrid-route-manifest.json"
+      - "scripts/check-skygrid-public-routes.mjs"
       - "scripts/verify-skygrid-manifest-sync.mjs"
+      - "scripts/skygrid-local-runtime-router.mjs"
+      - "scripts/skygrid-local-runtime-server.mjs"
       - "scripts/skygrid-ramp-smoke.sh"
       - ".github/workflows/skygrid-ramp-smoke.yml"
 
@@ -19,11 +23,18 @@ jobs:
   smoke:
     runs-on: ubuntu-latest
     env:
-      SKYGRID_BASE_URL: ${{ vars.SKYGRID_BASE_URL || 'https://aura-core-home-e539c0b1.vercel.app' }}
-      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+      SKYGRID_BASE_URL: http://127.0.0.1:3000
+      SKYGRID_LOCAL_PUBLIC_URL: http://127.0.0.1:3000
+      SKYGRID_CHECK_REMOTE_PUBLIC: "false"
+      SKYGRID_CHECK_VERCEL: "false"
+      SKYGRID_CHECK_LEGACY_ALIAS: "false"
+      SKYGRID_ROUTE_CHECK_TIMEOUT_MS: 15000
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund --legacy-peer-deps
 
       - name: Validate runtime syntax
         run: node --check api/runtime.mjs
@@ -36,5 +47,31 @@ jobs:
       - name: Verify GitHub route manifest sync
         run: node scripts/verify-skygrid-manifest-sync.mjs
 
-      - name: Run public route smoke test
+      - name: Start local SKYGRID runtime
+        run: |
+          PORT=3000 node scripts/skygrid-local-runtime-server.mjs > /tmp/skygrid-local-runtime.log 2>&1 &
+          echo $! > /tmp/skygrid-local-runtime.pid
+          for i in {1..20}; do
+            if curl -fsS "$SKYGRID_BASE_URL/health.json" >/dev/null; then
+              echo "SKYGRID local runtime is ready"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "SKYGRID local runtime did not become ready"
+          cat /tmp/skygrid-local-runtime.log || true
+          exit 1
+
+      - name: Run local route smoke test
         run: bash scripts/skygrid-ramp-smoke.sh "$SKYGRID_BASE_URL"
+
+      - name: Run local public route checker
+        run: node scripts/check-skygrid-public-routes.mjs
+
+      - name: Stop local SKYGRID runtime
+        if: always()
+        run: |
+          if [ -f /tmp/skygrid-local-runtime.pid ]; then
+            kill "$(cat /tmp/skygrid-local-runtime.pid)" || true
+          fi
+          cat /tmp/skygrid-local-runtime.log || true
