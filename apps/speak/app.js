@@ -6,6 +6,11 @@
   const voiceSelect = $('voice-select');
   const rate = $('rate');
   const rateValue = $('rate-value');
+  const volume = $('volume');
+  const volumeValue = $('volume-value');
+  const masterToggle = $('master-toggle');
+  const masterState = $('master-state');
+  const masterStatus = $('master-status');
   const ttsStatus = $('tts-status');
   const sttStatus = $('stt-status');
   const commandStatus = $('command-status');
@@ -21,24 +26,67 @@
   let finalTranscript = '';
   let listening = false;
   let thoughtCommandEnabled = false;
+  let masterEnabled = true;
 
   function setStatus(target, message) {
     target.textContent = message;
   }
 
+  function currentVolume() {
+    const value = Number(volume.value);
+    if (!Number.isFinite(value)) return 1;
+    return Math.min(1, Math.max(0, value));
+  }
+
+  function updateVolumeLabel() {
+    volumeValue.textContent = `${Math.round(currentVolume() * 100)}%`;
+  }
+
   function setThoughtCommand(enabled) {
-    thoughtCommandEnabled = Boolean(enabled);
+    thoughtCommandEnabled = Boolean(enabled) && masterEnabled;
     thoughtToggle.setAttribute('aria-checked', String(thoughtCommandEnabled));
     thoughtToggle.classList.toggle('active', thoughtCommandEnabled);
     thoughtState.textContent = thoughtCommandEnabled ? 'ON' : 'OFF';
-    setStatus(commandStatus, thoughtCommandEnabled ? 'Command mode' : 'Manual');
+    setStatus(commandStatus, masterEnabled ? (thoughtCommandEnabled ? 'Command mode' : 'Manual') : 'Off');
+  }
+
+  function updateControlAvailability() {
+    const speechControls = [thoughtToggle, actionButton, $('speak-button'), $('pause-button'), $('resume-button'), $('stop-button')];
+    speechControls.forEach((control) => { control.disabled = !masterEnabled; });
+    listenButton.disabled = !masterEnabled || !recognition || listening;
+    stopListenButton.disabled = !masterEnabled || !recognition || !listening;
+  }
+
+  function setMasterEnabled(enabled) {
+    masterEnabled = Boolean(enabled);
+    document.documentElement.dataset.speakEnabled = String(masterEnabled);
+    masterToggle.setAttribute('aria-checked', String(masterEnabled));
+    masterToggle.classList.toggle('active', masterEnabled);
+    masterState.textContent = masterEnabled ? 'ON' : 'OFF';
+    setStatus(masterStatus, masterEnabled ? 'On' : 'Off');
+
+    if (!masterEnabled) {
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      if (recognition && listening) recognition.stop();
+      setThoughtCommand(false);
+      setStatus(ttsStatus, 'Off');
+      setStatus(sttStatus, 'Off');
+      setStatus(commandStatus, 'Off');
+    } else {
+      setStatus(ttsStatus, 'speechSynthesis' in window ? 'Ready' : 'Unsupported');
+      setStatus(sttStatus, recognition ? 'Idle' : 'Not supported by this browser');
+      setThoughtCommand(false);
+    }
+
+    updateControlAvailability();
+    window.dispatchEvent(new CustomEvent('speak:master', { detail: { enabled: masterEnabled } }));
   }
 
   function loadVoices() {
     if (!('speechSynthesis' in window)) {
       voiceSelect.innerHTML = '<option>Speech synthesis unavailable</option>';
       voiceSelect.disabled = true;
-      setStatus(ttsStatus, 'Unsupported');
+      if (masterEnabled) setStatus(ttsStatus, 'Unsupported');
       return;
     }
 
@@ -62,6 +110,10 @@
   }
 
   function speakText(text) {
+    if (!masterEnabled) {
+      setStatus(ttsStatus, 'Off');
+      return false;
+    }
     if (!('speechSynthesis' in window)) return false;
     const cleanText = String(text || '').trim();
     if (!cleanText) {
@@ -75,12 +127,13 @@
     const selected = Number.parseInt(voiceSelect.value, 10);
     if (Number.isInteger(selected) && voices[selected]) utterance.voice = voices[selected];
     utterance.rate = Number(rate.value) || 1;
+    utterance.volume = currentVolume();
 
     utterance.onstart = () => setStatus(ttsStatus, 'Speaking');
     utterance.onpause = () => setStatus(ttsStatus, 'Paused');
     utterance.onresume = () => setStatus(ttsStatus, 'Speaking');
-    utterance.onend = () => setStatus(ttsStatus, 'Ready');
-    utterance.onerror = (event) => setStatus(ttsStatus, `Speech error: ${event.error || 'unknown'}`);
+    utterance.onend = () => setStatus(ttsStatus, masterEnabled ? 'Ready' : 'Off');
+    utterance.onerror = (event) => setStatus(ttsStatus, masterEnabled ? `Speech error: ${event.error || 'unknown'}` : 'Off');
 
     window.speechSynthesis.speak(utterance);
     return true;
@@ -92,15 +145,15 @@
 
   function stopSpeech() {
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-    setStatus(ttsStatus, 'Stopped');
+    setStatus(ttsStatus, masterEnabled ? 'Stopped' : 'Off');
   }
 
   function setupRecognition() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      listenButton.disabled = true;
-      stopListenButton.disabled = true;
-      setStatus(sttStatus, 'Not supported by this browser');
+      recognition = null;
+      setStatus(sttStatus, masterEnabled ? 'Not supported by this browser' : 'Off');
+      updateControlAvailability();
       return;
     }
 
@@ -110,13 +163,17 @@
     recognition.lang = navigator.language || 'en-US';
 
     recognition.onstart = () => {
+      if (!masterEnabled) {
+        recognition.stop();
+        return;
+      }
       listening = true;
-      listenButton.disabled = true;
-      stopListenButton.disabled = false;
+      updateControlAvailability();
       setStatus(sttStatus, 'Listening');
     };
 
     recognition.onresult = (event) => {
+      if (!masterEnabled) return;
       let interim = '';
       for (let i = event.resultIndex; i < event.results.length; i += 1) {
         const text = event.results[i][0].transcript;
@@ -130,19 +187,24 @@
     };
 
     recognition.onerror = (event) => {
-      setStatus(sttStatus, `Mic error: ${event.error || 'unknown'}`);
+      setStatus(sttStatus, masterEnabled ? `Mic error: ${event.error || 'unknown'}` : 'Off');
     };
 
     recognition.onend = () => {
       listening = false;
-      listenButton.disabled = false;
-      stopListenButton.disabled = true;
-      if (!sttStatus.textContent.startsWith('Mic error')) setStatus(sttStatus, 'Idle');
+      updateControlAvailability();
+      if (!masterEnabled) {
+        setStatus(sttStatus, 'Off');
+      } else if (!sttStatus.textContent.startsWith('Mic error')) {
+        setStatus(sttStatus, 'Idle');
+      }
     };
+
+    updateControlAvailability();
   }
 
   function startListening() {
-    if (!recognition || listening) return false;
+    if (!masterEnabled || !recognition || listening) return false;
     try {
       recognition.start();
       return true;
@@ -159,7 +221,7 @@
   function clearTranscript() {
     finalTranscript = '';
     transcriptEl.textContent = '';
-    setStatus(sttStatus, listening ? 'Listening' : 'Idle');
+    setStatus(sttStatus, masterEnabled ? (listening ? 'Listening' : 'Idle') : 'Off');
   }
 
   async function copyTranscript() {
@@ -189,6 +251,11 @@
   }
 
   async function runExplicitCommand(value) {
+    if (!masterEnabled) {
+      setStatus(commandStatus, 'Off');
+      return;
+    }
+
     const raw = String(value || '').trim();
     const command = normalizeCommand(raw);
 
@@ -245,6 +312,11 @@
   }
 
   async function runAction() {
+    if (!masterEnabled) {
+      setStatus(commandStatus, 'Off');
+      return;
+    }
+
     actionButton.classList.add('pressed');
     window.setTimeout(() => actionButton.classList.remove('pressed'), 160);
 
@@ -256,14 +328,16 @@
     await runExplicitCommand(commandInput());
   }
 
+  masterToggle.addEventListener('click', () => setMasterEnabled(!masterEnabled));
+  volume.addEventListener('input', updateVolumeLabel);
   thoughtToggle.addEventListener('click', () => setThoughtCommand(!thoughtCommandEnabled));
   actionButton.addEventListener('click', runAction);
   $('speak-button').addEventListener('click', speak);
   $('pause-button').addEventListener('click', () => {
-    if ('speechSynthesis' in window && window.speechSynthesis.speaking) window.speechSynthesis.pause();
+    if (masterEnabled && 'speechSynthesis' in window && window.speechSynthesis.speaking) window.speechSynthesis.pause();
   });
   $('resume-button').addEventListener('click', () => {
-    if ('speechSynthesis' in window && window.speechSynthesis.paused) window.speechSynthesis.resume();
+    if (masterEnabled && 'speechSynthesis' in window && window.speechSynthesis.paused) window.speechSynthesis.resume();
   });
   $('stop-button').addEventListener('click', stopSpeech);
   listenButton.addEventListener('click', startListening);
@@ -274,8 +348,10 @@
     rateValue.textContent = `${Number(rate.value).toFixed(1)}×`;
   });
 
+  updateVolumeLabel();
   setThoughtCommand(false);
   loadVoices();
   if ('speechSynthesis' in window) window.speechSynthesis.onvoiceschanged = loadVoices;
   setupRecognition();
+  setMasterEnabled(true);
 })();
