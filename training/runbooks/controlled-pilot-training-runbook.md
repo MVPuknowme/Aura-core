@@ -45,7 +45,7 @@ pnpm run local:runtime
 
 Leave that process running.
 
-### Window 2 — run both training lanes
+### Window 2 — run both training lanes and score the evidence
 
 ```powershell
 Set-Location E:\Aura-core
@@ -64,15 +64,58 @@ pnpm run training:fail-closed -- `
   --scenario-file=training/scenarios/skygrid-fail-closed-v1.json `
   --out-dir=$outDir `
   --run-id=fail-closed
+
+pnpm run training:verify-receipts -- --dir=$outDir
+
+pnpm run pilot:score -- `
+  --receipt-dir=$outDir `
+  --out="$outDir/pilot-score.json" `
+  --min-score=9 `
+  --p95-ms=1500
 ```
 
-Expected console summaries:
+Expected training summaries:
 
 ```text
 accepted-paths: 5/5 passed
 fail-closed: 11/11 passed
 combined: 16/16 passed
 ```
+
+A quantitative proof passes only when:
+
+- the complete curriculum is 16/16;
+- fail-closed safety remains intact;
+- the evidence score is at least 9.0/10;
+- the measured local-runtime p95 is within the configured threshold;
+- all event IDs and receipt evidence are present.
+
+The generated `pilot-score.json` is the machine-readable proof for that run.
+
+## Scoring scope
+
+The score uses the nine dimensions already defined in `training/evaluations/auto-drill-eval-rubric.md` plus one local-runtime p95 latency dimension.
+
+A 9/10 score cannot override a failed hard gate. If any training scenario fails or a prohibited action is reported as executed, the overall report fails regardless of the numeric score.
+
+Loopback/CI latency is a regression measure. It is **not** a WAN, partner, AWS-region, production-availability, RTO, or field-SLA claim.
+
+## Same-run cost evidence
+
+Do not divide historical cloud bills across a later training run. Cost per event is valid only when the infrastructure cost can be attributed to the same run.
+
+When same-run cost is known, add it explicitly:
+
+```powershell
+pnpm run pilot:score -- `
+  --receipt-dir=$outDir `
+  --out="$outDir/pilot-score.json" `
+  --min-score=9 `
+  --p95-ms=1500 `
+  --run-cost-usd=0.01
+```
+
+The report will calculate same-run cost per measured event. Cost remains separate from the 10-point safety/functional/performance score.
 
 ## Accepted-path drill against a controlled deployment
 
@@ -105,10 +148,28 @@ For the fail-closed receipt, confirm:
 - Every scenario has the expected status and rejection reason.
 - Every response remains advisory-only and training-marked.
 
+For `pilot-score.json`, confirm:
+
+- `passed` is `true`;
+- `score >= 9`;
+- all entries under `hardGates` pass;
+- `metrics.scenariosPassed` is `16`;
+- `metrics.missingEventIds` is `0`.
+
 ## CI proof
 
-The `SKYGRID Controlled Pilot Verification` workflow runs both lanes on Ubuntu and Windows, verifies two receipts, requires a combined result of **16/16**, and uploads the receipts as workflow artifacts.
+The existing `SKYGRID Controlled Pilot Verification` workflow runs the 16-scenario curriculum on Ubuntu and Windows.
+
+The `SKYGRID Pilot Evidence Score` workflow adds the quantitative proof path. On both Ubuntu and Windows it:
+
+1. runs PNPK, manifest, partition, autodrill, emergency-gate, IOC, intake-policy, and route-selection preflight checks;
+2. starts the controlled local runtime;
+3. runs all 16 accepted and fail-closed scenarios;
+4. verifies the training receipts;
+5. calculates the 10-point evidence score and p50/p95/p99 latency;
+6. fails the job if any hard gate fails or the score is below 9/10;
+7. uploads the receipts and `pilot-score.json` as workflow artifacts.
 
 ## Escalation rule
 
-A successful training run proves only that the controlled-pilot lane can accept approved simulations and reject unsafe or incomplete requests. It does not authorize production failover, dispatch, payments, wallet signing, transaction broadcasting, or external private-data movement.
+A successful training run proves only that the controlled-pilot lane met the repository-defined functional, routing, safety, evidence, and local-runtime performance gates for that run. It does not authorize production failover, dispatch, payments, wallet signing, transaction broadcasting, or external private-data movement.
