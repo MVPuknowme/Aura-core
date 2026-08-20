@@ -7,6 +7,8 @@ const statusEl = document.getElementById('calibration-status');
 const scoreEl = document.getElementById('calibration-score');
 
 let target = pickCalibrationTarget();
+let activeRead = null;
+let masterEnabled = document.documentElement.dataset.speakEnabled !== 'false';
 
 targetEl.textContent = target;
 
@@ -22,7 +24,31 @@ function setResult(result, rawObserved) {
   setStatus(result.score >= 4 ? 'Calibrated' : 'Calibration needs another read');
 }
 
+function syncMasterState(enabled) {
+  masterEnabled = Boolean(enabled);
+  if (!masterEnabled && activeRead) {
+    try {
+      activeRead.stop();
+    } catch {
+      // Recognition may already be ending; no additional action is needed.
+    }
+    activeRead = null;
+  }
+  button.disabled = !masterEnabled;
+  if (!masterEnabled) setStatus('Off');
+  else if (statusEl.textContent === 'Off') setStatus('Ready');
+}
+
+window.addEventListener('speak:master', (event) => {
+  syncMasterState(event.detail?.enabled);
+});
+
 button.addEventListener('click', () => {
+  if (!masterEnabled) {
+    setStatus('Off');
+    return;
+  }
+
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
     setStatus('Speech recognition unsupported');
@@ -37,12 +63,14 @@ button.addEventListener('click', () => {
   button.disabled = true;
 
   const read = new SpeechRecognition();
+  activeRead = read;
   read.continuous = false;
   read.interimResults = false;
   read.maxAlternatives = 1;
   read.lang = navigator.language || 'en-US';
 
   read.onresult = (event) => {
+    if (!masterEnabled) return;
     const alternative = event.results?.[0]?.[0];
     const observed = alternative?.transcript?.trim() || '';
     const confidence = alternative?.confidence ?? 0;
@@ -50,19 +78,28 @@ button.addEventListener('click', () => {
   };
 
   read.onerror = (event) => {
+    if (!masterEnabled) return;
     setStatus(`Calibration error: ${event.error || 'unknown'}`);
     resultEl.textContent = 'No calibration score recorded.';
   };
 
   read.onend = () => {
-    button.disabled = false;
-    if (statusEl.textContent === 'Listening for calibration') setStatus('No read returned');
+    activeRead = null;
+    button.disabled = !masterEnabled;
+    if (!masterEnabled) {
+      setStatus('Off');
+    } else if (statusEl.textContent === 'Listening for calibration') {
+      setStatus('No read returned');
+    }
   };
 
   try {
     read.start();
   } catch (error) {
-    button.disabled = false;
+    activeRead = null;
+    button.disabled = !masterEnabled;
     setStatus(`Could not start calibration: ${error.message}`);
   }
 });
+
+syncMasterState(masterEnabled);
