@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "recordType": "mvpuknowme-authorship-and-claimed-marks-proof-of-concept",
+  "recordDate": "2026-08-20",
+  "repository": "MVPuknowme/Aura-core",
+  "claimingSourceIdentity": "MVPuknowme",
+  "legalStatus": {
+    "isCourtDetermination": false,
+    "isCopyrightRegistration": false,
+    "isTrademarkRegistration": false,
+    "isPatentFiling": false,
+    "isTrademarkClearanceOpinion": false,
+    "registeredSymbolAsserted": false
+  },
+  "claimedMarks": [
+    {
+      "mark": "Aura Core",
+      "notice": "TM",
+      "evidenceStatus": "repository-backed",
+      "evidence": [
+        "repository:MVPuknowme/Aura-core",
+        "artifacts/reports/aura-proof-report.md"
+      ]
+    },
+    {
+      "mark": "SKYGRID",
+      "notice": "TM",
+      "evidenceStatus": "repository-backed",
+      "evidence": [
+        "scripts/skygrid-emergency-gate.mjs",
+        "bridge/skygrid-emergency-onramp.pnpk",
+        "reports/skygrid-route-proof.md",
+        "docs/skygrid-core-mirror-loop.md"
+      ]
+    },
+    {
+      "mark": "Speak",
+      "notice": "TM",
+      "evidenceStatus": "implemented-proof-of-concept",
+      "evidence": [
+        "apps/speak/",
+        "pull-request:164",
+        "head:40048b7d710d47fd5d2d9a5423ef63e52aa9c5f1",
+        "merge:7cd0a2d7d9fcece91183704228843fc905ea0d75"
+      ],
+      "pr": {
+        "number": 164,
+        "author": "MVPuknowme",
+        "createdAt": "2026-08-17T19:56:55Z",
+        "mergedAt": "2026-08-18T17:14:32Z",
+        "commits": 18,
+        "changedFiles": 10
+      }
+    },
+    {
+      "mark": "Sentinel",
+      "notice": "TM",
+      "evidenceStatus": "repository-name-use",
+      "evidence": [
+        "api/intake.js",
+        "src/worker.js",
+        "api/health.js",
+        "AMAZON-Q-SKYGRID-SAFETY.md"
+      ]
+    },
+    {
+      "mark": "Jaxson's Aura",
+      "notice": "TM",
+      "evidenceStatus": "declared-concept-implementation-pending",
+      "evidence": []
+    }
+  ],
+  "excludedPrograms": [
+    {
+      "name": "Warden",
+      "reason": "Separate program; intentionally excluded from the claimed mark hierarchy and from any oversight role over the listed MVPuknowme products."
+    }
+  ],
+  "provenanceArtifacts": [
+    {
+      "path": "artifacts/reports/aura-proof-report.md",
+      "generatedAt": "2026-07-03T19:32:56.8241514-07:00",
+      "recordedBranch": "MVPuknowme",
+      "recordedCommit": "28f9161"
+    }
+  ],
+  "maintenance": {
+    "requireImplementationEvidenceBeforeUpgradingConceptStatus": true,
+    "preferDatedFeatureBranches": true,
+    "preferPullRequestHistory": true,
+    "preferCryptographicArtifactHashes": true,
+    "distinguishImplementedFromProposed": true
+  }
+}
