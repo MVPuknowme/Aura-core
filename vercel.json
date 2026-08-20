@@ -9,8 +9,6 @@
     { "source": "/articles/skygrid-dispatcher-public-demo.md", "destination": "/articles/skygrid-dispatcher-public-demo", "permanent": true }
   ],
   "rewrites": [
-    { "source": "/", "destination": "/api/runtime" },
-    { "source": "/health.json", "destination": "/api/runtime" },
     { "source": "/dispatch", "destination": "/api/runtime" },
     { "source": "/incidents", "destination": "/api/runtime" },
     { "source": "/settings", "destination": "/api/runtime" },
@@ -31,11 +29,8 @@
     { "source": "/api/aura/director", "destination": "/api/aura/director" },
     { "source": "/api/chatbot/call-circle", "destination": "/api/chatbot/call-circle" },
     { "source": "/api/agent/signals", "destination": "/api/runtime" },
-    { "source": "/api/highway/status", "destination": "/api/runtime" },
     { "source": "/api/highway/flasks", "destination": "/api/runtime" },
-    { "source": "/api/highway/postman", "destination": "/api/runtime" },
     { "source": "/api/compat/ios", "destination": "/api/compat/ios" },
-    { "source": "/api/pay/quote", "destination": "/api/runtime" },
     { "source": "/api/autodrill/latest", "destination": "/api/runtime" },
     { "source": "/api/build-pad/quote", "destination": "/api/runtime" },
     { "source": "/api/node-lease/intake", "destination": "/api/runtime" },
