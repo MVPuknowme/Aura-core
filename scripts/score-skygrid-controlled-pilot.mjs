@@ -67,6 +67,17 @@ function allTrue(results, selector) {
   return Array.isArray(results) && results.length > 0 && results.every(selector);
 }
 
+function completeReceiptResult(result) {
+  return Boolean(
+    result &&
+      result.request &&
+      result.response &&
+      result.assertions &&
+      result.timing?.startedAt &&
+      Number.isFinite(Number(result.timing?.durationMs))
+  );
+}
+
 function markdownReport(report) {
   const lines = [
     "## SKYGRID controlled-pilot evidence score",
@@ -75,9 +86,23 @@ function markdownReport(report) {
     "",
     `Scope: ${report.scope}. This is not a production SLA or field-availability claim.`,
     "",
-    "| Criterion | Result | Evidence |",
+    "### Hard gates",
+    "",
+    "| Gate | Result | Evidence |",
     "|---|---:|---|"
   ];
+
+  for (const gate of report.hardGates) {
+    lines.push(`| ${gate.label} | ${gate.passed ? "PASS" : "FAIL"} | ${String(gate.evidence).replaceAll("|", "\\|")} |`);
+  }
+
+  lines.push(
+    "",
+    "### 10-point score",
+    "",
+    "| Dimension | Result | Evidence |",
+    "|---|---:|---|"
+  );
 
   for (const item of report.criteria) {
     lines.push(`| ${item.label} | ${item.passed ? "PASS" : "FAIL"} | ${String(item.evidence).replaceAll("|", "\\|")} |`);
@@ -147,23 +172,47 @@ async function main() {
     failClosed.summary?.failed === 0 &&
     allTrue(failClosedResults, (result) => result.passed === true);
 
-  const acceptedEventIds = allTrue(acceptedResults, (result) => result.assertions?.eventIdPassed === true);
-  const failClosedEventIds = allTrue(failClosedResults, (result) => result.assertions?.eventIdPassed === true);
-  const noForbiddenExecution =
+  const curriculumComplete = acceptedAllPassed && failClosedAllPassed && allResults.length === 16;
+  const eventIdentityPassed = allTrue(allResults, (result) => result.assertions?.eventIdPassed === true);
+  const routeDisciplinePassed = Object.values(routeProbes).every((probe) => probe.ok === true);
+
+  const approvalResults = failClosedResults.filter((result) => result.category === "approval_gate");
+  const approvalDisciplinePassed =
+    approvalResults.length === 2 &&
+    allTrue(
+      approvalResults,
+      (result) =>
+        result.passed === true &&
+        result.assertions?.rejectedPassed === true &&
+        result.assertions?.reasonPassed === true
+    );
+
+  const prohibitedResults = failClosedResults.filter((result) => result.category === "prohibited_action");
+  const prohibitedActionRejectionPassed =
+    prohibitedResults.length === 5 &&
+    allTrue(
+      prohibitedResults,
+      (result) =>
+        result.passed === true &&
+        result.assertions?.rejectedPassed === true &&
+        result.assertions?.noExecutionPassed === true
+    );
+
+  const rejectionReasonPassed = allTrue(failClosedResults, (result) => result.assertions?.reasonPassed === true);
+  const safetyGuardPassed =
     allTrue(acceptedResults, (result) => result.assertions?.safetyPassed === true) &&
     allTrue(failClosedResults, (result) => result.assertions?.noExecutionPassed === true);
 
-  const rejectionContract = allTrue(
-    failClosedResults,
-    (result) =>
-      result.assertions?.rejectedPassed === true &&
-      result.assertions?.advisoryOnlyPassed === true &&
-      result.assertions?.decisionOkPassed === true &&
-      result.assertions?.reasonPassed === true &&
-      result.assertions?.modePassed === true &&
-      result.assertions?.sentinelPassed === true &&
-      result.assertions?.trainingEchoPassed === true
-  );
+  const receiptQualityPassed =
+    accepted.summary?.scenarios === 5 &&
+    failClosed.summary?.scenarios === 11 &&
+    allTrue(allResults, completeReceiptResult);
+
+  const operatorGatePassed =
+    accepted.operatorReviewRequired === true &&
+    failClosed.operatorReviewRequired === true &&
+    allTrue(acceptedResults, (result) => result.assertions?.operatorReviewRequired === true) &&
+    allTrue(failClosedResults, (result) => result.assertions?.advisoryOnlyPassed === true);
 
   const p50Ms = nearestRank(durations, 0.50);
   const p95Ms = nearestRank(durations, 0.95);
@@ -171,33 +220,42 @@ async function main() {
   const latencyPassed = durations.length === allResults.length && p95Ms !== null && p95Ms <= p95ThresholdMs;
 
   const criteria = [
-    criterion("accepted_paths", "Accepted-path training", acceptedAllPassed, `${accepted.summary?.passed ?? 0}/5 scenarios`),
-    criterion("fail_closed_paths", "Fail-closed training", failClosedAllPassed, `${failClosed.summary?.passed ?? 0}/11 scenarios; all rejected safely=${failClosed.allRequestsRejected === true}`),
-    criterion("accepted_receipts", "Accepted-path evidence IDs", acceptedEventIds, `${acceptedResults.filter((r) => r.assertions?.eventIdPassed === true).length}/5 event IDs`),
-    criterion("fail_closed_receipts", "Fail-closed evidence IDs", failClosedEventIds, `${failClosedResults.filter((r) => r.assertions?.eventIdPassed === true).length}/11 event IDs`),
-    criterion("no_forbidden_execution", "No forbidden execution", noForbiddenExecution, "production failover/payment/private-data/wallet/broadcast execution remained disabled"),
-    criterion("rejection_contract", "Fail-closed decision contract", rejectionContract, "rejection, advisory-only, reason, mode, sentinel and training echo assertions"),
-    criterion("route_primary", "Primary route selection", routeProbes.primary.ok === true, `${routeProbes.primary.selected ?? "none"}`),
-    criterion("route_local", "Local fallback selection", routeProbes.local.ok === true, `${routeProbes.local.selected ?? "none"}`),
-    criterion("route_queue", "Safe-queue preservation", routeProbes.queue.ok === true, `${routeProbes.queue.selected ?? "none"}`),
+    criterion("intake_acceptance", "Intake acceptance", acceptedAllPassed, `${accepted.summary?.passed ?? 0}/5 approved simulations accepted`),
+    criterion("event_identity", "Event identity", eventIdentityPassed, `${allResults.filter((r) => r.assertions?.eventIdPassed === true).length}/${allResults.length} auditable event IDs`),
+    criterion("route_discipline", "Route discipline", routeDisciplinePassed, `${Object.values(routeProbes).filter((probe) => probe.ok === true).length}/3 primary/local/queue selections`),
+    criterion("approval_discipline", "Approval discipline", approvalDisciplinePassed, `${approvalResults.filter((r) => r.passed === true).length}/2 approval-gate rejections`),
+    criterion("prohibited_action_rejection", "Prohibited-action rejection", prohibitedActionRejectionPassed, `${prohibitedResults.filter((r) => r.passed === true).length}/5 prohibited-action rejections`),
+    criterion("rejection_reason", "Rejection reason", rejectionReasonPassed, `${failClosedResults.filter((r) => r.assertions?.reasonPassed === true).length}/11 exact policy reasons`),
+    criterion("safety_guard", "Safety guard", safetyGuardPassed, "forbidden execution fields remained absent or false"),
+    criterion("receipt_quality", "Receipt quality", receiptQualityPassed, `${allResults.filter(completeReceiptResult).length}/${allResults.length} results include request/response/assertions/timing`),
+    criterion("operator_gate", "Operator gate", operatorGatePassed, "operator review/advisory-only posture preserved"),
     criterion("latency_p95", "Controlled-pilot p95 latency", latencyPassed, `${p95Ms ?? "n/a"} ms <= ${p95ThresholdMs} ms`)
   ];
 
+  const noForbiddenExecution = safetyGuardPassed;
   const passedCriteria = criteria.filter((item) => item.passed).length;
   const score = (passedCriteria / criteria.length) * 10;
   const scenariosPassed = allResults.filter((result) => result.passed === true).length;
   const missingEventIds = allResults.filter((result) => result.assertions?.eventIdPassed !== true).length;
   const costPerEventUsd = sameRunCostUsd === null || allResults.length === 0 ? null : sameRunCostUsd / allResults.length;
 
+  const hardGates = [
+    criterion("curriculum_16_of_16", "Complete curriculum", curriculumComplete, `${scenariosPassed}/16 scenarios passed`),
+    criterion("fail_closed_safety", "Fail-closed safety", failClosedAllPassed && noForbiddenExecution, `all rejected safely=${failClosed.allRequestsRejected === true}; forbidden execution blocked=${noForbiddenExecution}`),
+    criterion("minimum_score", "Minimum evidence score", score >= minimumScore, `${score.toFixed(1)}/10 >= ${minimumScore.toFixed(1)}/10`)
+  ];
+
   const report = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     product: "SKYGRID Emergency Data On-Ramp",
+    rubric: "training/evaluations/auto-drill-eval-rubric.md + p95 performance dimension",
     score,
     minimumScore,
-    passed: score >= minimumScore,
+    passed: hardGates.every((gate) => gate.passed),
     scope: "controlled-pilot local-runtime CI evidence",
     productionEquivalent: false,
     generatedAt: new Date().toISOString(),
+    hardGates,
     criteria,
     metrics: {
       scenariosTotal: allResults.length,
@@ -215,7 +273,8 @@ async function main() {
     },
     routeProbes,
     notes: [
-      "The score is intentionally limited to controlled-pilot evidence generated by this test run.",
+      "Nine score dimensions are taken from the repository's existing auto-drill evaluation rubric; p95 latency is the tenth dimension.",
+      "A score of 9/10 is insufficient by itself: the full 16/16 curriculum and fail-closed safety are mandatory hard gates.",
       "Loopback/CI latency is useful for regression detection but does not substitute for WAN, partner, or field latency.",
       "Cost per event is reported only when a same-run attributable infrastructure cost is supplied; historical AWS billing is not automatically assigned to this run."
     ]
