@@ -47,6 +47,7 @@
         "route:probe:local": "node scripts/skygrid-route-option-probe.mjs --scenario=local",
         "route:probe:queue": "node scripts/skygrid-route-option-probe.mjs --scenario=queue",
         "route:probe:proof": "pnpm run route:probe:primary && pnpm run route:probe:local && pnpm run route:probe:queue",
+        "pilot:score": "node scripts/score-skygrid-controlled-pilot.mjs",
         "security:ioc-check": "node scripts/check-iocs.mjs",
         "skygrid:verify:public": "node scripts/verify-skygrid-public.mjs"
     },
