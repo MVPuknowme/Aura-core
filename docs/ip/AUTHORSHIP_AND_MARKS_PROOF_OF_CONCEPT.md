@@ -10,6 +10,14 @@ This document is a contemporaneous, repository-backed provenance record for soft
 
 It is **not** a court determination, copyright registration certificate, trademark registration certificate, patent filing, or trademark-clearance opinion. Git history can provide useful evidence of repository activity and fixation, but by itself does not conclusively determine all legal authorship, ownership, priority, or registrability questions.
 
+## Historical origin correction
+
+On 2026-08-20, the author corrected this provenance record to state that the original proof artifacts for **Aura Core™** and **Jaxon’s Aura™** date to **May 31, 2024**.
+
+This repository update records that historical date as an **author-declared provenance fact**. The current indexed `MVPuknowme/Aura-core` search did not surface the original May 31, 2024 artifact itself, so this 2026 record does not attempt to manufacture or backdate a Git timestamp. If the original artifact is later located, its original file metadata, content hash, source location, and any contemporaneous commit/message evidence should be added here without altering the original artifact.
+
+The earlier draft of this record rendered the name as `Jaxson’s Aura`; the author’s current correction is **Jaxon’s Aura™**.
+
 ## Claimed marks
 
 The following designations are used here with `™` only as notice that `MVPuknowme` is claiming them as marks in connection with the identified software/concepts:
@@ -18,7 +26,7 @@ The following designations are used here with `™` only as notice that `MVPukno
 - **SKYGRID™**
 - **Speak™**
 - **Sentinel™**
-- **Jaxson’s Aura™**
+- **Jaxon’s Aura™**
 
 No `®` symbol is asserted by this record. No federal registration is claimed unless a separate registration record is later linked here.
 
@@ -45,18 +53,20 @@ Implemented evidence includes the mobile-first browser interface, text-to-speech
 
 The current Speak source expressly describes explicit typed/transcribed command input rather than inferred thoughts, and microphone access is user initiated.
 
-### Aura Core™ — repository and runtime proof history
+### Aura Core™ — historical proof date plus repository/runtime proof history
+
+**Author-declared original proof-artifact date: May 31, 2024.**
 
 The repository itself is named `MVPuknowme/Aura-core` and is administered by the `MVPuknowme` account.
 
-Existing evidence artifact:
+A later repository-backed evidence artifact is:
 
 - `artifacts/reports/aura-proof-report.md`
 - Generated: `2026-07-03T19:32:56.8241514-07:00`
 - Recorded branch: `MVPuknowme`
 - Recorded commit: `28f9161`
 
-That artifact records runtime state, training proof files, supported local commands, and an active route at the time of generation.
+That later artifact records runtime state, training proof files, supported local commands, and an active route at the time of generation. It is **not** represented as the first Aura Core proof artifact; the author states that the original proof artifact predates it and is from May 31, 2024.
 
 ### SKYGRID™ — extensive repository implementation evidence
 
@@ -80,11 +90,20 @@ The repository contains indexed Sentinel references in operational/API code and 
 
 This record establishes repository use of the Sentinel name but does **not** represent Sentinel as independently complete or production-ready without separate implementation and release evidence.
 
-### Jaxson’s Aura™ — declared concept; implementation evidence pending
+### Jaxon’s Aura™ — historical proof date; original artifact location pending
 
-As of this record date, no indexed `Jaxson’s Aura` neurodivergent translation implementation was located in the current `MVPuknowme/Aura-core` repository search.
+**Author-declared original proof-artifact date: May 31, 2024.**
 
-Accordingly, this document records **claimed concept/name provenance only**. A future implementation should add source files, tests, dated commits, release artifacts, and a dedicated evidence manifest before this section is upgraded to repository-backed implementation status.
+The author identifies Jaxon’s Aura as a neurodivergent translation/accessibility system and states that its original proof artifact and the original Aura Core proof artifact share the May 31, 2024 provenance date.
+
+As of this record update, an indexed search of the current `MVPuknowme/Aura-core` repository did not locate the original May 31, 2024 Jaxon’s Aura artifact. Accordingly:
+
+- the May 31, 2024 date is preserved as author-declared historical provenance;
+- this record does not create a false 2024 Git commit or timestamp;
+- the original artifact should be preserved unchanged if recovered;
+- its cryptographic hash, original path/source, file metadata, screenshots/exports, and any contemporaneous communications or repository history should be appended to the evidence manifest.
+
+This section supersedes the earlier draft statement that Jaxon’s Aura had concept provenance only.
 
 ## Authorship and provenance rules for future proofs
 
@@ -100,6 +119,7 @@ For each major MVPuknowme proof of concept, preserve:
 8. A statement distinguishing implemented behavior from proposals or unverified claims.
 9. A mark notice using `™`/`SM` unless and until registration permits use of `®`.
 10. No claim that a GitHub timestamp alone proves every legal element of authorship, ownership, priority, or trademark rights.
+11. Historical artifacts must never be backdated or rewritten to manufacture provenance; preserve originals and add later attestations separately.
 
 ## U.S. IP notice
 
