@@ -51,7 +51,8 @@
         "pilot:score": "node scripts/score-skygrid-controlled-pilot.mjs",
         "security:ioc-check": "node scripts/check-iocs.mjs",
         "skygrid:verify:public": "node scripts/verify-skygrid-public.mjs",
-        "postman:mock": "node scripts/postman-create-skygrid-mock.mjs"
+        "postman:mock": "node scripts/postman-create-skygrid-mock.mjs",
+        "postman:mock:test": "node scripts/test-postman-superhighway-contract.mjs"
     },
     "dependencies": {
         "@coinbase/agentkit": "^0.10.4",
