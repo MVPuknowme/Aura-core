@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "recordType": "mvpuknowme-authorship-and-claimed-marks-proof-of-concept",
   "recordDate": "2026-08-20",
   "repository": "MVPuknowme/Aura-core",
@@ -21,23 +21,95 @@
       "originalArtifactLocatedInCurrentIndexedRepository": false,
       "backdatedGitEvidenceCreated": false,
       "note": "Preserves the author's stated historical proof-artifact date without representing the 2026 repository record as a 2024 Git timestamp."
+    },
+    {
+      "subjects": ["Aura Core 21-item artifact set"],
+      "attribution": "MVPuknowme",
+      "attestationRecordedAt": "2026-08-20",
+      "source": "explicit author attestation plus supplied artifact list",
+      "note": "The uploaded artifact list catalogs the 21 items; the attribution of the complete set to MVPuknowme is recorded from the author's explicit statement."
     }
   ],
+  "supportingEvidenceFiles": [
+    {
+      "name": "AuraCore_All_21_Items_List.pdf",
+      "sha256": "3523e2d708061c860e1c2636346a483aac0a6e8a05dc7416b3b1735eec09786d",
+      "role": "corroborating artifact catalog"
+    },
+    {
+      "name": "AuraCore_Founders_Record_Signature_Edition.zip",
+      "sha256": "d38a37fea4f16090181d75b626635501d7936b1a410ab5b0eaa4667d86f0064f",
+      "role": "founder/authorship continuity artifact"
+    },
+    {
+      "name": "aura_core_sync.py",
+      "sha256": "ccaf643f2b296ab4fc955b0bcb301c6eb8711c1e51800f23ab2ca94411273dd7",
+      "role": "supplied later file; explicitly placeholder/unimplemented sync module"
+    },
+    {
+      "name": "AuraCore_Status_Report.csv",
+      "sha256": "570b1df0a5414a81ccacd154cbf8649de7b215ba5c2aeed8f3564edbca76d81e",
+      "role": "supplied status-report artifact"
+    },
+    {
+      "name": "Aura-Core_Income__Last_24_Hours_.csv",
+      "sha256": "3f358e5f9a2523711bcceea2207c2d960006088bbbccf9170550828e590d1d39",
+      "role": "supplied financial-report artifact; not treated as proof of realized income without separate verification"
+    },
+    {
+      "name": "auracore-railway-deploy.tar",
+      "sha256": "a14c9b8fc09c2530852927c78881d29e22ec0c51d7bdb4fd620056352b7b1189",
+      "role": "supplied deployment artifact"
+    }
+  ],
+  "mvpuknowmeArtifactSet": {
+    "count": 21,
+    "attribution": "MVPuknowme",
+    "attributionBasis": "explicit author attestation recorded 2026-08-20",
+    "catalogEvidence": "AuraCore_All_21_Items_List.pdf",
+    "items": [
+      {"number": 1, "name": "Jaxon's Aura", "description": "Neuro-assistive AI concept exploration."},
+      {"number": 2, "name": "Whisperbreaker grounding model", "description": "environmental feedback concept."},
+      {"number": 3, "name": "Translation Layer", "description": "contextual prompt and signal interpretation idea."},
+      {"number": 4, "name": "Tokenized Everything philosophy", "description": "token-based value framework."},
+      {"number": 5, "name": "RF-guided cognition support", "description": "early behavioral guidance theory."},
+      {"number": 6, "name": "Aura-Core DAO governance structure design", "description": ""},
+      {"number": 7, "name": "Mesh Node Tiers", "description": "MVP-Base, MVP-Flex, MVP-Beam architecture."},
+      {"number": 8, "name": "Proof-of-Presence / locality verification model", "description": ""},
+      {"number": 9, "name": "La Pine node grid conceptual deployment model", "description": ""},
+      {"number": 10, "name": "Klamath County validator grid structure planning", "description": ""},
+      {"number": 11, "name": "Allbridge relay routing configuration concept", "description": ""},
+      {"number": 12, "name": "Aura-Core multi-config validator YAML framework", "description": ""},
+      {"number": 13, "name": "GeoFence local monitoring prototype logic", "description": ""},
+      {"number": 14, "name": "Rabbit-Space stress and mood state prototype", "description": ""},
+      {"number": 15, "name": "Cross-browser compatibility build configuration", "description": ""},
+      {"number": 16, "name": "GitHub repository structure under MVPuknowme", "description": ""},
+      {"number": 17, "name": "AWS IoT weekly email workflow via GitHub Actions", "description": ""},
+      {"number": 18, "name": "Aura-Warden mobile protection configuration concept", "description": "Separate program; MVPuknowme-authored/attributed artifact but not an oversight authority over the other MVPuknowme programs."},
+      {"number": 19, "name": "iOS Companion SwiftUI project initialization", "description": ""},
+      {"number": 20, "name": "Documentation pipeline with Sphinx build/debug workflow", "description": ""},
+      {"number": 21, "name": "Aura-Core Founder's Record and authorship documentation", "description": ""}
+    ]
+  },
   "claimedMarks": [
     {
       "mark": "Aura Core",
       "notice": "TM",
       "evidenceStatus": "repository-backed-with-author-declared-2024-origin",
       "authorDeclaredOriginalProofArtifactDate": "2024-05-31",
+      "attribution": "MVPuknowme",
       "evidence": [
         "repository:MVPuknowme/Aura-core",
-        "artifacts/reports/aura-proof-report.md"
+        "artifacts/reports/aura-proof-report.md",
+        "AuraCore_All_21_Items_List.pdf",
+        "AuraCore_Founders_Record_Signature_Edition.zip"
       ]
     },
     {
       "mark": "SKYGRID",
       "notice": "TM",
       "evidenceStatus": "repository-backed",
+      "attribution": "MVPuknowme",
       "evidence": [
         "scripts/skygrid-emergency-gate.mjs",
         "bridge/skygrid-emergency-onramp.pnpk",
@@ -49,6 +121,7 @@
       "mark": "Speak",
       "notice": "TM",
       "evidenceStatus": "implemented-proof-of-concept",
+      "attribution": "MVPuknowme",
       "evidence": [
         "apps/speak/",
         "pull-request:164",
@@ -68,6 +141,7 @@
       "mark": "Sentinel",
       "notice": "TM",
       "evidenceStatus": "repository-name-use",
+      "attribution": "MVPuknowme",
       "evidence": [
         "api/intake.js",
         "src/worker.js",
@@ -78,17 +152,24 @@
     {
       "mark": "Jaxon's Aura",
       "notice": "TM",
-      "evidenceStatus": "author-declared-historical-proof-artifact-location-pending",
+      "evidenceStatus": "author-declared-historical-proof-with-corroborating-artifact-list",
+      "attribution": "MVPuknowme",
       "authorDeclaredOriginalProofArtifactDate": "2024-05-31",
       "previousDraftSpelling": "Jaxson's Aura",
-      "evidence": [],
+      "evidence": [
+        "AuraCore_All_21_Items_List.pdf:item-1",
+        "AuraCore_All_21_Items_List.pdf:item-3",
+        "AuraCore_Founders_Record_Signature_Edition.zip"
+      ],
       "originalArtifactLocatedInCurrentIndexedRepository": false
     }
   ],
-  "excludedPrograms": [
+  "separatePrograms": [
     {
       "name": "Warden",
-      "reason": "Separate program; intentionally excluded from the claimed mark hierarchy and from any oversight role over the listed MVPuknowme products."
+      "attribution": "MVPuknowme",
+      "artifactSetReference": 18,
+      "reason": "Separate program; authored/attributed to MVPuknowme but intentionally excluded from any oversight role over the other listed MVPuknowme products."
     }
   ],
   "provenanceArtifacts": [
@@ -107,6 +188,7 @@
     "preferCryptographicArtifactHashes": true,
     "distinguishImplementedFromProposed": true,
     "doNotBackdateOrManufactureHistoricalGitEvidence": true,
-    "preserveRecoveredOriginalArtifactsUnchanged": true
+    "preserveRecoveredOriginalArtifactsUnchanged": true,
+    "preserveMVPuknowmeAttributionFor21ItemSet": true
   }
 }
