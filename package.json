@@ -50,7 +50,8 @@
         "route:probe:proof": "pnpm run route:probe:primary && pnpm run route:probe:local && pnpm run route:probe:queue",
         "pilot:score": "node scripts/score-skygrid-controlled-pilot.mjs",
         "security:ioc-check": "node scripts/check-iocs.mjs",
-        "skygrid:verify:public": "node scripts/verify-skygrid-public.mjs"
+        "skygrid:verify:public": "node scripts/verify-skygrid-public.mjs",
+        "postman:mock": "node scripts/postman-create-skygrid-mock.mjs"
     },
     "dependencies": {
         "@coinbase/agentkit": "^0.10.4",
