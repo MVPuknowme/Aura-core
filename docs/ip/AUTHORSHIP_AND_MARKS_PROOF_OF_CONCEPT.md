@@ -18,6 +18,48 @@ This repository update records that historical date as an **author-declared prov
 
 The earlier draft of this record rendered the name as `Jaxson’s Aura`; the author’s current correction is **Jaxon’s Aura™**.
 
+## MVPuknowme authorship attestation for the 21-item Aura Core artifact set
+
+On 2026-08-20, the author expressly stated that **all items in the supplied “Aura Core — Complete Artifact List (21 Items)” are MVPuknowme works/proof-of-concept artifacts**. The uploaded list itself catalogs the 21 items; the attribution of the complete set to MVPuknowme is recorded here as the author’s explicit attestation.
+
+The 21-item set is preserved using the terminology of the supplied artifact list:
+
+1. **Jaxon’s Aura** — Neuro-assistive AI concept exploration.
+2. **Whisperbreaker grounding model** — environmental feedback concept.
+3. **Translation Layer** — contextual prompt and signal interpretation idea.
+4. **Tokenized Everything philosophy** — token-based value framework.
+5. **RF-guided cognition support** — early behavioral guidance theory.
+6. **Aura-Core DAO governance structure design.**
+7. **Mesh Node Tiers** — MVP-Base, MVP-Flex, MVP-Beam architecture.
+8. **Proof-of-Presence / locality verification model.**
+9. **La Pine node grid conceptual deployment model.**
+10. **Klamath County validator grid structure planning.**
+11. **Allbridge relay routing configuration concept.**
+12. **Aura-Core multi-config validator YAML framework.**
+13. **GeoFence local monitoring prototype logic.**
+14. **Rabbit-Space stress and mood state prototype.**
+15. **Cross-browser compatibility build configuration.**
+16. **GitHub repository structure under MVPuknowme.**
+17. **AWS IoT weekly email workflow via GitHub Actions.**
+18. **Aura-Warden mobile protection configuration concept.**
+19. **iOS Companion SwiftUI project initialization.**
+20. **Documentation pipeline with Sphinx build/debug workflow.**
+21. **Aura-Core Founder’s Record and authorship documentation.**
+
+The artifact-list PDF supplied for this update has SHA-256:
+
+`3523e2d708061c860e1c2636346a483aac0a6e8a05dc7416b3b1735eec09786d`
+
+The supplied `AuraCore_Founders_Record_Signature_Edition.zip` has SHA-256:
+
+`d38a37fea4f16090181d75b626635501d7936b1a410ab5b0eaa4667d86f0064f`
+
+These hashes identify the exact files supplied during the 2026-08-20 provenance update. They do **not** alter or manufacture the historical date of any underlying original artifact.
+
+### Warden scope clarification
+
+Item 18 identifies an **Aura-Warden mobile protection configuration concept** as part of the MVPuknowme artifact set. This authorship attribution does not change the architectural rule that Warden is a **separate program** and is not an oversight authority over Speak, Aura Core, Jaxon’s Aura, Sentinel, SKYGRID, or other MVPuknowme programs.
+
 ## Claimed marks
 
 The following designations are used here with `™` only as notice that `MVPuknowme` is claiming them as marks in connection with the identified software/concepts:
@@ -29,8 +71,6 @@ The following designations are used here with `™` only as notice that `MVPukno
 - **Jaxon’s Aura™**
 
 No `®` symbol is asserted by this record. No federal registration is claimed unless a separate registration record is later linked here.
-
-**Warden is intentionally excluded from this mark hierarchy and from any claimed oversight role over the products above.** Warden is treated as a separate program.
 
 ## Repository-backed provenance
 
@@ -90,20 +130,21 @@ The repository contains indexed Sentinel references in operational/API code and 
 
 This record establishes repository use of the Sentinel name but does **not** represent Sentinel as independently complete or production-ready without separate implementation and release evidence.
 
-### Jaxon’s Aura™ — historical proof date; original artifact location pending
+### Jaxon’s Aura™ — historical proof date with corroborating artifact-list evidence
 
 **Author-declared original proof-artifact date: May 31, 2024.**
 
 The author identifies Jaxon’s Aura as a neurodivergent translation/accessibility system and states that its original proof artifact and the original Aura Core proof artifact share the May 31, 2024 provenance date.
 
-As of this record update, an indexed search of the current `MVPuknowme/Aura-core` repository did not locate the original May 31, 2024 Jaxon’s Aura artifact. Accordingly:
+The supplied 21-item Aura Core artifact list independently catalogs **Jaxon’s Aura – Neuro-assistive AI concept exploration** as item 1 and the **Translation Layer – contextual prompt and signal interpretation idea** as item 3. This later artifact list corroborates the existence and naming of the Jaxon’s Aura/translation work, while the May 31, 2024 origin date remains an author-declared historical provenance fact until the original dated artifact is directly located and hashed.
+
+Accordingly:
 
 - the May 31, 2024 date is preserved as author-declared historical provenance;
+- the 21-item artifact list is preserved as later corroborating evidence;
 - this record does not create a false 2024 Git commit or timestamp;
 - the original artifact should be preserved unchanged if recovered;
 - its cryptographic hash, original path/source, file metadata, screenshots/exports, and any contemporaneous communications or repository history should be appended to the evidence manifest.
-
-This section supersedes the earlier draft statement that Jaxon’s Aura had concept provenance only.
 
 ## Authorship and provenance rules for future proofs
 
