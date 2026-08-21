@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "recordType": "mvpuknowme-authorship-and-claimed-marks-proof-of-concept",
   "recordDate": "2026-08-20",
   "repository": "MVPuknowme/Aura-core",
@@ -12,11 +12,23 @@
     "isTrademarkClearanceOpinion": false,
     "registeredSymbolAsserted": false
   },
+  "historicalProvenanceAttestations": [
+    {
+      "subjects": ["Aura Core", "Jaxon's Aura"],
+      "authorDeclaredProofArtifactDate": "2024-05-31",
+      "attestationRecordedAt": "2026-08-20",
+      "source": "author correction",
+      "originalArtifactLocatedInCurrentIndexedRepository": false,
+      "backdatedGitEvidenceCreated": false,
+      "note": "Preserves the author's stated historical proof-artifact date without representing the 2026 repository record as a 2024 Git timestamp."
+    }
+  ],
   "claimedMarks": [
     {
       "mark": "Aura Core",
       "notice": "TM",
-      "evidenceStatus": "repository-backed",
+      "evidenceStatus": "repository-backed-with-author-declared-2024-origin",
+      "authorDeclaredOriginalProofArtifactDate": "2024-05-31",
       "evidence": [
         "repository:MVPuknowme/Aura-core",
         "artifacts/reports/aura-proof-report.md"
@@ -64,10 +76,13 @@
       ]
     },
     {
-      "mark": "Jaxson's Aura",
+      "mark": "Jaxon's Aura",
       "notice": "TM",
-      "evidenceStatus": "declared-concept-implementation-pending",
-      "evidence": []
+      "evidenceStatus": "author-declared-historical-proof-artifact-location-pending",
+      "authorDeclaredOriginalProofArtifactDate": "2024-05-31",
+      "previousDraftSpelling": "Jaxson's Aura",
+      "evidence": [],
+      "originalArtifactLocatedInCurrentIndexedRepository": false
     }
   ],
   "excludedPrograms": [
@@ -81,7 +96,8 @@
       "path": "artifacts/reports/aura-proof-report.md",
       "generatedAt": "2026-07-03T19:32:56.8241514-07:00",
       "recordedBranch": "MVPuknowme",
-      "recordedCommit": "28f9161"
+      "recordedCommit": "28f9161",
+      "relationshipToOriginal": "later repository-backed Aura Core proof; not represented as the first proof artifact"
     }
   ],
   "maintenance": {
@@ -89,6 +105,8 @@
     "preferDatedFeatureBranches": true,
     "preferPullRequestHistory": true,
     "preferCryptographicArtifactHashes": true,
-    "distinguishImplementedFromProposed": true
+    "distinguishImplementedFromProposed": true,
+    "doNotBackdateOrManufactureHistoricalGitEvidence": true,
+    "preserveRecoveredOriginalArtifactsUnchanged": true
   }
 }
