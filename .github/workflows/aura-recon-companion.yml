@@ -41,4 +41,4 @@ jobs:
           push: never
           runCmd: |
             python -m pip check
-            python -m pytest -q backend/tests
+            cd backend && python -m pytest -q
