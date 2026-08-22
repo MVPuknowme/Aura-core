@@ -1,28 +1,21 @@
 {
-  "name": "Aura Recon Companion",
-  "image": "mcr.microsoft.com/devcontainers/python:1-3.12-bookworm",
-  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/apps/aura-recon-companion",
-  "remoteUser": "vscode",
-  "forwardPorts": [8000],
+  "name": "Aura Speak iOS Dev",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
+  "forwardPorts": [8080],
   "portsAttributes": {
-    "8000": {
-      "label": "Aura Recon API",
+    "8080": {
+      "label": "Aura Speak",
       "onAutoForward": "openPreview",
       "visibility": "private"
     }
   },
-  "postCreateCommand": "python -m pip install --disable-pip-version-check --no-input -r backend/requirements.txt",
+  "postStartCommand": "bash -lc 'pkill -f \"node apps/speak/dev-server.mjs\" >/dev/null 2>&1 || true; nohup node apps/speak/dev-server.mjs > /tmp/aura-speak.log 2>&1 &'",
   "customizations": {
     "vscode": {
-      "extensions": [
-        "ms-python.python",
-        "ms-python.vscode-pylance",
-        "ms-azuretools.vscode-docker",
-        "redhat.vscode-yaml"
-      ]
+      "settings": {
+        "workbench.startupEditor": "none"
+      }
     }
   },
-  "remoteEnv": {
-    "AURA_RECON_ENV": "codespaces"
-  }
+  "remoteUser": "node"
 }

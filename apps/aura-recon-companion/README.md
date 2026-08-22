@@ -2,7 +2,7 @@
 
 Aura Recon Companion is an iPhone-oriented interface plus a bounded backend for reviewing public metadata about domains that the operator owns or is explicitly authorized to assess.
 
-[Open Aura-core in GitHub Codespaces](https://codespaces.new/MVPuknowme/Aura-core?quickstart=1)
+[Open Aura Recon Companion in GitHub Codespaces](https://codespaces.new/MVPuknowme/Aura-core?quickstart=1&devcontainer_path=.devcontainer%2Faura-recon-companion%2Fdevcontainer.json)
 
 ## Current MVP
 
