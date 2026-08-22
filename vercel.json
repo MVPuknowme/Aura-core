@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
   "framework": null,
-  "installCommand": "npm exec --yes --package=pnpm@10.23.0 -- pnpm install --frozen-lockfile",
+  "installCommand": "npm install --no-audit --no-fund --legacy-peer-deps",
   "buildCommand": "node scripts/vercel-build.mjs",
   "outputDirectory": null,
   "redirects": [
@@ -34,8 +34,8 @@
     { "source": "/api/highway/status", "destination": "/api/runtime" },
     { "source": "/api/highway/flasks", "destination": "/api/runtime" },
     { "source": "/api/highway/postman", "destination": "/api/runtime" },
-    { "source": "/api/compat/ios", "destination": "/api/compat/ios" },
     { "source": "/api/pay/quote", "destination": "/api/runtime" },
+    { "source": "/api/compat/ios", "destination": "/api/compat/ios" },
     { "source": "/api/autodrill/latest", "destination": "/api/runtime" },
     { "source": "/api/build-pad/quote", "destination": "/api/runtime" },
     { "source": "/api/node-lease/intake", "destination": "/api/runtime" },

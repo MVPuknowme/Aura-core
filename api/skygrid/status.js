@@ -14,6 +14,7 @@ const ROUTES = [
   "/api/health",
   "/api/skygrid/status",
   "/api/skygrid/intake",
+  "/api/skygrid/revenue",
   "/api/highway/status",
   "/api/highway/postman",
   "/api/pay/quote?amount=25",
@@ -60,7 +61,8 @@ export default function handler(req, res) {
       production_failover: false,
       private_data_movement: false,
       wallet_signing: false,
-      transaction_broadcast: false
+      transaction_broadcast: false,
+      revenue_recognition: "evidence_first_fail_closed"
     },
     routes: ROUTES,
     timestamp: new Date().toISOString()

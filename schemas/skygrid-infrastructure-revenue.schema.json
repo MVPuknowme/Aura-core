@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://skygrid-protocol.net/schemas/skygrid-infrastructure-revenue.schema.json",
+  "title": "SKYGRID Verified Infrastructure Revenue Record",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "id",
+    "direction",
+    "category",
+    "recognition",
+    "amount_usd"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "direction": { "enum": ["income", "cost"] },
+    "category": {
+      "enum": [
+        "staking",
+        "infrastructure",
+        "protocol",
+        "treasury",
+        "protocol_fee",
+        "hosting",
+        "hardware_amortization",
+        "network_fee",
+        "other_operating"
+      ]
+    },
+    "recognition": {
+      "enum": ["realized", "accrued", "unrealized", "projected", "unverified"]
+    },
+    "amount_usd": { "type": "number", "minimum": 0 },
+    "currency": { "type": "string", "default": "USD" },
+    "network": { "type": ["string", "null"] },
+    "asset": { "type": ["string", "null"] },
+    "node_id": { "type": ["string", "null"] },
+    "counterparty": { "type": ["string", "null"] },
+    "occurred_at": { "type": ["string", "null"], "format": "date-time" },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "reference"],
+        "properties": {
+          "type": {
+            "enum": [
+              "onchain_payout",
+              "staking_withdrawal",
+              "service_payment",
+              "signed_contract",
+              "capacity_lease",
+              "processor_event",
+              "bank_posting",
+              "cloud_billing",
+              "vendor_invoice"
+            ]
+          },
+          "reference": { "type": "string", "minLength": 1 },
+          "source": { "type": ["string", "null"] },
+          "observed_at": { "type": ["string", "null"], "format": "date-time" }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "direction": { "const": "income" } } },
+      "then": {
+        "properties": {
+          "category": { "enum": ["staking", "infrastructure", "protocol", "treasury"] }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "direction": { "const": "cost" } } },
+      "then": {
+        "properties": {
+          "category": {
+            "enum": ["protocol_fee", "hosting", "hardware_amortization", "network_fee", "other_operating"]
+          }
+        }
+      }
+    }
+  ]
+}

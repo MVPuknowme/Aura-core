@@ -30,6 +30,7 @@
         "intake:policy-test": "node --test tests/skygrid-intake-policy-core.test.mjs",
         "capacity:lease-test": "node --test tests/skygrid-capacity-lease.test.mjs",
         "capacity:lease-verify": "npm run pnpk:validate && npm run capacity:lease-test",
+        "revenue:ledger:test": "node --test tests/skygrid-revenue-ledger.test.mjs",
         "aura:selection:watch": "node scripts/aura-core-ai-selection-watch.mjs",
         "mcp:check": "node scripts/check-mcp-sdk.mjs",
         "emergency:gate": "node scripts/skygrid-emergency-gate.mjs",
@@ -47,8 +48,11 @@
         "route:probe:local": "node scripts/skygrid-route-option-probe.mjs --scenario=local",
         "route:probe:queue": "node scripts/skygrid-route-option-probe.mjs --scenario=queue",
         "route:probe:proof": "pnpm run route:probe:primary && pnpm run route:probe:local && pnpm run route:probe:queue",
+        "pilot:score": "node scripts/score-skygrid-controlled-pilot.mjs",
         "security:ioc-check": "node scripts/check-iocs.mjs",
-        "skygrid:verify:public": "node scripts/verify-skygrid-public.mjs"
+        "skygrid:verify:public": "node scripts/verify-skygrid-public.mjs",
+        "postman:mock": "node scripts/postman-create-skygrid-mock.mjs",
+        "postman:mock:test": "node scripts/test-postman-superhighway-contract.mjs"
     },
     "dependencies": {
         "@coinbase/agentkit": "^0.10.4",

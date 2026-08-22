@@ -1,0 +1,39 @@
+name: Speak Calibration CI
+
+on:
+  pull_request:
+    paths:
+      - 'apps/speak/**'
+      - '.github/workflows/speak-calibration-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  calibration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run calibration scoring tests
+        run: node --test apps/speak/calibration.test.mjs
+
+      - name: Check dev server health
+        run: |
+          node apps/speak/dev-server.mjs >/tmp/aura-speak.log 2>&1 &
+          server_pid=$!
+          trap 'kill $server_pid 2>/dev/null || true' EXIT
+          for attempt in 1 2 3 4 5; do
+            if curl --fail --silent http://127.0.0.1:8080/health | grep -q '"ok":true'; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/aura-speak.log
+          exit 1
