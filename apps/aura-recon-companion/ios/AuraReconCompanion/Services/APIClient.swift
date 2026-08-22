@@ -22,7 +22,7 @@ actor APIClient {
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.timeoutInterval = 20
+        request.timeoutInterval = 25
         request.httpBody = try encoder.encode(
             ScanRequest(target: target, authorized: authorized, profile: profile)
         )

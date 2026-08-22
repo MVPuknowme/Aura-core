@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+import ipaddress
+import re
 from datetime import datetime
 from enum import Enum
 from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
+
+_HOST_LABEL = re.compile(r"(?!-)[a-z0-9-]{1,63}(?<!-)\Z")
 
 
 class ScanProfile(str, Enum):
@@ -23,6 +27,23 @@ class ScanRequest(BaseModel):
         target = value.strip().lower().rstrip(".")
         if "://" in target or "/" in target or "@" in target:
             raise ValueError("Enter a hostname only, without a URL, path, or credentials")
+
+        try:
+            ipaddress.ip_address(target)
+        except ValueError:
+            pass
+        else:
+            raise ValueError("Enter a DNS hostname; IP address literals are not supported")
+
+        try:
+            target = target.encode("idna").decode("ascii")
+        except UnicodeError as exc:
+            raise ValueError("Enter a valid DNS hostname") from exc
+
+        if len(target) > 253 or not target:
+            raise ValueError("Enter a valid DNS hostname")
+        if any(_HOST_LABEL.fullmatch(label) is None for label in target.split(".")):
+            raise ValueError("Enter a valid DNS hostname")
         return target
 
 

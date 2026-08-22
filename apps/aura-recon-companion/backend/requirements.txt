@@ -1,6 +1,6 @@
-fastapi>=0.138,<0.139
-uvicorn[standard]>=0.51,<0.52
-pydantic>=2.12,<3
-dnspython>=2.8,<3
-httpx>=0.28,<0.29
-pytest>=8.4,<9
+# Direct dependencies pinned to the versions from the last successful PR validation.
+fastapi==0.138.2
+uvicorn[standard]==0.51.0
+pydantic==2.13.4
+dnspython==2.8.0
+pytest==8.4.2

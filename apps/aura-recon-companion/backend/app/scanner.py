@@ -1,15 +1,17 @@
 from __future__ import annotations
 
 import hashlib
+import http.client
 import ipaddress
 import json
 import socket
+import ssl
+import time
 import uuid
 from datetime import UTC, datetime
 
 import dns.exception
 import dns.resolver
-import httpx
 
 from .models import Finding, ScanProfile, ScanReport, ScanRequest
 
@@ -24,6 +26,15 @@ _SELECTED_HEADERS = {
     "x-frame-options",
     "referrer-policy",
 }
+_MAX_ADDRESSES = 16
+_MAX_RECORD_VALUES = 20
+_MAX_VALUE_CHARS = 2_048
+_DNS_BUDGET_SECONDS = 6.0
+_WEB_BUDGET_SECONDS = 8.0
+
+
+def _bounded(value: str, limit: int = _MAX_VALUE_CHARS) -> str:
+    return value if len(value) <= limit else f"{value[:limit]}…"
 
 
 def _validated_public_addresses(hostname: str) -> list[str]:
@@ -39,16 +50,22 @@ def _validated_public_addresses(hostname: str) -> list[str]:
     for raw in addresses:
         address = ipaddress.ip_address(raw)
         if not address.is_global:
-            raise ValueError("Private, loopback, link-local, reserved, and non-global targets are blocked")
-    return addresses
+            raise ValueError(
+                "Private, loopback, link-local, reserved, and non-global targets are blocked"
+            )
+    return addresses[:_MAX_ADDRESSES]
 
 
 def _dns_findings(target: str) -> list[Finding]:
     findings: list[Finding] = []
     resolver = dns.resolver.Resolver(configure=True)
-    resolver.lifetime = 5.0
+    deadline = time.monotonic() + _DNS_BUDGET_SECONDS
 
     for record_type in _RECORD_TYPES:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            break
+        resolver.lifetime = min(2.0, remaining)
         try:
             answer = resolver.resolve(target, record_type, raise_on_no_answer=False)
         except (dns.resolver.NXDOMAIN, dns.resolver.NoNameservers, dns.exception.Timeout):
@@ -56,42 +73,92 @@ def _dns_findings(target: str) -> list[Finding]:
         except dns.resolver.NoAnswer:
             continue
 
-        values = [item.to_text() for item in answer]
+        values = [
+            _bounded(item.to_text())
+            for item in list(answer)[:_MAX_RECORD_VALUES]
+        ]
         if values:
-            findings.append(
-                Finding(category="dns", source=record_type, value=values)
-            )
+            findings.append(Finding(category="dns", source=record_type, value=values))
     return findings
 
 
-def _web_metadata_findings(target: str) -> list[Finding]:
-    url = f"https://{target}/"
-    with httpx.Client(
-        timeout=httpx.Timeout(8.0, connect=5.0),
-        follow_redirects=False,
-        headers={"User-Agent": "Aura-Recon-Companion/0.1 authorized-metadata-check"},
-    ) as client:
-        response = client.head(url)
+def _pinned_https_head(
+    target: str,
+    public_addresses: list[str],
+) -> tuple[int, dict[str, str], str | None]:
+    """Send one HEAD request without re-resolving the validated hostname."""
+    context = ssl.create_default_context()
+    deadline = time.monotonic() + _WEB_BUDGET_SECONDS
+    last_error: Exception | None = None
 
-    headers = {
-        key.lower(): value
-        for key, value in response.headers.items()
-        if key.lower() in _SELECTED_HEADERS
-    }
+    for raw_address in public_addresses[:_MAX_ADDRESSES]:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            break
+
+        address = ipaddress.ip_address(raw_address)
+        family = socket.AF_INET6 if address.version == 6 else socket.AF_INET
+        endpoint: tuple[object, ...]
+        endpoint = (raw_address, 443, 0, 0) if address.version == 6 else (raw_address, 443)
+        raw_socket = socket.socket(family, socket.SOCK_STREAM)
+        try:
+            raw_socket.settimeout(remaining)
+            raw_socket.connect(endpoint)
+            tls_socket = context.wrap_socket(raw_socket, server_hostname=target)
+            raw_socket = None
+            with tls_socket:
+                tls_socket.settimeout(max(0.1, deadline - time.monotonic()))
+                request = (
+                    "HEAD / HTTP/1.1\r\n"
+                    f"Host: {target}\r\n"
+                    "User-Agent: Aura-Recon-Companion/0.1 authorized-metadata-check\r\n"
+                    "Accept: */*\r\n"
+                    "Connection: close\r\n\r\n"
+                ).encode("ascii")
+                tls_socket.sendall(request)
+                response = http.client.HTTPResponse(tls_socket)
+                try:
+                    response.begin()
+                    selected: dict[str, str] = {}
+                    location: str | None = None
+                    for key, value in response.getheaders():
+                        normalized = key.lower()
+                        if normalized in _SELECTED_HEADERS:
+                            selected[normalized] = _bounded(value)
+                        elif normalized == "location":
+                            location = _bounded(value)
+                    return response.status, selected, location
+                finally:
+                    response.close()
+        except (OSError, ssl.SSLError, http.client.HTTPException) as exc:
+            last_error = exc
+        finally:
+            if raw_socket is not None:
+                raw_socket.close()
+
+    message = str(last_error) if last_error else "request deadline exceeded"
+    raise OSError(f"HTTPS metadata request failed: {message}")
+
+
+def _web_metadata_findings(
+    target: str,
+    public_addresses: list[str],
+) -> list[Finding]:
+    status, headers, location = _pinned_https_head(target, public_addresses)
     findings = [
-        Finding(category="web", source="status", value=response.status_code),
+        Finding(category="web", source="status", value=status),
         Finding(category="web", source="headers", value=headers),
     ]
-    if "location" in response.headers:
-        findings.append(
-            Finding(category="web", source="redirect-location", value=response.headers["location"])
-        )
+    if location is not None:
+        findings.append(Finding(category="web", source="redirect-location", value=location))
     return findings
 
 
 def run_scan(request: ScanRequest) -> ScanReport:
     if not request.authorized:
-        raise PermissionError("You must confirm that you own or are authorized to assess the target")
+        raise PermissionError(
+            "You must confirm that you own or are authorized to assess the target"
+        )
 
     started_at = datetime.now(UTC)
     public_addresses = _validated_public_addresses(request.target)
@@ -108,9 +175,9 @@ def run_scan(request: ScanRequest) -> ScanReport:
 
     if request.profile == ScanProfile.WEB_METADATA:
         try:
-            findings.extend(_web_metadata_findings(request.target))
-        except httpx.HTTPError as exc:
-            findings.append(Finding(category="web", source="error", value=str(exc)))
+            findings.extend(_web_metadata_findings(request.target, public_addresses))
+        except (OSError, ssl.SSLError, http.client.HTTPException) as exc:
+            findings.append(Finding(category="web", source="error", value=_bounded(str(exc))))
 
     completed_at = datetime.now(UTC)
     scan_id = str(uuid.uuid4())
