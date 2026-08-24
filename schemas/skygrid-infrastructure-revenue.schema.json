@@ -18,6 +18,8 @@
       "enum": [
         "staking",
         "infrastructure",
+        "subscription",
+        "lease",
         "protocol",
         "treasury",
         "protocol_fee",
@@ -28,7 +30,7 @@
       ]
     },
     "recognition": {
-      "enum": ["realized", "accrued", "unrealized", "projected", "unverified"]
+      "enum": ["realized", "accrued", "contracted", "unrealized", "projected", "unverified"]
     },
     "amount_usd": { "type": "number", "minimum": 0 },
     "currency": { "type": "string", "default": "USD" },
@@ -37,6 +39,24 @@
     "node_id": { "type": ["string", "null"] },
     "counterparty": { "type": ["string", "null"] },
     "occurred_at": { "type": ["string", "null"], "format": "date-time" },
+    "commercial": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "model": { "enum": ["one_time", "subscription", "lease"] },
+        "agreement_id": { "type": ["string", "null"] },
+        "status": { "type": ["string", "null"] },
+        "billing_interval": {
+          "enum": ["weekly", "monthly", "quarterly", "annual", null]
+        },
+        "recurring_amount_usd": { "type": ["number", "null"], "minimum": 0 },
+        "contract_value_usd": { "type": ["number", "null"], "minimum": 0 },
+        "lease_hours": { "type": ["number", "null"], "minimum": 0 },
+        "rate_usd_per_hour": { "type": ["number", "null"], "minimum": 0 },
+        "starts_at": { "type": ["string", "null"], "format": "date-time" },
+        "ends_at": { "type": ["string", "null"], "format": "date-time" }
+      }
+    },
     "evidence": {
       "type": "array",
       "items": {
@@ -50,6 +70,12 @@
               "service_payment",
               "signed_contract",
               "capacity_lease",
+              "subscription_agreement",
+              "subscription_invoice",
+              "subscription_payment",
+              "lease_agreement",
+              "lease_invoice",
+              "lease_payment",
               "processor_event",
               "bank_posting",
               "cloud_billing",
@@ -68,7 +94,16 @@
       "if": { "properties": { "direction": { "const": "income" } } },
       "then": {
         "properties": {
-          "category": { "enum": ["staking", "infrastructure", "protocol", "treasury"] }
+          "category": {
+            "enum": [
+              "staking",
+              "infrastructure",
+              "subscription",
+              "lease",
+              "protocol",
+              "treasury"
+            ]
+          }
         }
       }
     },
@@ -77,7 +112,65 @@
       "then": {
         "properties": {
           "category": {
-            "enum": ["protocol_fee", "hosting", "hardware_amortization", "network_fee", "other_operating"]
+            "enum": [
+              "protocol_fee",
+              "hosting",
+              "hardware_amortization",
+              "network_fee",
+              "other_operating"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "category": { "const": "subscription" } },
+        "required": ["category"]
+      },
+      "then": {
+        "required": ["commercial"],
+        "properties": {
+          "commercial": {
+            "required": [
+              "agreement_id",
+              "billing_interval",
+              "recurring_amount_usd"
+            ],
+            "properties": {
+              "model": { "const": "subscription" },
+              "agreement_id": { "type": "string", "minLength": 1 },
+              "billing_interval": {
+                "enum": ["weekly", "monthly", "quarterly", "annual"]
+              },
+              "recurring_amount_usd": { "type": "number", "minimum": 0 }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "category": { "const": "lease" } },
+        "required": ["category"]
+      },
+      "then": {
+        "required": ["commercial"],
+        "properties": {
+          "commercial": {
+            "required": ["agreement_id"],
+            "properties": {
+              "model": { "const": "lease" },
+              "agreement_id": { "type": "string", "minLength": 1 }
+            },
+            "anyOf": [
+              {
+                "required": ["contract_value_usd"]
+              },
+              {
+                "required": ["lease_hours", "rate_usd_per_hour"]
+              }
+            ]
           }
         }
       }
