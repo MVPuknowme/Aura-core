@@ -55,11 +55,22 @@ test("rejects a realized amount that lacks qualifying evidence", () => {
 
   assert.equal(report.summary.realized_income_usd, 0);
   assert.equal(report.summary.rejected_records, 1);
-  assert.deepEqual(report.records[0].errors, ["realized_requires_qualifying_evidence"]);
+  assert.deepEqual(report.records[0].errors, [
+    "realized_requires_qualifying_evidence",
+    "realized_income_requires_settlement_evidence"
+  ]);
 });
 
-test("keeps accrued, unrealized, projected, and unverified values outside realized net", () => {
+test("keeps contracted, accrued, unrealized, projected, and unverified values outside realized net", () => {
   const report = summarizeRevenueLedger([
+    {
+      id: "contracted-service",
+      direction: "income",
+      category: "infrastructure",
+      recognition: "contracted",
+      amount_usd: 1200,
+      evidence: [{ type: "signed_contract", reference: "contract:001" }]
+    },
     {
       id: "accrued-service",
       direction: "income",
@@ -92,10 +103,154 @@ test("keeps accrued, unrealized, projected, and unverified values outside realiz
   ]);
 
   assert.equal(report.summary.net_realized_income_usd, 0);
+  assert.equal(report.summary.contracted_income_usd, 1200);
   assert.equal(report.summary.accrued_income_usd, 300);
   assert.equal(report.summary.unrealized_change_usd, 80);
   assert.equal(report.summary.projected_income_usd, 500);
   assert.equal(report.summary.unverified_income_usd, 700);
+});
+
+test("evaluates subscription run-rate separately from realized revenue", () => {
+  const commercial = {
+    model: "subscription",
+    agreement_id: "sub_001",
+    status: "active",
+    billing_interval: "monthly",
+    recurring_amount_usd: 100,
+    contract_value_usd: 1200
+  };
+
+  const report = summarizeRevenueLedger([
+    {
+      id: "sub-contract",
+      direction: "income",
+      category: "subscription",
+      recognition: "contracted",
+      amount_usd: 1200,
+      commercial,
+      evidence: [
+        { type: "subscription_agreement", reference: "sub_001" }
+      ]
+    },
+    {
+      id: "sub-payment-1",
+      direction: "income",
+      category: "subscription",
+      recognition: "realized",
+      amount_usd: 100,
+      commercial,
+      evidence: [
+        { type: "subscription_payment", reference: "pi_001" }
+      ]
+    }
+  ]);
+
+  assert.equal(report.summary.contracted_income_usd, 1200);
+  assert.equal(report.summary.realized_income_usd, 100);
+  assert.equal(report.summary.net_realized_income_usd, 100);
+  assert.equal(report.commercial_evaluation.subscriptions.agreements, 1);
+  assert.equal(report.commercial_evaluation.subscriptions.mrr_run_rate_usd, 100);
+  assert.equal(report.commercial_evaluation.subscriptions.arr_run_rate_usd, 1200);
+  assert.equal(
+    report.commercial_evaluation.subscriptions.contract_value_snapshot_usd,
+    1200
+  );
+});
+
+test("evaluates lease value and requires settlement evidence before realization", () => {
+  const commercial = {
+    model: "lease",
+    agreement_id: "lease_001",
+    status: "owner_accepted_pending_operator",
+    lease_hours: 24,
+    rate_usd_per_hour: 2.5
+  };
+
+  const report = summarizeRevenueLedger([
+    {
+      id: "lease-offer",
+      direction: "income",
+      category: "lease",
+      recognition: "projected",
+      amount_usd: 60,
+      commercial
+    },
+    {
+      id: "lease-contract",
+      direction: "income",
+      category: "lease",
+      recognition: "contracted",
+      amount_usd: 60,
+      commercial,
+      evidence: [
+        { type: "capacity_lease", reference: "lease_001" }
+      ]
+    },
+    {
+      id: "lease-not-paid",
+      direction: "income",
+      category: "lease",
+      recognition: "realized",
+      amount_usd: 60,
+      commercial,
+      evidence: [
+        { type: "capacity_lease", reference: "lease_001" }
+      ]
+    },
+    {
+      id: "lease-payment",
+      direction: "income",
+      category: "lease",
+      recognition: "realized",
+      amount_usd: 60,
+      commercial: { ...commercial, status: "released" },
+      evidence: [
+        { type: "lease_payment", reference: "leasepay_001" }
+      ]
+    }
+  ]);
+
+  assert.equal(report.summary.projected_income_usd, 60);
+  assert.equal(report.summary.contracted_income_usd, 60);
+  assert.equal(report.summary.realized_income_usd, 60);
+  assert.equal(report.summary.rejected_records, 1);
+  assert.deepEqual(report.records[2].errors, [
+    "realized_income_requires_settlement_evidence"
+  ]);
+  assert.equal(report.commercial_evaluation.leases.agreements, 1);
+  assert.equal(report.commercial_evaluation.leases.lease_hours_snapshot, 24);
+  assert.equal(report.commercial_evaluation.leases.contract_value_snapshot_usd, 60);
+  assert.equal(report.commercial_evaluation.leases.realized_income_usd, 60);
+});
+
+test("rejects subscription or lease records without evaluable commercial terms", () => {
+  const report = summarizeRevenueLedger([
+    {
+      id: "bad-sub",
+      direction: "income",
+      category: "subscription",
+      recognition: "projected",
+      amount_usd: 100
+    },
+    {
+      id: "bad-lease",
+      direction: "income",
+      category: "lease",
+      recognition: "projected",
+      amount_usd: 100,
+      commercial: {
+        model: "lease",
+        agreement_id: "lease_bad"
+      }
+    }
+  ]);
+
+  assert.equal(report.summary.accepted_records, 0);
+  assert.equal(report.summary.rejected_records, 2);
+  assert.ok(report.records[0].errors.includes("subscription_agreement_id_required"));
+  assert.ok(report.records[0].errors.includes("subscription_billing_interval_required"));
+  assert.ok(report.records[0].errors.includes("subscription_recurring_amount_required"));
+  assert.ok(report.records[1].errors.includes("lease_contract_value_required"));
 });
 
 test("rejects invalid categories and negative amounts", () => {
