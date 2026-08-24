@@ -1,4 +1,7 @@
-import { applyOperatorMode } from "../config/skygrid-operator.mjs";
+import {
+  applyOperatorMode,
+  resolveOperatorConfig
+} from "../config/skygrid-operator.mjs";
 
 const args = process.argv.slice(2);
 const command = args[0] || "status";
@@ -14,7 +17,10 @@ function argumentValue(name) {
 const operator = argumentValue("--operator");
 
 if (command === "status") {
-  const config = applyOperatorMode({ operator });
+  const config = resolveOperatorConfig({
+    ...process.env,
+    ...(operator ? { SKYGRID_OPERATOR: operator } : {})
+  });
   console.log(JSON.stringify({ ok: true, ...config }, null, 2));
 } else if (command === "local") {
   const config = applyOperatorMode({ operator, runtimeMode: "local" });
