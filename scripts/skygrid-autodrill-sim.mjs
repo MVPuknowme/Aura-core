@@ -41,6 +41,75 @@ const simulations = [
     }
   },
   {
+    name: "capacity_lease_preflight_valid",
+    expected_ok: true,
+    envelope: {
+      route_type: "capacity_lease",
+      requested_ramp: "vercel",
+      requested_node: "home"
+    }
+  },
+  {
+    name: "ethernet_allbridge_prerun_valid",
+    expected_ok: true,
+    envelope: {
+      route_type: "bridge_preflight",
+      requested_ramp: "allbridge_core",
+      requested_transport: "ethernet",
+      requested_node: "validator"
+    }
+  },
+  {
+    name: "solana_playground_preflight_valid",
+    expected_ok: true,
+    envelope: {
+      route_type: "solana_playground",
+      requested_ramp: "solana_playground",
+      requested_node: "validator"
+    }
+  },
+  {
+    name: "unsafe_capacity_disk_partition",
+    expected_ok: false,
+    envelope: {
+      route_type: "capacity_lease",
+      requested_ramp: "vercel",
+      requested_node: "home",
+      disk_partition_requested: true
+    }
+  },
+  {
+    name: "unsafe_allbridge_execution",
+    expected_ok: false,
+    envelope: {
+      route_type: "bridge_preflight",
+      requested_ramp: "allbridge_core",
+      requested_transport: "ethernet",
+      requested_node: "validator",
+      bridge_execution_requested: true
+    }
+  },
+  {
+    name: "unsafe_solana_program_deployment",
+    expected_ok: false,
+    envelope: {
+      route_type: "solana_playground",
+      requested_ramp: "solana_playground",
+      requested_node: "validator",
+      program_deployment_requested: true
+    }
+  },
+  {
+    name: "unapproved_allbridge_transport",
+    expected_ok: false,
+    envelope: {
+      route_type: "bridge_preflight",
+      requested_ramp: "allbridge_core",
+      requested_transport: "wifi",
+      requested_node: "validator"
+    }
+  },
+  {
     name: "unknown_route_type",
     expected_ok: false,
     envelope: { route_type: "unknown", requested_ramp: "vercel", requested_node: "edge" }

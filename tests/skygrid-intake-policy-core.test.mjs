@@ -50,6 +50,29 @@ const acceptedCases = [
       emergency_operator_approval: true
     },
     partition: "emergency"
+  },
+  {
+    name: "approved Ethernet and Allbridge Core preflight",
+    body: {
+      route_type: "bridge_preflight",
+      requested_ramp: "allbridge_core",
+      requested_transport: "ethernet",
+      requested_node: "validator",
+      owner_approval: true,
+      emergency_operator_approval: true
+    },
+    partition: "bridge_preflight"
+  },
+  {
+    name: "approved Solana Playground preflight",
+    body: {
+      route_type: "solana_playground",
+      requested_ramp: "solana_playground",
+      requested_node: "validator",
+      owner_approval: true,
+      emergency_operator_approval: true
+    },
+    partition: "solana_playground"
   }
 ];
 
@@ -121,6 +144,27 @@ const rejectedCases = [
     requested_node: "home",
     private_data_movement_requested: true
   }, "private_data_movement_prohibited", 403],
+  ["Allbridge execution", {
+    route_type: "bridge_preflight",
+    requested_ramp: "allbridge_core",
+    requested_transport: "ethernet",
+    requested_node: "validator",
+    bridge_execution_requested: true
+  }, "bridge_execution_prohibited", 403],
+  ["Solana program deployment", {
+    route_type: "solana_playground",
+    requested_ramp: "solana_playground",
+    requested_node: "validator",
+    program_deployment_requested: true
+  }, "program_deployment_prohibited", 403],
+  ["unapproved Allbridge transport", {
+    route_type: "bridge_preflight",
+    requested_ramp: "allbridge_core",
+    requested_transport: "wifi",
+    requested_node: "validator",
+    owner_approval: true,
+    emergency_operator_approval: true
+  }, "unapproved_transport", 403],
   ["missing routing fields", {
     requested_ramp: "postman",
     requested_node: "home"
