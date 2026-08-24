@@ -7,7 +7,10 @@ function createRequest({ method = "POST", path = "/api/node-lease/preflight", bo
   return {
     method,
     url: path,
-    headers: { host: "127.0.0.1:3000" },
+    headers: {
+      host: "127.0.0.1:3000",
+      ...(method === "POST" ? { "content-type": "application/json" } : {})
+    },
     async *[Symbol.asyncIterator]() {
       if (payload) yield Buffer.from(payload);
     }
