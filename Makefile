@@ -1,8 +1,9 @@
 OPERATOR ?= MVPuknowme
 PORT ?= 3000
+DEBUG_PORT ?= 9229
 IMAGE ?= aura-core-operator:local
 
-.PHONY: operator runner runner-preflight local vercel-build container-build container-run vercel-bypass test-operator
+.PHONY: operator runner runner-preflight debug local vercel-build container-build container-run vercel-bypass test-operator
 
 operator:
 	pnpm run operator:status -- --operator=$(OPERATOR)
@@ -14,6 +15,11 @@ runner-preflight:
 
 runner: runner-preflight
 	pnpm run operator:local -- --operator=$(OPERATOR)
+
+# Local-only debugger. The Node inspector is intentionally bound to loopback so
+# it is not exposed on LAN/container interfaces.
+debug: runner-preflight
+	node --inspect=127.0.0.1:$(DEBUG_PORT) --enable-source-maps --trace-warnings --trace-uncaught scripts/skygrid-operator-runner.mjs local --operator=$(OPERATOR)
 
 local:
 	pnpm run operator:local -- --operator=$(OPERATOR)
