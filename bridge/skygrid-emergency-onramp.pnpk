@@ -1,5 +1,5 @@
 {
-  "pnpk_version": "1.2.0",
+  "pnpk_version": "1.3.0",
   "pnpk_profile": "runtime-policy",
   "service": "SKYGRID Emergency Data On-Ramp",
   "operator": "MVPuknowme",
@@ -546,5 +546,86 @@
       "solana_playground"
     ],
     "trust_statement": "PNPK is the policy traffic layer. SKYGRID routes only when owner and emergency operator approval agree."
+  },
+  "access_transparency": {
+    "enabled": true,
+    "mode": "receipt_only_no_interception_authority",
+    "instrumented_boundary_only": true,
+    "tamper_evident_not_tamper_proof": true,
+    "content_capture_default": false,
+    "interception_execution_allowed": false,
+    "no_auto_acceptance_from_document_label": true,
+    "legal_review_required": true,
+    "warrant_particularity_required": true,
+    "receipt_events": [
+      "tamper_detected",
+      "access_pre_requested",
+      "access_requested",
+      "access_approved",
+      "access_denied",
+      "access_activated",
+      "access_modified",
+      "access_expired",
+      "access_revoked",
+      "interception_requested",
+      "interception_approved",
+      "interception_activated",
+      "interception_ended",
+      "notification_delayed",
+      "subject_notified"
+    ],
+    "authority_types_receipted": [
+      "consent",
+      "warrant",
+      "court_order",
+      "subpoena",
+      "emergency_request",
+      "operator_maintenance_approval",
+      "other_legal_process"
+    ],
+    "required_authority_fields": [
+      "authority_type",
+      "issuing_authority",
+      "jurisdiction",
+      "legal_process_identifier",
+      "target_scope",
+      "data_categories",
+      "service_account_facility_or_place",
+      "start_at",
+      "expires_at",
+      "minimization_or_handling_rule",
+      "approver_identity",
+      "notification_status",
+      "delayed_notice_basis",
+      "delayed_notice_expires_or_review_at"
+    ],
+    "ambiguous_or_overbroad_behavior": "fail_closed_no_access",
+    "expired_or_revoked_behavior": "fail_closed_no_access",
+    "emergency_request_behavior": "receipt_immediately_require_legal_and_post_access_review",
+    "notification_policy": {
+      "notify_when_lawfully_permitted": true,
+      "delayed_notice_requires_basis": true,
+      "delayed_notice_requires_expiration_or_review_at": true
+    },
+    "receipt_content_policy": {
+      "metadata_and_hashes_only": true,
+      "call_or_message_content_allowed": false,
+      "public_receipts_redacted": true,
+      "secrets_or_protected_details_allowed": false
+    },
+    "grade_outcomes": [
+      "verified_current",
+      "verified_delayed_notice",
+      "incomplete_fail_closed",
+      "conflicted_fail_closed",
+      "tamper_alert"
+    ],
+    "limitations": [
+      "PNPK observes only participating systems inside configured instrumented trust boundaries",
+      "Receipts are tamper-evident records and do not prove that no unobserved access occurred",
+      "PNPK does not create interception authority or override a court order, statutory secrecy, or lawful nondisclosure requirement",
+      "PNPK cannot compel a government, carrier, platform, or technical operator outside the participating system to disclose access",
+      "Call and message content is not captured by default"
+    ]
   }
 }

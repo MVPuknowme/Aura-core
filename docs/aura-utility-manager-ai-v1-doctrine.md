@@ -237,7 +237,56 @@ The audit trail must distinguish:
 
 Minimum audit fields are actor, action class, target, evidence references, confidence, severity, policy decision, approval state, timestamp, and correlation ID.
 
-## 14. Example decisions
+## 14. Workhorse evidence-grade caveat: access and interception transparency
+
+The Workhorse grade applies to evidence and process, not to a permanent judgment about a person's honesty. Within a participating, instrumented system, PNPK may create tamper-evident receipts for:
+
+- detected changes to protected policy, configuration, audit, or evidence records;
+- pre-requests and formal requests for access to stored data, message metadata, message content, call metadata, or call content;
+- consent, warrant, court-order, subpoena, emergency-request, or approved maintenance pathways;
+- approval, denial, activation, modification, expiration, revocation, and termination of access;
+- delayed notification and later subject notification when lawfully permitted.
+
+### 14.1 Receipt is not authority
+
+A PNPK receipt records what a participating system was asked to do and what that system decided or observed. It does not itself authorize interception, activate a tap, collect communications, or make an otherwise unlawful request valid. A document labeled `warrant`, `court_order`, `subpoena`, or `emergency_request` must not be accepted automatically; jurisdiction-specific legal review and system authorization remain required.
+
+The controlled pilot remains receipt-only. It has no interception-execution authority, captures no call or message content by default, and cannot move private data.
+
+### 14.2 Particularity and lifecycle requirements
+
+Before a participating system may grade an access request as `verified_current`, the receipt must identify, at minimum:
+
+- authority type, issuing authority, jurisdiction, and legal-process identifier;
+- particularized target scope and requested data categories;
+- the service, account, facility, or place within scope;
+- effective start and expiration;
+- minimization, handling, or retention rule;
+- attributable approver identity;
+- notification status;
+- when notice is delayed, the legal basis and an expiration or review date.
+
+Missing, ambiguous, conflicting, expired, revoked, or materially overbroad authority results in `fail_closed_no_access`. Emergency requests are receipted immediately and require legal and post-access review; an emergency label does not erase scope or accountability requirements.
+
+### 14.3 Workhorse evidence grades
+
+| Grade | Meaning | Required handling |
+|---|---|---|
+| `verified_current` | Current authority, particularized scope, approval, lifecycle, and receipt integrity are verified. | Permit only the separately authorized system action; continue audit. |
+| `verified_delayed_notice` | Access is otherwise verified and subject notice is lawfully delayed with a recorded basis and review/expiration date. | Protect restricted details, review the delay at expiry, and notify when permitted. |
+| `incomplete_fail_closed` | Required authority, scope, approval, or lifecycle evidence is missing. | Refuse access and request the missing evidence. |
+| `conflicted_fail_closed` | Evidence, scope, identity, or policy materially conflicts. | Preserve state, refuse access, and escalate for human/legal review. |
+| `tamper_alert` | A hash, signature, sequence, or protected record does not match the expected evidence chain. | Preserve both versions, block destructive overwrite, and escalate. |
+
+### 14.4 Transparency, redaction, and limits
+
+Receipts default to metadata and cryptographic hashes. Public receipts must be redacted and must never disclose communication content, secrets, protected identities, active investigative details, or information whose disclosure is lawfully restricted.
+
+PNPK is tamper-evident, not tamper-proof. It can observe only configured events within participating, instrumented trust boundaries. It cannot prove that no unobserved access occurred; compel a government, carrier, platform, or technical professional outside that boundary to disclose activity; or override a court order, statutory secrecy rule, or lawful nondisclosure requirement. The transparency goal is to make participating-system requests and decisions attributable, scoped, reviewable, and difficult to alter silently.
+
+For United States deployments, legal review should account for the Fourth Amendment's particularity requirement, the scope and duration requirements for interception orders under [18 U.S.C. § 2518](https://uscode.house.gov/view.xhtml?edition=prelim&num=0&req=granuleid%3AUSC-prelim-title18-section2518), and lawful delayed-notice or nondisclosure provisions such as [18 U.S.C. § 2705](https://uscode.house.gov/view.xhtml?req=%28title%3A18+section%3A2705+edition%3Aprelim%29). Other jurisdictions require their own legal mapping. This doctrine is a technical control baseline, not legal advice.
+
+## 15. Example decisions
 
 | Situation | Classification | Expected result |
 |---|---|---|
@@ -249,7 +298,7 @@ Minimum audit fields are actor, action class, target, evidence references, confi
 | Conflicting validator and route-health signals | Escalate | Preserve state, request verification, and avoid mutation. |
 | Audit service unavailable during a critical request | Refuse / Escalate | Fail closed until audit capability is restored. |
 
-## 15. Acceptance mapping for issue #117
+## 16. Acceptance mapping for issue #117
 
 - **v1 operating doctrine documented:** Sections 1–5.
 - **Critical-action approval boundary explicit:** Section 6.
@@ -259,6 +308,6 @@ Minimum audit fields are actor, action class, target, evidence references, confi
 - **Operator override rules delivered:** Section 11.
 - **Ready to reference from epic #109:** This document is the normative v1 boundary for the remaining child issues.
 
-## 16. Change control
+## 17. Change control
 
 Changes to this doctrine require review by an authorized operator and must not silently broaden system authority. Later versions may add narrowly scoped automation only after scenario testing, audit verification, rollback design, and explicit policy approval.

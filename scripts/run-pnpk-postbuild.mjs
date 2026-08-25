@@ -30,7 +30,7 @@ function assert(condition, message) {
 }
 
 export function validatePostBuildPolicy(pnpk) {
-  assert(pnpk?.pnpk_version === "1.2.0", "PNPK runtime policy version must be 1.2.0");
+  assert(pnpk?.pnpk_version === "1.3.0", "PNPK runtime policy version must be 1.3.0");
   assert(pnpk?.pnpk_profile === "runtime-policy", "PNPK profile must be runtime-policy");
   assert(pnpk?.mode === "controlled_pilot", "PNPK mode must be controlled_pilot");
   assert(pnpk?.sentinel === "fail_closed", "PNPK sentinel must be fail_closed");

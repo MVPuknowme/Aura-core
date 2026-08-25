@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { validatePostBuildPolicy } from "./run-pnpk-postbuild.mjs";
+import { validateAccessTransparencyPolicy } from "./pnpk-access-transparency-policy.mjs";
 
 const file = process.env.PNPK_PATH || "bridge/skygrid-emergency-onramp.pnpk";
 const raw = await readFile(file, "utf8");
@@ -44,6 +45,13 @@ try {
 }
 
 const policy = pnpk.runtime_policy;
+
+try {
+  validateAccessTransparencyPolicy(pnpk);
+} catch (error) {
+  console.error(`PNPK validation failed: ${error.message}`);
+  process.exit(1);
+}
 
 for (const key of [
   "payment_execution",
