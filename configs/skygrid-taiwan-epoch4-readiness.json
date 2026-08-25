@@ -1,0 +1,71 @@
+{
+  "profile_id": "skygrid-taiwan-epoch4-readiness-v1",
+  "system": "SKYGRID Emergency Data On-Ramp",
+  "epoch": 4,
+  "status": "readiness_only",
+  "live_execution": false,
+  "created_at": "2026-08-24T17:56:00Z",
+  "target": {
+    "country_or_market": "Taiwan",
+    "cloud": "AWS",
+    "region_name": "Asia Pacific (Taipei)",
+    "region_code": "ap-east-2",
+    "availability_zones": 3,
+    "region_enablement_required": true
+  },
+  "routing_policy": {
+    "primary_scope": "ap-east-2",
+    "prefer_in_region_multi_az": true,
+    "cross_border_failover": "disabled_by_default",
+    "cross_border_failover_requires": [
+      "operator approval",
+      "data residency review",
+      "customer or workload policy approval"
+    ]
+  },
+  "preflight_requirements": [
+    "Confirm ap-east-2 is enabled for the AWS account.",
+    "Confirm required SKYGRID services are available in ap-east-2 before deployment.",
+    "Run least-privilege IAM review for the Taiwan deployment role.",
+    "Create or select three-AZ network topology where supported by the workload.",
+    "Verify encryption at rest and in transit with Taiwan-resident keys when residency policy requires it.",
+    "Verify DNS, health endpoints, logs, alarms, budgets, and cost anomaly alerts.",
+    "Run synthetic health, latency, failure, and rollback tests before any live traffic.",
+    "Keep production failover operator-gated until health quorum and rollback proof pass."
+  ],
+  "health_quorum": {
+    "minimum_pass_conditions": [
+      "public health endpoint passes from an external observer",
+      "at least two independent availability-zone health checks pass",
+      "route manifest and policy validation pass",
+      "rollback test passes",
+      "no unresolved security or data-residency exceptions"
+    ],
+    "fail_closed_on": [
+      "region not enabled",
+      "required service unavailable in ap-east-2",
+      "missing authorization",
+      "failed rollback test",
+      "data residency conflict",
+      "health quorum failure"
+    ]
+  },
+  "evidence": {
+    "required": [
+      "AWS region/account preflight output",
+      "service availability check",
+      "network and AZ topology record",
+      "health-check receipts",
+      "latency baseline",
+      "rollback receipt",
+      "budget and anomaly-alert confirmation"
+    ],
+    "do_not_record": [
+      "AWS secrets",
+      "private keys",
+      "customer regulated data",
+      "unredacted credentials"
+    ]
+  },
+  "promotion_gate": "Operator must explicitly approve promotion from readiness_only to staging or production."
+}
