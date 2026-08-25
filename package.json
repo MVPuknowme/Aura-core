@@ -19,7 +19,7 @@
         "training:verify-receipts": "node scripts/verify-skygrid-training-receipts.mjs",
         "training:all": "pnpm run training:drill && pnpm run training:fail-closed",
         "skygrid:training": "node --import ./scripts/skygrid-training-signed-fetch.mjs scripts/skygrid-training-drill.mjs",
-        "build": "node scripts/test-runtime-security.mjs && node scripts/test-aerodrome-wallet-rpc.mjs && node scripts/test-dual-lane-wallet-rpc.mjs && node scripts/test-local-wallet-routing.mjs && node scripts/skygrid-build.mjs",
+        "build": "node --test tests/skygrid-opensea-preflight.test.mjs && node scripts/test-runtime-security.mjs && node scripts/test-aerodrome-wallet-rpc.mjs && node scripts/test-dual-lane-wallet-rpc.mjs && node scripts/test-local-wallet-routing.mjs && node scripts/skygrid-build.mjs",
         "postbuild": "node scripts/run-pnpk-postbuild.mjs",
         "build:xmcp": "node tools/xmcp/index.mjs build --vercel",
         "xmcp:build": "node tools/xmcp/index.mjs build --vercel",
@@ -56,7 +56,8 @@
         "security:ioc-check": "node scripts/check-iocs.mjs",
         "skygrid:verify:public": "node scripts/verify-skygrid-public.mjs",
         "postman:mock": "node scripts/postman-create-skygrid-mock.mjs",
-        "postman:mock:test": "node scripts/test-postman-superhighway-contract.mjs"
+        "postman:mock:test": "node scripts/test-postman-superhighway-contract.mjs",
+        "opensea:preflight-test": "node --test tests/skygrid-opensea-preflight.test.mjs"
     },
     "dependencies": {
         "@coinbase/agentkit": "^0.10.4",
