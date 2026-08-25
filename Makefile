@@ -2,10 +2,18 @@ OPERATOR ?= MVPuknowme
 PORT ?= 3000
 IMAGE ?= aura-core-operator:local
 
-.PHONY: operator local vercel-build container-build container-run vercel-bypass test-operator
+.PHONY: operator runner runner-preflight local vercel-build container-build container-run vercel-bypass test-operator
 
 operator:
 	pnpm run operator:status -- --operator=$(OPERATOR)
+
+runner-preflight:
+	pnpm run operator:test
+	pnpm run mcp:check
+	pnpm run skygrid:test:routing
+
+runner: runner-preflight
+	pnpm run operator:local -- --operator=$(OPERATOR)
 
 local:
 	pnpm run operator:local -- --operator=$(OPERATOR)
