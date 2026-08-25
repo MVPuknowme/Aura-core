@@ -30,304 +30,39 @@
     }
   },
   "routes": [
-    {
-      "id": "home",
-      "method": "GET",
-      "path": "/",
-      "owner": "vercel",
-      "proof_owner": "postman",
-      "required": true,
-      "status": "implemented"
-    },
-    {
-      "id": "health_json",
-      "method": "GET",
-      "path": "/health.json",
-      "owner": "vercel",
-      "proof_owner": "postman",
-      "required": true,
-      "status": "implemented"
-    },
-    {
-      "id": "dispatch",
-      "method": "GET",
-      "path": "/dispatch",
-      "owner": "vercel",
-      "proof_owner": "postman",
-      "required": true,
-      "status": "implemented"
-    },
-    {
-      "id": "incidents",
-      "method": "GET",
-      "path": "/incidents",
-      "owner": "vercel",
-      "proof_owner": "postman",
-      "required": true,
-      "status": "implemented"
-    },
-    {
-      "id": "settings",
-      "method": "GET",
-      "path": "/settings",
-      "owner": "vercel",
-      "proof_owner": "postman",
-      "required": true,
-      "status": "implemented"
-    },
-    {
-      "id": "highway",
-      "method": "GET",
-      "path": "/highway",
-      "owner": "vercel",
-      "proof_owner": "postman",
-      "required": true,
-      "status": "implemented"
-    },
-    {
-      "id": "scenarios",
-      "method": "GET",
-      "path": "/scenarios",
-      "owner": "vercel",
-      "proof_owner": "postman",
-      "required": false,
-      "status": "implemented"
-    },
-    {
-      "id": "rates",
-      "method": "GET",
-      "path": "/rates",
-      "owner": "vercel",
-      "proof_owner": "postman",
-      "required": false,
-      "status": "implemented"
-    },
-    {
-      "id": "base",
-      "method": "GET",
-      "path": "/base",
-      "owner": "vercel",
-      "proof_owner": "postman",
-      "required": false,
-      "status": "implemented"
-    },
-    {
-      "id": "pay",
-      "method": "GET",
-      "path": "/pay",
-      "owner": "vercel",
-      "proof_owner": "postman",
-      "required": false,
-      "status": "implemented"
-    },
-    {
-      "id": "dashboard_command_center",
-      "method": "GET",
-      "path": "/dashboard/command-center",
-      "owner": "vercel",
-      "proof_owner": "postman",
-      "required": true,
-      "status": "implemented"
-    },
-    {
-      "id": "dashboard_validation_panel",
-      "method": "GET",
-      "path": "/dashboard/validation-panel",
-      "owner": "vercel",
-      "proof_owner": "postman",
-      "required": true,
-      "status": "implemented"
-    },
-    {
-      "id": "dashboard_deployment_review",
-      "method": "GET",
-      "path": "/dashboard/deployment-review",
-      "owner": "vercel",
-      "proof_owner": "postman",
-      "required": true,
-      "status": "implemented"
-    },
-    {
-      "id": "dashboard_receipts",
-      "method": "GET",
-      "path": "/dashboard/receipts",
-      "owner": "vercel",
-      "proof_owner": "postman",
-      "required": true,
-      "status": "implemented"
-    },
-    {
-      "id": "skygrid_status",
-      "method": "GET",
-      "path": "/api/skygrid/status",
-      "owner": "vercel",
-      "proof_owner": "postman",
-      "required": true,
-      "status": "implemented"
-    },
-    {
-      "id": "skygrid_intake",
-      "method": "POST",
-      "path": "/api/skygrid/intake",
-      "owner": "vercel",
-      "proof_owner": "postman",
-      "required": true,
-      "status": "implemented"
-    },
-    {
-      "id": "opensea_collection_preflight",
-      "method": "GET",
-      "path": "/api/skygrid/opensea-preflight",
-      "owner": "vercel",
-      "proof_owner": "node_test",
-      "required": false,
-      "status": "implemented_fail_closed_identity_pin"
-    },
-    {
-      "id": "etherscan_read_only",
-      "method": "GET",
-      "path": "/api/skygrid/etherscan-read",
-      "owner": "vercel",
-      "proof_owner": "node_test",
-      "required": false,
-      "status": "implemented_fail_closed_allowlisted_reads"
-    },
-    {
-      "id": "aura_core_decide",
-      "method": "POST",
-      "path": "/api/aura-core/decide",
-      "owner": "vercel",
-      "proof_owner": "postman",
-      "required": true,
-      "status": "implemented"
-    },
-    {
-      "id": "agent_signals",
-      "method": "POST",
-      "path": "/api/agent/signals",
-      "owner": "vercel",
-      "proof_owner": "postman",
-      "required": true,
-      "status": "implemented"
-    },
-    {
-      "id": "highway_status",
-      "method": "GET",
-      "path": "/api/highway/status",
-      "owner": "vercel",
-      "proof_owner": "postman",
-      "required": true,
-      "status": "implemented"
-    },
-    {
-      "id": "highway_flasks",
-      "method": "GET",
-      "path": "/api/highway/flasks",
-      "owner": "vercel",
-      "proof_owner": "postman",
-      "required": false,
-      "status": "implemented"
-    },
-    {
-      "id": "highway_postman",
-      "method": "GET",
-      "path": "/api/highway/postman",
-      "owner": "vercel",
-      "proof_owner": "postman",
-      "required": true,
-      "status": "implemented"
-    },
-    {
-      "id": "pay_quote",
-      "method": "GET",
-      "path": "/api/pay/quote",
-      "sample_path": "/api/pay/quote?amount=25",
-      "owner": "vercel",
-      "proof_owner": "postman",
-      "required": true,
-      "status": "implemented"
-    },
-    {
-      "id": "sponsors_link",
-      "method": "GET",
-      "path": "/api/sponsors/link",
-      "owner": "vercel_and_cloudflare",
-      "proof_owner": "postman",
-      "required": false,
-      "status": "implemented_in_file_route_and_worker"
-    },
-    {
-      "id": "stripe_device_link_legacy",
-      "method": "GET",
-      "path": "/api/stripe/device-link",
-      "owner": "vercel_and_cloudflare",
-      "proof_owner": "postman",
-      "required": false,
-      "status": "legacy_compatibility"
-    },
-    {
-      "id": "autodrill_latest",
-      "method": "GET",
-      "path": "/api/autodrill/latest",
-      "owner": "vercel",
-      "proof_owner": "postman",
-      "required": true,
-      "status": "implemented"
-    },
-    {
-      "id": "build_pad_quote",
-      "method": "POST",
-      "path": "/api/build-pad/quote",
-      "owner": "vercel",
-      "proof_owner": "postman",
-      "required": true,
-      "status": "implemented_quote_only"
-    },
-    {
-      "id": "capacity_lease_page",
-      "method": "GET",
-      "path": "/lease",
-      "owner": "vercel",
-      "proof_owner": "github_actions",
-      "required": false,
-      "status": "implemented"
-    },
-    {
-      "id": "node_lease_intake",
-      "method": "POST",
-      "path": "/api/node-lease/intake",
-      "owner": "vercel",
-      "proof_owner": "postman",
-      "required": true,
-      "status": "implemented_capacity_preflight"
-    },
-    {
-      "id": "node_lease_preflight",
-      "method": "POST",
-      "path": "/api/node-lease/preflight",
-      "owner": "vercel",
-      "proof_owner": "github_actions",
-      "required": false,
-      "status": "implemented"
-    },
-    {
-      "id": "node_lease_agreements",
-      "method": "POST",
-      "path": "/api/node-lease/agreements",
-      "owner": "vercel",
-      "proof_owner": "github_actions",
-      "required": false,
-      "status": "implemented_owner_acceptance_only"
-    },
-    {
-      "id": "failover_status",
-      "method": "GET",
-      "path": "/api/failover/status",
-      "owner": "vercel",
-      "proof_owner": "postman",
-      "required": true,
-      "status": "implemented_blocked_until_readiness"
-    }
+    { "id": "home", "method": "GET", "path": "/", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
+    { "id": "health_json", "method": "GET", "path": "/health.json", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
+    { "id": "dispatch", "method": "GET", "path": "/dispatch", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
+    { "id": "incidents", "method": "GET", "path": "/incidents", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
+    { "id": "settings", "method": "GET", "path": "/settings", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
+    { "id": "highway", "method": "GET", "path": "/highway", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
+    { "id": "scenarios", "method": "GET", "path": "/scenarios", "owner": "vercel", "proof_owner": "postman", "required": false, "status": "implemented" },
+    { "id": "rates", "method": "GET", "path": "/rates", "owner": "vercel", "proof_owner": "postman", "required": false, "status": "implemented" },
+    { "id": "base", "method": "GET", "path": "/base", "owner": "vercel", "proof_owner": "postman", "required": false, "status": "implemented" },
+    { "id": "pay", "method": "GET", "path": "/pay", "owner": "vercel", "proof_owner": "postman", "required": false, "status": "implemented" },
+    { "id": "dashboard_command_center", "method": "GET", "path": "/dashboard/command-center", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
+    { "id": "dashboard_validation_panel", "method": "GET", "path": "/dashboard/validation-panel", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
+    { "id": "dashboard_deployment_review", "method": "GET", "path": "/dashboard/deployment-review", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
+    { "id": "dashboard_receipts", "method": "GET", "path": "/dashboard/receipts", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
+    { "id": "skygrid_status", "method": "GET", "path": "/api/skygrid/status", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
+    { "id": "skygrid_intake", "method": "POST", "path": "/api/skygrid/intake", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
+    { "id": "opensea_collection_preflight", "method": "GET", "path": "/api/skygrid/opensea-preflight", "owner": "vercel", "proof_owner": "node_test", "required": false, "status": "implemented_fail_closed_identity_pin" },
+    { "id": "etherscan_read_only", "method": "GET", "path": "/api/skygrid/etherscan-read", "owner": "vercel", "proof_owner": "node_test", "required": false, "status": "implemented_fail_closed_allowlisted_reads" },
+    { "id": "aura_core_decide", "method": "POST", "path": "/api/aura-core/decide", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
+    { "id": "agent_signals", "method": "POST", "path": "/api/agent/signals", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
+    { "id": "highway_status", "method": "GET", "path": "/api/highway/status", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
+    { "id": "highway_flasks", "method": "GET", "path": "/api/highway/flasks", "owner": "vercel", "proof_owner": "postman", "required": false, "status": "implemented" },
+    { "id": "highway_postman", "method": "GET", "path": "/api/highway/postman", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
+    { "id": "pay_quote", "method": "GET", "path": "/api/pay/quote", "sample_path": "/api/pay/quote?amount=25", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
+    { "id": "sponsors_link", "method": "GET", "path": "/api/sponsors/link", "owner": "vercel_and_cloudflare", "proof_owner": "postman", "required": false, "status": "implemented_in_file_route_and_worker" },
+    { "id": "stripe_device_link_legacy", "method": "GET", "path": "/api/stripe/device-link", "owner": "vercel_and_cloudflare", "proof_owner": "postman", "required": false, "status": "legacy_compatibility" },
+    { "id": "autodrill_latest", "method": "GET", "path": "/api/autodrill/latest", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
+    { "id": "build_pad_quote", "method": "POST", "path": "/api/build-pad/quote", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented_quote_only" },
+    { "id": "capacity_lease_page", "method": "GET", "path": "/lease", "owner": "vercel", "proof_owner": "github_actions", "required": false, "status": "implemented" },
+    { "id": "node_lease_intake", "method": "POST", "path": "/api/node-lease/intake", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented_capacity_preflight" },
+    { "id": "node_lease_preflight", "method": "POST", "path": "/api/node-lease/preflight", "owner": "vercel", "proof_owner": "github_actions", "required": false, "status": "implemented" },
+    { "id": "node_lease_agreements", "method": "POST", "path": "/api/node-lease/agreements", "owner": "vercel", "proof_owner": "github_actions", "required": false, "status": "implemented_owner_acceptance_only" },
+    { "id": "failover_status", "method": "GET", "path": "/api/failover/status", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented_blocked_until_readiness" }
   ],
   "launch_ladder": [
     "auto_drill_proof",
