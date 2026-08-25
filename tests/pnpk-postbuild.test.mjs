@@ -10,6 +10,7 @@ import {
 } from "../scripts/run-pnpk-postbuild.mjs";
 import { verifySwitchPreRuns } from "../scripts/verify-switch-preruns.mjs";
 import { verifySolanaPlaygroundPreflight } from "../scripts/solana-playground-preflight.mjs";
+import { validateAccessTransparencyPolicy } from "../scripts/pnpk-access-transparency-policy.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
 const pnpkPath = path.join(root, "bridge/skygrid-emergency-onramp.pnpk");
@@ -24,6 +25,35 @@ test("canonical PNPK uses the fixed allowlisted post-build sequence", async () =
   assert.deepEqual(pipeline.steps.map((step) => step.id), REQUIRED_STEP_IDS);
   assert.equal(pipeline.arbitrary_commands_allowed, false);
   assert.equal(pipeline.fail_closed, true);
+});
+
+test("access transparency is receipt-only, particularized, and fail-closed", async () => {
+  const pnpk = await loadPnpk();
+  const policy = validateAccessTransparencyPolicy(pnpk);
+  assert.equal(policy.instrumented_boundary_only, true);
+  assert.equal(policy.interception_execution_allowed, false);
+  assert.equal(policy.receipt_content_policy.call_or_message_content_allowed, false);
+  assert.equal(policy.ambiguous_or_overbroad_behavior, "fail_closed_no_access");
+  assert.ok(policy.receipt_events.includes("tamper_detected"));
+  assert.ok(policy.receipt_events.includes("interception_requested"));
+  assert.ok(policy.required_authority_fields.includes("target_scope"));
+  assert.ok(policy.required_authority_fields.includes("expires_at"));
+});
+
+test("access transparency rejects universal-detection and content-capture claims", async () => {
+  const pnpk = await loadPnpk();
+  pnpk.access_transparency.instrumented_boundary_only = false;
+  assert.throws(
+    () => validateAccessTransparencyPolicy(pnpk),
+    /limited to instrumented trust boundaries/
+  );
+
+  pnpk.access_transparency.instrumented_boundary_only = true;
+  pnpk.access_transparency.receipt_content_policy.call_or_message_content_allowed = true;
+  assert.throws(
+    () => validateAccessTransparencyPolicy(pnpk),
+    /call or message content must not be stored/
+  );
 });
 
 test("post-build policy rejects embedded commands", async () => {
