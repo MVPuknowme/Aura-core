@@ -54,6 +54,12 @@ test("operator image uses an allowlisted copy surface", async () => {
     path.join(repositoryRoot, "Dockerfile.operator"),
     "utf8"
   );
+  const runtimeServer = await readFile(
+    path.join(repositoryRoot, "scripts", "skygrid-local-runtime-server.mjs"),
+    "utf8"
+  );
   assert.doesNotMatch(dockerfile, /^COPY\s+\.\s+\./m);
+  assert.doesNotMatch(dockerfile, /skygrid-ci-auth-bootstrap/);
+  assert.doesNotMatch(runtimeServer, /skygrid-ci-auth-bootstrap/);
   assert.match(dockerfile, /operator:startup-check/);
 });
