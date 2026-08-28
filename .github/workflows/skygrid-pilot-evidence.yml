@@ -97,7 +97,7 @@ jobs:
         run: |
           $ErrorActionPreference = "Stop"
           $node = (Get-Command node.exe -ErrorAction Stop).Source
-          $bootstrap = Join-Path $PWD.Path "scripts\skygrid-ci-auth-bootstrap.mjs"
+          $bootstrap = "./scripts/skygrid-ci-auth-bootstrap.mjs"
           $script = Join-Path $PWD.Path "scripts\skygrid-local-runtime-server.mjs"
           $stdout = Join-Path $PWD.Path "runtime.log"
           $stderr = Join-Path $PWD.Path "runtime-error.log"
