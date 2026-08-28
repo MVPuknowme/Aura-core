@@ -8,6 +8,11 @@ on:
       - "scripts/setup-msys2-path.ps1"
       - "scripts/verify-skygrid-routes.mjs"
       - "scripts/test-skygrid-routing-success.mjs"
+      - "scripts/skygrid-operator-*.mjs"
+      - "tests/skygrid-operator-*.test.mjs"
+      - "config/skygrid-operator.mjs"
+      - "Dockerfile.operator"
+      - ".dockerignore"
       - "requirements-mcp.txt"
       - "package.json"
   push:
@@ -18,6 +23,11 @@ on:
       - "scripts/setup-msys2-path.ps1"
       - "scripts/verify-skygrid-routes.mjs"
       - "scripts/test-skygrid-routing-success.mjs"
+      - "scripts/skygrid-operator-*.mjs"
+      - "tests/skygrid-operator-*.test.mjs"
+      - "config/skygrid-operator.mjs"
+      - "Dockerfile.operator"
+      - ".dockerignore"
       - "requirements-mcp.txt"
       - "package.json"
 
@@ -86,3 +96,64 @@ jobs:
       - name: Test SKYGRID routing success classification
         shell: pwsh
         run: pnpm run skygrid:test:routing
+
+  operator-container-preflight:
+    name: Operator container fail-closed smoke
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.23.0 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run operator preflight
+        run: node scripts/skygrid-operator-preflight.mjs
+
+      - name: Build allowlisted operator image
+        run: docker build -f Dockerfile.operator -t aura-core-operator:ci .
+
+      - name: Probe container runtime and fail-closed auth
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --detach --name aura-core-operator-ci \
+            --publish 127.0.0.1:3000:3000 \
+            aura-core-operator:ci
+
+          cleanup() {
+            docker logs aura-core-operator-ci || true
+            docker rm --force aura-core-operator-ci >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+
+          for attempt in {1..30}; do
+            if curl --fail --silent --show-error http://127.0.0.1:3000/api/health >/tmp/skygrid-health.json; then
+              break
+            fi
+            if [ "$attempt" -eq 30 ]; then
+              echo "Operator container did not become healthy" >&2
+              exit 1
+            fi
+            sleep 1
+          done
+
+          node -e 'const value=JSON.parse(require("fs").readFileSync("/tmp/skygrid-health.json","utf8")); if (!value.ok || value.readiness?.authentication_ready !== false) process.exit(1)'
+
+          auth_status=$(curl --silent --output /tmp/skygrid-auth.json --write-out '%{http_code}' \
+            --header 'content-type: application/json' \
+            --data '{"source":"container-ci","type":"health"}' \
+            http://127.0.0.1:3000/api/agent/signals)
+          test "$auth_status" = "503"
+          node -e 'const value=JSON.parse(require("fs").readFileSync("/tmp/skygrid-auth.json","utf8")); if (value.error !== "ingest_auth_not_configured") process.exit(1)'
