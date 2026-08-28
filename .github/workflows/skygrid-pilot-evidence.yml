@@ -98,6 +98,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $node = (Get-Command node.exe -ErrorAction Stop).Source
           $script = Join-Path $PWD.Path "scripts\skygrid-local-runtime-server.mjs"
+          $arguments = @(
+            "--enable-source-maps"
+            $script
+          )
           $stdout = Join-Path $PWD.Path "runtime.log"
           $stderr = Join-Path $PWD.Path "runtime-error.log"
           $receiptDir = "training/receipts/evidence-${{ runner.os }}"
@@ -105,7 +109,7 @@ jobs:
 
           $runtime = Start-Process `
             -FilePath $node `
-            -ArgumentList $script `
+            -ArgumentList $arguments `
             -WorkingDirectory $PWD.Path `
             -RedirectStandardOutput $stdout `
             -RedirectStandardError $stderr `
