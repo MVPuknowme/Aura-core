@@ -13,7 +13,7 @@ COPY api/aerodrome/wallet.mjs ./api/aerodrome/
 COPY api/wallet/dual-lane.mjs ./api/wallet/
 COPY bridge/skygrid-emergency-onramp.pnpk ./bridge/
 COPY cloudflare/skygrid-edge-worker/src/capacity-lease.js cloudflare/skygrid-edge-worker/src/lease-page.js ./cloudflare/skygrid-edge-worker/src/
-COPY scripts/skygrid-ci-auth-bootstrap.mjs scripts/skygrid-local-runtime-router.mjs scripts/skygrid-local-runtime-server.mjs scripts/skygrid-operator-runner.mjs scripts/skygrid-operator-startup-check.mjs ./scripts/
+COPY scripts/skygrid-local-runtime-router.mjs scripts/skygrid-local-runtime-server.mjs scripts/skygrid-operator-runner.mjs scripts/skygrid-operator-startup-check.mjs ./scripts/
 
 ENV NODE_ENV=production \
     HOST=0.0.0.0 \

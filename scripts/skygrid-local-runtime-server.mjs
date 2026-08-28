@@ -1,9 +1,9 @@
-import "./skygrid-ci-auth-bootstrap.mjs";
 import express from "express";
 import handler from "./skygrid-local-runtime-router.mjs";
 import {
   resolveOperatorConfig,
-  resolveRuntimeHost
+  resolveRuntimeHost,
+  sanitizeDirectListenerHeaders
 } from "../config/skygrid-operator.mjs";
 
 const args = process.argv.slice(2);
@@ -26,6 +26,10 @@ const host = resolveRuntimeHost(process.env, operatorConfig.runtimeMode);
 const app = express();
 
 app.use((req, res) => {
+  // The direct listener is not assumed to sit behind a trusted proxy. Strip
+  // caller-controlled forwarding identities unless the operator opts in.
+  sanitizeDirectListenerHeaders(req.headers, process.env);
+
   res.setHeader("X-SKYGRID-Operator", operatorConfig.operator);
   res.setHeader("X-SKYGRID-Runtime-Mode", operatorConfig.runtimeMode);
   if (operatorConfig.vercelBypass) {

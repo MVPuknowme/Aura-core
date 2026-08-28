@@ -4,7 +4,9 @@ import {
   applyOperatorMode,
   DEFAULT_SKYGRID_OPERATOR,
   resolveOperatorConfig,
-  resolveRuntimeHost
+  resolveRuntimeHost,
+  sanitizeDirectListenerHeaders,
+  validateOperatorRuntimePolicy
 } from "../config/skygrid-operator.mjs";
 
 test("defaults operator identity to MVPuknowme without making it an auth primitive", () => {
@@ -87,5 +89,47 @@ test("validates inherited bypass state before applying a runtime mode", () => {
       if (value === undefined) delete process.env[key];
       else process.env[key] = value;
     }
+  }
+});
+
+test("direct listener strips spoofable forwarding identities by default", () => {
+  const headers = {
+    host: "localhost",
+    "x-forwarded-for": "203.0.113.10",
+    forwarded: "for=203.0.113.10",
+    "x-real-ip": "203.0.113.10"
+  };
+  assert.equal(sanitizeDirectListenerHeaders(headers, {}), false);
+  assert.deepEqual(headers, { host: "localhost" });
+
+  const trusted = { "x-forwarded-for": "203.0.113.10" };
+  assert.equal(
+    sanitizeDirectListenerHeaders(trusted, { SKYGRID_TRUST_PROXY: "1" }),
+    true
+  );
+  assert.equal(trusted["x-forwarded-for"], "203.0.113.10");
+});
+
+test("startup policy rejects the actual runtime execution fields", () => {
+  const safePolicy = {
+    mode: "controlled_pilot",
+    sentinel: "fail_closed",
+    runtime_policy: {
+      payment_execution: false,
+      device_activation: false,
+      production_failover: false,
+      private_data_movement: false
+    }
+  };
+  assert.equal(validateOperatorRuntimePolicy(safePolicy), true);
+
+  for (const field of Object.keys(safePolicy.runtime_policy)) {
+    assert.throws(
+      () => validateOperatorRuntimePolicy({
+        ...safePolicy,
+        runtime_policy: { ...safePolicy.runtime_policy, [field]: true }
+      }),
+      new RegExp(`operator_runtime_policy_enabled:${field}`)
+    );
   }
 });

@@ -129,6 +129,7 @@ jobs:
         run: |
           set -euo pipefail
           docker run --detach --name aura-core-operator-ci \
+            --env CI=true \
             --publish 127.0.0.1:3000:3000 \
             aura-core-operator:ci
 

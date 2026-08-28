@@ -14,6 +14,12 @@ function normalizedFlag(value) {
 
 const LOOPBACK_HOSTS = new Set(["127.0.0.1", "::1"]);
 const CONTAINER_HOSTS = new Set([...LOOPBACK_HOSTS, "0.0.0.0", "::"]);
+const BLOCKED_RUNTIME_POLICY_FIELDS = [
+  "payment_execution",
+  "device_activation",
+  "production_failover",
+  "private_data_movement"
+];
 
 export function resolveOperatorConfig(env = process.env) {
   const operator = String(env.SKYGRID_OPERATOR || DEFAULT_SKYGRID_OPERATOR).trim();
@@ -61,6 +67,39 @@ export function resolveRuntimeHost(env = process.env, runtimeMode) {
   }
 
   return host;
+}
+
+export function sanitizeDirectListenerHeaders(headers = {}, env = process.env) {
+  const trustProxy = normalizedFlag(env.SKYGRID_TRUST_PROXY) === "1";
+  if (trustProxy) return true;
+
+  for (const key of Object.keys(headers)) {
+    if (["forwarded", "x-forwarded-for", "x-real-ip"].includes(key.toLowerCase())) {
+      delete headers[key];
+    }
+  }
+  return false;
+}
+
+export function validateOperatorRuntimePolicy(policy) {
+  if (!policy || typeof policy !== "object") {
+    throw new Error("operator_policy_missing");
+  }
+  if (policy.mode !== "controlled_pilot" || policy.sentinel !== "fail_closed") {
+    throw new Error("operator_policy_guardrails_invalid");
+  }
+
+  const runtimePolicy = policy.runtime_policy;
+  if (!runtimePolicy || typeof runtimePolicy !== "object") {
+    throw new Error("operator_runtime_policy_missing");
+  }
+  for (const field of BLOCKED_RUNTIME_POLICY_FIELDS) {
+    if (runtimePolicy[field] !== false) {
+      throw new Error(`operator_runtime_policy_enabled:${field}`);
+    }
+  }
+
+  return true;
 }
 
 export function applyOperatorMode({ operator, runtimeMode, vercelBypass } = {}) {

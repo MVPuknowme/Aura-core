@@ -1,7 +1,8 @@
 import { readFile } from "node:fs/promises";
 import {
   resolveOperatorConfig,
-  resolveRuntimeHost
+  resolveRuntimeHost,
+  validateOperatorRuntimePolicy
 } from "../config/skygrid-operator.mjs";
 import { verifySignature } from "../api/runtime.mjs";
 
@@ -25,9 +26,7 @@ if (missingAuth.status !== 503 || missingAuth.reason !== "ingest_auth_not_config
 const policy = JSON.parse(
   await readFile("bridge/skygrid-emergency-onramp.pnpk", "utf8")
 );
-if (policy.mode !== "controlled_pilot" || policy.sentinel !== "fail_closed") {
-  throw new Error("operator_policy_guardrails_invalid");
-}
+validateOperatorRuntimePolicy(policy);
 
 const PROHIBITED_EXECUTION_FLAGS = new Set([
   "arbitrary_commands_allowed",
