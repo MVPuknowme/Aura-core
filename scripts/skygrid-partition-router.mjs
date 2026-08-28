@@ -4,7 +4,10 @@ export function routePartitionDecision(envelope, pnpk) {
     emergency: 'emergency',
     diagnostic: 'diagnostic',
     web3_quote: 'web3_quote',
-    autodrill: 'autodrill'
+    autodrill: 'autodrill',
+    capacity_lease: 'capacity_lease',
+    bridge_preflight: 'bridge_preflight',
+    solana_playground: 'solana_playground'
   };
 
   const selected_partition = routeMap[envelope.route_type];
@@ -54,10 +57,39 @@ export function routePartitionDecision(envelope, pnpk) {
   }
 
   if (
+    partition.allowed_transports &&
+    !partition.allowed_transports.includes(envelope.requested_transport)
+  ) {
+    return {
+      ok: false,
+      route_type: envelope.route_type,
+      selected_partition,
+      selected_ramp: envelope.requested_ramp,
+      selected_node_group: envelope.requested_node,
+      selected_transport: null,
+      mode: partition.mode,
+      sentinel: partition.sentinel,
+      guardrails: ['fail_closed'],
+      reason: 'unapproved_transport'
+    };
+  }
+
+  if (
     envelope.wallet_signing_requested ||
     envelope.transaction_broadcast_requested ||
     envelope.payment_execution_requested ||
-    envelope.production_failover_requested
+    envelope.production_failover_requested ||
+    envelope.device_activation_requested ||
+    envelope.private_data_movement_requested ||
+    envelope.disk_partition_requested ||
+    envelope.volume_shrink_requested ||
+    envelope.partition_delete_requested ||
+    envelope.system_or_boot_disk_requested ||
+    envelope.gpu_enrollment_requested ||
+    envelope.bridge_execution_requested ||
+    envelope.program_deployment_requested ||
+    envelope.os_network_switching_requested ||
+    envelope.interface_reconfiguration_requested
   ) {
     return {
       ok: false,
@@ -78,12 +110,17 @@ export function routePartitionDecision(envelope, pnpk) {
     selected_partition,
     selected_ramp: envelope.requested_ramp,
     selected_node_group: envelope.requested_node,
+    selected_transport: envelope.requested_transport || null,
     mode: partition.mode,
     sentinel: partition.sentinel,
     guardrails: [
       'no_wallet_signing',
       'no_transaction_broadcast',
       'no_payment_execution',
+      'no_disk_partition_execution',
+      'no_bridge_execution',
+      'no_program_deployment',
+      'no_os_network_switching',
       'fail_closed'
     ],
     reason: 'partition_route_approved'

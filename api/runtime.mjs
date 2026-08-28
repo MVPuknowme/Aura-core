@@ -298,6 +298,7 @@ function sanitizeResponse(payload, path) {
 }
 
 function captureResponse(res, path) {
+  res.setHeader("X-SKYGRID-Security", "fail-closed-v1");
   return new Proxy(res, {
     get(target, property) {
       if (property !== "end") return Reflect.get(target, property, target);

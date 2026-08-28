@@ -7,7 +7,13 @@ RUN corepack enable
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --prod
 
-COPY . .
+COPY config/aerodrome-base-rpc.mjs config/skygrid-operator.mjs config/skygrid-wallet-lanes.mjs ./config/
+COPY api/runtime.mjs api/runtime-core.mjs ./api/
+COPY api/aerodrome/wallet.mjs ./api/aerodrome/
+COPY api/wallet/dual-lane.mjs ./api/wallet/
+COPY bridge/skygrid-emergency-onramp.pnpk ./bridge/
+COPY cloudflare/skygrid-edge-worker/src/capacity-lease.js cloudflare/skygrid-edge-worker/src/lease-page.js ./cloudflare/skygrid-edge-worker/src/
+COPY scripts/skygrid-ci-auth-bootstrap.mjs scripts/skygrid-local-runtime-router.mjs scripts/skygrid-local-runtime-server.mjs scripts/skygrid-operator-runner.mjs scripts/skygrid-operator-startup-check.mjs ./scripts/
 
 ENV NODE_ENV=production \
     HOST=0.0.0.0 \
@@ -16,5 +22,7 @@ ENV NODE_ENV=production \
     SKYGRID_RUNTIME_MODE=local-container
 
 EXPOSE 3000
+
+RUN pnpm run operator:startup-check
 
 CMD ["pnpm", "run", "operator:container"]

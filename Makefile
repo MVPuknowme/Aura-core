@@ -9,9 +9,7 @@ operator:
 	pnpm run operator:status -- --operator=$(OPERATOR)
 
 runner-preflight:
-	pnpm run operator:test
-	pnpm run mcp:check
-	pnpm run skygrid:test:routing
+	pnpm run operator:preflight
 
 runner: runner-preflight
 	pnpm run operator:local -- --operator=$(OPERATOR)
@@ -27,7 +25,7 @@ local:
 vercel-build:
 	pnpm run operator:vercel-build -- --operator=$(OPERATOR)
 
-container-build:
+container-build: runner-preflight
 	docker build -f Dockerfile.operator -t $(IMAGE) .
 
 container-run: container-build

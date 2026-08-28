@@ -44,6 +44,9 @@ Aura/Inbox/Unsorted/*
 !Aura/Inbox/Unsorted/.gitkeep
 artifacts/receipts/filing-validation-report.md
 
+# PNPK post-build receipt is generated per run and may include local interface names
+artifacts/pnpk/proofs/postbuild-latest.json
+
 # Aura local PC telemetry - keep private/local
 artifacts/iot/
 

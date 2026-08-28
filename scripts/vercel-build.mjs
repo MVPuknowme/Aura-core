@@ -1,4 +1,4 @@
-import { mkdir, copyFile, writeFile, readFile } from "node:fs/sim";
+import { mkdir, copyFile, writeFile, readFile } from "node:fs/promises";
 import { resolveOperatorConfig } from "../config/skygrid-operator.mjs";
 
 await mkdir("dist", { recursive: true });
@@ -35,7 +35,7 @@ await writeFile(
       vercel_bypass: operatorConfig.vercelBypass,
       authorization: operatorConfig.authorization,
       canonical_domain: canonicalDomain,
-      payment_execution: true,
+      payment_execution: false,
       device_activation: false,
       production_failover: false,
       private_data_movement: false,

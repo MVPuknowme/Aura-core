@@ -8,10 +8,16 @@
     "scripts": {
         "operator:status": "node scripts/skygrid-operator-runner.mjs status",
         "operator:local": "node scripts/skygrid-operator-runner.mjs local",
-        "operator:container": "node scripts/skygrid-operator-runner.mjs local-container",
-        "operator:vercel-build": "node scripts/skygrid-operator-runner.mjs vercel-build",
+        "operator:container": "node scripts/skygrid-operator-startup-check.mjs && node scripts/skygrid-operator-runner.mjs local-container",
+        "operator:vercel-build": "node scripts/skygrid-operator-preflight.mjs && node scripts/skygrid-operator-runner.mjs vercel-build",
         "operator:test": "node --test tests/skygrid-operator-mode.test.mjs",
+        "operator:artifact-test": "node --test tests/skygrid-operator-artifact.test.mjs",
+        "operator:startup-check": "node scripts/skygrid-operator-startup-check.mjs",
+        "operator:preflight": "node scripts/skygrid-operator-preflight.mjs",
         "pnpk:validate": "node scripts/validate-pnpk.mjs",
+        "pnpk:postbuild": "node scripts/run-pnpk-postbuild.mjs",
+        "pnpk:postbuild-test": "node --test tests/pnpk-postbuild.test.mjs",
+        "pnpk:verify": "node --test tests/pnpk-postbuild.test.mjs && node scripts/run-pnpk-postbuild.mjs",
         "manifest:sync": "node scripts/verify-skygrid-manifest-sync.mjs",
         "ramp:switch": "node scripts/aura-core-ai-ramp-switch.mjs",
         "partition:verify": "node scripts/skygrid-partition-router.mjs",
@@ -21,7 +27,8 @@
         "training:verify-receipts": "node scripts/verify-skygrid-training-receipts.mjs",
         "training:all": "pnpm run training:drill && pnpm run training:fail-closed",
         "skygrid:training": "node --import ./scripts/skygrid-training-signed-fetch.mjs scripts/skygrid-training-drill.mjs",
-        "build": "node --test tests/skygrid-operator-mode.test.mjs && node scripts/test-runtime-security.mjs && node scripts/test-aerodrome-wallet-rpc.mjs && node scripts/test-dual-lane-wallet-rpc.mjs && node scripts/test-local-wallet-routing.mjs && node scripts/skygrid-build.mjs",
+        "build": "node --test tests/skygrid-operator-mode.test.mjs tests/skygrid-operator-artifact.test.mjs tests/skygrid-opensea-preflight.test.mjs && node scripts/test-runtime-security.mjs && node scripts/test-aerodrome-wallet-rpc.mjs && node scripts/test-dual-lane-wallet-rpc.mjs && node scripts/test-local-wallet-routing.mjs && node scripts/skygrid-build.mjs",
+        "postbuild": "node scripts/run-pnpk-postbuild.mjs",
         "build:xmcp": "node tools/xmcp/index.mjs build --vercel",
         "xmcp:build": "node tools/xmcp/index.mjs build --vercel",
         "npm:env:check": "node scripts/check-npm-env-config.mjs",
@@ -57,7 +64,8 @@
         "security:ioc-check": "node scripts/check-iocs.mjs",
         "skygrid:verify:public": "node scripts/verify-skygrid-public.mjs",
         "postman:mock": "node scripts/postman-create-skygrid-mock.mjs",
-        "postman:mock:test": "node scripts/test-postman-superhighway-contract.mjs"
+        "postman:mock:test": "node scripts/test-postman-superhighway-contract.mjs",
+        "opensea:preflight-test": "node --test tests/skygrid-opensea-preflight.test.mjs"
     },
     "dependencies": {
         "@coinbase/agentkit": "^0.10.4",

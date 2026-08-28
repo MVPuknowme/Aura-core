@@ -3,7 +3,7 @@
   "version": 2,
   "framework": null,
   "installCommand": "npm install --no-audit --no-fund --legacy-peer-deps",
-  "buildCommand": "node scripts/skygrid-operator-runner.mjs vercel-build",
+  "buildCommand": "npm run operator:vercel-build",
   "outputDirectory": null,
   "redirects": [
     { "source": "/articles/skygrid-dispatcher-public-demo.md", "destination": "/articles/skygrid-dispatcher-public-demo", "permanent": true }
@@ -27,6 +27,7 @@
     { "source": "/dashboard/receipts", "destination": "/api/runtime" },
     { "source": "/api/skygrid/status", "destination": "/api/runtime" },
     { "source": "/api/skygrid/intake", "destination": "/api/runtime" },
+    { "source": "/api/skygrid/opensea-preflight", "destination": "/api/skygrid/opensea-preflight" },
     { "source": "/api/aura-core/decide", "destination": "/api/runtime" },
     { "source": "/api/aura/director", "destination": "/api/aura/director" },
     { "source": "/api/chatbot/call-circle", "destination": "/api/chatbot/call-circle" },

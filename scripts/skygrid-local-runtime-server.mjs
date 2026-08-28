@@ -1,7 +1,10 @@
 import "./skygrid-ci-auth-bootstrap.mjs";
 import express from "express";
 import handler from "./skygrid-local-runtime-router.mjs";
-import { resolveOperatorConfig } from "../config/skygrid-operator.mjs";
+import {
+  resolveOperatorConfig,
+  resolveRuntimeHost
+} from "../config/skygrid-operator.mjs";
 
 const args = process.argv.slice(2);
 let cliPort = null;
@@ -18,12 +21,7 @@ if (!Number.isInteger(port) || port < 1 || port > 65535) {
   throw new Error("invalid_local_runtime_port");
 }
 
-const defaultHost = operatorConfig.runtimeMode === "local-container" ? "0.0.0.0" : "127.0.0.1";
-const host = String(process.env.HOST || defaultHost).trim();
-const allowedHosts = new Set(["127.0.0.1", "0.0.0.0", "::1", "::"]);
-if (!allowedHosts.has(host)) {
-  throw new Error("invalid_local_runtime_host");
-}
+const host = resolveRuntimeHost(process.env, operatorConfig.runtimeMode);
 
 const app = express();
 

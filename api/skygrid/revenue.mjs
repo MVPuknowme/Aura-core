@@ -30,7 +30,8 @@ export default async function handler(req, res) {
       mode: "contract",
       ledger: summarizeRevenueLedger([]),
       accepted_values: SKYGRID_REVENUE_LEDGER_ENUMS,
-      note: "GET exposes the accounting contract only. Submit records with POST for stateless verification and aggregation. No wallet signing or transaction execution occurs."
+      commercial_evaluation_scope: ["subscriptions", "leases"],
+      note: "GET exposes the accounting contract and empty subscription/lease commercial evaluation only. Submit records with POST for stateless verification, run-rate/contract evaluation, and accounting aggregation. No wallet signing, payment execution, device activation, or transaction execution occurs."
     });
   }
 

@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import { verifySwitchPreRuns } from './verify-switch-preruns.mjs';
 
 const pnpkPath = process.env.PNPK_PATH || 'bridge/skygrid-emergency-onramp.pnpk';
 const pnpk = JSON.parse(await readFile(pnpkPath, 'utf8'));
@@ -8,6 +9,19 @@ const ramps = pnpk.platforms?.vercel?.ramps || {};
 
 if (!policy || !pnpk.aura_core_ai_switch?.enabled) {
   console.error('Aura-Core AI ramp switch is not enabled in PNPK');
+  process.exit(1);
+}
+
+let preRunVerification;
+try {
+  preRunVerification = await verifySwitchPreRuns(pnpk);
+} catch (error) {
+  console.error(JSON.stringify({
+    ok: false,
+    active_ramp: null,
+    decision: 'fail_closed',
+    reason: `switch_prerun_failed: ${error.message}`
+  }, null, 2));
   process.exit(1);
 }
 
@@ -74,6 +88,7 @@ for (const name of orderedRampNames) {
       active_url: ramp.domain,
       health_url: result.url,
       reason: 'first healthy PNPK-approved Vercel ramp',
+      pre_run_verification: preRunVerification,
       results
     }, null, 2));
     process.exit(0);
@@ -84,6 +99,7 @@ console.log(JSON.stringify({
   ok: false,
   active_ramp: null,
   reason: policy.no_healthy_ramp_behavior || 'fail_closed_no_route_activation',
+  pre_run_verification: preRunVerification,
   results
 }, null, 2));
 process.exit(2);
