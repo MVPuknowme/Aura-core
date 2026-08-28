@@ -3,7 +3,7 @@
   "version": 2,
   "framework": null,
   "installCommand": "npm install --no-audit --no-fund --legacy-peer-deps",
-  "buildCommand": "node scripts/vercel-build.mjs",
+  "buildCommand": "npm run operator:vercel-build",
   "outputDirectory": null,
   "redirects": [
     { "source": "/articles/skygrid-dispatcher-public-demo.md", "destination": "/articles/skygrid-dispatcher-public-demo", "permanent": true }
