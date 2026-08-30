@@ -1,5 +1,6 @@
 {
-  "pnpk_version": "1.0.0",
+  "pnpk_version": "1.3.0",
+  "pnpk_profile": "runtime-policy",
   "service": "SKYGRID Emergency Data On-Ramp",
   "operator": "MVPuknowme",
   "mode": "controlled_pilot",
@@ -87,6 +88,31 @@
       "enabled": true,
       "guardrail_tests_required": true,
       "target_route": "/api/highway/postman"
+    },
+    "ethernet": {
+      "enabled": true,
+      "role": "preferred_local_transport_candidate",
+      "verification_mode": "interface_presence_and_address_only",
+      "os_network_switching_allowed": false,
+      "interface_reconfiguration_allowed": false
+    },
+    "allbridge_core": {
+      "enabled": true,
+      "role": "cross_network_bridge_preflight_candidate",
+      "verification_mode": "configuration_and_optional_health_only",
+      "status_url_env": "ALLBRIDGE_CORE_STATUS_URL",
+      "bridge_execution_allowed": false,
+      "wallet_signing_allowed": false,
+      "transaction_broadcast_allowed": false
+    },
+    "solana_playground": {
+      "enabled": true,
+      "role": "post_build_validation_target",
+      "cluster": "devnet",
+      "execution_mode": "artifact_and_policy_validation_only",
+      "wallet_signing_allowed": false,
+      "transaction_broadcast_allowed": false,
+      "program_deployment_allowed": false
     }
   },
   "provisioning_router": {
@@ -96,7 +122,9 @@
     "runtime_targets": {
       "postman": "/api/highway/postman",
       "lambda": "aws_lambda.emergency_validation_runtime",
-      "web3": "ethereum.provisional_lease_quote_runtime"
+      "web3": "ethereum.provisional_lease_quote_runtime",
+      "allbridge_core": "allbridge_core.preflight_candidate",
+      "solana_playground": "solana_playground.post_build_validation_target"
     },
     "route_rules": [
       {
@@ -123,6 +151,16 @@
         "when": "route_type=diagnostic",
         "select": "postman",
         "reason": "diagnostic routes run through Postman validation"
+      },
+      {
+        "when": "route_type=bridge_preflight AND requested_transport=ethernet",
+        "select": "allbridge_core_preflight",
+        "reason": "Allbridge Core may be evaluated only after the Ethernet and bridge policy pre-runs pass"
+      },
+      {
+        "when": "route_type=solana_playground",
+        "select": "solana_playground_preflight",
+        "reason": "Solana Playground receives build-artifact and policy verification only"
       }
     ],
     "end_user_offer_gate": {
@@ -204,7 +242,41 @@
       "No transaction broadcast",
       "No device activation",
       "No production failover",
-      "No private data movement"
+      "No private data movement",
+      "No OS-level Ethernet switching or interface reconfiguration",
+      "No Allbridge transaction execution",
+      "No Solana program deployment"
+    ]
+  },
+  "post_build_pipeline": {
+    "enabled": true,
+    "trigger": "post_build",
+    "profile": "solana_playground_preflight",
+    "execution_model": "allowlisted_local_scripts_only",
+    "arbitrary_commands_allowed": false,
+    "fail_closed": true,
+    "receipt_path": "artifacts/pnpk/proofs/postbuild-latest.json",
+    "steps": [
+      {
+        "id": "pnpk_validate",
+        "required": true
+      },
+      {
+        "id": "switch_prerun_verify",
+        "required": true
+      },
+      {
+        "id": "autodrill_simulation",
+        "required": true
+      },
+      {
+        "id": "capacity_lease_contract",
+        "required": true
+      },
+      {
+        "id": "solana_playground_preflight",
+        "required": true
+      }
     ]
   },
   "aura_core_ai_switch": {
@@ -220,6 +292,10 @@
       "create_capacity_lease_offer",
       "record_capacity_owner_agreement",
       "create_capacity_agreement_receipt",
+      "verify_ethernet_candidate",
+      "verify_allbridge_core_candidate",
+      "create_switch_prerun_receipt",
+      "create_solana_playground_preflight_receipt",
       "record_end_user_lease_value_decision",
       "report_active_ramp"
     ],
@@ -234,6 +310,10 @@
       "system_or_boot_disk_partition",
       "existing_partition_delete_or_shrink",
       "gpu_enrollment_without_activation_grant",
+      "os_level_network_switching",
+      "ethernet_interface_reconfiguration",
+      "allbridge_transaction_execution",
+      "solana_program_deployment",
       "rf_control",
       "nuisance_signal_output"
     ],
@@ -252,13 +332,40 @@
       "auto_drill_space_request",
       "capacity_inventory",
       "selected_capacity_option",
-      "capacity_owner_agreement"
+      "capacity_owner_agreement",
+      "ethernet_interface_presence",
+      "allbridge_core_status",
+      "switch_prerun_receipt",
+      "solana_build_artifact_hash"
     ],
     "decision_output": {
       "active_ramp": null,
       "planning_runtime": null,
       "end_user_gate": null,
       "reason": "pending_health_route_and_end_user_check"
+    },
+    "pre_run_verification": {
+      "enabled": true,
+      "fail_closed": true,
+      "selection_rule": "a candidate is selectable only when its required pre-runs pass",
+      "checks": {
+        "ethernet": {
+          "required_for": [
+            "allbridge_core"
+          ],
+          "mode": "presence_and_address_only",
+          "os_switching_allowed": false,
+          "interface_reconfiguration_allowed": false
+        },
+        "allbridge_core": {
+          "required_for": [
+            "bridge_preflight"
+          ],
+          "mode": "configuration_and_optional_health_only",
+          "external_status_optional_until_configured": true,
+          "bridge_execution_allowed": false
+        }
+      }
     }
   },
   "triggers": {
@@ -387,6 +494,36 @@
       "system_or_boot_disk_allowed": false,
       "automatic_volume_shrink_allowed": false,
       "partition_delete_allowed": false
+    },
+    "bridge_preflight": {
+      "allowed_ramps": [
+        "allbridge_core"
+      ],
+      "allowed_transports": [
+        "ethernet"
+      ],
+      "allowed_nodes": [
+        "edge",
+        "validator"
+      ],
+      "mode": "preflight_only",
+      "sentinel": "fail_closed",
+      "bridge_execution_allowed": false,
+      "wallet_signing_allowed": false,
+      "transaction_broadcast_allowed": false
+    },
+    "solana_playground": {
+      "allowed_ramps": [
+        "solana_playground"
+      ],
+      "allowed_nodes": [
+        "validator"
+      ],
+      "mode": "preflight_only",
+      "sentinel": "fail_closed",
+      "wallet_signing_allowed": false,
+      "transaction_broadcast_allowed": false,
+      "program_deployment_allowed": false
     }
   },
   "dual_approval_gate": {
@@ -404,8 +541,91 @@
       "recovery_proof",
       "continuity_log",
       "web3_quote",
-      "capacity_lease"
+      "capacity_lease",
+      "bridge_preflight",
+      "solana_playground"
     ],
     "trust_statement": "PNPK is the policy traffic layer. SKYGRID routes only when owner and emergency operator approval agree."
+  },
+  "access_transparency": {
+    "enabled": true,
+    "mode": "receipt_only_no_interception_authority",
+    "instrumented_boundary_only": true,
+    "tamper_evident_not_tamper_proof": true,
+    "content_capture_default": false,
+    "interception_execution_allowed": false,
+    "no_auto_acceptance_from_document_label": true,
+    "legal_review_required": true,
+    "warrant_particularity_required": true,
+    "receipt_events": [
+      "tamper_detected",
+      "access_pre_requested",
+      "access_requested",
+      "access_approved",
+      "access_denied",
+      "access_activated",
+      "access_modified",
+      "access_expired",
+      "access_revoked",
+      "interception_requested",
+      "interception_approved",
+      "interception_activated",
+      "interception_ended",
+      "notification_delayed",
+      "subject_notified"
+    ],
+    "authority_types_receipted": [
+      "consent",
+      "warrant",
+      "court_order",
+      "subpoena",
+      "emergency_request",
+      "operator_maintenance_approval",
+      "other_legal_process"
+    ],
+    "required_authority_fields": [
+      "authority_type",
+      "issuing_authority",
+      "jurisdiction",
+      "legal_process_identifier",
+      "target_scope",
+      "data_categories",
+      "service_account_facility_or_place",
+      "start_at",
+      "expires_at",
+      "minimization_or_handling_rule",
+      "approver_identity",
+      "notification_status",
+      "delayed_notice_basis",
+      "delayed_notice_expires_or_review_at"
+    ],
+    "ambiguous_or_overbroad_behavior": "fail_closed_no_access",
+    "expired_or_revoked_behavior": "fail_closed_no_access",
+    "emergency_request_behavior": "receipt_immediately_require_legal_and_post_access_review",
+    "notification_policy": {
+      "notify_when_lawfully_permitted": true,
+      "delayed_notice_requires_basis": true,
+      "delayed_notice_requires_expiration_or_review_at": true
+    },
+    "receipt_content_policy": {
+      "metadata_and_hashes_only": true,
+      "call_or_message_content_allowed": false,
+      "public_receipts_redacted": true,
+      "secrets_or_protected_details_allowed": false
+    },
+    "grade_outcomes": [
+      "verified_current",
+      "verified_delayed_notice",
+      "incomplete_fail_closed",
+      "conflicted_fail_closed",
+      "tamper_alert"
+    ],
+    "limitations": [
+      "PNPK observes only participating systems inside configured instrumented trust boundaries",
+      "Receipts are tamper-evident records and do not prove that no unobserved access occurred",
+      "PNPK does not create interception authority or override a court order, statutory secrecy, or lawful nondisclosure requirement",
+      "PNPK cannot compel a government, carrier, platform, or technical operator outside the participating system to disclose access",
+      "Call and message content is not captured by default"
+    ]
   }
 }

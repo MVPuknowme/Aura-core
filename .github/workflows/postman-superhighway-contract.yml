@@ -1,0 +1,43 @@
+name: Postman Superhighway Contract
+
+on:
+  push:
+    paths:
+      - 'postman/**'
+      - 'scripts/postman-create-skygrid-mock.mjs'
+      - 'scripts/test-postman-superhighway-contract.mjs'
+      - 'package.json'
+      - '.github/workflows/postman-superhighway-contract.yml'
+  pull_request:
+    paths:
+      - 'postman/**'
+      - 'scripts/postman-create-skygrid-mock.mjs'
+      - 'scripts/test-postman-superhighway-contract.mjs'
+      - 'package.json'
+      - '.github/workflows/postman-superhighway-contract.yml'
+  workflow_dispatch:
+
+jobs:
+  contract:
+    name: Validate Postman mock contract
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Validate collection contract
+        run: node scripts/test-postman-superhighway-contract.mjs
+
+      - name: Validate Postman API bootstrap syntax
+        run: node --check scripts/postman-create-skygrid-mock.mjs
+
+      - name: Summary
+        run: |
+          echo "## Postman Superhighway Contract" >> "$GITHUB_STEP_SUMMARY"
+          echo "Offline contract validation passed." >> "$GITHUB_STEP_SUMMARY"
+          echo "Live mock creation still requires POSTMAN_API_KEY and POSTMAN_WORKSPACE_ID." >> "$GITHUB_STEP_SUMMARY"

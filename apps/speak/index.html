@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1020" />
+  <title>Speak · Aura</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div class="eyebrow">AURA · SPEAK</div>
+      <h1>Say it. Hear it. Keep control.</h1>
+      <p class="lede">A local-first speech interface for text-to-speech and browser speech recognition. No background listening, no hidden network calls.</p>
+    </header>
+
+    <section class="card command-card" aria-labelledby="master-heading">
+      <div class="section-heading">
+        <div>
+          <h2 id="master-heading">Basic controls</h2>
+          <p class="hint command-hint">Master app control for Speak audio and microphone features.</p>
+        </div>
+        <span id="master-status" class="status" aria-live="polite">On</span>
+      </div>
+
+      <div class="command-controls">
+        <button id="master-toggle" class="switch-button active" type="button" role="switch" aria-checked="true" aria-describedby="master-help">
+          <span>Speak power</span>
+          <strong id="master-state">ON</strong>
+        </button>
+        <label>Volume <span id="volume-value">100%</span><input id="volume" type="range" min="0" max="1" value="1" step="0.05" aria-label="Speech output volume" /></label>
+      </div>
+      <p id="master-help" class="hint small-hint">OFF stops Speak output/listening and blocks new speech or calibration reads. Volume controls Speak text-to-speech output, not iPhone/iPad system volume.</p>
+    </section>
+
+    <section class="card command-card" aria-labelledby="command-heading">
+      <div class="section-heading">
+        <div>
+          <h2 id="command-heading">Command control</h2>
+          <p class="hint command-hint">“Thought Command” is an explicit input mode: it uses only text you type or speech your browser transcribes.</p>
+        </div>
+        <span id="command-status" class="status" aria-live="polite">Manual</span>
+      </div>
+
+      <div class="command-controls">
+        <button id="thought-toggle" class="switch-button" type="button" role="switch" aria-checked="false" aria-describedby="thought-help">
+          <span>Thought Command</span>
+          <strong id="thought-state">OFF</strong>
+        </button>
+        <button id="action-button" class="action-button" type="button">ACTION</button>
+      </div>
+      <p id="thought-help" class="hint small-hint">OFF: Action speaks the text box. ON: Action interprets an explicit typed/transcribed command.</p>
+      <div class="command-chips" aria-label="Supported commands">
+        <span>speak</span><span>listen</span><span>stop</span><span>pause</span><span>resume</span><span>clear</span><span>copy</span>
+      </div>
+    </section>
+
+    <section class="card calibration-card" aria-labelledby="calibration-heading">
+      <div class="section-heading">
+        <div>
+          <h2 id="calibration-heading">Calibration read</h2>
+          <p class="hint command-hint">Known-target one-shot microphone calibration. Read the displayed phrase exactly once.</p>
+        </div>
+        <span id="calibration-status" class="status" aria-live="polite">Ready</span>
+      </div>
+      <div class="calibration-grid">
+        <div>
+          <div class="calibration-label">Target phrase</div>
+          <div id="calibration-target" class="calibration-target">Preparing target…</div>
+        </div>
+        <div class="calibration-score-wrap">
+          <div class="calibration-label">Read confidence</div>
+          <div id="calibration-score" class="calibration-score">—/5</div>
+        </div>
+      </div>
+      <p id="calibration-result" class="hint calibration-result">No calibration read recorded yet.</p>
+      <button id="calibration-button" class="action-button calibration-button" type="button">ATTEMPT READ</button>
+    </section>
+
+    <section class="card" aria-labelledby="speak-heading">
+      <div class="section-heading">
+        <h2 id="speak-heading">Text to speech</h2>
+        <span id="tts-status" class="status">Ready</span>
+      </div>
+      <label class="sr-only" for="speech-text">Text to speak or command</label>
+      <textarea id="speech-text" rows="7" maxlength="3000" placeholder="Type what you want Speak to say, or a command such as ‘listen’…"></textarea>
+
+      <div class="controls two-col">
+        <label>Voice<select id="voice-select" aria-label="Voice"></select></label>
+        <label>Rate <span id="rate-value">1.0×</span><input id="rate" type="range" min="0.5" max="2" value="1" step="0.1" /></label>
+      </div>
+
+      <div class="button-row">
+        <button id="speak-button" class="primary" type="button">Speak</button>
+        <button id="pause-button" type="button">Pause</button>
+        <button id="resume-button" type="button">Resume</button>
+        <button id="stop-button" class="danger" type="button">Stop</button>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="listen-heading">
+      <div class="section-heading">
+        <h2 id="listen-heading">Speech to text</h2>
+        <span id="stt-status" class="status">Idle</span>
+      </div>
+      <p class="hint">Microphone access only starts after you press <strong>Start listening</strong>. Browser support varies, especially on iOS.</p>
+      <div id="transcript" class="transcript" aria-live="polite" aria-label="Transcript"></div>
+      <div class="button-row">
+        <button id="listen-button" class="primary" type="button">Start listening</button>
+        <button id="stop-listen-button" type="button" disabled>Stop listening</button>
+        <button id="copy-button" type="button">Copy transcript</button>
+        <button id="clear-button" type="button">Clear</button>
+      </div>
+    </section>
+
+    <section class="card compact" aria-labelledby="privacy-heading">
+      <h2 id="privacy-heading">Privacy boundary</h2>
+      <p>Speak uses browser-provided speech APIs only. “Thought Command” is a user-controlled label for explicit text/speech command mode; it does not detect thoughts, hidden signals, nearby people, or devices. Calibration confidence measures only how closely the browser transcript matches a displayed phrase.</p>
+    </section>
+  </main>
+
+  <script src="./app.js" defer></script>
+  <script type="module" src="./calibration-ui.mjs"></script>
+</body>
+</html>

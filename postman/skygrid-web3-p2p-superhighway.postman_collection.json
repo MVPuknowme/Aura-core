@@ -1,0 +1,1226 @@
+{
+  "info": {
+    "name": "SkyGrid Web3 ⇄ P2P API Superhighway Mock",
+    "description": "Mock-first Postman collection for Aura-Core / SkyGrid API superhighway connecting Web3, L2/mainnet bridge status, P2P node heartbeats, failover signals, proof logs, and utility-billing riders. Designed to be imported into Postman, used with a Postman mock server, and later pointed at real staging endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{api_key}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.variables.set('iso_now', new Date().toISOString());"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.test('global: response is not 5xx', function () { pm.expect(pm.response.code).to.be.below(500); });"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://{{mock_url}}",
+      "type": "string"
+    },
+    {
+      "key": "api_key",
+      "value": "postman-local-placeholder",
+      "type": "string"
+    },
+    {
+      "key": "mock_url",
+      "value": "replace-with-created-mock-host.mock.pstmn.io",
+      "type": "string"
+    },
+    {
+      "key": "intent_id",
+      "value": "bridge_intent_001",
+      "type": "string"
+    },
+    {
+      "key": "proof_id",
+      "value": "proof_bridge_status_001",
+      "type": "string"
+    },
+    {
+      "key": "test_customer_ref",
+      "value": "customer-demo-001",
+      "type": "string"
+    },
+    {
+      "key": "test_node_id",
+      "value": "node-demo-001",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Health and Discovery",
+      "item": [
+        {
+          "name": "GET API Health",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "health"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('response is JSON', function () { pm.response.to.be.json; });",
+                  "pm.test('response time under 3000ms', function () { pm.expect(pm.response.responseTime).to.be.below(3000); });",
+                  "const json = pm.response.json();",
+                  "pm.test('response has status/accepted/proofId signal', function () {",
+                  "  pm.expect(json.accepted !== undefined || json.status !== undefined || json.proofId !== undefined || json.available !== undefined).to.eql(true);",
+                  "});",
+                  "if (json.proofId) { pm.environment.set('proof_id', json.proofId); }"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK - Mock",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/health",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "health"
+                  ]
+                },
+                "description": ""
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"ok\",\n  \"project\": \"aura-core/skygrid\",\n  \"timestamp\": \"2026-08-20T00:00:00.000Z\",\n  \"version\": \"v1\",\n  \"proofId\": \"proof_health_001\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET Web3 Chain Health",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/web3/chains/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "web3",
+                "chains",
+                "health"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('response is JSON', function () { pm.response.to.be.json; });",
+                  "pm.test('response time under 3000ms', function () { pm.expect(pm.response.responseTime).to.be.below(3000); });",
+                  "const json = pm.response.json();",
+                  "pm.test('response has status/accepted/proofId signal', function () {",
+                  "  pm.expect(json.accepted !== undefined || json.status !== undefined || json.proofId !== undefined || json.available !== undefined).to.eql(true);",
+                  "});",
+                  "if (json.proofId) { pm.environment.set('proof_id', json.proofId); }"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK - Mock",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/web3/chains/health",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "web3",
+                    "chains",
+                    "health"
+                  ]
+                },
+                "description": ""
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"ok\",\n  \"ethereum\": {\n    \"chainId\": 1,\n    \"rpcStatus\": \"up\",\n    \"latestBlock\": 21000000,\n    \"latencyMs\": 150,\n    \"syncLag\": 0\n  },\n  \"l2\": [\n    {\n      \"name\": \"base\",\n      \"chainId\": 8453,\n      \"rpcStatus\": \"up\",\n      \"latestBlock\": 26000000,\n      \"latencyMs\": 90,\n      \"syncLag\": 0\n    },\n    {\n      \"name\": \"scroll\",\n      \"chainId\": 534352,\n      \"rpcStatus\": \"up\",\n      \"latestBlock\": 12000000,\n      \"latencyMs\": 110,\n      \"syncLag\": 0\n    }\n  ],\n  \"proofId\": \"proof_chain_health_001\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. P2P Node and Device Layer",
+      "item": [
+        {
+          "name": "POST P2P Node Heartbeat",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/p2p/nodes/heartbeat",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "p2p",
+                "nodes",
+                "heartbeat"
+              ]
+            },
+            "description": ""
+          },
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"project\": \"aura-core/skygrid\",\n  \"nodeId\": \"{{test_node_id}}\",\n  \"deviceClass\": \"home-server\",\n  \"region\": \"local-test\",\n  \"status\": \"online\",\n  \"latencyMs\": 42,\n  \"storageAvailableGb\": 100,\n  \"relayReady\": true,\n  \"consentConfirmed\": true\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('response is JSON', function () { pm.response.to.be.json; });",
+                  "pm.test('response time under 3000ms', function () { pm.expect(pm.response.responseTime).to.be.below(3000); });",
+                  "const json = pm.response.json();",
+                  "pm.test('response has status/accepted/proofId signal', function () {",
+                  "  pm.expect(json.accepted !== undefined || json.status !== undefined || json.proofId !== undefined || json.available !== undefined).to.eql(true);",
+                  "});",
+                  "if (json.proofId) { pm.environment.set('proof_id', json.proofId); }"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK - Mock",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{api_key}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/p2p/nodes/heartbeat",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "p2p",
+                    "nodes",
+                    "heartbeat"
+                  ]
+                },
+                "description": ""
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"accepted\": true,\n  \"nodeStatus\": \"online\",\n  \"proofId\": \"proof_node_heartbeat_001\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST Kafka P2P Event",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/p2p/kafka/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "p2p",
+                "kafka",
+                "events"
+              ]
+            },
+            "description": ""
+          },
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"project\": \"aura-core/skygrid\",\n  \"eventType\": \"node.route.status\",\n  \"nodeId\": \"{{test_node_id}}\",\n  \"topic\": \"skygrid.node.status\",\n  \"payload\": {\n    \"relayReady\": true,\n    \"ispStatus\": \"up\",\n    \"web3Route\": \"base-to-ethereum\"\n  }\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('response is JSON', function () { pm.response.to.be.json; });",
+                  "pm.test('response time under 3000ms', function () { pm.expect(pm.response.responseTime).to.be.below(3000); });",
+                  "const json = pm.response.json();",
+                  "pm.test('response has status/accepted/proofId signal', function () {",
+                  "  pm.expect(json.accepted !== undefined || json.status !== undefined || json.proofId !== undefined || json.available !== undefined).to.eql(true);",
+                  "});",
+                  "if (json.proofId) { pm.environment.set('proof_id', json.proofId); }"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK - Mock",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{api_key}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/p2p/kafka/events",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "p2p",
+                    "kafka",
+                    "events"
+                  ]
+                },
+                "description": ""
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"accepted\": true,\n  \"eventId\": \"evt_kafka_001\",\n  \"proofId\": \"proof_kafka_001\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Web3 Bridge and Mainnet Flow",
+      "item": [
+        {
+          "name": "POST Bridge Quote",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/web3/bridge/quote",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "web3",
+                "bridge",
+                "quote"
+              ]
+            },
+            "description": ""
+          },
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"project\": \"aura-core/skygrid\",\n  \"fromChain\": \"base\",\n  \"toChain\": \"ethereum\",\n  \"asset\": \"ETH\",\n  \"amount\": \"0.01\",\n  \"routePreference\": \"lowest-cost-safe\",\n  \"proofRequired\": true\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('response is JSON', function () { pm.response.to.be.json; });",
+                  "pm.test('response time under 3000ms', function () { pm.expect(pm.response.responseTime).to.be.below(3000); });",
+                  "const json = pm.response.json();",
+                  "pm.test('response has status/accepted/proofId signal', function () {",
+                  "  pm.expect(json.accepted !== undefined || json.status !== undefined || json.proofId !== undefined || json.available !== undefined).to.eql(true);",
+                  "});",
+                  "if (json.proofId) { pm.environment.set('proof_id', json.proofId); }"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK - Mock",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{api_key}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/web3/bridge/quote",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "web3",
+                    "bridge",
+                    "quote"
+                  ]
+                },
+                "description": ""
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"available\": true,\n  \"fromChain\": \"base\",\n  \"toChain\": \"ethereum\",\n  \"asset\": \"ETH\",\n  \"estimatedFeeUsd\": \"0.42\",\n  \"estimatedTimeSeconds\": 600,\n  \"riskLevel\": \"low\",\n  \"proofRequired\": true,\n  \"proofId\": \"proof_bridge_quote_001\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST Bridge Intent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/web3/bridge/intents",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "web3",
+                "bridge",
+                "intents"
+              ]
+            },
+            "description": ""
+          },
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"project\": \"aura-core/skygrid\",\n  \"requestId\": \"skygrid-intent-demo-001\",\n  \"fromChain\": \"base\",\n  \"toChain\": \"ethereum\",\n  \"asset\": \"ETH\",\n  \"amount\": \"0.01\",\n  \"walletRef\": \"user-approved-wallet-ref\",\n  \"purpose\": \"web3-infrastructure-backup\",\n  \"billingRider\": \"web3_infrastructure_backup_rider\",\n  \"requiresUserApproval\": true\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('response is JSON', function () { pm.response.to.be.json; });",
+                  "pm.test('response time under 3000ms', function () { pm.expect(pm.response.responseTime).to.be.below(3000); });",
+                  "const json = pm.response.json();",
+                  "pm.test('response has status/accepted/proofId signal', function () {",
+                  "  pm.expect(json.accepted !== undefined || json.status !== undefined || json.proofId !== undefined || json.available !== undefined).to.eql(true);",
+                  "});",
+                  "if (json.proofId) { pm.environment.set('proof_id', json.proofId); }"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK - Mock",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{api_key}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/web3/bridge/intents",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "web3",
+                    "bridge",
+                    "intents"
+                  ]
+                },
+                "description": ""
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"accepted\": true,\n  \"intentId\": \"bridge_intent_001\",\n  \"status\": \"awaiting_user_approval\",\n  \"proofId\": \"proof_bridge_intent_001\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET Bridge Intent Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/web3/bridge/intents/{{intent_id}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "web3",
+                "bridge",
+                "intents",
+                "{{intent_id}}",
+                "status"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('response is JSON', function () { pm.response.to.be.json; });",
+                  "pm.test('response time under 3000ms', function () { pm.expect(pm.response.responseTime).to.be.below(3000); });",
+                  "const json = pm.response.json();",
+                  "pm.test('response has status/accepted/proofId signal', function () {",
+                  "  pm.expect(json.accepted !== undefined || json.status !== undefined || json.proofId !== undefined || json.available !== undefined).to.eql(true);",
+                  "});",
+                  "if (json.proofId) { pm.environment.set('proof_id', json.proofId); }"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK - Mock",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/web3/bridge/intents/{{intent_id}}/status",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "web3",
+                    "bridge",
+                    "intents",
+                    "{{intent_id}}",
+                    "status"
+                  ]
+                },
+                "description": ""
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"intentId\": \"bridge_intent_001\",\n  \"status\": \"pending\",\n  \"sourceChainStatus\": \"observed\",\n  \"destinationChainStatus\": \"not_settled\",\n  \"confirmations\": 0,\n  \"proofId\": \"proof_bridge_status_001\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Failover and Route Intelligence",
+      "item": [
+        {
+          "name": "POST Web3 Failover Signal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/failover/signals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "failover",
+                "signals"
+              ]
+            },
+            "description": ""
+          },
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"project\": \"aura-core/skygrid\",\n  \"signalType\": \"web3-route-degraded\",\n  \"affectedRoute\": \"base-to-ethereum\",\n  \"source\": \"rpc-monitor\",\n  \"severity\": \"medium\",\n  \"recommendedAction\": \"switch-rpc-or-delay-settlement\",\n  \"proofRequired\": true\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('response is JSON', function () { pm.response.to.be.json; });",
+                  "pm.test('response time under 3000ms', function () { pm.expect(pm.response.responseTime).to.be.below(3000); });",
+                  "const json = pm.response.json();",
+                  "pm.test('response has status/accepted/proofId signal', function () {",
+                  "  pm.expect(json.accepted !== undefined || json.status !== undefined || json.proofId !== undefined || json.available !== undefined).to.eql(true);",
+                  "});",
+                  "if (json.proofId) { pm.environment.set('proof_id', json.proofId); }"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK - Mock",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{api_key}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/failover/signals",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "failover",
+                    "signals"
+                  ]
+                },
+                "description": ""
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"accepted\": true,\n  \"signalId\": \"failover_signal_001\",\n  \"recommendedAction\": \"switch-rpc-or-delay-settlement\",\n  \"proofId\": \"proof_failover_001\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST ISP Route Status",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/isp/route/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "isp",
+                "route",
+                "status"
+              ]
+            },
+            "description": ""
+          },
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"project\": \"aura-core/skygrid\",\n  \"region\": \"local-test\",\n  \"ispStatus\": \"degraded\",\n  \"latencyMs\": 220,\n  \"packetLossPercent\": 3.5,\n  \"failoverNeeded\": true\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('response is JSON', function () { pm.response.to.be.json; });",
+                  "pm.test('response time under 3000ms', function () { pm.expect(pm.response.responseTime).to.be.below(3000); });",
+                  "const json = pm.response.json();",
+                  "pm.test('response has status/accepted/proofId signal', function () {",
+                  "  pm.expect(json.accepted !== undefined || json.status !== undefined || json.proofId !== undefined || json.available !== undefined).to.eql(true);",
+                  "});",
+                  "if (json.proofId) { pm.environment.set('proof_id', json.proofId); }"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK - Mock",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{api_key}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/isp/route/status",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "isp",
+                    "route",
+                    "status"
+                  ]
+                },
+                "description": ""
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"accepted\": true,\n  \"routeStatus\": \"degraded\",\n  \"billingRiderCandidate\": \"isp_condition_rider\",\n  \"proofId\": \"proof_isp_status_001\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5. Billing and Usage Metering",
+      "item": [
+        {
+          "name": "POST Web3 Bridge Usage",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/billing/usage/web3-bridge",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "billing",
+                "usage",
+                "web3-bridge"
+              ]
+            },
+            "description": ""
+          },
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"project\": \"aura-core/skygrid\",\n  \"customerRef\": \"{{test_customer_ref}}\",\n  \"intentId\": \"{{intent_id}}\",\n  \"rider\": \"web3_infrastructure_backup_rider\",\n  \"chainRef\": \"ethereum\",\n  \"l2Ref\": \"base\",\n  \"usageUnits\": 1,\n  \"ethReferenceRate\": \"capture_at_runtime\",\n  \"proofId\": \"{{proof_id}}\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('response is JSON', function () { pm.response.to.be.json; });",
+                  "pm.test('response time under 3000ms', function () { pm.expect(pm.response.responseTime).to.be.below(3000); });",
+                  "const json = pm.response.json();",
+                  "pm.test('response has status/accepted/proofId signal', function () {",
+                  "  pm.expect(json.accepted !== undefined || json.status !== undefined || json.proofId !== undefined || json.available !== undefined).to.eql(true);",
+                  "});",
+                  "if (json.proofId) { pm.environment.set('proof_id', json.proofId); }"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK - Mock",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{api_key}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/billing/usage/web3-bridge",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "billing",
+                    "usage",
+                    "web3-bridge"
+                  ]
+                },
+                "description": ""
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"accepted\": true,\n  \"usageEventId\": \"usage_web3_bridge_001\",\n  \"invoiceStatus\": \"pending_monthly_invoice\",\n  \"proofId\": \"proof_usage_001\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST P2P Node Usage Credit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/billing/usage/p2p-node",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "billing",
+                "usage",
+                "p2p-node"
+              ]
+            },
+            "description": ""
+          },
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"project\": \"aura-core/skygrid\",\n  \"customerRef\": \"{{test_customer_ref}}\",\n  \"nodeId\": \"{{test_node_id}}\",\n  \"rider\": \"node_host_credit\",\n  \"usageUnits\": 1,\n  \"basis\": \"verified_heartbeat_and_relay_ready\",\n  \"proofId\": \"proof_node_heartbeat_001\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('response is JSON', function () { pm.response.to.be.json; });",
+                  "pm.test('response time under 3000ms', function () { pm.expect(pm.response.responseTime).to.be.below(3000); });",
+                  "const json = pm.response.json();",
+                  "pm.test('response has status/accepted/proofId signal', function () {",
+                  "  pm.expect(json.accepted !== undefined || json.status !== undefined || json.proofId !== undefined || json.available !== undefined).to.eql(true);",
+                  "});",
+                  "if (json.proofId) { pm.environment.set('proof_id', json.proofId); }"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK - Mock",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{api_key}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/billing/usage/p2p-node",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "billing",
+                    "usage",
+                    "p2p-node"
+                  ]
+                },
+                "description": ""
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"accepted\": true,\n  \"usageEventId\": \"usage_p2p_node_001\",\n  \"creditStatus\": \"pending_reconciliation\",\n  \"proofId\": \"proof_usage_node_001\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "6. Proof and Audit Trail",
+      "item": [
+        {
+          "name": "GET Proof Lookup",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/proofs/{{proof_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "proofs",
+                "{{proof_id}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('response is JSON', function () { pm.response.to.be.json; });",
+                  "pm.test('response time under 3000ms', function () { pm.expect(pm.response.responseTime).to.be.below(3000); });",
+                  "const json = pm.response.json();",
+                  "pm.test('response has status/accepted/proofId signal', function () {",
+                  "  pm.expect(json.accepted !== undefined || json.status !== undefined || json.proofId !== undefined || json.available !== undefined).to.eql(true);",
+                  "});",
+                  "if (json.proofId) { pm.environment.set('proof_id', json.proofId); }"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK - Mock",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/proofs/{{proof_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "proofs",
+                    "{{proof_id}}"
+                  ]
+                },
+                "description": ""
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"proofId\": \"proof_bridge_status_001\",\n  \"project\": \"aura-core/skygrid\",\n  \"eventType\": \"bridge_status\",\n  \"timestamp\": \"2026-08-20T00:00:00.000Z\",\n  \"source\": \"skygrid-api\",\n  \"hash\": \"demo_hash\",\n  \"reconciled\": false,\n  \"status\": \"found\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

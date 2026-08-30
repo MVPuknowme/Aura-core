@@ -1,0 +1,50 @@
+name: SKYGRID Etherscan Read-Only Validation
+
+on:
+  pull_request:
+    paths:
+      - "api/skygrid/etherscan-read.mjs"
+      - "tests/skygrid-etherscan-read.test.mjs"
+      - "docs/etherscan-readonly.md"
+      - "config/skygrid-route-manifest.json"
+      - "api/health.js"
+      - "api/runtime-core.mjs"
+      - "vercel.json"
+      - "package.json"
+      - ".github/workflows/etherscan-readonly-ci.yml"
+  push:
+    branches:
+      - MVPuknowme
+    paths:
+      - "api/skygrid/etherscan-read.mjs"
+      - "tests/skygrid-etherscan-read.test.mjs"
+      - "docs/etherscan-readonly.md"
+      - "config/skygrid-route-manifest.json"
+      - "api/health.js"
+      - "api/runtime-core.mjs"
+      - "vercel.json"
+      - "package.json"
+      - ".github/workflows/etherscan-readonly-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  read-only-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Validate route syntax
+        run: node --check api/skygrid/etherscan-read.mjs
+
+      - name: Run Etherscan read-only contract tests
+        run: node --test tests/skygrid-etherscan-read.test.mjs

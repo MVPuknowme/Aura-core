@@ -51,7 +51,7 @@ function routeMap() {
   return [
     "/", "/lease", "/health.json", "/dispatch", "/incidents", "/settings", "/highway", "/scenarios", "/rates", "/base", "/pay",
     "/dashboard/command-center", "/dashboard/validation-panel", "/dashboard/deployment-review", "/dashboard/receipts",
-    "/api/skygrid/status", "/api/skygrid/intake", "/api/aura-core/decide", "/api/agent/signals", "/api/highway/status",
+    "/api/skygrid/status", "/api/skygrid/intake", "/api/skygrid/opensea-preflight", "/api/skygrid/etherscan-read", "/api/aura-core/decide", "/api/agent/signals", "/api/highway/status",
     "/api/highway/flasks", "/api/highway/postman", "/api/pay/quote?amount=25", "/api/autodrill/latest",
     "/api/build-pad/quote", "/api/node-lease/intake", "/api/node-lease/preflight", "/api/node-lease/agreements", "/api/failover/status", "/api/panels/summary", "/api/stripe/device-link"
   ];
@@ -187,6 +187,7 @@ function normalizeRoutingInput(body = {}) {
     route_type: value("route_type"),
     requested_ramp: value("requested_ramp"),
     requested_node: value("requested_node"),
+    requested_transport: value("requested_transport"),
     owner_approval: value("owner_approval") === true,
     emergency_operator_approval:
       value("emergency_operator_approval") === true,
@@ -199,7 +200,19 @@ function normalizeRoutingInput(body = {}) {
     production_failover_requested:
       value("production_failover_requested") === true,
     private_data_movement_requested:
-      value("private_data_movement_requested") === true
+      value("private_data_movement_requested") === true,
+    disk_partition_requested: value("disk_partition_requested") === true,
+    volume_shrink_requested: value("volume_shrink_requested") === true,
+    partition_delete_requested: value("partition_delete_requested") === true,
+    system_or_boot_disk_requested:
+      value("system_or_boot_disk_requested") === true,
+    gpu_enrollment_requested: value("gpu_enrollment_requested") === true,
+    bridge_execution_requested: value("bridge_execution_requested") === true,
+    program_deployment_requested: value("program_deployment_requested") === true,
+    os_network_switching_requested:
+      value("os_network_switching_requested") === true,
+    interface_reconfiguration_requested:
+      value("interface_reconfiguration_requested") === true
   };
 }
 
@@ -232,7 +245,16 @@ function decision(body = {}) {
     ["transaction_broadcast_requested", "transaction_broadcast_prohibited"],
     ["payment_execution_requested", "payment_execution_prohibited"],
     ["production_failover_requested", "production_failover_prohibited"],
-    ["private_data_movement_requested", "private_data_movement_prohibited"]
+    ["private_data_movement_requested", "private_data_movement_prohibited"],
+    ["disk_partition_requested", "disk_partition_execution_prohibited"],
+    ["volume_shrink_requested", "volume_shrink_prohibited"],
+    ["partition_delete_requested", "partition_delete_prohibited"],
+    ["system_or_boot_disk_requested", "system_or_boot_disk_prohibited"],
+    ["gpu_enrollment_requested", "gpu_enrollment_without_activation_prohibited"],
+    ["bridge_execution_requested", "bridge_execution_prohibited"],
+    ["program_deployment_requested", "program_deployment_prohibited"],
+    ["os_network_switching_requested", "os_network_switching_prohibited"],
+    ["interface_reconfiguration_requested", "interface_reconfiguration_prohibited"]
   ];
 
   for (const [field, reason] of prohibitedActions) {
@@ -267,6 +289,13 @@ function decision(body = {}) {
     return reject("unapproved_node");
   }
 
+  if (
+    partition.allowed_transports &&
+    !partition.allowed_transports.includes(input.requested_transport)
+  ) {
+    return reject("unapproved_transport");
+  }
+
   const approvalGate = policy.dual_approval_gate;
   const approvalRequired =
     approvalGate?.enabled === true &&
@@ -286,6 +315,7 @@ function decision(body = {}) {
     selected_partition: input.route_type,
     selected_ramp: input.requested_ramp,
     selected_node_group: input.requested_node,
+    selected_transport: input.requested_transport || null,
     mode: partition.mode || mode,
     sentinel: partition.sentinel || sentinel,
     reason: "partition_route_approved"

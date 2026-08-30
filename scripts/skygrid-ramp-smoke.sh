@@ -1,25 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE_URL="${1:-${SKYGRID_BASE_URL:-https://aura-core-home-e539c0b1.vercel.app}}"
+BASE_URL="${1:-${SKYGRID_BASE_URL:-http://127.0.0.1:3000}}"
 BASE_URL="${BASE_URL%/}"
-
-VERCEL_BYPASS="${VERCEL_AUTOMATION_BYPASS_SECRET:-}"
 
 echo "SKYGRID Emergency Data On-Ramp smoke test"
 echo "Base: ${BASE_URL}"
+echo "Mode: local/devcontainer-first"
 echo ""
 
 curl_args=("-sS" "-L")
-
-if [[ -n "$VERCEL_BYPASS" ]]; then
-  curl_args+=(
-    -H "x-vercel-protection-bypass: ${VERCEL_BYPASS}"
-    -H "x-vercel-set-bypass-cookie: true"
-  )
-else
-  echo "WARN: VERCEL_AUTOMATION_BYPASS_SECRET is not set."
-fi
 
 check_required() {
   local path="$1"

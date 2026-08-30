@@ -1,0 +1,183 @@
+name: SKYGRID Pilot Evidence Score
+
+on:
+  push:
+    branches:
+      - "skygrid/pilot-evidence-*"
+  pull_request:
+    branches:
+      - "MVPuknowme"
+  workflow_dispatch: {}
+
+jobs:
+  evidence:
+    name: Evidence score on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: "10.23.0"
+          run_install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Controlled-pilot preflight
+        run: |
+          pnpm run pnpk:validate
+          pnpm run manifest:sync
+          pnpm run partition:verify
+          pnpm run autodrill:sim
+          pnpm run emergency:gate
+          pnpm run security:ioc-check
+          pnpm run intake:policy-test
+          pnpm run route:probe:proof
+
+      - name: Start runtime, run drills, and score evidence (Ubuntu)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          RECEIPT_DIR="training/receipts/evidence-${{ runner.os }}"
+          mkdir -p "$RECEIPT_DIR"
+
+          nohup pnpm run local:runtime > runtime.log 2>&1 &
+          PID=$!
+          trap 'kill "$PID" 2>/dev/null || true' EXIT
+
+          for i in {1..60}; do
+            if curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/api/health | grep -q '^200$'; then
+              break
+            fi
+            if [ "$i" -eq 60 ]; then
+              cat runtime.log || true
+              exit 1
+            fi
+            sleep 2
+          done
+
+          pnpm run training:drill -- \
+            --base-url=http://127.0.0.1:3000 \
+            --scenario-file=training/scenarios/skygrid-auto-drill-v1.json \
+            --out-dir="$RECEIPT_DIR" \
+            --run-id=accepted-paths
+
+          pnpm run training:fail-closed -- \
+            --base-url=http://127.0.0.1:3000 \
+            --scenario-file=training/scenarios/skygrid-fail-closed-v1.json \
+            --out-dir="$RECEIPT_DIR" \
+            --run-id=fail-closed
+
+          pnpm run training:verify-receipts -- --dir="$RECEIPT_DIR"
+
+          pnpm run pilot:score -- \
+            --receipt-dir="$RECEIPT_DIR" \
+            --out="$RECEIPT_DIR/pilot-score.json" \
+            --min-score=9 \
+            --p95-ms=1500
+
+      - name: Start runtime, run drills, and score evidence (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $node = (Get-Command node.exe -ErrorAction Stop).Source
+          $script = Join-Path $PWD.Path "scripts\skygrid-local-runtime-server.mjs"
+          $secretModule = Join-Path $PWD.Path "scripts\skygrid-ci-auth-bootstrap.mjs"
+          $env:SKYGRID_INGEST_SECRET = & $node --input-type=module -e "import(process.argv[1]).then((module) => process.stdout.write(module.SKYGRID_CI_INGEST_SECRET))" ([System.Uri]::new($secretModule).AbsoluteUri)
+
+          if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($env:SKYGRID_INGEST_SECRET)) {
+            throw "Unable to initialize the CI-only SKYGRID ingest secret."
+          }
+
+          $arguments = @(
+            "--enable-source-maps"
+            $script
+          )
+          $stdout = Join-Path $PWD.Path "runtime.log"
+          $stderr = Join-Path $PWD.Path "runtime-error.log"
+          $receiptDir = "training/receipts/evidence-${{ runner.os }}"
+          New-Item -ItemType Directory -Force -Path $receiptDir | Out-Null
+
+          $runtime = Start-Process `
+            -FilePath $node `
+            -ArgumentList $arguments `
+            -WorkingDirectory $PWD.Path `
+            -RedirectStandardOutput $stdout `
+            -RedirectStandardError $stderr `
+            -PassThru
+
+          try {
+            $healthy = $false
+            for ($i = 0; $i -lt 60; $i++) {
+              if ($runtime.HasExited) { break }
+              $status = & curl.exe --noproxy "*" --silent --show-error --output NUL --write-out "%{http_code}" "http://127.0.0.1:3000/api/health"
+              if ($status -eq "200") {
+                $healthy = $true
+                break
+              }
+              Start-Sleep -Seconds 2
+            }
+
+            if (-not $healthy) {
+              if (Test-Path $stdout) { Get-Content $stdout -Tail 200 }
+              if (Test-Path $stderr) { Get-Content $stderr -Tail 200 }
+              throw "SKYGRID Windows runtime health check failed."
+            }
+
+            & pnpm run training:drill -- `
+              --base-url=http://127.0.0.1:3000 `
+              --scenario-file=training/scenarios/skygrid-auto-drill-v1.json `
+              --out-dir=$receiptDir `
+              --run-id=accepted-paths
+            if ($LASTEXITCODE -ne 0) { throw "Accepted-path drill failed." }
+
+            & pnpm run training:fail-closed -- `
+              --base-url=http://127.0.0.1:3000 `
+              --scenario-file=training/scenarios/skygrid-fail-closed-v1.json `
+              --out-dir=$receiptDir `
+              --run-id=fail-closed
+            if ($LASTEXITCODE -ne 0) { throw "Fail-closed drill failed." }
+
+            & pnpm run training:verify-receipts -- --dir=$receiptDir
+            if ($LASTEXITCODE -ne 0) { throw "Receipt verification failed." }
+
+            & pnpm run pilot:score -- `
+              --receipt-dir=$receiptDir `
+              --out="$receiptDir/pilot-score.json" `
+              --min-score=9 `
+              --p95-ms=1500
+            if ($LASTEXITCODE -ne 0) { throw "Pilot evidence score did not meet 9/10." }
+          }
+          finally {
+            if ($runtime -and -not $runtime.HasExited) {
+              Stop-Process -Id $runtime.Id -Force -ErrorAction SilentlyContinue
+              $runtime.WaitForExit(10000) | Out-Null
+            }
+          }
+
+      - name: Upload evidence bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: skygrid-pilot-evidence-${{ runner.os }}
+          path: |
+            training/receipts/evidence-${{ runner.os }}/*.json
+            runtime.log
+            runtime-error.log
+          if-no-files-found: warn

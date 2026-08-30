@@ -1,0 +1,75 @@
+name: PNPK Post-Build Preflight
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/pnpk-postbuild.yml"
+      - "bridge/**/*.pnpk"
+      - "scripts/run-pnpk-postbuild.mjs"
+      - "scripts/validate-pnpk.mjs"
+      - "scripts/verify-switch-preruns.mjs"
+      - "scripts/solana-playground-preflight.mjs"
+      - "scripts/aura-core-ai-ramp-switch.mjs"
+      - "scripts/skygrid-partition-router.mjs"
+      - "scripts/skygrid-autodrill-sim.mjs"
+      - "api/runtime-core.mjs"
+      - "api/runtime.mjs"
+      - "tests/pnpk-postbuild.test.mjs"
+      - "tests/skygrid-capacity-lease.test.mjs"
+      - "package.json"
+  push:
+    branches:
+      - MVPuknowme
+    paths:
+      - ".github/workflows/pnpk-postbuild.yml"
+      - "bridge/**/*.pnpk"
+      - "scripts/run-pnpk-postbuild.mjs"
+      - "scripts/validate-pnpk.mjs"
+      - "scripts/verify-switch-preruns.mjs"
+      - "scripts/solana-playground-preflight.mjs"
+      - "scripts/aura-core-ai-ramp-switch.mjs"
+      - "scripts/skygrid-partition-router.mjs"
+      - "scripts/skygrid-autodrill-sim.mjs"
+      - "api/runtime-core.mjs"
+      - "api/runtime.mjs"
+      - "tests/pnpk-postbuild.test.mjs"
+      - "tests/skygrid-capacity-lease.test.mjs"
+      - "package.json"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: ${{ matrix.os }} allowlisted post-build
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Unit-test PNPK adapter
+        run: node --test tests/pnpk-postbuild.test.mjs tests/skygrid-intake-policy-core.test.mjs
+
+      - name: Run PNPK post-build preflight
+        run: node scripts/run-pnpk-postbuild.mjs
+
+      - name: Upload hash-bound receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnpk-postbuild-${{ matrix.os }}
+          path: artifacts/pnpk/proofs/postbuild-latest.json
+          if-no-files-found: error

@@ -6,6 +6,8 @@ const ROUTES = [
   "/api/health",
   "/api/skygrid/status",
   "/api/skygrid/intake",
+  "/api/skygrid/opensea-preflight",
+  "/api/skygrid/etherscan-read",
   "/api/highway/status",
   "/api/highway/postman",
   "/api/pay/quote?amount=25",
