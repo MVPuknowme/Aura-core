@@ -65,7 +65,8 @@
         "skygrid:verify:public": "node scripts/verify-skygrid-public.mjs",
         "postman:mock": "node scripts/postman-create-skygrid-mock.mjs",
         "postman:mock:test": "node scripts/test-postman-superhighway-contract.mjs",
-        "opensea:preflight-test": "node --test tests/skygrid-opensea-preflight.test.mjs"
+        "opensea:preflight-test": "node --test tests/skygrid-opensea-preflight.test.mjs",
+        "etherscan:read-test": "node --test tests/skygrid-etherscan-read.test.mjs"
     },
     "dependencies": {
         "@coinbase/agentkit": "^0.10.4",

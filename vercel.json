@@ -28,6 +28,7 @@
     { "source": "/api/skygrid/status", "destination": "/api/runtime" },
     { "source": "/api/skygrid/intake", "destination": "/api/runtime" },
     { "source": "/api/skygrid/opensea-preflight", "destination": "/api/skygrid/opensea-preflight" },
+    { "source": "/api/skygrid/etherscan-read", "destination": "/api/skygrid/etherscan-read" },
     { "source": "/api/aura-core/decide", "destination": "/api/runtime" },
     { "source": "/api/aura/director", "destination": "/api/aura/director" },
     { "source": "/api/chatbot/call-circle", "destination": "/api/chatbot/call-circle" },

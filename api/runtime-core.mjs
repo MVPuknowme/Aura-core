@@ -51,7 +51,7 @@ function routeMap() {
   return [
     "/", "/lease", "/health.json", "/dispatch", "/incidents", "/settings", "/highway", "/scenarios", "/rates", "/base", "/pay",
     "/dashboard/command-center", "/dashboard/validation-panel", "/dashboard/deployment-review", "/dashboard/receipts",
-    "/api/skygrid/status", "/api/skygrid/intake", "/api/skygrid/opensea-preflight", "/api/aura-core/decide", "/api/agent/signals", "/api/highway/status",
+    "/api/skygrid/status", "/api/skygrid/intake", "/api/skygrid/opensea-preflight", "/api/skygrid/etherscan-read", "/api/aura-core/decide", "/api/agent/signals", "/api/highway/status",
     "/api/highway/flasks", "/api/highway/postman", "/api/pay/quote?amount=25", "/api/autodrill/latest",
     "/api/build-pad/quote", "/api/node-lease/intake", "/api/node-lease/preflight", "/api/node-lease/agreements", "/api/failover/status", "/api/panels/summary", "/api/stripe/device-link"
   ];

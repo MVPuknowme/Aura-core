@@ -47,6 +47,7 @@
     { "id": "skygrid_status", "method": "GET", "path": "/api/skygrid/status", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
     { "id": "skygrid_intake", "method": "POST", "path": "/api/skygrid/intake", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
     { "id": "opensea_collection_preflight", "method": "GET", "path": "/api/skygrid/opensea-preflight", "owner": "vercel", "proof_owner": "node_test", "required": false, "status": "implemented_fail_closed_identity_pin" },
+    { "id": "etherscan_read_only", "method": "GET", "path": "/api/skygrid/etherscan-read", "owner": "vercel", "proof_owner": "node_test", "required": false, "status": "implemented_fail_closed_allowlisted_reads" },
     { "id": "aura_core_decide", "method": "POST", "path": "/api/aura-core/decide", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
     { "id": "agent_signals", "method": "POST", "path": "/api/agent/signals", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
     { "id": "highway_status", "method": "GET", "path": "/api/highway/status", "owner": "vercel", "proof_owner": "postman", "required": true, "status": "implemented" },
