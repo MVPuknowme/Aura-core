@@ -6,7 +6,7 @@
     "8080": {
       "label": "Aura Speak",
       "onAutoForward": "openPreview",
-      "visibility": "private"
+      "visibility": "public"
     }
   },
   "postStartCommand": "bash -lc 'pkill -f \"node apps/speak/dev-server.mjs\" >/dev/null 2>&1 || true; nohup node apps/speak/dev-server.mjs > /tmp/aura-speak.log 2>&1 &'",
