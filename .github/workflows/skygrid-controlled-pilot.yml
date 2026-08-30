@@ -116,13 +116,24 @@ jobs:
 
           $node = (Get-Command node.exe -ErrorAction Stop).Source
           $script = Join-Path $PWD.Path "scripts\skygrid-local-runtime-server.mjs"
+          $secretModule = Join-Path $PWD.Path "scripts\skygrid-ci-auth-bootstrap.mjs"
+          $env:SKYGRID_INGEST_SECRET = & $node --input-type=module -e "import(process.argv[1]).then((module) => process.stdout.write(module.SKYGRID_CI_INGEST_SECRET))" ([System.Uri]::new($secretModule).AbsoluteUri)
+
+          if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($env:SKYGRID_INGEST_SECRET)) {
+            throw "Unable to initialize the CI-only SKYGRID ingest secret."
+          }
+
+          $arguments = @(
+            "--enable-source-maps"
+            $script
+          )
           $stdout = Join-Path $PWD.Path "runtime.log"
           $stderr = Join-Path $PWD.Path "runtime-error.log"
           $receiptDir = "training/receipts/ci-${{ runner.os }}"
 
           $runtime = Start-Process `
             -FilePath $node `
-            -ArgumentList $script `
+            -ArgumentList $arguments `
             -WorkingDirectory $PWD.Path `
             -RedirectStandardOutput $stdout `
             -RedirectStandardError $stderr `
