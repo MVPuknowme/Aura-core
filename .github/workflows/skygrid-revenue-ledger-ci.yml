@@ -7,6 +7,11 @@ on:
       - "api/skygrid/revenue.mjs"
       - "tests/skygrid-revenue-ledger.test.mjs"
       - "schemas/skygrid-infrastructure-revenue.schema.json"
+      - "lib/accounting/verified-revenue-ledger.mjs"
+      - "scripts/skygrid-revenue-ledger.mjs"
+      - "tests/verified-revenue-ledger.test.mjs"
+      - "configs/accounting/verified-revenue-ledger.sample.json"
+      - "docs/accounting/verified-infrastructure-revenue-ledger.md"
       - "package.json"
       - ".github/workflows/skygrid-revenue-ledger-ci.yml"
   push:
@@ -17,7 +22,13 @@ on:
       - "api/skygrid/revenue.mjs"
       - "tests/skygrid-revenue-ledger.test.mjs"
       - "schemas/skygrid-infrastructure-revenue.schema.json"
+      - "lib/accounting/verified-revenue-ledger.mjs"
+      - "scripts/skygrid-revenue-ledger.mjs"
+      - "tests/verified-revenue-ledger.test.mjs"
+      - "configs/accounting/verified-revenue-ledger.sample.json"
+      - "docs/accounting/verified-infrastructure-revenue-ledger.md"
       - "package.json"
+      - ".github/workflows/skygrid-revenue-ledger-ci.yml"
 
 permissions:
   contents: read
@@ -38,9 +49,32 @@ jobs:
 
       - name: Syntax check
         run: |
-          node --check lib/skygrid-revenue-ledger.mjs
-          node --check api/skygrid/revenue.mjs
-          node --check tests/skygrid-revenue-ledger.test.mjs
+          node --check lib/accounting/verified-revenue-ledger.mjs
+          node --check scripts/skygrid-revenue-ledger.mjs
+          node --check tests/verified-revenue-ledger.test.mjs
 
       - name: Revenue ledger tests
         run: npm run revenue:ledger:test
+
+      - name: Revenue ledger verifier
+        run: npm run revenue:ledger:verify
+
+  revenue-ledger-powershell:
+    runs-on: windows-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: PowerShell ledger validation
+        shell: pwsh
+        run: |
+          npm run revenue:ledger:test
+          npm run revenue:ledger:verify
+          node scripts/skygrid-revenue-ledger.mjs .\configs\accounting\verified-revenue-ledger.sample.json
