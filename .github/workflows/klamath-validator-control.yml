@@ -6,6 +6,10 @@ on:
     paths:
       - ".github/workflows/klamath-validator-control.yml"
       - "configs/klamath-validator-control.v1.json"
+      - "bridge/skygrid-emergency-onramp.pnpk"
+      - "scripts/validate-pnpk.mjs"
+      - "scripts/run-pnpk-postbuild.mjs"
+      - "scripts/pnpk-access-transparency-policy.mjs"
       - "scripts/validate-power-mesh-fixture.mjs"
       - "fixtures/skygrid-power-mesh/**"
       - "schemas/skygrid-power-mesh-telemetry.schema.json"
@@ -22,6 +26,7 @@ concurrency:
 
 env:
   CONTROL_TIMEZONE: America/Los_Angeles
+  PNPK_PATH: bridge/skygrid-emergency-onramp.pnpk
 
 jobs:
   klamath-safe-validation:
@@ -59,10 +64,15 @@ jobs:
         if: steps.window.outputs.run == 'true'
         uses: actions/setup-node@v4
         with:
-          node-version: "20.x"
+          node-version: "24.x"
+
+      - name: PNPK pre-flight gate
+        id: pnpk
+        if: steps.window.outputs.run == 'true'
+        run: node scripts/validate-pnpk.mjs
 
       - name: Run Klamath telemetry validator
-        if: steps.window.outputs.run == 'true'
+        if: steps.window.outputs.run == 'true' && steps.pnpk.outcome == 'success'
         run: node scripts/validate-power-mesh-fixture.mjs
 
       - name: Record proof summary
@@ -78,6 +88,9 @@ jobs:
             echo "- Daily window: 00:01-08:00"
             echo "- Event: ${{ github.event_name }}"
             echo "- Window authorized: ${{ steps.window.outputs.run }}"
+            echo "- PNPK gate: ${{ steps.pnpk.outcome }}"
+            echo "- PNPK path: bridge/skygrid-emergency-onramp.pnpk"
+            echo "- PNPK semantics: fail_closed"
             echo "- UTC timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
             echo "- Revenue/payout promotion: disabled"
           } >> "$GITHUB_STEP_SUMMARY"
