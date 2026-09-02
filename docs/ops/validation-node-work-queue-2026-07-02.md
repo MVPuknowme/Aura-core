@@ -23,6 +23,27 @@ This work queue is operational validation only. It does not execute payouts, ver
 | 5 | `spx-node-002` | Oregon edge probe secondary | Route-score and threshold modeling from safe test data | Pending Threshold |
 | 6 | `accounting-sentinel` | accounting guardrail | Confirm validation changes do not alter payout/revenue states | Ready |
 
+## Validation output values
+
+These values are validation/ledger visibility outputs only. They are not verified paid revenue, do not authorize payout, and do not promote payout status.
+
+| Node | Record | Region | Status | Successful checks | Uptime hours | Relay events | Earned USD | Pending payout USD | Verified paid USD | Value boundary |
+|---|---|---|---|---:|---:|---:|---:|---:|---:|---|
+| `klamath-falls-core` | `rec454piNH86zxcy2` | Klamath Falls / Klamath County | Needs Review | 288 | 24 | 0 | 1463.00 | 1463.00 | 0.00 | Operational ledger value; source trace, contract authority, AWS mapping, and payment route still required. |
+| `spx-node-001` | `recHgmSsTngwQ7XQF` | Lincoln City, Oregon | Pilot Active | 37 | 8 | 12 | 0.07 | 0.07 | 0.00 | Pilot ledger value; heartbeat-only proof must not include private payloads. |
+| `spx-node-002` | `recI8B8jr5v6e6rVx` | Silverton Zone | Pending Threshold | 22 | 5 | 7 | 0.04 | 0.11 | 0.00 | Pilot threshold-model value; needs more successful checks before threshold promotion. |
+
+### Rollup
+
+| Metric | Value |
+|---|---:|
+| Nodes with ledger values | 3 |
+| Total successful checks | 347 |
+| Total earned USD, operational ledger | 1463.11 |
+| Total pending payout USD, operational ledger | 1463.18 |
+| Verified paid USD | 0.00 |
+| Payout status changes allowed from validation work | 0 |
+
 ## Guardrails
 
 - No unauthorized scanning.
