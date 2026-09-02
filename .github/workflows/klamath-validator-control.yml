@@ -1,0 +1,83 @@
+name: Klamath Validator Control
+
+on:
+  push:
+    branches: ["MVPuknowme"]
+    paths:
+      - ".github/workflows/klamath-validator-control.yml"
+      - "configs/klamath-validator-control.v1.json"
+      - "scripts/validate-power-mesh-fixture.mjs"
+      - "fixtures/skygrid-power-mesh/**"
+      - "schemas/skygrid-power-mesh-telemetry.schema.json"
+  schedule:
+    - cron: "1 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: klamath-validator-control
+  cancel-in-progress: false
+
+env:
+  CONTROL_TIMEZONE: America/Los_Angeles
+
+jobs:
+  klamath-safe-validation:
+    name: Klamath safe validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check daily control window
+        id: window
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "Manual/push proof run authorized by repository event."
+            exit 0
+          fi
+
+          LOCAL_HHMM=$(TZ="$CONTROL_TIMEZONE" date +%H%M)
+          echo "Pacific local time: $LOCAL_HHMM"
+
+          if [[ "$LOCAL_HHMM" > "0000" && "$LOCAL_HHMM" < "0800" ]]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "Inside Klamath control window 00:01-08:00."
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "Outside Klamath control window; no validation started."
+          fi
+
+      - name: Checkout
+        if: steps.window.outputs.run == 'true'
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        if: steps.window.outputs.run == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+
+      - name: Run Klamath telemetry validator
+        if: steps.window.outputs.run == 'true'
+        run: node scripts/validate-power-mesh-fixture.mjs
+
+      - name: Record proof summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Klamath Validator Control"
+            echo "- Node: klamath-falls-core"
+            echo "- Mode: safe_validation_work"
+            echo "- Live execution: false"
+            echo "- Control timezone: America/Los_Angeles"
+            echo "- Daily window: 00:01-08:00"
+            echo "- Event: ${{ github.event_name }}"
+            echo "- Window authorized: ${{ steps.window.outputs.run }}"
+            echo "- UTC timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "- Revenue/payout promotion: disabled"
+          } >> "$GITHUB_STEP_SUMMARY"
