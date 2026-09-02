@@ -46,6 +46,14 @@ test("estimated revenue is excluded from verified income", () => {
   assert.equal(report.totals.net_verified_income_usd, 0);
 });
 
+test("zero-value entries are accepted for safe sample ledgers", () => {
+  const normalized = validateLedgerEntry(
+    entry({ evidence_state: "unverified", evidence_refs: [], amount_usd: 0 })
+  );
+
+  assert.equal(normalized.amount_usd, 0);
+});
+
 test("verified entries require evidence references", () => {
   assert.throws(
     () => validateLedgerEntry(entry({ evidence_refs: [] })),
