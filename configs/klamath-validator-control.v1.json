@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "control_id": "klamath-validator-daily-window-v1",
   "node_id": "klamath-falls-core",
   "record_id": "rec454piNH86zxcy2",
@@ -13,9 +13,28 @@
     "off_at": "08:00",
     "window_semantics": "Run validation work at hourly checkpoints beginning 00:01; no new validation run starts at or after 08:00 local time."
   },
+  "pnpk_gate": {
+    "enabled": true,
+    "required_before_validator": true,
+    "fail_closed": true,
+    "path": "bridge/skygrid-emergency-onramp.pnpk",
+    "command": "node scripts/validate-pnpk.mjs",
+    "override_allowed": false,
+    "required_mode": "controlled_pilot",
+    "required_sentinel": "fail_closed",
+    "blocked_authorities": [
+      "payment_execution",
+      "device_activation",
+      "production_failover",
+      "private_data_movement",
+      "wallet_signing",
+      "transaction_broadcast"
+    ]
+  },
   "validator": {
     "command": "node scripts/validate-power-mesh-fixture.mjs",
     "owned_targets_only": true,
+    "requires_pnpk_pass": true,
     "targets": [
       "fixtures/skygrid-power-mesh/kfalls-node-001.telemetry.json",
       "schemas/skygrid-power-mesh-telemetry.schema.json"
@@ -28,6 +47,8 @@
     "validation_output_is_revenue_evidence": false
   },
   "safety": [
+    "PNPK must pass before Klamath validation starts.",
+    "PNPK failures fail closed and block the validator run.",
     "No unauthorized scanning or traffic routing.",
     "No private user data movement.",
     "No wallet signing or transaction broadcast.",
