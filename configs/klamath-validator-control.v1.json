@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "control_id": "klamath-validator-daily-window-v1",
+  "node_id": "klamath-falls-core",
+  "record_id": "rec454piNH86zxcy2",
+  "role": "west_resilience_anchor",
+  "mode": "safe_validation_work",
+  "live_execution": false,
+  "timezone": "America/Los_Angeles",
+  "schedule": {
+    "frequency": "daily",
+    "on_at": "00:01",
+    "off_at": "08:00",
+    "window_semantics": "Run validation work at hourly checkpoints beginning 00:01; no new validation run starts at or after 08:00 local time."
+  },
+  "validator": {
+    "command": "node scripts/validate-power-mesh-fixture.mjs",
+    "owned_targets_only": true,
+    "targets": [
+      "fixtures/skygrid-power-mesh/kfalls-node-001.telemetry.json",
+      "schemas/skygrid-power-mesh-telemetry.schema.json"
+    ]
+  },
+  "accounting_guardrails": {
+    "promote_revenue": false,
+    "promote_payout_status": false,
+    "current_financial_status": "Needs Review",
+    "validation_output_is_revenue_evidence": false
+  },
+  "safety": [
+    "No unauthorized scanning or traffic routing.",
+    "No private user data movement.",
+    "No wallet signing or transaction broadcast.",
+    "No payout execution.",
+    "No production failover activation.",
+    "Log validation proof before any operational promotion."
+  ]
+}
