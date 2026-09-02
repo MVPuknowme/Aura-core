@@ -115,6 +115,106 @@ function New-AuraCloudShellHandoff {
     return $scriptPath
 }
 
+function New-AuraBitGoCloudShellHandoff {
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [string]$RepositoryRoot,
+        [string]$BitGoRepository = 'https://github.com/BitGo/bitgod.git',
+        [string]$HostAddress = '0.0.0.0',
+        [ValidateRange(1, 65535)]
+        [int]$Port = 3000
+    )
+
+    $root = Resolve-AuraRepositoryRoot -RepositoryRoot $RepositoryRoot
+    $outDir = Join-Path $root "artifacts\aws\cloudshell"
+    New-Item -ItemType Directory -Force -Path $outDir | Out-Null
+
+    $scriptPath = Join-Path $outDir "bitgod-cloudshell-preview.ps1"
+
+    $escapedRepo = $BitGoRepository.Replace("'", "''")
+    $escapedHost = $HostAddress.Replace("'", "''")
+
+    $lines = @(
+'$ErrorActionPreference = ''Stop''',
+'',
+'Write-Host ''AURA / BitGo PowerShell Cloud Shell preview'' -ForegroundColor Cyan',
+'Write-Host ''-------------------------------------------''',
+'',
+("`$BitGoRepo = if (`$env:BITGOD_REPO) { `$env:BITGOD_REPO } else { '{0}' }" -f $escapedRepo),
+("`$BitGoHost = if (`$env:BITGOD_HOST) { `$env:BITGOD_HOST } else { '{0}' }" -f $escapedHost),
+("`$BitGoPort = if (`$env:BITGOD_PORT) { [int]`$env:BITGOD_PORT } else { {0} }" -f $Port),
+'$AllowPublicBind = $env:BITGOD_ALLOW_PUBLIC_BIND -eq ''true''',
+'$AuthMode = if ($env:BITGOD_AUTH_MODE) { $env:BITGOD_AUTH_MODE } else { ''none'' }',
+'',
+'if ($BitGoHost -eq ''0.0.0.0'' -and -not $AllowPublicBind) {',
+'    throw ''Refusing 0.0.0.0 bind. Set BITGOD_ALLOW_PUBLIC_BIND=true only after network access controls are in place.''',
+'}',
+'',
+'if ($BitGoHost -eq ''0.0.0.0'' -and $AuthMode -eq ''none'') {',
+'    throw ''Refusing public bind without an explicit authentication mode. Set BITGOD_AUTH_MODE to the reviewed mode.''',
+'}',
+'',
+'Write-Host (''Repository: {0}'' -f $BitGoRepo)',
+'Write-Host (''Host:       {0}'' -f $BitGoHost)',
+'Write-Host (''Port:       {0}'' -f $BitGoPort)',
+'Write-Host (''Auth mode:  {0}'' -f $AuthMode)',
+'',
+'$Workspace = Join-Path $HOME ''bitgod''',
+'if (Test-Path -LiteralPath (Join-Path $Workspace ''.git'')) {',
+'    Set-Location $Workspace',
+'    git fetch --all --prune',
+'    git pull --ff-only',
+'} else {',
+'    Set-Location $HOME',
+'    git clone $BitGoRepo bitgod',
+'    Set-Location $Workspace',
+'}',
+'',
+'if (-not (Test-Path -LiteralPath ''.\package.json'')) {',
+'    throw ''package.json not found after clone; refusing to continue.''',
+'}',
+'',
+'$Package = Get-Content -LiteralPath ''.\package.json'' -Raw | ConvertFrom-Json',
+'',
+'npm install',
+'npm run',
+'',
+'if ($Package.scripts.PSObject.Properties.Name -contains ''build'') {',
+'    npm run build',
+'} else {',
+'    Write-Host ''No build script declared; skipping npm run build.'' -ForegroundColor Yellow',
+'}',
+'',
+'npm install -g .',
+'',
+'if (-not ($Package.scripts.PSObject.Properties.Name -contains ''start'')) {',
+'    throw ''No npm start script declared; install completed but service was not started.''',
+'}',
+'',
+'$env:HOST = $BitGoHost',
+'$env:PORT = [string]$BitGoPort',
+'',
+'Write-Host ''Starting reviewed package with HOST/PORT environment variables.'' -ForegroundColor Yellow',
+'Write-Host ''Do not load signing keys or seed phrases into shell history or source files.'' -ForegroundColor Yellow',
+'npm start'
+    )
+
+    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllLines($scriptPath, [string[]]$lines, $utf8NoBom)
+
+    Write-Host ""
+    Write-Host "AURA BITGO CLOUDSHELL HANDOFF" -ForegroundColor Cyan
+    Write-Host "-----------------------------"
+    Write-Host ("Repository root: {0}" -f $root)
+    Write-Host ("Script: {0}" -f $scriptPath)
+    Write-Host ("Requested host: {0}:{1}" -f $HostAddress, $Port)
+    Write-Host "Public bind requires BITGOD_ALLOW_PUBLIC_BIND=true and an explicit BITGOD_AUTH_MODE." -ForegroundColor Yellow
+    Write-Host ""
+
+    return $scriptPath
+}
+
 function Show-AuraCloudShellStatus {
     [CmdletBinding()]
     param(
@@ -123,16 +223,19 @@ function Show-AuraCloudShellStatus {
 
     $root = Resolve-AuraRepositoryRoot -RepositoryRoot $RepositoryRoot
     $scriptPath = Join-Path $root "artifacts\aws\cloudshell\aura-cloudshell-bootstrap.sh"
+    $bitGoScriptPath = Join-Path $root "artifacts\aws\cloudshell\bitgod-cloudshell-preview.ps1"
 
     Write-Host ""
     Write-Host "AURA CLOUDSHELL STATUS" -ForegroundColor Cyan
     Write-Host "----------------------"
     Write-Host ("Repository root: {0}" -f $root)
     Write-Host ("Bootstrap exists: {0}" -f (Test-Path -LiteralPath $scriptPath))
+    Write-Host ("BitGo preview exists: {0}" -f (Test-Path -LiteralPath $bitGoScriptPath))
     Write-Host "AWS credentials stored locally: false"
     Write-Host "OpenAI required: false"
     Write-Host "Recommended mode: CloudShell handoff"
     Write-Host "IAM provisioning included: false"
     Write-Host "Execution authority: none"
+    Write-Host "BitGo public bind: guarded"
     Write-Host ""
 }
