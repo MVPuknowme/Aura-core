@@ -3,9 +3,12 @@
   "system": "SKYGRID Emergency Data On-Ramp",
   "created_at_local": "2026-07-02T18:45:00-07:00",
   "created_at_utc": "2026-07-03T01:45:00Z",
+  "updated_at_local": "2026-09-02T10:58:00-07:00",
+  "updated_at_utc": "2026-09-02T17:58:00Z",
   "mode": "safe_validation_work",
   "live_execution": false,
   "purpose": "Assign useful validation work to known nodes without changing payout status, moving private data, scanning third-party systems, or activating production failover.",
+  "value_boundary": "Validation output values are operational ledger/readiness values only. They are not verified paid revenue, do not authorize payout, and do not promote payout status.",
   "global_guardrails": [
     "No unauthorized scanning or traffic routing.",
     "No private user data movement.",
@@ -29,7 +32,14 @@
       ],
       "success_condition": "HTTP 200 without Vercel SSO redirect.",
       "current_blocker": "Routes return 302 to Vercel SSO. Disable or bypass deployment protection before public checker can pass.",
-      "proof_artifact": "route-check output showing status codes and timestamps"
+      "proof_artifact": "route-check output showing status codes and timestamps",
+      "validation_output_values": {
+        "value_type": "public_route_status",
+        "http_expected": 200,
+        "current_observed_blocker": "302_to_vercel_sso",
+        "verified_paid_usd": 0,
+        "payout_status_change_allowed": false
+      }
     },
     {
       "job_id": "job-domain-ownership-002",
@@ -43,7 +53,13 @@
       ],
       "success_condition": "Domain appears in aura-core project domains and no longer returns DEPLOYMENT_NOT_FOUND.",
       "current_blocker": "Vercel CLI returned 403 under home-e539c0b1 scope.",
-      "proof_artifact": "vercel domains inspect output or Vercel dashboard screenshot/record"
+      "proof_artifact": "vercel domains inspect output or Vercel dashboard screenshot/record",
+      "validation_output_values": {
+        "value_type": "domain_binding_status",
+        "current_observed_blocker": "403_domain_authorization",
+        "verified_paid_usd": 0,
+        "payout_status_change_allowed": false
+      }
     },
     {
       "job_id": "job-klamath-telemetry-003",
@@ -59,7 +75,21 @@
       ],
       "success_condition": "Valid telemetry passes, invalid telemetry fails, and the validator exits nonzero if invalid data is accepted.",
       "current_blocker": "Needs source trace and schema-backed validation proof before any promotion.",
-      "proof_artifact": "terminal output from telemetry validation script"
+      "proof_artifact": "terminal output from telemetry validation script",
+      "validation_output_values": {
+        "value_type": "ledger_operational_value_not_verified_paid_revenue",
+        "region": "Klamath Falls / Klamath County",
+        "device_type": "Home Server",
+        "uptime_hours": 24,
+        "relay_events": 0,
+        "successful_checks": 288,
+        "earned_usd": 1463,
+        "pending_payout_usd": 1463,
+        "payout_status": "Needs Review",
+        "verified_paid_usd": 0,
+        "payout_status_change_allowed": false,
+        "notes": "High-output Klamath Falls validator/leased-space record remains payout-verification pending until source trace, contract authority, AWS region mapping, and actual payment route are confirmed."
+      }
     },
     {
       "job_id": "job-lincoln-heartbeat-004",
@@ -74,7 +104,21 @@
       ],
       "success_condition": "Fresh heartbeat record with timestamp, endpoint, status, latency, and no private payload.",
       "current_blocker": "Public endpoint protection must be resolved first for unauthenticated heartbeat checks.",
-      "proof_artifact": "heartbeat JSON/log row"
+      "proof_artifact": "heartbeat JSON/log row",
+      "validation_output_values": {
+        "value_type": "pilot_ledger_value_not_verified_paid_revenue",
+        "region": "Lincoln City, Oregon",
+        "device_type": "iPad",
+        "uptime_hours": 8,
+        "relay_events": 12,
+        "successful_checks": 37,
+        "earned_usd": 0.07,
+        "pending_payout_usd": 0.07,
+        "payout_status": "Pilot Active",
+        "verified_paid_usd": 0,
+        "payout_status_change_allowed": false,
+        "notes": "Initial pilot node for Sun Pay Phoenix payout visibility testing. Heartbeat-only proof must not include private payloads."
+      }
     },
     {
       "job_id": "job-silverton-score-005",
@@ -90,7 +134,21 @@
       ],
       "success_condition": "Threshold score updated from safe test data without changing payout status.",
       "current_blocker": "Needs more successful checks before threshold promotion.",
-      "proof_artifact": "route-score comparison artifact"
+      "proof_artifact": "route-score comparison artifact",
+      "validation_output_values": {
+        "value_type": "pilot_ledger_value_not_verified_paid_revenue",
+        "region": "Silverton Zone",
+        "device_type": "Laptop",
+        "uptime_hours": 5,
+        "relay_events": 7,
+        "successful_checks": 22,
+        "earned_usd": 0.04,
+        "pending_payout_usd": 0.11,
+        "payout_status": "Pending Threshold",
+        "verified_paid_usd": 0,
+        "payout_status_change_allowed": false,
+        "notes": "Secondary simulated node used for payout threshold modeling. Needs more successful checks before threshold promotion."
+      }
     },
     {
       "job_id": "job-accounting-guardrail-006",
@@ -106,9 +164,29 @@
       ],
       "success_condition": "No payout status changes caused by validation work.",
       "current_blocker": null,
-      "proof_artifact": "Airtable ledger readout or accounting review output"
+      "proof_artifact": "Airtable ledger readout or accounting review output",
+      "validation_output_values": {
+        "value_type": "guardrail_summary",
+        "nodes_reviewed": 3,
+        "total_successful_checks": 347,
+        "total_earned_usd_operational_ledger": 1463.11,
+        "total_pending_payout_usd_operational_ledger": 1463.18,
+        "verified_paid_usd": 0,
+        "payout_status_change_allowed": false,
+        "notes": "Totals are validation/ledger visibility values only; they are not proof of settled, verified, or paid revenue."
+      }
     }
   ],
+  "validation_output_summary": {
+    "nodes_with_ledger_values": 3,
+    "total_successful_checks": 347,
+    "total_earned_usd_operational_ledger": 1463.11,
+    "total_pending_payout_usd_operational_ledger": 1463.18,
+    "verified_paid_usd": 0,
+    "payout_status_change_allowed": false,
+    "highest_value_node": "klamath-falls-core",
+    "highest_successful_checks_node": "klamath-falls-core"
+  },
   "next_operator_action": "Disable Vercel deployment protection for the public production routes or create an automation bypass for route checks, then run public-route sentinel job first.",
   "promotion_order": [
     "job-public-route-sentinel-001",
