@@ -19,6 +19,7 @@
     { "source": "/rates", "destination": "/api/runtime" },
     { "source": "/base", "destination": "/api/runtime" },
     { "source": "/pay", "destination": "/api/runtime" },
+    { "source": "/make.pay", "destination": "/api/make/pay" },
     { "source": "/lease", "destination": "/api/runtime" },
     { "source": "/articles/skygrid-dispatcher-public-demo", "destination": "/api/skygrid-dispatcher-public-demo" },
     { "source": "/dashboard/command-center", "destination": "/api/runtime" },
