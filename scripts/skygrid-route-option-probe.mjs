@@ -9,7 +9,7 @@ const defaults = {
 }[scenario] ?? { primary: "healthy", aws: "healthy", local: "standby" };
 
 const routes = [
-  { id: "primary-vercel-onramp", status: defaults.primary, score: 100 },
+  { id: "primary-cloudflare-onramp", status: defaults.primary, score: 100 },
   { id: "aws-emergency-onramp", status: defaults.aws, score: 95 },
   { id: "local-worker-fallback", status: defaults.local, score: 80 },
   { id: "safe-queue-preserve", status: "preserve", score: 10 }
@@ -22,7 +22,7 @@ const selectable = routes
 const selected = selectable[0] ?? routes.find(r => r.id === "safe-queue-preserve");
 
 const expected = {
-  primary: "primary-vercel-onramp",
+  primary: "primary-cloudflare-onramp",
   local: "local-worker-fallback",
   queue: "safe-queue-preserve"
 }[scenario];
