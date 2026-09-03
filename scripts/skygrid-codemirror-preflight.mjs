@@ -1,5 +1,7 @@
 import { createHash } from "node:crypto";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 export const PREFLIGHT_SCHEMA = "aura.deploy.intent.v1";
 
@@ -205,4 +207,35 @@ export function evaluateCodeMirrorPreflight(intent, { now = () => new Date().toI
       transport_publish_allowed: false
     }
   };
+}
+
+export async function runCodeMirrorPreflightFile(
+  intentPath,
+  { now = () => new Date().toISOString() } = {}
+) {
+  if (typeof intentPath !== "string" || intentPath.trim().length === 0) {
+    return failClosed("intent_file_invalid");
+  }
+
+  try {
+    const raw = await readFile(intentPath, "utf8");
+    const intent = JSON.parse(raw);
+    return evaluateCodeMirrorPreflight(intent, { now });
+  } catch {
+    return failClosed("intent_file_invalid");
+  }
+}
+
+async function main() {
+  const intentPath = process.argv[2];
+  const result = await runCodeMirrorPreflightFile(intentPath);
+  console.log(JSON.stringify(result, null, 2));
+  process.exitCode = result.ok ? 0 : 1;
+}
+
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href
+) {
+  await main();
 }
