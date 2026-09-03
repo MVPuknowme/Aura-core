@@ -41,7 +41,7 @@ export default function handler(req, res) {
     route: "/api/highway/status",
     status: "online",
     ready_state: "ramp_proof_ready",
-    runtime: "vercel-api",
+    runtime: "skygrid-api",
     mode: "controlled_pilot",
     sentinel: "fail_closed",
     policy: {
