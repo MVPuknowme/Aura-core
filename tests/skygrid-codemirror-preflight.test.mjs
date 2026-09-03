@@ -1,9 +1,13 @@
 import assert from "node:assert/strict";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import test from "node:test";
 
 import {
   PREFLIGHT_SCHEMA,
-  evaluateCodeMirrorPreflight
+  evaluateCodeMirrorPreflight,
+  runCodeMirrorPreflightFile
 } from "../scripts/skygrid-codemirror-preflight.mjs";
 
 const NOW = "2026-09-03T06:15:00.000Z";
@@ -134,4 +138,21 @@ test("preflight never accepts deploy as an executable action", () => {
   assert.equal(result.receipt.reason, "preflight_action_not_allowed");
   assert.equal(result.receipt.execution_allowed, false);
   assert.equal(result.receipt.deployment_authorized, false);
+});
+
+test("runs the same fail-closed preflight contract from an intent JSON file", async () => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), "aura-codemirror-preflight-"));
+  const intentPath = path.join(directory, "intent.json");
+
+  try {
+    await writeFile(intentPath, JSON.stringify(validIntent()), "utf8");
+    const result = await runCodeMirrorPreflightFile(intentPath, { now: () => NOW });
+
+    assert.equal(result.ok, true);
+    assert.equal(result.receipt.decision, "preflight_verified");
+    assert.equal(result.receipt.execution_allowed, false);
+    assert.equal(result.receipt.deployment_authorized, false);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
 });
