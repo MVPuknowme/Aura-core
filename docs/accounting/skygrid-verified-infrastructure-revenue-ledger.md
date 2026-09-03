@@ -226,6 +226,23 @@ A `realized` income record without settlement evidence is rejected and contribut
 
 This deliberately favors understatement over unsupported revenue recognition.
 
+## HRJ=2 philanthropic designation
+
+`hrj=2` is designation-only accounting metadata. It earmarks 100% of positive evidence-backed net realized income for philanthropic debt-relief purposes.
+
+The derived amount is:
+
+```text
+eligible_net_usd = max(net_realized_income_usd, 0)
+hrj2_earmarked_usd = eligible_net_usd
+```
+
+The designation does not create a beneficiary claim, legal or payment obligation, lien, payment instruction, wallet-signing authority, transaction-broadcast authority, custody authority, beneficiary-selection authority, production-failover authority, or automatic disbursement.
+
+`designated` does not mean `paid` or `settled`, and the designation receipt does not prove that a charitable payment occurred or that a debt was discharged.
+
+Because `hrj=2` derives only from net realized income, projected, contracted, accrued, unrealized, unverified, subscription run-rate, lease contract-value, validator-estimate, and unsupported valuation fields never enter the designated amount until qualifying settlement evidence independently supports realized income.
+
 ## Verification
 
 Run:
