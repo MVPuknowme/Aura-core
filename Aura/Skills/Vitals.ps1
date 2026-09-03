@@ -15,7 +15,7 @@ function Invoke-AuraVitals {
     if ($dirty) {
         Write-Host "Git State:    Changes present" -ForegroundColor Yellow
     } else {
-        Write-Host "Git State:    Clean" -ForegroundColor Green
+        Write-Host "Git State:    active" -ForegroundColor Green
     }
 
     $proofPath = "E:\Aura-core\artifacts\training"
