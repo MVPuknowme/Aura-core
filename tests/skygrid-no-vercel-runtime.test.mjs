@@ -28,3 +28,30 @@ test('canonical SKYGRID policy does not allow Vercel as a runtime or ramp', () =
   assert.notEqual(policy.aura_core_ai_switch?.selected_ramp_ref, 'platforms.vercel.active_ramp_policy');
   assert.equal(String(policy.aura_core_ai_switch?.purpose || '').toLowerCase().includes('vercel'), false);
 });
+
+test('top-level Vercel deployment entry points are removed', () => {
+  assert.equal(fs.existsSync(path.join(root, 'vercel.json')), false);
+  assert.equal(fs.existsSync(path.join(root, 'scripts', 'vercel-build.mjs')), false);
+
+  const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+  assert.equal(Object.hasOwn(pkg.scripts || {}, 'operator:vercel-build'), false);
+  for (const command of Object.values(pkg.scripts || {})) {
+    assert.equal(String(command).includes('--vercel'), false);
+  }
+});
+
+test('active API runtime identities are provider-neutral', () => {
+  const activeFiles = [
+    'api/health.js',
+    'api/skygrid/helm.js',
+    'api/skygrid/status.js',
+    'api/highway/status.js',
+    'api/skygrid/provenance.js'
+  ];
+
+  for (const rel of activeFiles) {
+    const source = fs.readFileSync(path.join(root, rel), 'utf8').toLowerCase();
+    assert.equal(source.includes('runtime: "vercel-api"'), false, `${rel} still reports vercel-api`);
+    assert.equal(source.includes("runtime: 'vercel-api'"), false, `${rel} still reports vercel-api`);
+  }
+});
