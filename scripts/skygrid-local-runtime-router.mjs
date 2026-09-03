@@ -1,10 +1,8 @@
 import runtimeHandler from "../api/runtime.mjs";
 import aerodromeWalletHandler from "../api/aerodrome/wallet.mjs";
-import dualLaneWalletHandler from "../api/wallet/dual-lane.mjs";
 
 const dedicatedRoutes = new Map([
-  ["/api/aerodrome/wallet", aerodromeWalletHandler],
-  ["/api/wallet/dual-lane", dualLaneWalletHandler]
+  ["/api/aerodrome/wallet", aerodromeWalletHandler]
 ]);
 
 function requestPath(req) {
