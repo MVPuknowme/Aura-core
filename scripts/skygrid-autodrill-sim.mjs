@@ -32,7 +32,7 @@ const simulations = [
     expected_ok: true,
     envelope: {
       route_type: "autodrill",
-      requested_ramp: "vercel",
+      requested_ramp: "aws_lambda",
       requested_node: "edge",
       production_failover_requested: false,
       wallet_signing_requested: false,
@@ -45,7 +45,7 @@ const simulations = [
     expected_ok: true,
     envelope: {
       route_type: "capacity_lease",
-      requested_ramp: "vercel",
+      requested_ramp: "cloudflare_worker",
       requested_node: "home"
     }
   },

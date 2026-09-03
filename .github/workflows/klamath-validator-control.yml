@@ -35,44 +35,31 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - name: Check daily control window
-        id: window
+      - name: Confirm 100 percent validator availability target
+        id: availability
         shell: bash
         run: |
-          if [ "${{ github.event_name }}" != "schedule" ]; then
-            echo "run=true" >> "$GITHUB_OUTPUT"
-            echo "Manual/push proof run authorized by repository event."
-            exit 0
-          fi
-
-          LOCAL_HHMM=$(TZ="$CONTROL_TIMEZONE" date +%H%M)
-          echo "Pacific local time: $LOCAL_HHMM"
-
-          if [[ "$LOCAL_HHMM" > "0000" && "$LOCAL_HHMM" < "0800" ]]; then
-            echo "run=true" >> "$GITHUB_OUTPUT"
-            echo "Inside Klamath control window 00:01-08:00."
-          else
-            echo "run=false" >> "$GITHUB_OUTPUT"
-            echo "Outside Klamath control window; no validation started."
-          fi
+          echo "run=true" >> "$GITHUB_OUTPUT"
+          echo "Validator proof work eligible at this checkpoint; availability target is 100%."
+          echo "Financial, signing, private-data, payout, and production-failover authorities remain blocked."
 
       - name: Checkout
-        if: steps.window.outputs.run == 'true'
+        if: steps.availability.outputs.run == 'true'
         uses: actions/checkout@v4
 
       - name: Setup Node.js
-        if: steps.window.outputs.run == 'true'
+        if: steps.availability.outputs.run == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: "24.x"
 
       - name: PNPK pre-flight gate
         id: pnpk
-        if: steps.window.outputs.run == 'true'
+        if: steps.availability.outputs.run == 'true'
         run: node scripts/validate-pnpk.mjs
 
       - name: Run Klamath telemetry validator
-        if: steps.window.outputs.run == 'true' && steps.pnpk.outcome == 'success'
+        if: steps.availability.outputs.run == 'true' && steps.pnpk.outcome == 'success'
         run: node scripts/validate-power-mesh-fixture.mjs
 
       - name: Record proof summary
@@ -84,13 +71,15 @@ jobs:
             echo "- Node: klamath-falls-core"
             echo "- Mode: safe_validation_work"
             echo "- Live execution: false"
+            echo "- Availability target: 100%"
+            echo "- Schedule: hourly / 24x7 eligible"
             echo "- Control timezone: America/Los_Angeles"
-            echo "- Daily window: 00:01-08:00"
             echo "- Event: ${{ github.event_name }}"
-            echo "- Window authorized: ${{ steps.window.outputs.run }}"
+            echo "- Validator eligible: ${{ steps.availability.outputs.run }}"
             echo "- PNPK gate: ${{ steps.pnpk.outcome }}"
             echo "- PNPK path: bridge/skygrid-emergency-onramp.pnpk"
             echo "- PNPK semantics: fail_closed"
+            echo "- Trust-interest guard: asset movement, wallet signing, transaction broadcast, payment execution, private-data movement, revenue promotion, and production failover blocked"
             echo "- UTC timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
             echo "- Revenue/payout promotion: disabled"
           } >> "$GITHUB_STEP_SUMMARY"

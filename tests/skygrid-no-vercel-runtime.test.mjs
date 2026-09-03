@@ -5,9 +5,14 @@ import path from 'node:path';
 
 const root = path.resolve(import.meta.dirname, '..');
 const pnpkPath = path.join(root, 'bridge', 'skygrid-emergency-onramp.pnpk');
+const manifestPath = path.join(root, 'config', 'skygrid-route-manifest.json');
 
 function loadPolicy() {
   return JSON.parse(fs.readFileSync(pnpkPath, 'utf8'));
+}
+
+function loadManifest() {
+  return JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 }
 
 test('canonical SKYGRID policy does not allow Vercel as a runtime or ramp', () => {
@@ -54,4 +59,21 @@ test('active API runtime identities are provider-neutral', () => {
     assert.equal(source.includes('runtime: "vercel-api"'), false, `${rel} still reports vercel-api`);
     assert.equal(source.includes("runtime: 'vercel-api'"), false, `${rel} still reports vercel-api`);
   }
+});
+
+test('route manifest and sync verifier are provider-neutral after Vercel removal', () => {
+  const manifest = loadManifest();
+  assert.equal(Object.hasOwn(manifest.runtimes || {}, 'vercel'), false, 'manifest.runtimes.vercel must be removed');
+
+  for (const route of manifest.routes || []) {
+    assert.equal(String(route.owner || '').toLowerCase().includes('vercel'), false, `${route.id} still has Vercel owner`);
+  }
+
+  const verifier = fs.readFileSync(path.join(root, 'scripts', 'verify-skygrid-manifest-sync.mjs'), 'utf8');
+  assert.equal(verifier.includes('vercel.json'), false, 'manifest sync verifier must not require removed vercel.json');
+});
+
+test('route-option proof metadata does not select removed Vercel runtime', () => {
+  const routeProbe = fs.readFileSync(path.join(root, 'scripts', 'skygrid-route-option-probe.mjs'), 'utf8').toLowerCase();
+  assert.equal(routeProbe.includes('primary-vercel-onramp'), false, 'route probe must not select removed Vercel runtime');
 });

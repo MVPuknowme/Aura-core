@@ -1,17 +1,19 @@
 {
-  "schema_version": "1.1",
-  "control_id": "klamath-validator-daily-window-v1",
+  "schema_version": "1.2",
+  "control_id": "klamath-validator-100pct-v1",
   "node_id": "klamath-falls-core",
   "record_id": "rec454piNH86zxcy2",
   "role": "west_resilience_anchor",
   "mode": "safe_validation_work",
   "live_execution": false,
+  "availability_target_percent": 100,
   "timezone": "America/Los_Angeles",
   "schedule": {
-    "frequency": "daily",
+    "frequency": "hourly",
+    "coverage": "24x7",
     "on_at": "00:01",
-    "off_at": "08:00",
-    "window_semantics": "Run validation work at hourly checkpoints beginning 00:01; no new validation run starts at or after 08:00 local time."
+    "off_at": null,
+    "window_semantics": "Validator proof work is eligible at every hourly checkpoint. There is no daily stop window; PNPK must pass before every validator run."
   },
   "pnpk_gate": {
     "enabled": true,
@@ -40,6 +42,18 @@
       "schemas/skygrid-power-mesh-telemetry.schema.json"
     ]
   },
+  "trust_interest_protection": {
+    "enabled": true,
+    "purpose": "Preserve trust-designated interests by preventing validator operation from acquiring financial, signing, payout, private-data, or production-failover authority.",
+    "asset_movement_allowed": false,
+    "wallet_signing_allowed": false,
+    "transaction_broadcast_allowed": false,
+    "payment_execution_allowed": false,
+    "revenue_promotion_allowed": false,
+    "private_data_movement_allowed": false,
+    "production_failover_allowed": false,
+    "receipt_required": true
+  },
   "accounting_guardrails": {
     "promote_revenue": false,
     "promote_payout_status": false,
@@ -49,6 +63,7 @@
   "safety": [
     "PNPK must pass before Klamath validation starts.",
     "PNPK failures fail closed and block the validator run.",
+    "100% availability target applies to validator proof-work eligibility, not asset or production-failover authority.",
     "No unauthorized scanning or traffic routing.",
     "No private user data movement.",
     "No wallet signing or transaction broadcast.",
