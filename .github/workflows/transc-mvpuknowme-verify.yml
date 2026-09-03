@@ -1,0 +1,35 @@
+name: transc MVPuknowme verification
+
+on:
+  push:
+    branches:
+      - feat/transc-mvpuknowme-allbridge
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Activate pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.23.0 --activate
+
+      - name: Frozen install
+        run: pnpm install --frozen-lockfile
+
+      - name: Full Aura-core build
+        run: pnpm run build
+
+      - name: Verify make target wiring
+        run: make -n transc.MVPuknowme ARGS="--source-chain=ETH --source-token=USDC --destination-chain=POL --destination-token=USDC --amount=1 --from=0x1 --to=0x2"
