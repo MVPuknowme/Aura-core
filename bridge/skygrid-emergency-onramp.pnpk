@@ -34,39 +34,6 @@
       "primary": true,
       "domain": "https://api.skygrid-protocol.net"
     },
-    "vercel": {
-      "enabled": true,
-      "fallback": true,
-      "runtime": "vercel-static",
-      "ramps": {
-        "aura_core_primary": {
-          "enabled": true,
-          "role": "primary_vercel_ramp",
-          "domain": "https://aura-core.vercel.app",
-          "health_route": "/api/health",
-          "static_health_route": "/health.json",
-          "postman_route": "/api/highway/postman",
-          "status": "candidate_until_health_200"
-        },
-        "aura_core_t2t5": {
-          "enabled": true,
-          "role": "secondary_vercel_ramp",
-          "domain": "https://aura-core-t2t5.vercel.app",
-          "health_route": "/api/health",
-          "static_health_route": "/health.json",
-          "postman_route": "/api/highway/postman",
-          "status": "candidate_until_health_200"
-        }
-      },
-      "active_ramp_policy": {
-        "controller": "aura_core_ai_switch",
-        "selection_mode": "health_first_fail_closed",
-        "default_ramp": "aura_core_primary",
-        "fallback_ramp": "aura_core_t2t5",
-        "activation_rule": "select the first enabled ramp returning HTTP 200 with ok=true, mode=controlled_pilot, sentinel=fail_closed",
-        "no_healthy_ramp_behavior": "fail_closed_no_route_activation"
-      }
-    },
     "aws_lambda": {
       "enabled": true,
       "role": "emergency_validation_runtime",
@@ -281,7 +248,7 @@
   },
   "aura_core_ai_switch": {
     "enabled": true,
-    "purpose": "select the active Vercel emergency data on-ramp and choose Postman/Lambda/Web3 planning path from PNPK-approved candidates, with provisional lease planning gated by end-user offered lease value decision",
+    "purpose": "select approved SKYGRID runtimes and choose Postman/Lambda/Web3 planning paths from PNPK-approved candidates, with provisional lease planning gated by end-user offered lease value decision",
     "allowed_actions": [
       "read_pnpk_ramp_registry",
       "check_ramp_health",
@@ -317,7 +284,7 @@
       "rf_control",
       "nuisance_signal_output"
     ],
-    "selected_ramp_ref": "platforms.vercel.active_ramp_policy",
+    "selected_ramp_ref": "platforms.cloudflare_worker",
     "decision_inputs": [
       "health_http_status",
       "health_ok",
@@ -419,8 +386,7 @@
     "emergency": {
       "allowed_ramps": [
         "cloudflare_worker",
-        "aws_lambda",
-        "vercel"
+        "aws_lambda"
       ],
       "allowed_nodes": [
         "validator",
@@ -432,8 +398,7 @@
     },
     "diagnostic": {
       "allowed_ramps": [
-        "postman",
-        "vercel"
+        "postman"
       ],
       "allowed_nodes": [
         "validator",
@@ -460,7 +425,6 @@
     },
     "autodrill": {
       "allowed_ramps": [
-        "vercel",
         "aws_lambda",
         "postman"
       ],
@@ -478,8 +442,7 @@
     },
     "capacity_lease": {
       "allowed_ramps": [
-        "cloudflare_worker",
-        "vercel"
+        "cloudflare_worker"
       ],
       "allowed_nodes": [
         "home",
