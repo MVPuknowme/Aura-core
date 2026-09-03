@@ -26,7 +26,7 @@
         "training:verify-receipts": "node scripts/verify-skygrid-training-receipts.mjs",
         "training:all": "pnpm run training:drill && pnpm run training:fail-closed",
         "skygrid:training": "node --import ./scripts/skygrid-training-signed-fetch.mjs scripts/skygrid-training-drill.mjs",
-        "build": "node --test tests/skygrid-operator-mode.test.mjs tests/skygrid-operator-artifact.test.mjs tests/skygrid-opensea-preflight.test.mjs && node scripts/test-runtime-security.mjs && node scripts/test-aerodrome-wallet-rpc.mjs && node scripts/test-dual-lane-wallet-rpc.mjs && node scripts/test-local-wallet-routing.mjs && node scripts/skygrid-build.mjs",
+        "build": "node --test tests/skygrid-operator-mode.test.mjs tests/skygrid-operator-artifact.test.mjs tests/skygrid-opensea-preflight.test.mjs tests/transc.MVPuknowme.test.mjs && node scripts/test-runtime-security.mjs && node scripts/test-aerodrome-wallet-rpc.mjs && node scripts/test-dual-lane-wallet-rpc.mjs && node scripts/test-local-wallet-routing.mjs && node scripts/skygrid-build.mjs",
         "postbuild": "node scripts/run-pnpk-postbuild.mjs",
         "npm:env:check": "node scripts/check-npm-env-config.mjs",
         "npm:env:test": "node --test tests/npm-env-config.test.mjs",
@@ -64,9 +64,12 @@
         "postman:mock:test": "node scripts/test-postman-superhighway-contract.mjs",
         "opensea:preflight-test": "node --test tests/skygrid-opensea-preflight.test.mjs",
         "etherscan:read-test": "node --test tests/skygrid-etherscan-read.test.mjs",
-        "route:matrix:test": "node --test tests/skygrid-global-route-matrix.test.mjs tests/skygrid-global-route-matrix-api.test.mjs"
+        "route:matrix:test": "node --test tests/skygrid-global-route-matrix.test.mjs tests/skygrid-global-route-matrix-api.test.mjs",
+        "transc:MVPuknowme": "node scripts/transc.MVPuknowme.mjs",
+        "transc:MVPuknowme:test": "node --test tests/transc.MVPuknowme.test.mjs"
     },
     "dependencies": {
+        "@allbridge/bridge-core-sdk": "^3.34.0",
         "@coinbase/agentkit": "^0.10.4",
         "@modelcontextprotocol/sdk": "latest",
         "@vercel/sandbox": "^2.2.1",
