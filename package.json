@@ -9,7 +9,6 @@
         "operator:status": "node scripts/skygrid-operator-runner.mjs status",
         "operator:local": "node scripts/skygrid-operator-runner.mjs local",
         "operator:container": "node scripts/skygrid-operator-startup-check.mjs && node scripts/skygrid-operator-runner.mjs local-container",
-        "operator:vercel-build": "node scripts/skygrid-operator-preflight.mjs && node scripts/skygrid-operator-runner.mjs vercel-build",
         "operator:test": "node --test tests/skygrid-operator-mode.test.mjs",
         "operator:artifact-test": "node --test tests/skygrid-operator-artifact.test.mjs",
         "operator:startup-check": "node scripts/skygrid-operator-startup-check.mjs",
@@ -29,8 +28,6 @@
         "skygrid:training": "node --import ./scripts/skygrid-training-signed-fetch.mjs scripts/skygrid-training-drill.mjs",
         "build": "node --test tests/skygrid-operator-mode.test.mjs tests/skygrid-operator-artifact.test.mjs tests/skygrid-opensea-preflight.test.mjs && node scripts/test-runtime-security.mjs && node scripts/test-aerodrome-wallet-rpc.mjs && node scripts/test-dual-lane-wallet-rpc.mjs && node scripts/test-local-wallet-routing.mjs && node scripts/skygrid-build.mjs",
         "postbuild": "node scripts/run-pnpk-postbuild.mjs",
-        "build:xmcp": "node tools/xmcp/index.mjs build --vercel",
-        "xmcp:build": "node tools/xmcp/index.mjs build --vercel",
         "npm:env:check": "node scripts/check-npm-env-config.mjs",
         "npm:env:test": "node --test tests/npm-env-config.test.mjs",
         "aerodrome:rpc:test": "node --check api/aerodrome/wallet.mjs && node scripts/test-aerodrome-wallet-rpc.mjs",
@@ -66,7 +63,8 @@
         "postman:mock": "node scripts/postman-create-skygrid-mock.mjs",
         "postman:mock:test": "node scripts/test-postman-superhighway-contract.mjs",
         "opensea:preflight-test": "node --test tests/skygrid-opensea-preflight.test.mjs",
-        "etherscan:read-test": "node --test tests/skygrid-etherscan-read.test.mjs"
+        "etherscan:read-test": "node --test tests/skygrid-etherscan-read.test.mjs",
+        "route:matrix:test": "node --test tests/skygrid-global-route-matrix.test.mjs tests/skygrid-global-route-matrix-api.test.mjs"
     },
     "dependencies": {
         "@coinbase/agentkit": "^0.10.4",

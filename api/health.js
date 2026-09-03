@@ -42,7 +42,7 @@ export default function handler(req, res) {
     service: PRODUCT,
     status: "healthy",
     route: "/api/health",
-    runtime: "vercel-api",
+    runtime: "skygrid-api",
     mode: "controlled_pilot",
     sentinel: "fail_closed",
     policy: {

@@ -1,0 +1,19 @@
+name: SKYGRID No-Vercel Runtime
+
+on:
+  pull_request:
+    paths:
+      - 'bridge/skygrid-emergency-onramp.pnpk'
+      - 'tests/skygrid-no-vercel-runtime.test.mjs'
+      - '.github/workflows/skygrid-no-vercel-runtime.yml'
+
+jobs:
+  policy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Verify Vercel is not selectable
+        run: node --test tests/skygrid-no-vercel-runtime.test.mjs
