@@ -72,3 +72,8 @@ test('route manifest and sync verifier are provider-neutral after Vercel removal
   const verifier = fs.readFileSync(path.join(root, 'scripts', 'verify-skygrid-manifest-sync.mjs'), 'utf8');
   assert.equal(verifier.includes('vercel.json'), false, 'manifest sync verifier must not require removed vercel.json');
 });
+
+test('route-option proof metadata does not select removed Vercel runtime', () => {
+  const routeProbe = fs.readFileSync(path.join(root, 'scripts', 'skygrid-route-option-probe.mjs'), 'utf8').toLowerCase();
+  assert.equal(routeProbe.includes('primary-vercel-onramp'), false, 'route probe must not select removed Vercel runtime');
+});
