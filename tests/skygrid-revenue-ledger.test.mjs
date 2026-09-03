@@ -270,3 +270,73 @@ test("rejects invalid categories and negative amounts", () => {
   assert.ok(report.records[0].errors.includes("invalid_amount_usd"));
   assert.ok(report.records[0].errors.includes("invalid_income_category"));
 });
+
+test("earmarks 100 percent of positive evidence-backed net realized income for hrj=2", () => {
+  const report = summarizeRevenueLedger([
+    {
+      id: "service-payment-hrj2",
+      direction: "income",
+      category: "infrastructure",
+      recognition: "realized",
+      amount_usd: 200,
+      evidence: [{ type: "service_payment", reference: "payment:hrj2:1" }]
+    },
+    {
+      id: "hosting-cost-hrj2",
+      direction: "cost",
+      category: "hosting",
+      recognition: "realized",
+      amount_usd: 50,
+      evidence: [{ type: "cloud_billing", reference: "invoice:hrj2:1" }]
+    }
+  ]);
+
+  assert.deepEqual(report.philanthropic_designation, {
+    designation: "hrj=2",
+    purpose: "philanthropic_debt_relief",
+    basis: "net_realized_income",
+    allocation_percent: 100,
+    eligible_net_usd: 150,
+    earmarked_usd: 150,
+    designation_only: true,
+    payment_authority: false,
+    wallet_signing: false,
+    transaction_broadcast: false,
+    automatic_disbursement: false,
+    beneficiary_selection_authority: false
+  });
+});
+
+test("hrj=2 never designates negative net income and does not use non-realized values", () => {
+  const report = summarizeRevenueLedger([
+    {
+      id: "realized-income-small",
+      direction: "income",
+      category: "protocol",
+      recognition: "realized",
+      amount_usd: 20,
+      evidence: [{ type: "service_payment", reference: "payment:hrj2:2" }]
+    },
+    {
+      id: "realized-cost-large",
+      direction: "cost",
+      category: "network_fee",
+      recognition: "realized",
+      amount_usd: 30,
+      evidence: [{ type: "vendor_invoice", reference: "fee:hrj2:2" }]
+    },
+    {
+      id: "projection-does-not-count",
+      direction: "income",
+      category: "infrastructure",
+      recognition: "projected",
+      amount_usd: 100000
+    }
+  ]);
+
+  assert.equal(report.summary.net_realized_income_usd, -10);
+  assert.equal(report.philanthropic_designation.eligible_net_usd, 0);
+  assert.equal(report.philanthropic_designation.earmarked_usd, 0);
+  assert.equal(report.philanthropic_designation.designation_only, true);
+  assert.equal(report.philanthropic_designation.payment_authority, false);
+});
