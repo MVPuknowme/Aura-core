@@ -33,6 +33,14 @@ function withEnv(values, run) {
   }
 }
 
+const DEV_ENV = {
+  SKYGRID_RUNTIME_MODE: "local-container",
+  SKYGRID_DEV_PAYMENT_EXECUTION: "true",
+  SKYGRID_PAYMENT_PROVIDER_MODE: "test",
+  SKYGRID_OWNER_TOKEN: "owner-test-secret",
+  SKYGRID_DEV_PAYMENT_DESTINATION: "self:MVPuknowme"
+};
+
 test("GET /make.pay remains quote-only", () => {
   const result = invoke({ query: { amount: "25", currency: "USD" } });
 
@@ -47,12 +55,7 @@ test("GET /make.pay remains quote-only", () => {
 });
 
 test("POST /make.pay enables dev test execution only behind every gate", () => {
-  const result = withEnv({
-    SKYGRID_DEV_PAYMENT_EXECUTION: "true",
-    SKYGRID_PAYMENT_PROVIDER_MODE: "test",
-    SKYGRID_OWNER_TOKEN: "owner-test-secret",
-    SKYGRID_DEV_PAYMENT_DESTINATION: "self:MVPuknowme"
-  }, () => invoke({
+  const result = withEnv(DEV_ENV, () => invoke({
     method: "POST",
     query: {
       amount: "25",
@@ -83,12 +86,7 @@ test("POST /make.pay enables dev test execution only behind every gate", () => {
 });
 
 test("POST /make.pay fails closed without OWNER authentication", () => {
-  const result = withEnv({
-    SKYGRID_DEV_PAYMENT_EXECUTION: "true",
-    SKYGRID_PAYMENT_PROVIDER_MODE: "test",
-    SKYGRID_OWNER_TOKEN: "owner-test-secret",
-    SKYGRID_DEV_PAYMENT_DESTINATION: "self:MVPuknowme"
-  }, () => invoke({
+  const result = withEnv(DEV_ENV, () => invoke({
     method: "POST",
     query: { amount: "25", destination: "self:MVPuknowme" },
     headers: { "idempotency-key": "make-pay-test-002" }
@@ -100,13 +98,20 @@ test("POST /make.pay fails closed without OWNER authentication", () => {
   assert.equal(result.payload.noFundsMoved, true);
 });
 
-test("POST /make.pay rejects live provider mode and unverified destinations", () => {
-  const liveMode = withEnv({
-    SKYGRID_DEV_PAYMENT_EXECUTION: "true",
-    SKYGRID_PAYMENT_PROVIDER_MODE: "live",
-    SKYGRID_OWNER_TOKEN: "owner-test-secret",
-    SKYGRID_DEV_PAYMENT_DESTINATION: "self:MVPuknowme"
-  }, () => invoke({
+test("POST /make.pay rejects non-dev runtime, live provider mode, and unverified destinations", () => {
+  const productionRuntime = withEnv({ ...DEV_ENV, SKYGRID_RUNTIME_MODE: "vercel" }, () => invoke({
+    method: "POST",
+    query: { amount: "25", destination: "self:MVPuknowme" },
+    headers: {
+      authorization: "Bearer owner-test-secret",
+      "idempotency-key": "make-pay-test-prod"
+    }
+  }));
+  assert.equal(productionRuntime.statusCode, 503);
+  assert.equal(productionRuntime.payload.error, "dev_runtime_required");
+  assert.equal(productionRuntime.payload.paymentExecution, false);
+
+  const liveMode = withEnv({ ...DEV_ENV, SKYGRID_PAYMENT_PROVIDER_MODE: "live" }, () => invoke({
     method: "POST",
     query: { amount: "25", destination: "self:MVPuknowme" },
     headers: {
@@ -118,12 +123,7 @@ test("POST /make.pay rejects live provider mode and unverified destinations", ()
   assert.equal(liveMode.payload.error, "test_provider_mode_required");
   assert.equal(liveMode.payload.paymentExecution, false);
 
-  const wrongDestination = withEnv({
-    SKYGRID_DEV_PAYMENT_EXECUTION: "true",
-    SKYGRID_PAYMENT_PROVIDER_MODE: "test",
-    SKYGRID_OWNER_TOKEN: "owner-test-secret",
-    SKYGRID_DEV_PAYMENT_DESTINATION: "self:MVPuknowme"
-  }, () => invoke({
+  const wrongDestination = withEnv(DEV_ENV, () => invoke({
     method: "POST",
     query: { amount: "25", destination: "someone-else" },
     headers: {
@@ -137,14 +137,7 @@ test("POST /make.pay rejects live provider mode and unverified destinations", ()
 });
 
 test("POST /make.pay requires idempotency and produces a stable test receipt", () => {
-  const env = {
-    SKYGRID_DEV_PAYMENT_EXECUTION: "true",
-    SKYGRID_PAYMENT_PROVIDER_MODE: "test",
-    SKYGRID_OWNER_TOKEN: "owner-test-secret",
-    SKYGRID_DEV_PAYMENT_DESTINATION: "self:MVPuknowme"
-  };
-
-  const missing = withEnv(env, () => invoke({
+  const missing = withEnv(DEV_ENV, () => invoke({
     method: "POST",
     query: { amount: "25", destination: "self:MVPuknowme" },
     headers: { authorization: "Bearer owner-test-secret" }
@@ -152,7 +145,7 @@ test("POST /make.pay requires idempotency and produces a stable test receipt", (
   assert.equal(missing.statusCode, 400);
   assert.equal(missing.payload.error, "idempotency_key_required");
 
-  const first = withEnv(env, () => invoke({
+  const first = withEnv(DEV_ENV, () => invoke({
     method: "POST",
     query: { amount: "25", currency: "USD", destination: "self:MVPuknowme" },
     headers: {
@@ -160,7 +153,7 @@ test("POST /make.pay requires idempotency and produces a stable test receipt", (
       "idempotency-key": "stable-key"
     }
   }));
-  const second = withEnv(env, () => invoke({
+  const second = withEnv(DEV_ENV, () => invoke({
     method: "POST",
     query: { amount: "25", currency: "USD", destination: "self:MVPuknowme" },
     headers: {
