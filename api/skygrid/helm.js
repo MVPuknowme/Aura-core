@@ -40,7 +40,7 @@ export default function handler(req, res) {
     network: 'Aura-Core',
     mode: 'controlled_pilot',
     sentinel: 'fail_closed',
-    runtime: 'vercel-api',
+    runtime: 'skygrid-api',
     version: VERSION,
     advisory_only: true,
     payment_execution: false,

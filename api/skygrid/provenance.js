@@ -9,7 +9,7 @@ export default function handler(_req, res) {
     service: 'SKYGRID Provenance Mirror',
     status: 'pending_or_ready',
     mode: 'mirror',
-    runtime: 'vercel-api',
+    runtime: 'skygrid-api',
     proofWritten: false,
     operatorAssistOnly: true,
     autonomousControl: false,
