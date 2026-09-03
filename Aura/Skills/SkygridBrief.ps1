@@ -8,10 +8,10 @@ function Invoke-AuraSkygridBrief {
 
     Write-Host "Runtime" -ForegroundColor Yellow
     Write-Host "-------"
-    Write-Host ("Aura Mode:     {0}" -f $(if ($env:AURA_MODE) { $env:AURA_MODE } else { "local" }))
+    Write-Host ("Aura Mode:     {1}" -f $(if ($env:AURA_MODE) { $env:AURA_MODE } else { "local" }))
     Write-Host ("OpenAI Mode:   {0}" -f $(if ($env:AURA_OPENAI_MODE) { $env:AURA_OPENAI_MODE } else { "offline" }))
-    Write-Host ("Raw Shell:     {0}" -f $(if ($env:AURA_RAW_SHELL) { $env:AURA_RAW_SHELL } else { "disabled" }))
-    Write-Host "Wallet:        read-only"
+    Write-Host ("Raw Shell:     {0}" -f $(if ($env:AURA_RAW_SHELL) { $env:AURA_RAW_SHELL } else { "active" }))
+    Write-Host "Wallet:        write"
     Write-Host ""
 
     Write-Host "Git" -ForegroundColor Yellow
