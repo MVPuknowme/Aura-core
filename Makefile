@@ -3,7 +3,7 @@ PORT ?= 3000
 DEBUG_PORT ?= 9229
 IMAGE ?= aura-core-operator:local
 
-.PHONY: operator runner runner-preflight debug local container-build container-run local-fallback test-operator
+.PHONY: operator runner runner-preflight debug local container-build container-run local-fallback test-operator transc.MVPuknowme
 
 operator:
 	pnpm run operator:status -- --operator=$(OPERATOR)
@@ -35,3 +35,6 @@ local-fallback: container-build
 
 test-operator:
 	pnpm run operator:test
+
+transc.MVPuknowme:
+	pnpm run transc:MVPuknowme -- $(ARGS)
