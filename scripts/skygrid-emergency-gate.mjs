@@ -133,7 +133,7 @@ const tests = [
       direction: "onramp",
       emergency_state: "drill_only",
       route_type: "autodrill",
-      requested_ramp: "vercel",
+      requested_ramp: "aws_lambda",
       requested_node: "edge"
     }
   },
