@@ -7,9 +7,6 @@ import {
 } from "../config/skygrid-operator.mjs";
 
 const config = resolveOperatorConfig();
-if (config.runtimeMode !== "vercel-build") {
-  throw new Error("vercel_build_mode_required");
-}
 if (config.vercelBypass) {
   throw new Error("vercel_build_bypass_forbidden");
 }
