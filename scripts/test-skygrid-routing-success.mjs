@@ -156,3 +156,12 @@ if (summary.vercel_routed_count === 0) {
 }
 
 console.log("SKYGRID routing success test completed without hard failures.");
+
+const { spawnSync } = await import("node:child_process");
+const signerTest = spawnSync(process.execPath, ["--test", "tests/skygrid-base-signer.test.mjs"], {
+  stdio: "inherit"
+});
+
+if (signerTest.status !== 0) {
+  process.exit(signerTest.status ?? 1);
+}
