@@ -1,0 +1,101 @@
+{
+  "$schema": "https://skygrid-protocol.net/schemas/skygrid-stop-test-set.v1.json",
+  "schema_version": "1.0.0",
+  "tool": "skygrid-stop-test-set",
+  "generated_for": "MVPuknowme / SKYGRID Emergency Data On-Ramp",
+  "default_mode": "dry-run",
+  "control_plane": {
+    "source": "github",
+    "repository": "MVPuknowme/Aura-core",
+    "branch": "MVPuknowme",
+    "retained": true,
+    "control_paths": [
+      "config/skygrid-stop-test-set.v1.json",
+      "scripts/skygrid-stop-test-set.mjs",
+      "tests/skygrid-stop-test-set.test.mjs",
+      "docs/ops/skygrid-stop-test-set.md"
+    ]
+  },
+  "principles": [
+    "stop_first",
+    "local_only",
+    "no_broadcast",
+    "no_network_removal",
+    "no_device_discovery",
+    "receipt_first",
+    "fail_closed",
+    "github_control_retained"
+  ],
+  "stop_set": {
+    "status": "armed",
+    "purpose": "Stop outbound removal behavior and verify that cleanup remains locally controlled through GitHub-tracked configuration.",
+    "allowed_actions": [
+      "read_config",
+      "verify_local_receipts",
+      "write_stop_receipt",
+      "validate_blocked_actions",
+      "validate_github_control_plane"
+    ],
+    "blocked_actions": [
+      "send_to_network",
+      "broadcast_removal_payload",
+      "public_ip_scan",
+      "device_discovery",
+      "person_tracking",
+      "wifi_probe",
+      "bluetooth_probe",
+      "gps_collection",
+      "remote_delete",
+      "cloud_teardown",
+      "dns_mutation",
+      "secret_deletion",
+      "payment_rail_mutation",
+      "vercel_teardown",
+      "external_webhook"
+    ]
+  },
+  "checks": [
+    {
+      "id": "stop-set-armed",
+      "type": "assert_value",
+      "path": "stop_set.status",
+      "equals": "armed"
+    },
+    {
+      "id": "github-control-retained",
+      "type": "assert_value",
+      "path": "control_plane.retained",
+      "equals": true
+    },
+    {
+      "id": "no-network-emission",
+      "type": "assert_blocked_actions",
+      "actions": [
+        "send_to_network",
+        "broadcast_removal_payload",
+        "public_ip_scan",
+        "device_discovery",
+        "external_webhook"
+      ]
+    },
+    {
+      "id": "no-destructive-remote-removal",
+      "type": "assert_blocked_actions",
+      "actions": [
+        "remote_delete",
+        "cloud_teardown",
+        "dns_mutation",
+        "secret_deletion",
+        "payment_rail_mutation",
+        "vercel_teardown"
+      ]
+    },
+    {
+      "id": "receipt-required",
+      "type": "write_receipt",
+      "required": true
+    }
+  ],
+  "receipt_namespace": "artifacts/stop-test-set",
+  "boundary": "This stop test set records a local stop/control proof only. It does not transmit removal payloads, scan networks, delete remote resources, mutate cloud settings, or remove devices. GitHub remains the control plane for versioned operator changes."
+}
