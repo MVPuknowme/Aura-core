@@ -1,0 +1,39 @@
+name: Guarded Base Signer Validation
+
+on:
+  pull_request:
+    paths:
+      - "config/skygrid-base-signer.mjs"
+      - "src/action-providers/base-signer.ts"
+      - "src/agentkit/create-skygrid-agentkit.ts"
+      - "tests/skygrid-base-signer.test.mjs"
+      - ".github/workflows/base-signer-ci.yml"
+  push:
+    branches:
+      - MVPuknowme
+    paths:
+      - "config/skygrid-base-signer.mjs"
+      - "src/action-providers/base-signer.ts"
+      - "src/agentkit/create-skygrid-agentkit.ts"
+      - "tests/skygrid-base-signer.test.mjs"
+      - ".github/workflows/base-signer-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Run guarded Base signer tests
+        run: node --test tests/skygrid-base-signer.test.mjs
