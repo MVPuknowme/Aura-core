@@ -1,0 +1,84 @@
+{
+  "$schema": "https://skygrid-protocol.net/schemas/skygrid-removal-map.v1.json",
+  "schema_version": "1.0.0",
+  "tool": "skygrid-removal-tool",
+  "generated_for": "SKYGRID Emergency Data On-Ramp",
+  "default_mode": "dry-run",
+  "principles": [
+    "fail_closed",
+    "receipt_first",
+    "local_only",
+    "no_cloud_teardown",
+    "no_secret_deletion",
+    "explicit_apply_required"
+  ],
+  "targets": {
+    "vercel-public-runtime-edge": {
+      "description": "Remove Vercel public-route rewrites that should not own local/devcontainer route proof.",
+      "safe_default": true,
+      "operations": [
+        {
+          "type": "prune_json_array_items",
+          "path": "vercel.json",
+          "array_path": "rewrites",
+          "match_any": [
+            { "source": "/" },
+            { "source": "/health.json" },
+            { "source": "/api/highway/status" },
+            { "source": "/api/highway/postman" },
+            { "source": "/api/pay/quote" }
+          ]
+        }
+      ]
+    },
+    "vercel-smoke-bypass-secret-edge": {
+      "description": "Verify smoke tests no longer depend on Vercel automation-bypass headers.",
+      "safe_default": true,
+      "operations": [
+        {
+          "type": "assert_absent_text",
+          "path": "scripts/skygrid-ramp-smoke.sh",
+          "patterns": [
+            "VERCEL_AUTOMATION_BYPASS_SECRET",
+            "x-vercel-protection-bypass",
+            "x-vercel-set-bypass-cookie"
+          ]
+        }
+      ]
+    },
+    "remote-public-ci-edge": {
+      "description": "Verify CI route checks stay local/devcontainer-first unless an operator explicitly opts into public domains.",
+      "safe_default": true,
+      "operations": [
+        {
+          "type": "assert_text",
+          "path": ".github/workflows/skygrid-ramp-smoke.yml",
+          "patterns": [
+            "SKYGRID_CHECK_REMOTE_PUBLIC: \"false\"",
+            "SKYGRID_CHECK_VERCEL: \"false\"",
+            "SKYGRID_CHECK_LEGACY_ALIAS: \"false\""
+          ]
+        },
+        {
+          "type": "assert_text",
+          "path": "scripts/check-skygrid-public-routes.mjs",
+          "patterns": [
+            "SKYGRID public route checker running in local/devcontainer-first mode.",
+            "Vercel aliases are skipped unless SKYGRID_CHECK_VERCEL=true."
+          ]
+        }
+      ]
+    },
+    "app-vercel-config-edge": {
+      "description": "Guarded deletion of app-local Vercel config. Skipped by default; requires --target=app-vercel-config-edge --include-guarded-deletes --apply --approved.",
+      "safe_default": false,
+      "operations": [
+        {
+          "type": "delete_file",
+          "path": "apps/aura-work-agent/vercel.json",
+          "guarded": true
+        }
+      ]
+    }
+  }
+}
