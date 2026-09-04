@@ -65,8 +65,6 @@
         "opensea:preflight-test": "node --test tests/skygrid-opensea-preflight.test.mjs",
         "etherscan:read-test": "node --test tests/skygrid-etherscan-read.test.mjs",
         "route:matrix:test": "node --test tests/skygrid-global-route-matrix.test.mjs tests/skygrid-global-route-matrix-api.test.mjs",
-        "stop:verify": "node scripts/skygrid-stop-test-set.mjs --dry-run",
-        "stop:test": "node --test tests/skygrid-stop-test-set.test.mjs",
         "transc:MVPuknowme": "node scripts/transc.MVPuknowme.mjs",
         "transc:MVPuknowme:test": "node --test tests/transc.MVPuknowme.test.mjs"
     },
