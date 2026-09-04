@@ -1,0 +1,79 @@
+{
+  "$schema": "https://skygrid-protocol.net/schemas/pnpk-local-vpn-proximity.v1.json",
+  "schema_version": "1.0.0",
+  "profile": "pnpk-local-vpn-proximity",
+  "generated_for": "MVPuknowme / SKYGRID Emergency Data On-Ramp",
+  "default_mode": "dry-run",
+  "principles": [
+    "local_only",
+    "vpn_required",
+    "no_public_scan",
+    "no_device_tracking",
+    "receipt_first",
+    "fail_closed",
+    "operator_approved_apply"
+  ],
+  "proximity": {
+    "radius_miles": 3,
+    "geometry": "radius_square",
+    "radius_squared_miles": 9,
+    "bounding_box_side_miles": 6,
+    "bounding_box_area_square_miles": 36,
+    "anchor_source": "operator_declared_local_anchor"
+  },
+  "vpn": {
+    "mode": "local_vpn_only",
+    "allowed_cidrs": [
+      "127.0.0.1/32",
+      "10.0.0.0/8",
+      "172.16.0.0/12",
+      "192.168.0.0/16",
+      "fd00::/8",
+      "fe80::/10"
+    ],
+    "required_environment": [
+      "SKYGRID_LOCAL_VPN_CIDR"
+    ],
+    "optional_environment": [
+      "SKYGRID_PNPK_ANCHOR_LABEL",
+      "SKYGRID_LOCAL_PUBLIC_URL",
+      "SKYGRID_DEVCONTAINER_PUBLIC_URL"
+    ]
+  },
+  "pnpk": {
+    "run_type": "local_vpn_proximity_preflight",
+    "lease_scope": "local_devcontainer_only",
+    "receipt_namespace": "artifacts/pnpk/proximity",
+    "network_actions": "none",
+    "cloud_actions": "none"
+  },
+  "blocked_actions": [
+    "public_ip_scan",
+    "device_discovery",
+    "person_tracking",
+    "wifi_probe",
+    "bluetooth_probe",
+    "gps_collection",
+    "dns_mutation",
+    "vercel_teardown",
+    "secret_deletion",
+    "payment_rail_mutation"
+  ],
+  "checks": [
+    {
+      "id": "vpn-cidr-locality",
+      "type": "assert_private_or_loopback_cidr",
+      "env": "SKYGRID_LOCAL_VPN_CIDR"
+    },
+    {
+      "id": "proximity-radius-cap",
+      "type": "assert_radius_at_or_below_miles",
+      "max_miles": 3
+    },
+    {
+      "id": "pnpk-local-receipt",
+      "type": "write_receipt",
+      "required": true
+    }
+  ]
+}
