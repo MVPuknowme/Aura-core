@@ -1,0 +1,36 @@
+name: CodeMirror Preflight
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/codemirror-preflight-ci.yml"
+      - "scripts/skygrid-codemirror-preflight.mjs"
+      - "tests/skygrid-codemirror-preflight.test.mjs"
+      - "package.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    name: ${{ matrix.os }} preflight
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Test CodeMirror preflight contract
+        run: node --test tests/skygrid-codemirror-preflight.test.mjs
