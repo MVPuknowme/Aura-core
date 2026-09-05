@@ -1,0 +1,27 @@
+{
+  "ledger_id": "skygrid-verified-infrastructure-revenue-v1",
+  "entries": [
+    {
+      "entry_id": "example-staking-reward",
+      "occurred_at": "2026-08-04T00:00:00.000Z",
+      "network": "ethereum",
+      "role": "validator",
+      "category": "staking",
+      "amount_usd": 0,
+      "evidence_state": "unverified",
+      "evidence_refs": [],
+      "notes": "Replace with a real withdrawal or reward record before recognizing income."
+    },
+    {
+      "entry_id": "example-hosting-cost",
+      "occurred_at": "2026-08-04T00:00:00.000Z",
+      "network": "skygrid",
+      "role": "infrastructure",
+      "category": "operating_cost",
+      "amount_usd": 0,
+      "evidence_state": "unverified",
+      "evidence_refs": [],
+      "notes": "Replace with a reconciled cloud, bandwidth, hardware, or transaction-cost record."
+    }
+  ]
+}
