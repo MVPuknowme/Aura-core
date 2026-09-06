@@ -4,12 +4,14 @@ const manifestPath = "config/skygrid-route-manifest.json";
 const runtimePath = "api/runtime.mjs";
 const runtimeCorePath = "api/runtime-core.mjs";
 const postmanPath = "postman/skygrid-autodrill.collection.json";
+const paymentPostmanPath = "postman/skygrid-payment-contact.collection.json";
 
 const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
 const runtimeEntry = await readFile(runtimePath, "utf8");
 const runtimeCore = await readFile(runtimeCorePath, "utf8").catch(() => "");
 const runtime = `${runtimeEntry}\n${runtimeCore}`;
 const postman = JSON.parse(await readFile(postmanPath, "utf8"));
+const paymentPostman = JSON.parse(await readFile(paymentPostmanPath, "utf8"));
 
 const normalize = (path) => String(path || "").split("?")[0];
 const routePath = (route) => normalize(route.path || route.sample_path);
@@ -32,7 +34,10 @@ function collectPostmanUrls(items = [], out = []) {
   return out;
 }
 
-const postmanUrls = new Set(collectPostmanUrls(postman.item).map(normalize));
+const postmanUrls = new Set([
+  ...collectPostmanUrls(postman.item),
+  ...collectPostmanUrls(paymentPostman.item)
+].map(normalize));
 
 const failures = [];
 const warnings = [];
@@ -75,6 +80,7 @@ const report = {
   implemented_routes: implementedRoutes.length,
   required_implemented_routes: requiredImplementedRoutes.length,
   runtime_files_scanned: runtimeCore ? [runtimePath, runtimeCorePath] : [runtimePath],
+  postman_collection_files: [postmanPath, paymentPostmanPath],
   active_runtime_owner: "skygrid_api",
   postman_urls: postmanUrls.size,
   failures,
