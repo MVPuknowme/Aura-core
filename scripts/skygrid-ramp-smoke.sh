@@ -38,6 +38,30 @@ check_required() {
 check_post_accepted() {
   local path="$1"
   local url="${BASE_URL}${path}"
+  local payload='{"source":"github-smoke","type":"system-health","severity":"normal"}'
+
+  if [[ -z "${SKYGRID_INGEST_SECRET:-}" ]]; then
+    echo "FAIL: SKYGRID_INGEST_SECRET is required for authenticated smoke POSTs"
+    exit 1
+  fi
+
+  local timestamp
+  timestamp="$(node -e 'process.stdout.write(String(Date.now()))')"
+
+  local nonce
+  nonce="$(node -e 'process.stdout.write(require("node:crypto").randomBytes(18).toString("base64url"))')"
+
+  local signature
+  signature="$(
+    SKYGRID_AUTH_TIMESTAMP="$timestamp" \
+    SKYGRID_AUTH_NONCE="$nonce" \
+    SKYGRID_AUTH_BODY="$payload" \
+    node -e '
+      const { createHmac } = require("node:crypto");
+      const input = `${process.env.SKYGRID_AUTH_TIMESTAMP}.${process.env.SKYGRID_AUTH_NONCE}.${process.env.SKYGRID_AUTH_BODY}`;
+      process.stdout.write(createHmac("sha256", process.env.SKYGRID_INGEST_SECRET).update(input).digest("hex"));
+    '
+  )"
 
   local body_file
   body_file="$(mktemp)"
@@ -45,8 +69,11 @@ check_post_accepted() {
   local code
   code="$(curl "${curl_args[@]}" \
     -H "Content-Type: application/json" \
+    -H "x-skygrid-timestamp: ${timestamp}" \
+    -H "x-skygrid-nonce: ${nonce}" \
+    -H "x-skygrid-signature: ${signature}" \
     -X POST \
-    -d '{"source":"github-smoke","type":"system-health","severity":"normal"}' \
+    -d "$payload" \
     -o "$body_file" \
     -w "%{http_code}" \
     "$url" || true)"
