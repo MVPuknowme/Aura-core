@@ -18,15 +18,23 @@ Current runtime restrictions remain authoritative:
 - no production failover;
 - no private data movement.
 
-The first implementation therefore evaluates intent, produces deterministic approval/rejection receipts, and reconciles externally observed settlement evidence. It does not introduce a live execution adapter.
+The first implementation evaluates intent, returns deterministic approval/rejection receipt objects, persists those receipt objects through a separate artifact writer, and reconciles externally observed settlement evidence. It does not introduce a live execution adapter.
 
 The existing global route matrix remains the authoritative analytical evaluator for route health, evidence freshness, confidence, settlement destination, and payment-execution eligibility. The settlement routing firewall adds account identity, asset identity, authorization binding, and transaction reconciliation. It may consume matrix output, but must not replace or silently relax the global route matrix.
 
 ## Security invariant
 
-No movement is PNPK-approved unless the following tuple is resolved before execution:
+No movement is PNPK-approved unless the route-specific identity tuple is resolved before execution.
 
-`source_account_id + route_id + rail + chain_id + asset_id + destination_account_id + destination_fingerprint + authorization_id`
+Common fields:
+
+`source_account_id + route_id + rail + route_network_id + asset_id + destination_account_id + destination_fingerprint + authorization_id`
+
+`route_network_id` is mandatory but rail-specific:
+- EVM: canonical chain identifier such as `eip155:8453`;
+- Bitcoin: canonical network identifier such as `bip122:...` or an implementation-approved equivalent;
+- bank rails: canonical provider/rail network identifier such as `bank:ach:provider-name`;
+- internal ledger: canonical ledger namespace identifier.
 
 For EVM crypto assets:
 
@@ -63,7 +71,7 @@ Each account record includes:
 - `provider` when applicable;
 - `masked_identifier` for bank/custodial accounts;
 - `address` for blockchain accounts;
-- `allowed_chain_ids` for chain-specific wallets;
+- `allowed_route_network_ids`;
 - `status` (`active`, `disabled`, `quarantined`);
 - `verification_method`;
 - `verified_at`;
@@ -81,7 +89,7 @@ A route binds:
 - source account;
 - destination account;
 - rail (`ach`, `wire`, `internal_bank`, `evm`, `bitcoin`, or another explicitly supported rail);
-- network or chain;
+- `route_network_id`;
 - permitted assets;
 - permitted spender/contract targets when applicable;
 - amount policy;
@@ -106,11 +114,11 @@ Required fields:
 - `route_id`;
 - `route_version`;
 - `rail`;
-- `chain_id` when applicable;
+- `route_network_id`;
 - `asset_id`;
 - `asset_contract` when applicable;
 - `asset_decimals` when applicable;
-- `amount_atomic`;
+- `amount_atomic` for crypto or exact minor-unit amount for fiat;
 - `amount_display`;
 - `destination_account_id`;
 - `destination_fingerprint`;
@@ -120,7 +128,7 @@ Required fields:
 - `nonce_or_idempotency_key`;
 - `intent_hash`.
 
-Crypto amounts are validated in atomic units. Display-formatted decimals are informational and cannot be the sole execution amount.
+Crypto amounts are validated in atomic units. Fiat amounts are validated in exact minor units. Display-formatted decimals are informational and cannot be the sole execution amount.
 
 ## Destination fingerprint
 
@@ -128,9 +136,13 @@ The destination fingerprint is a deterministic digest over normalized destinatio
 
 For an EVM route, the fingerprint input includes at minimum:
 
-`chain_id + normalized_destination_address + account_id`
+`route_network_id + normalized_destination_address + destination_account_id`
 
-For a bank route, it includes the canonical internal account identifier plus provider/institution identity. Full bank routing/account numbers must not appear in ordinary receipts.
+For a bank route, it includes:
+
+`route_network_id + canonical_internal_account_identifier + provider_identity + destination_account_id`
+
+Full bank routing/account numbers must not appear in ordinary receipts.
 
 The preflight validator compares the fingerprint generated from the proposed transaction target with the fingerprint stored in the intent. Any mismatch is a hard failure.
 
@@ -152,7 +164,7 @@ and guidance state:
 
 `DO_NOT_APPROVE / DO_NOT_SWAP / DO_NOT_VISIT_TOKEN_LINK`
 
-The quarantine path must not interact with the token contract merely to “remove,” “claim,” or inspect an unsolicited asset.
+The quarantine path must not sign, approve, swap, transfer, claim, or otherwise invoke the unsolicited token contract. Read-only external indexing may be used to identify the observed contract without wallet interaction.
 
 A displayed symbol such as `USDC`, `USDT`, `ETH`, or any branded ticker does not override contract identity.
 
@@ -168,9 +180,9 @@ Rules:
 - display a human-verifiable short fingerprint derived from the full approved destination, not merely the first/last address characters;
 - treat any change in the full destination as a route mismatch.
 
-## Preflight validator
+## Pure preflight evaluator
 
-The preflight validator is deterministic and side-effect free.
+The preflight evaluator is deterministic and side-effect free. It returns a decision plus a complete receipt object but does not persist the receipt itself.
 
 Inputs:
 - settlement intent;
@@ -178,6 +190,7 @@ Inputs:
 - canonical route registry snapshot;
 - proposed transaction envelope;
 - asset registry/policy snapshot;
+- idempotency-history snapshot;
 - optional global route matrix decision;
 - current timestamp.
 
@@ -189,13 +202,13 @@ Checks include:
 5. route exists, version matches, and is active;
 6. proposed source matches route source;
 7. proposed destination matches route destination;
-8. rail/network/chain matches route;
+8. rail and `route_network_id` match route;
 9. exact asset identity matches route allowlist;
 10. asset classification is `verified`;
 11. spender/target is allowed when applicable;
 12. amount is within route policy and exactly matches the approved intent;
 13. authorization scope is valid;
-14. idempotency key/nonce has not been reused for a conflicting intent;
+14. idempotency key/nonce has not been reused for a conflicting intent in the supplied history snapshot;
 15. destination fingerprint matches;
 16. any required global-route-matrix decision is execution-eligible;
 17. no conflicting evidence exists.
@@ -205,11 +218,25 @@ Decision values:
 - `FAIL_CLOSED`;
 - `QUARANTINE`.
 
-The validator never signs, sends, broadcasts, swaps, bridges, approves token allowances, or moves funds.
+The evaluator never signs, sends, broadcasts, swaps, bridges, approves token allowances, persists provider mutations, or moves funds.
+
+## Receipt artifact writer
+
+A separate artifact writer persists the receipt object returned by the evaluator.
+
+The writer:
+- accepts only schema-valid receipt objects;
+- writes append-only artifacts;
+- uses deterministic canonical serialization and hashing;
+- rejects overwrite attempts for an existing receipt ID unless content is byte-for-byte/canonically identical;
+- never changes the evaluator decision;
+- never performs settlement execution.
+
+This separation preserves deterministic validation while still guaranteeing that every handled request can produce a durable receipt artifact.
 
 ## Preflight receipt
 
-Every preflight produces a receipt, including rejected requests.
+Every handled preflight produces a receipt object, including rejected requests. Production wiring must persist that object before any future execution adapter can consume `ROUTE_APPROVED`.
 
 Required receipt fields:
 - `receipt_type = pnpk_settlement_preflight`;
@@ -224,22 +251,23 @@ Required receipt fields:
 - `destination_account_id`;
 - `destination_fingerprint`;
 - `rail`;
-- `chain_id`;
+- `route_network_id`;
 - `asset_id`;
-- `amount_atomic`;
+- exact amount in atomic/minor units;
 - `authorization_id`;
 - `decision`;
 - `failure_reasons`;
 - `registry_snapshot_hash`;
 - `route_snapshot_hash`;
-- `policy_snapshot_hash`.
+- `asset_policy_snapshot_hash`;
+- `idempotency_snapshot_hash`.
 
-Rejected requests must identify deterministic reason codes without leaking secrets.
+Rejected requests identify deterministic reason codes without leaking secrets.
 
 Example hard-failure codes:
 - `destination_mismatch`;
 - `destination_fingerprint_mismatch`;
-- `wrong_chain`;
+- `wrong_route_network`;
 - `wrong_asset_contract`;
 - `amount_mismatch`;
 - `spender_not_allowed`;
@@ -254,12 +282,12 @@ Example hard-failure codes:
 
 ## Post-execution reconciliation
 
-A separate reconciler binds externally observed execution evidence to the original approved intent and preflight receipt. This is read-only in the initial implementation.
+A separate reconciler binds externally observed execution evidence to the original approved intent and persisted preflight receipt. This is read-only in the initial implementation.
 
 Observed evidence may include:
 - bank transaction/provider reference;
 - blockchain transaction hash;
-- chain ID;
+- route/network identifier;
 - actual sender;
 - actual destination;
 - actual asset contract;
@@ -287,7 +315,7 @@ The canonical chain is:
 
 A final receipt includes references/hashes for every prior stage so an auditor can reconstruct the full movement without relying on wallet UI history or human memory.
 
-A movement is not labeled `CONFIRMED` merely because a transaction hash exists. The destination, chain, asset, and amount must reconcile to the approved intent.
+A movement is not labeled `CONFIRMED` merely because a transaction hash exists. The destination, route/network, asset, and amount must reconcile to the approved intent.
 
 ## Bank self-transfer behavior
 
@@ -295,6 +323,7 @@ Bank routes use the same intent/receipt model even when no blockchain is involve
 
 For a self-transfer such as Chime → SoFi:
 - source and intended destination are separate canonical account IDs;
+- the bank rail/provider network is represented by `route_network_id` rather than a blockchain chain ID;
 - the bank/provider reference is bound to the route;
 - a return or reversal produces a `RETURNED` or `REVERSED` final receipt;
 - returned principal is not classified as new income;
@@ -305,7 +334,7 @@ For a self-transfer such as Chime → SoFi:
 
 Receipts are append-only artifacts. Each receipt includes its own canonical hash and references the prior receipt hash in the chain where applicable.
 
-The implementation must use deterministic canonical serialization before hashing. Hashing is evidence of integrity, not proof that the underlying claim is true; source evidence still must be verified.
+Hashing is evidence of integrity, not proof that the underlying claim is true; source evidence still must be verified.
 
 Receipt storage must avoid secrets and full sensitive bank identifiers.
 
@@ -335,23 +364,26 @@ Recommended initial modules:
 
 2. `config/pnpk-route-registry.*`
    - versioned route definitions;
-   - exact chain/asset/destination policy.
+   - exact rail/network/asset/destination policy.
 
 3. `config/pnpk-asset-registry.*`
    - exact chain + contract identities;
    - verification/quarantine state.
 
 4. `scripts/pnpk-settlement-preflight.*`
-   - deterministic validator;
-   - receipt emission.
+   - pure deterministic evaluator;
+   - returns receipt object.
 
-5. `scripts/pnpk-settlement-reconcile.*`
+5. `scripts/pnpk-receipt-writer.*`
+   - append-only persistence of schema-valid receipt objects.
+
+6. `scripts/pnpk-settlement-reconcile.*`
    - read-only evidence reconciliation;
-   - final receipt emission.
+   - returns final receipt object.
 
-6. `schemas/pnpk-settlement-intent.schema.json`
-7. `schemas/pnpk-settlement-receipt.schema.json`
-8. focused unit/security tests and fixtures.
+7. `schemas/pnpk-settlement-intent.schema.json`
+8. `schemas/pnpk-settlement-receipt.schema.json`
+9. focused unit/security tests and fixtures.
 
 Exact filenames may follow existing repository conventions during implementation, but the component boundaries above must remain distinct.
 
@@ -359,13 +391,13 @@ Exact filenames may follow existing repository conventions during implementation
 
 All malformed, missing, ambiguous, stale, conflicting, or unauthorized inputs fail closed.
 
-The system must distinguish:
+The system distinguishes:
 - hard mismatch → `FAIL_CLOSED`;
 - suspicious/unsolicited asset → `QUARANTINE`;
 - valid but externally pending settlement → `PENDING`;
 - missing external evidence after approval → `UNKNOWN`, never assumed success.
 
-No error path may silently fall back to ticker matching, recent-address matching, a different chain, a different route version, or a default wallet.
+No error path may silently fall back to ticker matching, recent-address matching, a different chain/network, a different route version, or a default wallet.
 
 ## Testing
 
@@ -377,31 +409,35 @@ Tests must include at minimum:
 - same ticker/different contract rejected;
 - same contract address on wrong chain rejected;
 - unverified token quarantined;
-- unsolicited token quarantined without contract interaction;
+- unsolicited token quarantined without contract invocation;
 - wrong spender/target rejected;
 - amount mismatch rejected;
 - expired intent rejected;
-- conflicting idempotency key rejected;
+- conflicting idempotency key rejected using supplied history snapshot;
 - disabled account rejected;
 - disabled route rejected;
 - below-threshold global matrix decision rejected when required;
+- valid bank route works without a blockchain chain ID;
 - valid external transaction reconciles to `CONFIRMED`;
 - successful but wrong-destination transaction reconciles to `MISMATCH`;
 - bank transfer return reconciles to `RETURNED`;
 - receipt hashes are deterministic;
+- receipt writer rejects conflicting overwrite;
 - secrets/private keys are never present in receipts;
 - current no-signing/no-broadcast guardrails remain true.
 
 ## Acceptance criteria
 
-The design is complete when implementation proves all of the following:
+Implementation must prove all of the following:
 - every approved route references canonical source and destination account IDs;
+- every route has a canonical rail-specific `route_network_id`;
 - crypto assets are identified by chain + exact contract or canonical native-asset ID;
 - token ticker/logo/name alone can never authorize a route;
 - destination fingerprints are deterministic and enforced;
-- preflight is deterministic and side-effect free;
-- every preflight, including rejection, produces a receipt;
-- unsolicited/unverified tokens are quarantined and not interacted with;
+- preflight evaluation is deterministic and side-effect free;
+- every preflight returns a complete receipt object;
+- production wiring persists the preflight receipt before any future executor can consume approval;
+- unsolicited/unverified tokens are quarantined and not invoked by the wallet;
 - no recent-counterparty auto-allowlisting exists;
 - externally observed execution is reconciled against the approved intent;
 - final receipts distinguish confirmed, returned, reversed, failed, mismatch, pending, and unknown states;
@@ -425,4 +461,4 @@ This design does not include:
 - claims that a receipt alone proves legal ownership or economic value;
 - automatic trust of tokens based on symbol, market listing, logo, or wallet UI metadata.
 
-A future execution-adapter design, if ever approved, must consume an approved preflight receipt and preserve all route invariants above.
+A future execution-adapter design, if ever approved, must consume a persisted `ROUTE_APPROVED` preflight receipt and preserve all route invariants above.
