@@ -55,6 +55,7 @@
     { "id": "highway_postman", "method": "GET", "path": "/api/highway/postman", "owner": "skygrid_api", "proof_owner": "postman", "required": true, "status": "implemented" },
     { "id": "pay_quote", "method": "GET", "path": "/api/pay/quote", "sample_path": "/api/pay/quote?amount=25", "owner": "skygrid_api", "proof_owner": "postman", "required": true, "status": "implemented" },
     { "id": "sponsors_link", "method": "GET", "path": "/api/sponsors/link", "owner": "skygrid_api_and_cloudflare", "proof_owner": "postman", "required": false, "status": "implemented_in_file_route_and_worker" },
+    { "id": "facebook_messenger_payment_contact", "method": "GET", "path": "/api/payments/messenger", "owner": "skygrid_api_and_cloudflare", "proof_owner": "postman", "required": false, "status": "implemented_in_file_route_and_worker_fail_closed" },
     { "id": "stripe_device_link_legacy", "method": "GET", "path": "/api/stripe/device-link", "owner": "skygrid_api_and_cloudflare", "proof_owner": "postman", "required": false, "status": "legacy_compatibility" },
     { "id": "autodrill_latest", "method": "GET", "path": "/api/autodrill/latest", "owner": "skygrid_api", "proof_owner": "postman", "required": true, "status": "implemented" },
     { "id": "build_pad_quote", "method": "POST", "path": "/api/build-pad/quote", "owner": "skygrid_api", "proof_owner": "postman", "required": true, "status": "implemented_quote_only" },

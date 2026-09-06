@@ -1,0 +1,47 @@
+{
+  "info": {
+    "name": "SKYGRID Payment Contact Routes",
+    "description": "Proof collection for SKYGRID support and payment-contact routing. These routes expose contact/checkout destinations; they do not prove that a payment executed.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Sponsors Link Proof",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/sponsors/link"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Sponsors route is reachable', () => pm.expect([200,302,307,308]).to.include(pm.response.code));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Facebook Messenger Payment Contact Proof",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/payments/messenger"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Messenger route is configured or fails closed', () => pm.expect([200,503]).to.include(pm.response.code));",
+              "const j = pm.response.json();",
+              "pm.test('Messenger route never claims payment execution', () => pm.expect(j.payment_execution).to.eql(false));",
+              "if (pm.response.code === 200) { pm.test('Messenger route is payment contact only', () => pm.expect(j.purpose).to.eql('payment_contact')); }",
+              "if (pm.response.code === 503) { pm.test('Unconfigured Messenger route fails closed', () => pm.expect(j.error).to.eql('messenger_route_unconfigured')); }"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
