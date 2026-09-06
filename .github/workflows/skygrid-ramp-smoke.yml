@@ -53,7 +53,8 @@ jobs:
           const { createHmac, randomBytes } = require('node:crypto');
           const { writeFileSync } = require('node:fs');
 
-          const secret = randomBytes(32).toString('hex');
+          const proofSecret = randomBytes(32).toString('hex');
+          const ingestSecret = randomBytes(32).toString('hex');
           const proof = {
             run_id: `github-smoke-${process.env.GITHUB_RUN_ID}`,
             generated_at: new Date().toISOString(),
@@ -64,9 +65,10 @@ jobs:
           };
 
           const signingInput = `${proof.run_id}.${proof.generated_at}.${proof.ok}.${JSON.stringify(proof.checks)}`;
-          proof.signature = createHmac('sha256', secret).update(signingInput).digest('hex');
+          proof.signature = createHmac('sha256', proofSecret).update(signingInput).digest('hex');
 
-          writeFileSync('/tmp/skygrid-proof-secret', secret, { mode: 0o600 });
+          writeFileSync('/tmp/skygrid-proof-secret', proofSecret, { mode: 0o600 });
+          writeFileSync('/tmp/skygrid-ingest-secret', ingestSecret, { mode: 0o600 });
           writeFileSync('/tmp/skygrid-autodrill-proof.json', JSON.stringify(proof), { mode: 0o600 });
           NODE
 
@@ -74,6 +76,7 @@ jobs:
         run: |
           export SKYGRID_PROOF_SECRET="$(cat /tmp/skygrid-proof-secret)"
           export SKYGRID_AUTODRILL_PROOF_JSON="$(cat /tmp/skygrid-autodrill-proof.json)"
+          export SKYGRID_INGEST_SECRET="$(cat /tmp/skygrid-ingest-secret)"
           PORT=3000 node scripts/skygrid-local-runtime-server.mjs > /tmp/skygrid-local-runtime.log 2>&1 &
           echo $! > /tmp/skygrid-local-runtime.pid
           for i in {1..20}; do
@@ -88,7 +91,9 @@ jobs:
           exit 1
 
       - name: Run SKYGRID smoke test
-        run: bash scripts/skygrid-ramp-smoke.sh "$SKYGRID_BASE_URL"
+        run: |
+          export SKYGRID_INGEST_SECRET="$(cat /tmp/skygrid-ingest-secret)"
+          bash scripts/skygrid-ramp-smoke.sh "$SKYGRID_BASE_URL"
 
       - name: Run local public route checker
         run: node scripts/check-skygrid-public-routes.mjs
@@ -99,5 +104,5 @@ jobs:
           if [ -f /tmp/skygrid-local-runtime.pid ]; then
             kill "$(cat /tmp/skygrid-local-runtime.pid)" || true
           fi
-          rm -f /tmp/skygrid-proof-secret /tmp/skygrid-autodrill-proof.json
+          rm -f /tmp/skygrid-proof-secret /tmp/skygrid-ingest-secret /tmp/skygrid-autodrill-proof.json
           cat /tmp/skygrid-local-runtime.log || true
