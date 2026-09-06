@@ -17,6 +17,10 @@ const implementedRoutes = manifest.routes.filter((route) =>
   String(route.status || "").includes("implemented")
 );
 const requiredImplementedRoutes = implementedRoutes.filter((route) => route.required);
+const dedicatedApiRoutes = new Set([
+  "/api/sponsors/link",
+  "/api/payments/messenger"
+]);
 
 function collectPostmanUrls(items = [], out = []) {
   for (const item of items) {
@@ -40,7 +44,7 @@ if (Object.hasOwn(manifest.runtimes || {}, "vercel")) {
 for (const route of implementedRoutes) {
   const path = routePath(route);
   const owner = String(route.owner || "");
-  const hasDedicatedApiFile = path === "/api/sponsors/link";
+  const hasDedicatedApiFile = dedicatedApiRoutes.has(path);
 
   if (owner.includes("vercel")) {
     failures.push(`route manifest contains removed Vercel owner: ${route.id}`);
