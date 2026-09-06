@@ -17,6 +17,18 @@ function sponsorUrl(env = {}) {
   return env.GITHUB_SPONSORS_URL || `https://github.com/sponsors/${handle}`;
 }
 
+function messengerUrl(env = {}) {
+  const explicitUrl = String(env.FACEBOOK_MESSENGER_URL || "").trim();
+  if (explicitUrl) return explicitUrl;
+
+  const username = String(env.FACEBOOK_MESSENGER_USERNAME || "")
+    .trim()
+    .replace(/^@+/, "");
+  if (!username) return null;
+
+  return `https://m.me/${encodeURIComponent(username)}`;
+}
+
 function base(env = {}) {
   return {
     ok: true,
@@ -31,6 +43,7 @@ function base(env = {}) {
     payment_provider: "github_sponsors",
     sponsor_url: sponsorUrl(env),
     checkout_route: "/api/sponsors/link",
+    messenger_contact_route: "/api/payments/messenger",
     legacy_route: "/api/stripe/device-link",
     device_activation: false,
     production_failover: false,
@@ -48,6 +61,7 @@ function routes() {
     "/api/skygrid/intake",
     "/api/highway/status",
     "/api/sponsors/link",
+    "/api/payments/messenger",
     "/api/stripe/device-link"
   ];
 }
@@ -86,6 +100,37 @@ export default {
         sentinel: "fail_closed",
         support_provider: "github_sponsors",
         sponsor_url: sponsorUrl(env),
+        generated_at: new Date().toISOString()
+      });
+    }
+
+    if (url.pathname === "/api/payments/messenger") {
+      const resolvedMessengerUrl = messengerUrl(env);
+      if (!resolvedMessengerUrl) {
+        return json({
+          ok: false,
+          error: "messenger_route_unconfigured",
+          service: PRODUCT,
+          route: "/api/payments/messenger",
+          mode: "controlled_pilot",
+          sentinel: "fail_closed",
+          purpose: "payment_contact",
+          payment_execution: false,
+          generated_at: new Date().toISOString()
+        }, 503);
+      }
+
+      return json({
+        ok: true,
+        status: "online",
+        service: PRODUCT,
+        route: "/api/payments/messenger",
+        mode: "controlled_pilot",
+        sentinel: "fail_closed",
+        contact_provider: "facebook_messenger",
+        purpose: "payment_contact",
+        messenger_url: resolvedMessengerUrl,
+        payment_execution: false,
         generated_at: new Date().toISOString()
       });
     }
