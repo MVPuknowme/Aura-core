@@ -48,6 +48,9 @@ jobs:
         run: node scripts/verify-skygrid-manifest-sync.mjs
 
       - name: Start local SKYGRID runtime
+        env:
+          SKYGRID_AUTODRILL_PROOF_JSON: ${{ secrets.AUTODRILL_PROOF }}
+          SKYGRID_PROOF_SECRET: ${{ secrets.SKYGRID_PROOF_SECRET }}
         run: |
           PORT=3000 node scripts/skygrid-local-runtime-server.mjs > /tmp/skygrid-local-runtime.log 2>&1 &
           echo $! > /tmp/skygrid-local-runtime.pid
@@ -62,7 +65,7 @@ jobs:
           cat /tmp/skygrid-local-runtime.log || true
           exit 1
 
-      - name: Run local route smoke test
+      - name: Run SKYGRID smoke test
         run: bash scripts/skygrid-ramp-smoke.sh "$SKYGRID_BASE_URL"
 
       - name: Run local public route checker
