@@ -34,7 +34,7 @@ jobs:
           echo "4d9e34b62172d645eed6457cac13fc222569974098ef4ee9c3368bedf0196806  /tmp/xcodegen.zip" \
             | shasum -a 256 --check
           unzip -q /tmp/xcodegen.zip -d /tmp/xcodegen
-          echo "/tmp/xcodegen/bin" >> "$GITHUB_PATH"
+          echo "/tmp/xcodegen/xcodegen/bin" >> "$GITHUB_PATH"
 
       - name: Generate AuraShield project
         run: |
