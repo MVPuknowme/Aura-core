@@ -1,0 +1,22 @@
+name: Aura Presence Swift
+
+on:
+  pull_request:
+    paths:
+      - "ios/AuraShield/**"
+      - ".github/workflows/aura-presence-swift.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  state-model:
+    runs-on: macos-15
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Run Aura Presence state-model tests
+        run: swift test --package-path ios/AuraShield
