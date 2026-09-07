@@ -120,6 +120,11 @@
         "reason": "diagnostic routes run through Postman validation"
       },
       {
+        "when": "route_type=core_p4",
+        "select": "postman",
+        "reason": "Core P4 is a dual-approved preflight-only core validation lane"
+      },
+      {
         "when": "route_type=bridge_preflight AND requested_transport=ethernet",
         "select": "allbridge_core_preflight",
         "reason": "Allbridge Core may be evaluated only after the Ethernet and bridge policy pre-runs pass"
@@ -408,6 +413,22 @@
       "mode": "controlled_pilot",
       "sentinel": "fail_closed"
     },
+    "core_p4": {
+      "allowed_ramps": [
+        "postman"
+      ],
+      "allowed_nodes": [
+        "validator"
+      ],
+      "mode": "preflight_only",
+      "sentinel": "fail_closed",
+      "execution_authority": "none",
+      "wallet_signing_allowed": false,
+      "transaction_broadcast_allowed": false,
+      "payment_execution_allowed": false,
+      "production_failover_allowed": false,
+      "private_data_movement_allowed": false
+    },
     "web3_quote": {
       "allowed_ramps": [
         "arbitrum",
@@ -506,7 +527,8 @@
       "web3_quote",
       "capacity_lease",
       "bridge_preflight",
-      "solana_playground"
+      "solana_playground",
+      "core_p4"
     ],
     "trust_statement": "PNPK is the policy traffic layer. SKYGRID routes only when owner and emergency operator approval agree."
   },
