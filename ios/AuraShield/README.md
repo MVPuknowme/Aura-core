@@ -20,7 +20,7 @@ The pre-existing `AuraShieldNumberStore.swift` and Call Directory extension scaf
 
 ## Generate and run the iOS project
 
-Requirements: Xcode 16 or newer and XcodeGen.
+The reviewed CI toolchain is Xcode 16.4 (build 16F6), iOS Simulator 18.5, and XcodeGen 2.46.0. Use those versions to reproduce the checked build exactly.
 
 ```bash
 cd ios/AuraShield
@@ -40,4 +40,4 @@ The pure state model is also exposed as a local Swift package so it can be teste
 swift test --package-path ios/AuraShield
 ```
 
-GitHub Actions runs the model tests and simulator build for every pull request that changes the AuraShield target.
+GitHub Actions runs the model tests and an iPhone 16 Pro UI test with the pinned toolchain for every pull request that changes the AuraShield target.

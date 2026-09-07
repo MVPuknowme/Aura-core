@@ -22,4 +22,16 @@ targets:
         INFOPLIST_KEY_CFBundleDisplayName: Aura
         TARGETED_DEVICE_FAMILY: "1,2"
     scheme:
-      testTargets: []
+      testTargets:
+        - AuraShieldUITests
+  AuraShieldUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - UITests
+    dependencies:
+      - target: AuraShield
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: net.skygrid.AuraShieldUITests
+        GENERATE_INFOPLIST_FILE: YES

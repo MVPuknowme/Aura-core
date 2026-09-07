@@ -21,6 +21,7 @@ let package = Package(
                 "ContentView.swift",
                 "README.md",
                 "Tests",
+                "UITests",
                 "project.yml",
             ],
             sources: ["AuraPresenceModel.swift"]
