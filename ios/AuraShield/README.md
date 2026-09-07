@@ -8,6 +8,7 @@ Aura Presence v0 is the smallest usable native Aura check-in screen for MVP-81. 
 - **Come see me** opens the editable check-in field and changes the state to `Listening`.
 - **Send check-in** validates a local message, changes the state to `Responding`, and shows an on-device response.
 - An unavailable session enters `Offline`, preserves the draft, disables submission, and states that nothing was sent.
+- **Preview offline state** is an explicit local v0 demo control; it does not claim to report network connectivity.
 - Check-ins are limited to 280 characters.
 
 The screen explicitly describes Aura as a digital support presence. It does not imply physical presence or impersonate a real person.

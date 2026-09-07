@@ -73,6 +73,17 @@ struct ContentView: View {
                 .font(.title3)
                 .foregroundStyle(.white.opacity(0.82))
                 .multilineTextAlignment(.center)
+
+            Button(session.isAvailable ? "Preview offline state" : "Return to ready") {
+                isCheckInFocused = false
+                session.setAvailable(!session.isAvailable)
+            }
+            .font(.caption.weight(.semibold))
+            .buttonStyle(.bordered)
+            .tint(.white.opacity(0.72))
+            .accessibilityHint(
+                "Local Aura v0 demonstration control. It does not report network connectivity."
+            )
         }
     }
 
