@@ -15,6 +15,14 @@ let package = Package(
         .target(
             name: "AuraPresenceCore",
             path: ".",
+            exclude: [
+                "AuraShieldApp.swift",
+                "AuraShieldNumberStore.swift",
+                "ContentView.swift",
+                "README.md",
+                "Tests",
+                "project.yml",
+            ],
             sources: ["AuraPresenceModel.swift"]
         ),
         .testTarget(
