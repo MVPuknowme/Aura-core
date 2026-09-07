@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-from collections import defaultdict
 from typing import Any
 
 _LINE_RE = re.compile(r"^(?P<timestamp>\S+)\s+(?P<peripheral>\S+)\s+(?P<event>.+)$")
@@ -55,22 +54,32 @@ def parse_bluetooth_log(text: str) -> dict[str, Any]:
             record["characteristics"].add(characteristic_match.group("id"))
 
     rendered: dict[str, dict[str, Any]] = {}
-    counts: defaultdict[str, int] = defaultdict(int)
+    observed_only = 0
+    interrogated = 0
+    service_enumerated = 0
 
     for peripheral_id, record in peripherals.items():
-        if record["services"] or record["characteristics"]:
+        has_services = bool(record["services"] or record["characteristics"])
+        was_interrogated = bool(record["interrogations"])
+
+        if has_services:
             classification = "service_enumerated"
-        elif record["interrogations"]:
+        elif was_interrogated:
             classification = "interrogated"
         else:
             classification = "observed_only"
+            observed_only += 1
 
-        counts[classification] += 1
+        if was_interrogated:
+            interrogated += 1
+        if has_services:
+            service_enumerated += 1
+
         rssi_values: list[int] = record.pop("rssi_values")
         services = sorted(record.pop("services"))
         characteristics = sorted(record.pop("characteristics"))
 
-        rendered_record = {
+        rendered[peripheral_id] = {
             **record,
             "classification": classification,
             "services": services,
@@ -82,14 +91,13 @@ def parse_bluetooth_log(text: str) -> dict[str, Any]:
                 "average": round(sum(rssi_values) / len(rssi_values), 2) if rssi_values else None,
             },
         }
-        rendered[peripheral_id] = rendered_record
 
     return {
         "summary": {
             "peripherals": len(rendered),
-            "observed_only": counts["observed_only"],
-            "interrogated": counts["interrogated"],
-            "service_enumerated": counts["service_enumerated"],
+            "observed_only": observed_only,
+            "interrogated": interrogated,
+            "service_enumerated": service_enumerated,
         },
         "peripherals": rendered,
     }
