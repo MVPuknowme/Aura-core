@@ -1,34 +1,43 @@
-# Aura Shield iOS Review Scaffold
+# Aura Presence v0 in the AuraShield target
 
-Aura Shield is a Swift/iOS starter module for managing a local list of unwanted contact sources and wiring that list into Apple's supported Call Directory flow.
+Aura Presence v0 is the smallest usable native Aura check-in screen for MVP-81. It is hosted in the existing `AuraShield` iOS target so it can be opened and demonstrated without creating another application target.
 
-## Scope
+## Screen behavior
 
-- SwiftUI starter app
-- Shared App Group storage scaffold
-- Call Directory Extension scaffold
-- Local-only storage by default
-- No cloud sync and no automatic outbound responses
+- Opens as `Ready` on an iPhone-sized viewport.
+- **Come see me** opens the editable check-in field and changes the state to `Listening`.
+- **Send check-in** validates a local message, changes the state to `Responding`, and shows an on-device response.
+- An unavailable session enters `Offline`, preserves the draft, disables submission, and states that nothing was sent.
+- Check-ins are limited to 280 characters.
 
-## Xcode setup
+The screen explicitly describes Aura as a digital support presence. It does not imply physical presence or impersonate a real person.
 
-1. Create or open an iOS app target named `AuraShield`.
-2. Add these source files to the app target:
-   - `AuraShieldApp.swift`
-   - `ContentView.swift`
-   - `AuraShieldNumberStore.swift`
-3. Add a Call Directory Extension target named `AuraShieldCallDirectoryExtension`.
-4. Add `AuraShieldCallDirectoryExtension/CallDirectoryHandler.swift` to the extension target.
-5. Add App Groups capability to both targets:
-   - `group.net.skygrid.aurashield`
-6. Enable the extension on device:
-   - Settings -> Phone -> Call Blocking & Identification -> Aura Shield
+## Safety boundary
 
-## Review notes
+Aura Presence v0 has no network client, backend integration, cloud persistence, analytics, payment, wallet, settlement, signing, emergency dispatch, or production-routing behavior. The check-in exists only in the in-memory view state and disappears when the app closes.
 
-This PR intentionally keeps the extension handler as a scaffold. The next review step is to add the final CallKit load/reload implementation once the Xcode bundle identifiers and entitlements are confirmed.
+The pre-existing `AuraShieldNumberStore.swift` and Call Directory extension scaffold remain in the repository, but the MVP-81 root screen does not invoke them.
 
-Suggested bundle identifiers:
+## Generate and run the iOS project
 
-- App: `net.skygrid.AuraShield`
-- Extension: `net.skygrid.AuraShield.CallDirectory`
+Requirements: Xcode 16 or newer and XcodeGen.
+
+```bash
+cd ios/AuraShield
+xcodegen generate
+open AuraShield.xcodeproj
+```
+
+Choose an iPhone simulator and run the `AuraShield` scheme. The app display name is **Aura**.
+
+Use the `Offline` SwiftUI preview in `ContentView.swift` to review the fail-closed presentation without adding a fake production connectivity control.
+
+## Test the state model
+
+The pure state model is also exposed as a local Swift package so it can be tested without building the UI:
+
+```bash
+swift test --package-path ios/AuraShield
+```
+
+GitHub Actions runs the model tests and simulator build for every pull request that changes the AuraShield target.

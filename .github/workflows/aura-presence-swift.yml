@@ -20,3 +20,19 @@ jobs:
 
       - name: Run Aura Presence state-model tests
         run: swift test --package-path ios/AuraShield
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate AuraShield project
+        run: xcodegen generate --spec ios/AuraShield/project.yml
+
+      - name: Build Aura screen for iPhone Simulator
+        run: >-
+          xcodebuild
+          -project ios/AuraShield/AuraShield.xcodeproj
+          -scheme AuraShield
+          -configuration Debug
+          -destination 'generic/platform=iOS Simulator'
+          CODE_SIGNING_ALLOWED=NO
+          build
