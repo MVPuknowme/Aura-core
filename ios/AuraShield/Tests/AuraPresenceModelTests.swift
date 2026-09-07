@@ -78,6 +78,19 @@ final class AuraPresenceModelTests: XCTestCase {
         XCTAssertEqual(session.state, .offline)
     }
 
+    func testCompletedResponseClearsDraftAndAllowsAnotherCheckIn() {
+        var session = AuraPresenceSession()
+        session.beginCheckIn()
+        session.checkIn = "First check-in."
+        XCTAssertEqual(session.submitCheckIn(), .accepted)
+
+        session.completeResponse()
+        session.beginCheckIn()
+
+        XCTAssertEqual(session.state, .listening)
+        XCTAssertTrue(session.checkIn.isEmpty)
+    }
+
     func testCheckInIsLimitedToTwoHundredEightyCharacters() {
         var session = AuraPresenceSession()
 
