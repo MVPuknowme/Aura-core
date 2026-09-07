@@ -38,7 +38,7 @@ check_required() {
 check_post_accepted() {
   local path="$1"
   local url="${BASE_URL}${path}"
-  local payload='{"source":"github-smoke","type":"system-health","severity":"normal"}'
+  local payload='{"source":"github-smoke","type":"system-health","severity":"normal","route_type":"core_p4","requested_ramp":"postman","requested_node":"validator","owner_approval":true,"emergency_operator_approval":true,"wallet_signing_requested":false,"transaction_broadcast_requested":false,"payment_execution_requested":false,"production_failover_requested":false,"private_data_movement_requested":false}'
 
   if [[ -z "${SKYGRID_INGEST_SECRET:-}" ]]; then
     echo "FAIL: SKYGRID_INGEST_SECRET is required for authenticated smoke POSTs"
@@ -81,7 +81,7 @@ check_post_accepted() {
   echo "== ${path} HTTP ${code}"
 
   if [[ "$code" != "202" && "$code" != "200" ]]; then
-    echo "FAIL: ${url} did not accept smoke payload"
+    echo "FAIL: ${url} did not accept Core P4 smoke payload"
     cat "$body_file" || true
     rm -f "$body_file"
     exit 1
@@ -115,7 +115,7 @@ check_required "/api/failover/status"
 check_required "/api/panels/summary"
 check_required "/api/autodrill/latest"
 
-# Required POST acceptance routes for proof-of-intake and advisory routing.
+# Required authenticated POST acceptance routes use the fail-closed Core P4 preflight lane.
 check_post_accepted "/api/skygrid/intake"
 check_post_accepted "/api/aura-core/decide"
 check_post_accepted "/api/agent/signals"
@@ -129,4 +129,4 @@ check_optional "/api/highway/postman"
 check_optional "/api/pay/quote?amount=25"
 
 echo ""
-echo "SKYGRID ramp smoke completed successfully."
+echo "SKYGRID ramp smoke completed successfully via Core P4."
