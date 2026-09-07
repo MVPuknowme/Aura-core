@@ -1,0 +1,52 @@
+name: Aura Presence Swift
+
+on:
+  pull_request:
+    paths:
+      - "ios/AuraShield/**"
+      - ".github/workflows/aura-presence-swift.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  state-model:
+    runs-on: macos-15
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Select Xcode 16.4
+        run: |
+          sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
+          xcodebuild -version
+
+      - name: Run Aura Presence state-model tests
+        run: swift test --package-path ios/AuraShield
+
+      - name: Install XcodeGen 2.46.0
+        run: |
+          curl --fail --location --silent --show-error \
+            https://github.com/yonaskolb/XcodeGen/releases/download/2.46.0/xcodegen.zip \
+            --output /tmp/xcodegen.zip
+          echo "4d9e34b62172d645eed6457cac13fc222569974098ef4ee9c3368bedf0196806  /tmp/xcodegen.zip" \
+            | shasum -a 256 --check
+          unzip -q /tmp/xcodegen.zip -d /tmp/xcodegen
+          echo "/tmp/xcodegen/xcodegen/bin" >> "$GITHUB_PATH"
+
+      - name: Generate AuraShield project
+        run: |
+          xcodegen --version
+          xcodegen generate --spec ios/AuraShield/project.yml
+
+      - name: Test Aura screen on iPhone Simulator
+        run: >-
+          xcodebuild
+          -project ios/AuraShield/AuraShield.xcodeproj
+          -scheme AuraShield
+          -configuration Debug
+          -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5'
+          CODE_SIGNING_ALLOWED=NO
+          test
