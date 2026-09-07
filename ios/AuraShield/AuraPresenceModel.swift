@@ -75,7 +75,13 @@ struct AuraPresenceSession: Equatable, Sendable {
     }
 
     mutating func completeResponse() {
-        state = isAvailable ? .ready : .offline
+        guard isAvailable else {
+            failClosed()
+            return
+        }
+
+        checkIn = ""
+        state = .ready
     }
 
     mutating func setAvailable(_ available: Bool) {
