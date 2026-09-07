@@ -41,6 +41,17 @@ const acceptedCases = [
     partition: "diagnostic"
   },
   {
+    name: "Core P4 preflight route",
+    body: {
+      route_type: "core_p4",
+      requested_ramp: "postman",
+      requested_node: "validator",
+      owner_approval: true,
+      emergency_operator_approval: true
+    },
+    partition: "core_p4"
+  },
+  {
     name: "approved emergency route",
     body: {
       route_type: "emergency",
@@ -87,6 +98,20 @@ for (const entry of acceptedCases) {
 }
 
 const rejectedCases = [
+  ["Core P4 without owner approval", {
+    route_type: "core_p4",
+    requested_ramp: "postman",
+    requested_node: "validator",
+    emergency_operator_approval: true
+  }, "owner_approval_required", 403],
+  ["Core P4 payment execution", {
+    route_type: "core_p4",
+    requested_ramp: "postman",
+    requested_node: "validator",
+    owner_approval: true,
+    emergency_operator_approval: true,
+    payment_execution_requested: true
+  }, "payment_execution_prohibited", 403],
   ["missing owner approval", {
     route_type: "emergency",
     requested_ramp: "aws_lambda",
