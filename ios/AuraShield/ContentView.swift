@@ -75,7 +75,7 @@ struct ContentView: View {
                 .foregroundStyle(.white.opacity(0.82))
                 .multilineTextAlignment(.center)
 
-            Button(session.isAvailable ? "Preview offline state" : "Return to ready") {
+            Button(session.isAvailable ? "Preview offline state" : "Restore Aura availability") {
                 isCheckInFocused = false
                 session.setAvailable(!session.isAvailable)
             }
