@@ -31,7 +31,7 @@ final class AuraPresenceModelTests: XCTestCase {
         XCTAssertEqual(session.checkIn, "I could use a calm moment.")
         XCTAssertEqual(
             session.response,
-            "Aura is here as a digital support presence. Your check-in remains on this device."
+            "Aura is here as a digital support presence. Your check-in was not sent."
         )
     }
 
@@ -64,6 +64,21 @@ final class AuraPresenceModelTests: XCTestCase {
         )
     }
 
+    func testReturningAvailableWithPreservedDraftResumesListening() {
+        var session = AuraPresenceSession()
+        session.beginCheckIn()
+        session.checkIn = "Please keep this draft."
+        session.setAvailable(false)
+
+        session.setAvailable(true)
+
+        XCTAssertEqual(session.state, .listening)
+        XCTAssertEqual(session.checkIn, "Please keep this draft.")
+        XCTAssertTrue(session.response.isEmpty)
+        XCTAssertNil(session.validationMessage)
+        XCTAssertEqual(session.submitCheckIn(), .accepted)
+    }
+
     func testCompletingResponseReturnsToReadyOnlyWhileAvailable() {
         var session = AuraPresenceSession()
         session.beginCheckIn()
@@ -89,6 +104,21 @@ final class AuraPresenceModelTests: XCTestCase {
 
         XCTAssertEqual(session.state, .listening)
         XCTAssertTrue(session.checkIn.isEmpty)
+    }
+
+    func testCompletedResponseDoesNotClaimClearedDraftIsRetained() {
+        var session = AuraPresenceSession()
+        session.beginCheckIn()
+        session.checkIn = "Private check-in."
+        XCTAssertEqual(session.submitCheckIn(), .accepted)
+
+        session.completeResponse()
+
+        XCTAssertTrue(session.checkIn.isEmpty)
+        XCTAssertEqual(
+            session.response,
+            "Aura is here as a digital support presence. Your check-in was not sent."
+        )
     }
 
     func testCheckInIsLimitedToTwoHundredEightyCharacters() {

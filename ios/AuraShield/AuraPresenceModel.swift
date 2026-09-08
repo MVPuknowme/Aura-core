@@ -17,7 +17,7 @@ struct AuraPresenceSession: Equatable, Sendable {
     static let maximumCheckInLength = 280
 
     static let digitalResponse =
-        "Aura is here as a digital support presence. Your check-in remains on this device."
+        "Aura is here as a digital support presence. Your check-in was not sent."
 
     static let offlineResponse =
         "Aura is offline. Your check-in is still on this device and was not sent."
@@ -88,7 +88,7 @@ struct AuraPresenceSession: Equatable, Sendable {
         isAvailable = available
 
         if available {
-            state = .ready
+            state = checkIn.isEmpty ? .ready : .listening
             response = ""
             validationMessage = nil
         } else {
