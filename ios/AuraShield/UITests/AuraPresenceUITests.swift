@@ -29,9 +29,28 @@ final class AuraPresenceUITests: XCTestCase {
             "Aura response: Aura is offline. Your check-in is still on this device and was not sent."
         )
 
-        app.buttons["Return to ready"].tap()
+        let restoreControl = app.buttons["Restore Aura availability"]
+        XCTAssertTrue(restoreControl.waitForExistence(timeout: 2))
+        restoreControl.tap()
 
-        XCTAssertTrue(app.buttons["Send check-in"].waitForExistence(timeout: 2))
+        let listeningExpectation = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "label == %@", "Aura status: Listening"),
+            object: status
+        )
+        XCTAssertEqual(XCTWaiter.wait(for: [listeningExpectation], timeout: 2), .completed)
         XCTAssertEqual(editor.value as? String, "Keep this draft.")
+
+        let sendControl = app.buttons["Send check-in"]
+        XCTAssertTrue(sendControl.waitForExistence(timeout: 2))
+        sendControl.tap()
+
+        let responseExpectation = XCTNSPredicateExpectation(
+            predicate: NSPredicate(
+                format: "label == %@",
+                "Aura response: Aura is here as a digital support presence. Your check-in was not sent."
+            ),
+            object: response
+        )
+        XCTAssertEqual(XCTWaiter.wait(for: [responseExpectation], timeout: 2), .completed)
     }
 }
