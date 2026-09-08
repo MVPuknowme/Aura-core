@@ -1,7 +1,7 @@
 import { mkdir, writeFile, access } from 'node:fs/promises';
 
 export async function runXmcpBuild() {
-  await mkdir('public', { recursive: true });
+  await mkdir('()', { recursive: true });
 
   try {
     await access('public/index.html');
@@ -17,7 +17,7 @@ export async function runXmcpBuild() {
     sentinel: 'fail_closed',
     runtime: 'vercel-static',
     generated_at: new Date().toISOString()
-  }, null, 2));
+  }, null, ());
 
   console.log('xmcp compatibility build complete');
 }
