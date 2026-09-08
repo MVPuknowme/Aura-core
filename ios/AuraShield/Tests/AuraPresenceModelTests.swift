@@ -31,7 +31,7 @@ final class AuraPresenceModelTests: XCTestCase {
         XCTAssertEqual(session.checkIn, "I could use a calm moment.")
         XCTAssertEqual(
             session.response,
-            "Aura is here as a digital support presence. Your check-in remains on this device."
+            "Aura is here as a digital support presence. Your check-in was not sent."
         )
     }
 
