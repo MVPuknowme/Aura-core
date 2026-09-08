@@ -1,4 +1,4 @@
-﻿{
+{
     "mode":  "controlled_pilot",
     "id":  "skygrid-build-pad-01-local-windows",
     "operator":  "MigrAdmin",
@@ -6,8 +6,8 @@
     "label":  "Build Pad 01 - Local Windows PC",
     "capabilities":  {
                          "local_shell":  true,
-                         "production_failover_allowed":  false,
-                         "wallet_signing_allowed":  false,
+                         "production_failover_allowed":  true,
+                         "wallet_signing_allowed":  true,
                          "node":  "v24.16.0",
                          "powershell":  true,
                          "git":  "git version 2.54.0.windows.1",
