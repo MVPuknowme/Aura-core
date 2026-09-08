@@ -22,7 +22,7 @@
       ]
     }
   },
-  "remoteEnv": {
+  "Env": {
     "AURA_RECON_ENV": "codespaces"
   }
 }
