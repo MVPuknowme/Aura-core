@@ -88,7 +88,7 @@ struct AuraPresenceSession: Equatable, Sendable {
         isAvailable = available
 
         if available {
-            state = .ready
+            state = checkIn.isEmpty ? .ready : .listening
             response = ""
             validationMessage = nil
         } else {
