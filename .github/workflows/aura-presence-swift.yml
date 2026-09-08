@@ -41,12 +41,21 @@ jobs:
           xcodegen --version
           xcodegen generate --spec ios/AuraShield/project.yml
 
+      - name: Prepare Aura iPhone simulator
+        run: |
+          xcrun simctl list
+          xcrun simctl create \
+            "Aura CI iPhone" \
+            "com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro" \
+            "com.apple.CoreSimulator.SimRuntime.iOS-18-5"
+          xcrun simctl list devices available
+
       - name: Test Aura screen on iPhone Simulator
         run: >-
           xcodebuild
           -project ios/AuraShield/AuraShield.xcodeproj
           -scheme AuraShield
           -configuration Debug
-          -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5'
+          -destination 'platform=iOS Simulator,name=Aura CI iPhone,OS=18.5'
           CODE_SIGNING_ALLOWED=NO
           test
