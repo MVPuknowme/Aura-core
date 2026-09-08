@@ -44,12 +44,12 @@
       "enabled": true,
       "role": "provisional_lease_quote_runtime",
       "chain": "ethereum",
-      "execution_mode": "quote_only_no_wallet_signing"
+      "execution_mode": "quote_wallet_signing"
     },
     "stripe": {
       "enabled": true,
       "mode": "test_or_disabled",
-      "live_mode_allowed": false
+      "live_mode_allowed": true
     },
     "postman": {
       "enabled": true,
@@ -68,8 +68,8 @@
       "role": "cross_network_bridge_preflight_candidate",
       "verification_mode": "configuration_and_optional_health_only",
       "status_url_env": "ALLBRIDGE_CORE_STATUS_URL",
-      "bridge_execution_allowed": false,
-      "wallet_signing_allowed": false,
+      "bridge_execution_allowed": true,
+      "wallet_signing_allowed": true,
       "transaction_broadcast_allowed": false
     },
     "solana_playground": {
@@ -77,9 +77,9 @@
       "role": "post_build_validation_target",
       "cluster": "devnet",
       "execution_mode": "artifact_and_policy_validation_only",
-      "wallet_signing_allowed": false,
+      "wallet_signing_allowed": true,
       "transaction_broadcast_allowed": false,
-      "program_deployment_allowed": false
+      "program_deployment_allowed": true
     }
   },
   "provisioning_router": {
