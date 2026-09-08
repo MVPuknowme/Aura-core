@@ -16,13 +16,22 @@ final class AuraPresenceUITests: XCTestCase {
         XCTAssertTrue(offlineControl.waitForExistence(timeout: 2))
         offlineControl.tap()
 
-        XCTAssertTrue(app.staticTexts["Offline"].waitForExistence(timeout: 2))
+        let status = app.descendants(matching: .any)["aura-status"]
+        XCTAssertTrue(status.waitForExistence(timeout: 2))
+        XCTAssertEqual(status.label, "Aura status: Offline")
         XCTAssertEqual(editor.value as? String, "Keep this draft.")
         XCTAssertFalse(app.buttons["Send check-in"].exists)
-        XCTAssertTrue(
-            app.staticTexts[
-                "Aura is offline. Your check-in is still on this device and was not sent."
-            ].exists
+
+        let response = app.descendants(matching: .any)["aura-response"]
+        XCTAssertTrue(response.waitForExistence(timeout: 2))
+        XCTAssertEqual(
+            response.label,
+            "Aura response: Aura is offline. Your check-in is still on this device and was not sent."
         )
+
+        app.buttons["Return to ready"].tap()
+
+        XCTAssertTrue(app.buttons["Send check-in"].waitForExistence(timeout: 2))
+        XCTAssertEqual(editor.value as? String, "Keep this draft.")
     }
 }
