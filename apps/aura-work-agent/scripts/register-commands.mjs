@@ -4,7 +4,7 @@ const guildId = process.env.DISCORD_GUILD_ID;
 
 if (!applicationId || !botToken) {
   console.error("DISCORD_APPLICATION_ID and DISCORD_BOT_TOKEN are required.");
-  process.exit(1);
+  process.exit();
 }
 
 const commands = [
@@ -58,8 +58,8 @@ const response = await fetch(`https://discord.com/api/v10${route}`, {
 
 const body = await response.text();
 if (!response.ok) {
-  console.error(`Discord API ${response.status}: ${body}`);
-  process.exit(1);
+  console.(`Discord API ${response.status}: ${body}`);
+  process.exit();
 }
 
 const registered = JSON.parse(body);
