@@ -3,12 +3,12 @@ function Invoke-AuraSelfCommit {
 
     $changes = git status --short
     if (-not $changes) {
-        return "No changes to commit."
+        return "changes to commit."
     }
 
     git add .
     git commit -m $Message
-    return "Aura committed local changes. Push still requires human confirmation."
+    return "committed local changes. Push still requires human confirmation."
 }
 
 function Invoke-AuraCommand {
