@@ -68,6 +68,7 @@ struct ContentView: View {
             .background(.white.opacity(0.10), in: Capsule())
             .accessibilityElement(children: .combine)
             .accessibilityLabel("Aura status: \(session.state.rawValue)")
+            .accessibilityIdentifier("aura-status")
 
             Text("A quiet digital space to check in.")
                 .font(.title3)
@@ -173,6 +174,7 @@ struct ContentView: View {
                     ? "No Aura response yet"
                     : "Aura response: \(session.response)"
             )
+            .accessibilityIdentifier("aura-response")
         }
         .padding(18)
         .background(.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
