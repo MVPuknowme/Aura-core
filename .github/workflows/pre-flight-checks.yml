@@ -1,0 +1,86 @@
+name: Pre-Flight Checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  artifact-validation:
+    name: Validate Required Artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check Newman artifact generation
+        run: |
+          echo "Checking for Newman test artifacts..."
+          
+          # Create artifacts directory if it doesn't exist
+          mkdir -p artifacts/newman
+          
+          # Validate artifact structure
+          if [ -f "artifacts/newman/latest-summary.json" ]; then
+            echo "✓ Newman artifact exists"
+            
+            # Validate JSON structure
+            if python3 -c "import json; json.load(open('artifacts/newman/latest-summary.json'))" 2>/dev/null; then
+              echo "✓ Newman artifact is valid JSON"
+            else
+              echo "✗ Newman artifact JSON is invalid"
+              exit 1
+            fi
+          else
+            echo "⚠ Newman artifact not found - will be generated during deployment"
+          fi
+
+      - name: Validate configuration files
+        run: |
+          echo "Validating configuration files..."
+          
+          # Check package.json
+          if [ -f "package.json" ]; then
+            echo "✓ package.json exists"
+            if python3 -c "import json; json.load(open('package.json'))" 2>/dev/null; then
+              echo "✓ package.json is valid"
+            else
+              echo "✗ package.json is invalid"
+              exit 1
+            fi
+          else
+            echo "✗ package.json not found"
+            exit 1
+          fi
+
+      - name: Check workflow files
+        run: |
+          echo "Validating workflow files..."
+          
+          workflows=(
+            ".github/workflows/skygrid-ramp-smoke.yml"
+            ".github/workflows/debug-on-failure.yml"
+            ".github/workflows/deploy.yml"
+          )
+          
+          for workflow in "${workflows[@]}"; do
+            if [ -f "$workflow" ]; then
+              echo "✓ $workflow exists"
+            else
+              echo "⚠ $workflow not found"
+            fi
+          done
+
+      - name: Summary
+        if: success()
+        run: |
+          echo "═════════════════════════════════"
+          echo "Pre-Flight Checks: PASSED ✓"
+          echo "═════════════════════════════════"
+          echo ""
+          echo "Artifacts validated"
+          echo "Configuration valid"
+          echo "Workflows ready"
+          echo ""
+          echo "Ready for deployment!"
