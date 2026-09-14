@@ -7,6 +7,7 @@ on:
       - "src/action-providers/base-signer.ts"
       - "src/agentkit/create-skygrid-agentkit.ts"
       - "tests/skygrid-base-signer.test.mjs"
+      - "tests/web3-onramp.test.cjs"
       - ".github/workflows/base-signer-ci.yml"
   push:
     branches:
@@ -16,6 +17,7 @@ on:
       - "src/action-providers/base-signer.ts"
       - "src/agentkit/create-skygrid-agentkit.ts"
       - "tests/skygrid-base-signer.test.mjs"
+      - "tests/web3-onramp.test.cjs"
       - ".github/workflows/base-signer-ci.yml"
   workflow_dispatch:
 
@@ -35,5 +37,5 @@ jobs:
         with:
           node-version: "24"
 
-      - name: Run guarded Base signer tests
-        run: node --test tests/skygrid-base-signer.test.mjs
+      - name: Run guarded Base signer and on-ramp tests
+        run: node --test tests/skygrid-base-signer.test.mjs tests/web3-onramp.test.cjs
