@@ -1,0 +1,40 @@
+name: c64db11 Windows 11 Compatibility
+
+on:
+  push:
+    branches: [ "MVPuknowme" ]
+  pull_request:
+    branches: [ "MVPuknowme" ]
+  workflow_dispatch: {}
+
+jobs:
+  win11-contract:
+    name: c64db11 contract on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Verify c64db11 Windows 11 policy
+        run: node --test tests/skygrid-win11-compat.test.mjs
+
+      - name: Syntax-check local Windows 11 preflight
+        run: node --check scripts/skygrid-win11-preflight.mjs
+
+      - name: Report Windows runner context
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Write-Host "CI validates the c64db11 policy contract."
+          Write-Host "GitHub-hosted Windows runners are not asserted to be Windows 11 client devices."
+          Write-Host "Run 'node scripts/skygrid-win11-preflight.mjs' on the target Windows 11 machine for device-level validation."
