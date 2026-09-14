@@ -20,6 +20,24 @@ export const SEAPORT_CONFIG = Object.freeze({
     conduit: "0x1E0049783F008A0085193E00003D00cd54003c71",
     conduit_key: "0x0000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000"
   }),
+  activation: Object.freeze({
+    status: "active",
+    enabled: true,
+    scope: "read_visibility_preflight_only",
+    capabilities: Object.freeze({
+      contract_reads: true,
+      order_visibility: true,
+      identity_preflight: true,
+      order_preflight: true,
+      wallet_signing: false,
+      token_approvals: false,
+      order_submission: false,
+      order_fulfillment: false,
+      transaction_broadcast: false,
+      asset_transfer: false,
+      payment_execution: false
+    })
+  }),
   policy: Object.freeze({
     advisory_only: true,
     read_only: true,
