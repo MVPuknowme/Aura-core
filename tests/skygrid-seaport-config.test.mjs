@@ -31,6 +31,23 @@ test("Seaport configuration is pinned to Arbitrum One and remains fail-closed", 
   assert.equal(SEAPORT_CONFIG.policy.asset_transfer, false);
 });
 
+test("Seaport is active only for read, visibility, and preflight operations", () => {
+  assert.equal(SEAPORT_CONFIG.activation.status, "active");
+  assert.equal(SEAPORT_CONFIG.activation.enabled, true);
+  assert.equal(SEAPORT_CONFIG.activation.capabilities.contract_reads, true);
+  assert.equal(SEAPORT_CONFIG.activation.capabilities.order_visibility, true);
+  assert.equal(SEAPORT_CONFIG.activation.capabilities.identity_preflight, true);
+  assert.equal(SEAPORT_CONFIG.activation.capabilities.order_preflight, true);
+
+  assert.equal(SEAPORT_CONFIG.activation.capabilities.wallet_signing, false);
+  assert.equal(SEAPORT_CONFIG.activation.capabilities.token_approvals, false);
+  assert.equal(SEAPORT_CONFIG.activation.capabilities.order_submission, false);
+  assert.equal(SEAPORT_CONFIG.activation.capabilities.order_fulfillment, false);
+  assert.equal(SEAPORT_CONFIG.activation.capabilities.transaction_broadcast, false);
+  assert.equal(SEAPORT_CONFIG.activation.capabilities.asset_transfer, false);
+  assert.equal(SEAPORT_CONFIG.activation.capabilities.payment_execution, false);
+});
+
 test("Seaport configuration is provider-neutral", () => {
   assert.equal(JSON.stringify(SEAPORT_CONFIG).toLowerCase().includes("vercel"), false);
 });
