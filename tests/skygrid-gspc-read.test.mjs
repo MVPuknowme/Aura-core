@@ -7,3 +7,8 @@ const ROUTE_PATH = new URL("../api/skygrid/gspc.mjs", import.meta.url);
 test("ships the SKYGRID GSPC read route", () => {
   assert.equal(existsSync(ROUTE_PATH), true);
 });
+
+test("exports a testable GSPC evaluator", async () => {
+  const route = await import(ROUTE_PATH);
+  assert.equal(typeof route.evaluateGspcRead, "function");
+});
