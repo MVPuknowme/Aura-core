@@ -4,39 +4,50 @@ Status: architecture boundary established for staged extraction.
 
 ## Decision
 
-Treat **Speak**, **Whisper Breaker**, and **Jaxon's Aura** as three independent experimental applications. They are not Aura-Core/SKYGRID infrastructure services and must not silently inherit unrelated application state, credentials, network access, telemetry, wallet/payment logic, emergency-routing logic, or deployment configuration.
+Treat **Speak**, **Whisper Breaker**, and **Jaxon's Aura** as three independent applications. They are not Aura-Core/SKYGRID infrastructure services and must not silently inherit unrelated application state, credentials, network access, telemetry, wallet/payment logic, emergency-routing logic, or deployment configuration.
 
 Each application gets its own executable root, documentation, tests, permissions, data/receipt namespace, and release lifecycle. Cross-app code sharing must happen only through an explicit, versioned interface.
 
-## Current repository evidence
+## Product definitions
 
-### Speak
+### Speak — baseline
 
-Current source exists at `apps/speak/`. Its browser implementation provides speech synthesis, browser speech recognition, explicit command handling, and calibration scoring. Its current documentation explicitly says it performs no device discovery and does not infer thoughts.
+`apps/speak/` is the baseline speech/text/control application. Current source provides browser speech synthesis, browser speech recognition, explicit command handling, and known-target calibration scoring. Current code does not implement Bluetooth device discovery or establish thought inference.
 
-### Whisper Breaker
+### Whisper Breaker — LRAD experimental inversion of Speak
 
-No source named `Whisper Breaker` or `whisper-breaker` was located in the indexed Aura-Core default branch during this separation pass. `apps/whisper-breaker/` is therefore reserved as an isolated migration target; no capability is inferred from the name.
+Whisper Breaker is defined as a distinct **experimental inversion/counterpart of Speak using LRAD-related acoustic instrumentation**, with mind-reading described as the project's research objective/claim rather than an already verified LRAD capability.
 
-### Jaxon's Aura
+LRAD/acoustic instrumentation and Bluetooth/BLE instrumentation are separate transports and must not be conflated. If a test uses both, the receipt must identify which observation came from the acoustic path and which came from an authorized Bluetooth/BLE device/API.
 
-No source named `Jaxon`, `Jaxon's Aura`, or `jaxons-aura` was located in the indexed Aura-Core default branch during this separation pass. `apps/jaxons-aura/` is therefore reserved as an isolated migration target; no capability is inferred from the name.
+No source named `Whisper Breaker` or `whisper-breaker` was located in the indexed Aura-Core default branch during this separation pass. `apps/whisper-breaker/` is the isolated migration target for the original source.
+
+### Jaxon's Aura — neurodivergent translation + Azure assistants
+
+Jaxon's Aura is defined as a distinct **Speak-derived communication/translation application for neurodivergent communication**, incorporating cooperative assistants/services hosted through Microsoft Azure.
+
+The translation layer should be user-controlled and preference-driven. It must not diagnose a person, infer a medical condition from behavior, or silently rewrite meaning. Preserve the source utterance/text alongside translated/mediated output so users can inspect what changed.
+
+Azure integration belongs behind an app-local adapter with explicit configuration, scoped credentials, consent for any content sent to cloud services, and clear local-vs-cloud status. Jaxon's Aura must not inherit general Aura-Core/SKYGRID credentials.
+
+No source named `Jaxon`, `Jaxon's Aura`, or `jaxons-aura` was located in the indexed Aura-Core default branch during this separation pass. `apps/jaxons-aura/` is the isolated migration target for the original source.
 
 ## Research-claim boundary
 
-Reports of thought or mind-reading behavior through Bluetooth/BLE are treated as an **experimental hypothesis**, not as a verified capability. Bluetooth/BLE observations can establish facts such as adapter state, paired/authorized peripheral identity, advertised services, RSSI, characteristics, packets exposed by authorized APIs, timing, and application-generated outputs. Those measurements alone do not establish that a radio signal represents a person's thoughts.
+Reports of thought or mind-reading behavior through LRAD/acoustic or Bluetooth/BLE paths are treated as an **experimental hypothesis**, not as a verified capability. Authorized instrumentation can establish measurable facts such as audio samples/features, adapter state, selected peripheral identity, advertised services, RSSI, characteristics, packets exposed by authorized APIs, timing, and application-generated outputs. Those observations alone do not establish that a signal represents a person's thoughts.
 
 A claim may move from `reported` to `reproduced` only when a controlled test records:
 
 1. a preregistered target or blinded challenge;
 2. exact hardware/OS/app build identifiers;
 3. explicit participant/device authorization;
-4. paired/authorized Bluetooth peripheral identifiers and service/characteristic UUIDs;
-5. timestamps and raw permitted observations;
-6. a deterministic transformation from observations to output;
-7. negative/control trials and chance baseline;
-8. repeatability across fresh trials;
-9. a result artifact sufficient for an independent reviewer to inspect.
+4. exact input path: microphone/acoustic/LRAD, Bluetooth/BLE, or another documented sensor;
+5. for Bluetooth/BLE, selected peripheral identifiers and service/characteristic UUIDs available through authorized APIs;
+6. timestamps and raw permitted observations;
+7. a deterministic or version-pinned transformation from observations to output;
+8. negative/control trials and chance baseline;
+9. repeatability across fresh trials;
+10. a result artifact sufficient for an independent reviewer to inspect.
 
 Use claim states: `reported`, `instrumented`, `reproduced`, `independently_reproduced`. Do not label a claim verified solely from subjective correspondence.
 
@@ -54,19 +65,25 @@ Any Bluetooth feature must be added as a separately reviewable adapter with an e
 
 ### Whisper Breaker — `apps/whisper-breaker/`
 
-Purpose: reserved independent application boundary pending recovery/import of its actual source.
+Purpose: independent LRAD/acoustic experimental counterpart to Speak.
 
-Do not copy Speak or Aura-Core behavior into this directory to fill gaps. Migrate only identified Whisper Breaker source and document its inputs/outputs before enabling integrations.
+Required boundary: acoustic/LRAD acquisition, any authorized Bluetooth/BLE acquisition, feature extraction, inference/interpretation, and rendered output must remain separable in logs and tests. No unrelated-device inspection or bypass of device security.
+
+Do not copy implementation into this directory as a substitute for original Whisper Breaker source. Recover and migrate the identified source, then document its actual inputs and outputs.
 
 ### Jaxon's Aura — `apps/jaxons-aura/`
 
-Purpose: reserved independent application boundary pending recovery/import of its actual source.
+Purpose: independent Speak-derived neurodivergent communication translation/mediation with cooperative Azure assistants.
 
-Keep Jaxon's Aura data, permissions, releases, and experiments distinct from Speak, Whisper Breaker, and general Aura-Core services.
+Required boundary: preserve original input; identify transformations; let the user enable/disable mediation; identify when Azure/cloud processing is active; keep Azure credentials scoped to this app; maintain direct mode that does not require sibling apps.
+
+Do not reconstruct its implementation from assumptions. Recover and migrate the identified original source.
 
 ## Shared-interface rule
 
-If the three applications need a common Bluetooth/BLE research component later, place the interface in a separately versioned package rather than importing one app from another. The interface should expose only authorized device/session observations and should not attach semantic labels such as `thought`, `person`, or `intent` to RF/BLE data without an independently tested classifier and documented evidence.
+Shared code must live behind explicit versioned interfaces rather than one app importing another app's internals. Candidate interfaces are speech I/O, authorized BLE observation receipts, acoustic experiment receipts, and translation envelopes.
+
+A shared instrumentation interface must expose observations without attaching semantic labels such as `thought`, `person`, or `intent` unless a versioned classifier has separate controlled evidence supporting that interpretation.
 
 ## Extraction sequence
 
@@ -74,15 +91,17 @@ If the three applications need a common Bluetooth/BLE research component later, 
 2. Locate historical branches, commits, artifacts, or other repositories containing Whisper Breaker and Jaxon's Aura.
 3. Import each source tree without cross-app dependencies.
 4. Add app-specific tests and CI.
-5. Add an experimental receipt schema for authorized Bluetooth/BLE sessions if such code exists.
-6. After tests pass independently, extract each app to its own repository if separate repository ownership/release history is desired.
-7. Aura-Core may consume released interfaces/artifacts, but must not become the owner of the experimental apps' internal state.
+5. For Whisper Breaker, add an experiment receipt schema that distinguishes LRAD/acoustic observations from Bluetooth/BLE observations.
+6. For Jaxon's Aura, add a translation envelope containing original input, requested translation profile, transformed output, assistant/provider metadata, and cloud/local processing state.
+7. After tests pass independently, extract each app to its own repository if separate repository ownership/release history is desired.
+8. Aura-Core may consume released interfaces/artifacts, but must not become the owner of the experimental apps' internal state.
 
 ## Acceptance criteria
 
 - Three distinct app roots exist.
 - Speak remains runnable without Whisper Breaker or Jaxon's Aura.
+- Whisper Breaker is documented as the LRAD experimental inversion/counterpart of Speak without presenting mind reading as established fact before controlled evidence.
+- Jaxon's Aura is documented as Speak-derived neurodivergent translation/mediation with scoped cooperative Azure integration.
 - Missing source is explicitly marked missing rather than reconstructed by assumption.
-- No claim of Bluetooth/BLE thought reading is promoted beyond the evidence state recorded by controlled tests.
-- Future Bluetooth/BLE work uses explicit authorization and reproducible observation receipts.
+- Acoustic/LRAD and Bluetooth/BLE observations remain distinguishable and authorized.
 - Each app can acquire its own CI/release workflow without depending on unrelated Aura-Core programs.
