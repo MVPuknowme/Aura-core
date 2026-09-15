@@ -20,15 +20,14 @@ export async function evaluateGspcRead({ axis, fetchImpl = fetch, now = () => ne
   if (payload?.schema !== EXPECTED_SCHEMA) return blocked(base, 502, "gspc_schema_mismatch", { expected_schema: EXPECTED_SCHEMA });
   return { status: 200, body: { ...base, ok: true, state: "read_verified", execution_allowed: false, reason: "gspc_read_verified", ...(axisName ? { query: { axis: axisName } } : {}), data: sanitizePayload(payload) } };
 }
-function applyHeaders(res) {
-  res.setHeader("Cache-Control", "no-store");
-  res.setHeader("X-Content-Type-Options", "nosniff");
-  res.setHeader("X-SKYGRID-Product", PRODUCT);
-  res.setHeader("X-SKYGRID-Sentinel", "fail_closed");
-  res.setHeader("X-SKYGRID-Execution", "disabled");
-}
+function applyHeaders(res) { res.setHeader("Cache-Control", "no-store"); res.setHeader("X-Content-Type-Options", "nosniff"); res.setHeader("X-SKYGRID-Product", PRODUCT); res.setHeader("X-SKYGRID-Sentinel", "fail_closed"); res.setHeader("X-SKYGRID-Execution", "disabled"); }
 export default async function handler(req, res) {
   applyHeaders(res);
+  if (req.method !== "GET") {
+    res.setHeader("Allow", "GET");
+    const result = blocked(receiptBase(() => new Date().toISOString()), 405, "method_not_allowed", { allowed: ["GET"] });
+    return res.status(result.status).json(result.body);
+  }
   const result = await evaluateGspcRead({ axis: req.query?.axis });
   return res.status(result.status).json(result.body);
 }
