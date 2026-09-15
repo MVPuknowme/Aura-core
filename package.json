@@ -33,6 +33,8 @@
         "aerodrome:rpc:test": "node --check api/aerodrome/wallet.mjs && node scripts/test-aerodrome-wallet-rpc.mjs",
         "wallet:dual-lane:test": "node --check api/wallet/dual-lane.mjs && node --check config/skygrid-wallet-lanes.mjs && node scripts/test-dual-lane-wallet-rpc.mjs",
         "wallet:routing:test": "node --check scripts/skygrid-local-runtime-router.mjs && node scripts/test-local-wallet-routing.mjs",
+        "wallet:inventory:test": "node --test tests/skygrid-goldrush-wallet-inventory.test.mjs",
+        "wallet:inventory:arbitrum": "node scripts/skygrid-goldrush-wallet-inventory.mjs",
         "security:test": "node --test tests/skygrid-operator-mode.test.mjs && node scripts/test-runtime-security.mjs && node scripts/test-aerodrome-wallet-rpc.mjs && node scripts/test-dual-lane-wallet-rpc.mjs && node scripts/test-local-wallet-routing.mjs",
         "skygrid:verify": "node scripts/verify-skygrid-routes.mjs",
         "skygrid:test:routing": "node scripts/test-skygrid-routing-success.mjs",
