@@ -43,7 +43,6 @@ test("reads the canonical GSPC board and returns only allowlisted fields", async
       return response({ payload: validPayload({ unexpected_secret: "drop-me" }) });
     }
   });
-
   assert.equal(observedUrl.href, "https://councilof.ai/api/gspc");
   assert.equal(result.status, 200);
   assert.equal(result.body.state, "read_verified");
@@ -64,8 +63,21 @@ test("forwards one validated axis to the canonical endpoint", async () => {
       return response({ payload: validPayload() });
     }
   });
-
   assert.equal(observedUrl.href, "https://councilof.ai/api/gspc?axis=safety");
   assert.equal(result.status, 200);
   assert.equal(result.body.query.axis, "safety");
+});
+
+test("rejects malformed axis input before any upstream request", async () => {
+  const { evaluateGspcRead } = await import(ROUTE_PATH);
+  let called = false;
+  const result = await evaluateGspcRead({
+    axis: "safety&admin=true",
+    now: () => NOW,
+    fetchImpl: async () => { called = true; return response({ payload: validPayload() }); }
+  });
+  assert.equal(called, false);
+  assert.equal(result.status, 400);
+  assert.equal(result.body.reason, "gspc_axis_invalid");
+  assert.equal(result.body.execution_allowed, false);
 });
