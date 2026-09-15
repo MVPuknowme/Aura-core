@@ -15,6 +15,7 @@ export async function evaluateGspcRead({ axis, fetchImpl = fetch, now = () => ne
   try { response = await fetchImpl(upstream, { method: "GET", headers: { accept: "application/json", "user-agent": "SKYGRID-GSPC-Read/1.0" }, signal: controller.signal }); }
   catch (error) { return blocked(base, error?.name === "AbortError" ? 504 : 502, error?.name === "AbortError" ? "gspc_request_timeout" : "gspc_unreachable"); }
   finally { clearTimeout(timeout); }
+  if (!response.ok && response.status !== 404) return blocked(base, 502, "gspc_upstream_unavailable", { upstream_status: response.status });
   let payload; try { payload = await response.json(); } catch { return blocked(base, 502, "gspc_response_invalid"); }
   if (axisName && response.status === 404 && payload?.error === "unknown axis") return blocked(base, 404, "gspc_axis_unknown", { query: { axis: axisName }, known: safeAxisList(payload.known) });
   if (payload?.schema !== EXPECTED_SCHEMA) return blocked(base, 502, "gspc_schema_mismatch", { expected_schema: EXPECTED_SCHEMA });
@@ -23,11 +24,7 @@ export async function evaluateGspcRead({ axis, fetchImpl = fetch, now = () => ne
 function applyHeaders(res) { res.setHeader("Cache-Control", "no-store"); res.setHeader("X-Content-Type-Options", "nosniff"); res.setHeader("X-SKYGRID-Product", PRODUCT); res.setHeader("X-SKYGRID-Sentinel", "fail_closed"); res.setHeader("X-SKYGRID-Execution", "disabled"); }
 export default async function handler(req, res) {
   applyHeaders(res);
-  if (req.method !== "GET") {
-    res.setHeader("Allow", "GET");
-    const result = blocked(receiptBase(() => new Date().toISOString()), 405, "method_not_allowed", { allowed: ["GET"] });
-    return res.status(result.status).json(result.body);
-  }
+  if (req.method !== "GET") { res.setHeader("Allow", "GET"); const result = blocked(receiptBase(() => new Date().toISOString()), 405, "method_not_allowed", { allowed: ["GET"] }); return res.status(result.status).json(result.body); }
   const result = await evaluateGspcRead({ axis: req.query?.axis });
   return res.status(result.status).json(result.body);
 }
