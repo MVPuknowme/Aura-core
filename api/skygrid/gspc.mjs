@@ -1,1 +1,3 @@
-// SKYGRID GSPC read route. Behavior is added test-first.
+export async function evaluateGspcRead() {
+  return null;
+}
