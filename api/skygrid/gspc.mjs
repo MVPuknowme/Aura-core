@@ -17,6 +17,10 @@ function receiptBase(now) {
   };
 }
 
+function blocked(base, status, reason, extra = {}) {
+  return { status, body: { ...base, ok: false, state: "blocked", execution_allowed: false, reason, ...extra } };
+}
+
 function sanitizePayload(payload) {
   return {
     schema: payload.schema,
@@ -31,14 +35,14 @@ function sanitizePayload(payload) {
   };
 }
 
-export async function evaluateGspcRead({
-  axis,
-  fetchImpl = fetch,
-  now = () => new Date().toISOString()
-} = {}) {
+export async function evaluateGspcRead({ axis, fetchImpl = fetch, now = () => new Date().toISOString() } = {}) {
   const base = receiptBase(now);
   const upstream = new URL(GSPC_URL);
   const axisName = String(axis || "").trim();
+
+  if (axisName && !/^[a-z0-9-]{1,64}$/.test(axisName)) {
+    return blocked(base, 400, "gspc_axis_invalid");
+  }
   if (axisName) upstream.searchParams.set("axis", axisName);
 
   const response = await fetchImpl(upstream, {
