@@ -9,6 +9,20 @@ function response({ ok = true, status = 200, payload = {} } = {}) {
   return { ok, status, async json() { return payload; } };
 }
 
+function validPayload(overrides = {}) {
+  return {
+    schema: "csoai.gspc-axes/0.5",
+    issuer: "CSOAI Ltd",
+    doi: "10.5281/zenodo.21991104",
+    measured_on: { date: "2026-08-25" },
+    totals: { public_count: 22, measured_axes: 22 },
+    axis: [{ axis: "safety", status: "MEASURED", n: 36 }],
+    note: "Measurement, not certification.",
+    site_attestation: { verification_state: "SIGNED" },
+    ...overrides
+  };
+}
+
 test("ships the SKYGRID GSPC read route", () => {
   assert.equal(existsSync(ROUTE_PATH), true);
 });
@@ -26,17 +40,7 @@ test("reads the canonical GSPC board and returns only allowlisted fields", async
     fetchImpl: async (url, options) => {
       observedUrl = url;
       assert.equal(options.method, "GET");
-      return response({ payload: {
-        schema: "csoai.gspc-axes/0.5",
-        issuer: "CSOAI Ltd",
-        doi: "10.5281/zenodo.21991104",
-        measured_on: { date: "2026-08-25" },
-        totals: { public_count: 22, measured_axes: 22 },
-        axis: [{ axis: "safety", status: "MEASURED", n: 36 }],
-        note: "Measurement, not certification.",
-        site_attestation: { verification_state: "SIGNED" },
-        unexpected_secret: "drop-me"
-      } });
+      return response({ payload: validPayload({ unexpected_secret: "drop-me" }) });
     }
   });
 
@@ -47,4 +51,21 @@ test("reads the canonical GSPC board and returns only allowlisted fields", async
   assert.equal(result.body.data.schema, "csoai.gspc-axes/0.5");
   assert.deepEqual(result.body.data.axis, [{ axis: "safety", status: "MEASURED", n: 36 }]);
   assert.equal("unexpected_secret" in result.body.data, false);
+});
+
+test("forwards one validated axis to the canonical endpoint", async () => {
+  const { evaluateGspcRead } = await import(ROUTE_PATH);
+  let observedUrl;
+  const result = await evaluateGspcRead({
+    axis: "safety",
+    now: () => NOW,
+    fetchImpl: async (url) => {
+      observedUrl = url;
+      return response({ payload: validPayload() });
+    }
+  });
+
+  assert.equal(observedUrl.href, "https://councilof.ai/api/gspc?axis=safety");
+  assert.equal(result.status, 200);
+  assert.equal(result.body.query.axis, "safety");
 });
