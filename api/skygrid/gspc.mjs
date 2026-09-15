@@ -20,4 +20,9 @@ export async function evaluateGspcRead({ axis, fetchImpl = fetch, now = () => ne
   if (payload?.schema !== EXPECTED_SCHEMA) return blocked(base, 502, "gspc_schema_mismatch", { expected_schema: EXPECTED_SCHEMA });
   return { status: 200, body: { ...base, ok: true, state: "read_verified", execution_allowed: false, reason: "gspc_read_verified", ...(axisName ? { query: { axis: axisName } } : {}), data: sanitizePayload(payload) } };
 }
+
+export default async function handler(_req, res) {
+  return res.status(501).json({ ok: false, reason: "not_implemented" });
+}
+
 export { EXPECTED_SCHEMA, GSPC_URL };
