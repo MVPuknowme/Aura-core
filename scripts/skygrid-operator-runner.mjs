@@ -39,10 +39,6 @@ if (command === "status") {
     `SKYGRID operator ${config.operator} starting local container${config.vercelBypass ? " as Vercel hosting fallback" : ""}`
   );
   await import("./skygrid-local-runtime-server.mjs");
-} else if (command === "vercel-build") {
-  const config = applyOperatorMode({ operator, runtimeMode: "vercel-build" });
-  console.log(`SKYGRID operator ${config.operator} building Vercel artifact`);
-  await import("./vercel-build.mjs");
 } else {
   console.error(`Unknown operator command: ${command}`);
   process.exitCode = 2;

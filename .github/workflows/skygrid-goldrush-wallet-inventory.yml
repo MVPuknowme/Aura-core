@@ -1,0 +1,33 @@
+name: SKYGRID GoldRush Wallet Inventory
+
+on:
+  push:
+    branches:
+      - MVPuknowme
+    paths:
+      - "scripts/skygrid-goldrush-wallet-inventory.mjs"
+      - "tests/skygrid-goldrush-wallet-inventory.test.mjs"
+      - "package.json"
+      - ".github/workflows/skygrid-goldrush-wallet-inventory.yml"
+  pull_request:
+    paths:
+      - "scripts/skygrid-goldrush-wallet-inventory.mjs"
+      - "tests/skygrid-goldrush-wallet-inventory.test.mjs"
+      - "package.json"
+      - ".github/workflows/skygrid-goldrush-wallet-inventory.yml"
+  workflow_dispatch:
+
+jobs:
+  wallet-inventory-policy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Verify fail-closed GoldRush collector
+        run: node --test tests/skygrid-goldrush-wallet-inventory.test.mjs

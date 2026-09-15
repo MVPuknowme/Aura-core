@@ -10,4 +10,3 @@ if (removedConfig.length > 0) {
 
 await import("./validate-pnpk.mjs");
 await import("./verify-skygrid-manifest-sync.mjs");
-await import("./vercel-build.mjs");

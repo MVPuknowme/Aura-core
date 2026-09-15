@@ -1,10 +1,31 @@
 name: SKYGRID No-Vercel Runtime
 
 on:
+  push:
+    branches:
+      - MVPuknowme
+    paths:
+      - 'bridge/skygrid-emergency-onramp.pnpk'
+      - 'config/skygrid-route-manifest.json'
+      - 'package.json'
+      - 'scripts/seaport.mjs'
+      - 'scripts/vercel-build.mjs'
+      - 'scripts/verify-skygrid-manifest-sync.mjs'
+      - 'scripts/skygrid-route-option-probe.mjs'
+      - 'tests/skygrid-no-vercel-runtime.test.mjs'
+      - 'tests/skygrid-seaport-config.test.mjs'
+      - '.github/workflows/skygrid-no-vercel-runtime.yml'
   pull_request:
     paths:
       - 'bridge/skygrid-emergency-onramp.pnpk'
+      - 'config/skygrid-route-manifest.json'
+      - 'package.json'
+      - 'scripts/seaport.mjs'
+      - 'scripts/vercel-build.mjs'
+      - 'scripts/verify-skygrid-manifest-sync.mjs'
+      - 'scripts/skygrid-route-option-probe.mjs'
       - 'tests/skygrid-no-vercel-runtime.test.mjs'
+      - 'tests/skygrid-seaport-config.test.mjs'
       - '.github/workflows/skygrid-no-vercel-runtime.yml'
 
 jobs:
@@ -17,3 +38,5 @@ jobs:
           node-version: 24
       - name: Verify Vercel is not selectable
         run: node --test tests/skygrid-no-vercel-runtime.test.mjs
+      - name: Verify Seaport is fail-closed on Arbitrum One
+        run: node --test tests/skygrid-seaport-config.test.mjs

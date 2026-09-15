@@ -44,12 +44,12 @@
       "enabled": true,
       "role": "provisional_lease_quote_runtime",
       "chain": "ethereum",
-      "execution_mode": "quote_wallet_signing"
+      "execution_mode": "quote_only_no_wallet_signing"
     },
     "stripe": {
       "enabled": true,
       "mode": "test_or_disabled",
-      "live_mode_allowed": true
+      "live_mode_allowed": false
     },
     "postman": {
       "enabled": true,
@@ -68,8 +68,8 @@
       "role": "cross_network_bridge_preflight_candidate",
       "verification_mode": "configuration_and_optional_health_only",
       "status_url_env": "ALLBRIDGE_CORE_STATUS_URL",
-      "bridge_execution_allowed": true,
-      "wallet_signing_allowed": true,
+      "bridge_execution_allowed": false,
+      "wallet_signing_allowed": false,
       "transaction_broadcast_allowed": false
     },
     "solana_playground": {
@@ -77,9 +77,9 @@
       "role": "post_build_validation_target",
       "cluster": "devnet",
       "execution_mode": "artifact_and_policy_validation_only",
-      "wallet_signing_allowed": true,
+      "wallet_signing_allowed": false,
       "transaction_broadcast_allowed": false,
-      "program_deployment_allowed": true
+      "program_deployment_allowed": false
     }
   },
   "provisioning_router": {
@@ -229,26 +229,11 @@
     "fail_closed": true,
     "receipt_path": "artifacts/pnpk/proofs/postbuild-latest.json",
     "steps": [
-      {
-        "id": "pnpk_validate",
-        "required": true
-      },
-      {
-        "id": "switch_prerun_verify",
-        "required": true
-      },
-      {
-        "id": "autodrill_simulation",
-        "required": true
-      },
-      {
-        "id": "capacity_lease_contract",
-        "required": true
-      },
-      {
-        "id": "solana_playground_preflight",
-        "required": true
-      }
+      { "id": "pnpk_validate", "required": true },
+      { "id": "switch_prerun_verify", "required": true },
+      { "id": "autodrill_simulation", "required": true },
+      { "id": "capacity_lease_contract", "required": true },
+      { "id": "solana_playground_preflight", "required": true }
     ]
   },
   "aura_core_ai_switch": {
@@ -322,17 +307,13 @@
       "selection_rule": "a candidate is selectable only when its required pre-runs pass",
       "checks": {
         "ethernet": {
-          "required_for": [
-            "allbridge_core"
-          ],
+          "required_for": ["allbridge_core"],
           "mode": "presence_and_address_only",
           "os_switching_allowed": false,
           "interface_reconfiguration_allowed": false
         },
         "allbridge_core": {
-          "required_for": [
-            "bridge_preflight"
-          ],
+          "required_for": ["bridge_preflight"],
           "mode": "configuration_and_optional_health_only",
           "external_status_optional_until_configured": true,
           "bridge_execution_allowed": false
@@ -366,11 +347,7 @@
       "enabled": true,
       "method": "POST",
       "route": "/api/stripe/device-link",
-      "must_block": [
-        "execute=true",
-        "activate_device=true",
-        "mode=live"
-      ]
+      "must_block": ["execute=true", "activate_device=true", "mode=live"]
     },
     "capacity_lease_preflight": {
       "enabled": true,
@@ -389,37 +366,20 @@
   },
   "partitions": {
     "emergency": {
-      "allowed_ramps": [
-        "cloudflare_worker",
-        "aws_lambda"
-      ],
-      "allowed_nodes": [
-        "validator",
-        "field",
-        "edge"
-      ],
+      "allowed_ramps": ["cloudflare_worker", "aws_lambda"],
+      "allowed_nodes": ["validator", "field", "edge"],
       "mode": "controlled_pilot",
       "sentinel": "fail_closed"
     },
     "diagnostic": {
-      "allowed_ramps": [
-        "postman"
-      ],
-      "allowed_nodes": [
-        "validator",
-        "home",
-        "edge"
-      ],
+      "allowed_ramps": ["postman"],
+      "allowed_nodes": ["validator", "home", "edge"],
       "mode": "controlled_pilot",
       "sentinel": "fail_closed"
     },
     "core_p4": {
-      "allowed_ramps": [
-        "postman"
-      ],
-      "allowed_nodes": [
-        "validator"
-      ],
+      "allowed_ramps": ["postman"],
+      "allowed_nodes": ["validator"],
       "mode": "preflight_only",
       "sentinel": "fail_closed",
       "execution_authority": "none",
@@ -430,14 +390,8 @@
       "private_data_movement_allowed": false
     },
     "web3_quote": {
-      "allowed_ramps": [
-        "arbitrum",
-        "scroll",
-        "base"
-      ],
-      "allowed_nodes": [
-        "validator"
-      ],
+      "allowed_ramps": ["arbitrum", "scroll", "base"],
+      "allowed_nodes": ["validator"],
       "mode": "controlled_pilot",
       "sentinel": "fail_closed",
       "wallet_signing_allowed": false,
@@ -445,15 +399,8 @@
       "payment_execution_allowed": false
     },
     "autodrill": {
-      "allowed_ramps": [
-        "aws_lambda",
-        "postman"
-      ],
-      "allowed_nodes": [
-        "edge",
-        "field",
-        "validator"
-      ],
+      "allowed_ramps": ["aws_lambda", "postman"],
+      "allowed_nodes": ["edge", "field", "validator"],
       "mode": "quote_and_reserve_only",
       "sentinel": "fail_closed",
       "production_failover_allowed": false,
@@ -462,15 +409,8 @@
       "payment_execution_allowed": false
     },
     "capacity_lease": {
-      "allowed_ramps": [
-        "cloudflare_worker"
-      ],
-      "allowed_nodes": [
-        "home",
-        "edge",
-        "field",
-        "validator"
-      ],
+      "allowed_ramps": ["cloudflare_worker"],
+      "allowed_nodes": ["home", "edge", "field", "validator"],
       "mode": "preflight_and_agreement_only",
       "sentinel": "fail_closed",
       "execution_authority": "none",
@@ -480,16 +420,9 @@
       "partition_delete_allowed": false
     },
     "bridge_preflight": {
-      "allowed_ramps": [
-        "allbridge_core"
-      ],
-      "allowed_transports": [
-        "ethernet"
-      ],
-      "allowed_nodes": [
-        "edge",
-        "validator"
-      ],
+      "allowed_ramps": ["allbridge_core"],
+      "allowed_transports": ["ethernet"],
+      "allowed_nodes": ["edge", "validator"],
       "mode": "preflight_only",
       "sentinel": "fail_closed",
       "bridge_execution_allowed": false,
@@ -497,12 +430,8 @@
       "transaction_broadcast_allowed": false
     },
     "solana_playground": {
-      "allowed_ramps": [
-        "solana_playground"
-      ],
-      "allowed_nodes": [
-        "validator"
-      ],
+      "allowed_ramps": ["solana_playground"],
+      "allowed_nodes": ["validator"],
       "mode": "preflight_only",
       "sentinel": "fail_closed",
       "wallet_signing_allowed": false,
@@ -512,10 +441,7 @@
   },
   "dual_approval_gate": {
     "enabled": true,
-    "required_approvals": [
-      "owner",
-      "emergency_operator"
-    ],
+    "required_approvals": ["owner", "emergency_operator"],
     "approval_logic": "owner_and_emergency_operator_required",
     "missing_approval_behavior": "fail_closed",
     "applies_to": [
