@@ -1,0 +1,32 @@
+{
+  "name": "Speak",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.12"
+    }
+  },
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8080": {
+      "label": "Speak",
+      "onAutoForward": "openPreview",
+      "visibility": "private"
+    }
+  },
+  "containerEnv": {
+    "SPEAK_EXPERIMENTAL_NEURAL_INPUT": "0",
+    "SPEAK_AWS_IOT_ENABLED": "0"
+  },
+  "postCreateCommand": "bash .devcontainer/speak/post-create.sh",
+  "postStartCommand": "bash -lc 'pkill -f \"node apps/speak/dev-server.mjs\" >/dev/null 2>&1 || true; nohup node apps/speak/dev-server.mjs > /tmp/speak.log 2>&1 &'",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "workbench.startupEditor": "none",
+        "python.defaultInterpreterPath": "${containerWorkspaceFolder}/.venv/bin/python"
+      }
+    }
+  },
+  "remoteUser": "node"
+}
