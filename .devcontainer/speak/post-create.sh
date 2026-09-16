@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cd "${CONTAINER_WORKSPACE_FOLDER:-/workspaces/Aura-core}"
+WORKSPACE_ROOT="${CONTAINER_WORKSPACE_FOLDER:-$(git rev-parse --show-toplevel)}"
+cd "$WORKSPACE_ROOT"
 
 python3.12 -m venv .venv
 .venv/bin/python -m pip install --upgrade pip
