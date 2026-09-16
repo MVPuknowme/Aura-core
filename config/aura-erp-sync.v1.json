@@ -1,0 +1,72 @@
+{
+  "$schema": "https://skygrid-protocol.net/schemas/aura-erp-sync.v1.json",
+  "schema_version": "1.0.0",
+  "profile": "aura-erp-sync",
+  "generated_for": "MVPuknowme / Aura",
+  "mode": "dry-run",
+  "status": "provider_required",
+  "source": {
+    "manifest": "config/aura-memory-spaces.v1.json",
+    "space_id": "person-1-aura-cloud"
+  },
+  "erp_target": {
+    "provider": null,
+    "connection_status": "not_configured",
+    "endpoint": null,
+    "tenant": null
+  },
+  "sync": {
+    "direction": "outbound_metadata_only",
+    "operation": "upsert",
+    "upsert_key": "space_id",
+    "background_sync_enabled": false,
+    "deletes_enabled": false,
+    "operator_approval_required": true,
+    "receipt_required": true
+  },
+  "allowed_fields": [
+    "space_id",
+    "display_name",
+    "status",
+    "space_metadata.operator_declared_area",
+    "space_metadata.operator_declared_area_unit",
+    "space_metadata.source_label",
+    "space_metadata.verification"
+  ],
+  "expected_source_values": {
+    "space_id": "person-1-aura-cloud",
+    "operator_declared_area": 21248,
+    "operator_declared_area_unit": "square_feet",
+    "source_label": "21248sq",
+    "verification": "operator_declared_unverified"
+  },
+  "excluded_data": [
+    "external_reference.url",
+    "social_content",
+    "private_messages",
+    "credentials",
+    "secrets",
+    "payment_credentials",
+    "wallet_signing_material",
+    "identity_claims",
+    "person_tracking_data",
+    "unapproved_memory_content"
+  ],
+  "blocked_actions": [
+    "live_erp_write_without_provider",
+    "live_erp_write_without_operator_approval",
+    "background_social_import",
+    "facebook_login_automation",
+    "credential_capture",
+    "secret_persistence",
+    "payment_execution",
+    "wallet_signing",
+    "automatic_delete",
+    "identity_inference"
+  ],
+  "cloud_dependency": {
+    "aws_required_for_manifest": false,
+    "aws_runtime_status": "not_configured",
+    "note": "ERP manifest staging does not imply AWS Agent Toolkit authentication or a live AWS resource."
+  }
+}
