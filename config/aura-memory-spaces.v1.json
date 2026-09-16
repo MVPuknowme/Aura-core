@@ -1,0 +1,62 @@
+{
+  "$schema": "https://skygrid-protocol.net/schemas/aura-memory-spaces.v1.json",
+  "schema_version": "1.0.0",
+  "profile": "aura-memory-spaces",
+  "generated_for": "MVPuknowme / Aura",
+  "default_mode": "controlled_pilot",
+  "principles": [
+    "explicit_consent",
+    "reference_only_by_default",
+    "no_background_scraping",
+    "no_identity_inference",
+    "no_secret_storage",
+    "receipt_first",
+    "fail_closed",
+    "operator_approved_apply"
+  ],
+  "spaces": [
+    {
+      "space_id": "person-1-aura-cloud",
+      "display_name": "Person 1 / Aura Memory Space",
+      "purpose": "Operator-controlled space for Aura memory references and approved project context.",
+      "status": "reserved",
+      "persistence": "manifest_only",
+      "external_reference": {
+        "provider": "facebook",
+        "url": "https://www.facebook.com/share/1EwYAhESFZ/?mibextid=wwXIfr.ai",
+        "verification": "unverified_reference_only",
+        "content_import_enabled": false,
+        "background_access_enabled": false
+      },
+      "cloud_backend": {
+        "provider": "aws",
+        "status": "not_configured",
+        "region": null,
+        "resource": null,
+        "note": "Reserve configuration only until AWS Agent Toolkit/authentication and a storage resource are explicitly configured."
+      },
+      "memory_policy": {
+        "write_requires_operator_approval": true,
+        "read_requires_explicit_runtime_enablement": true,
+        "allow_social_reference": true,
+        "allow_social_content_copy": false,
+        "allow_credentials": false,
+        "allow_payment_credentials": false,
+        "allow_private_message_import": false,
+        "allow_person_tracking": false,
+        "allow_identity_claim_from_reference": false
+      }
+    }
+  ],
+  "blocked_actions": [
+    "facebook_login_automation",
+    "social_profile_scraping",
+    "private_message_scraping",
+    "credential_capture",
+    "secret_persistence",
+    "automatic_memory_import",
+    "person_tracking",
+    "identity_inference",
+    "payment_execution"
+  ]
+}
