@@ -1,29 +1,51 @@
 # Speak
 
-Speak is a local-first browser speech interface inside Aura-core.
+**Speak is a standalone proprietary program owned by Michael Vincent Patrick (MVP).**
 
-## Current rebuild
+Speak is being developed as an assistive communication program, including controlled research toward thought-to-speech communication for people who cannot reliably produce conventional speech. Its current repository location is a development/hosting location only; it does not make Speak a subsidiary, component, product line, or property of Aura-Core, SKYGRID, the repository host, or another project or entity.
+
+Copyright © 2026 Michael Vincent Patrick. All rights reserved. See `PROPRIETARY-LICENSE.md`. Repository or source access does not itself grant a license to use, copy, modify, distribute, commercialize, deploy, train on, or sublicense the original Speak materials. Third-party dependencies retain their respective licenses.
+
+## Current implemented interface
+
+The currently implemented browser interface provides:
 
 - Text-to-speech using the browser `speechSynthesis` API.
 - Speech-to-text using `SpeechRecognition` or `webkitSpeechRecognition` when available.
 - Large iOS-friendly **ACTION** button.
 - **Thought Command** ON/OFF control, OFF by default.
 - One-shot **Calibration Read** with a known target phrase and 1–5 read-confidence result.
-- Responsive mobile-first Aura styling.
-- No application-level network calls, analytics, background listening, or device discovery.
+- Responsive mobile-first styling.
+- No application-level network calls, analytics, background listening, or device discovery in the existing browser path.
 
-## Action + Thought Command
+## Thought Command today
 
-“Thought Command” is the UI label for an explicit command mode. It does not detect or infer thoughts.
+The currently implemented **Thought Command** UI control is an explicit command mode. It does not by itself detect or infer thoughts.
 
 - **OFF:** ACTION speaks the text box.
 - **ON:** ACTION interprets an explicit typed/transcribed command.
 - Allowed local commands: `speak`, `speak <text>`, `listen`, `stop`, `pause`, `resume`, `clear`, `copy`.
 - Other commands are rejected locally.
 
+The assisted neural-input path is a separate experimental development track and must not be represented as operational until validated with an authorized physiological/neural acquisition device and controlled participant data.
+
+## Experimental assisted neural-input direction
+
+The controlled research boundary is:
+
+`authorized physiological/neural sensor -> authorized acquisition adapter -> BLE/local transport -> iPhone/collector -> DSP/decoder -> confidence + confirmation gate -> Speak synthesis`
+
+- Bluetooth/BLE is a transport for documented sensor samples; it is not itself treated as a neural sensor.
+- A configurable 0.8–4.0 Hz DSP band may be evaluated when scientifically appropriate for the attached sensor; it is not a Bluetooth carrier/pairing frequency.
+- Ethernet/Wi-Fi may provide an authorized local network path but network traffic is not itself neurological data.
+- AWS IoT Core is optional infrastructure for authorized device state, telemetry, and receipts; it is not a neural sensor.
+- Experimental candidates are never automatically represented as the participant's words and must pass configured confidence and confirmation gates before external communication.
+
+See `docs/superpowers/specs/2026-09-16-speak-assisted-neural-input-design.md` for the controlled-development requirements.
+
 ## Calibration Read
 
-Calibration is a known-target speech-recognition control, separate from witness or attribution confidence.
+Calibration is a known-target speech-recognition control, separate from neurological inference, witness confidence, or attribution confidence.
 
 1. Press **ATTEMPT READ**.
 2. The browser displays/selects a known calibration phrase and starts a one-shot microphone read after the user gesture.
@@ -34,20 +56,22 @@ Calibration is a known-target speech-recognition control, separate from witness 
 
 This score measures transcription calibration only. It is not evidence of hidden-thought detection, source identity, intent, or attribution.
 
-Pure scoring logic lives in `calibration.mjs` and is covered by `calibration.test.mjs`. `.github/workflows/speak-calibration-ci.yml` runs those tests and verifies the dev server `/health` endpoint.
+Pure scoring logic lives in `calibration.mjs` and is covered by `calibration.test.mjs`.
 
-## iPhone / iPad dev container
+## Standalone Speak dev container
 
-The branch includes `.devcontainer/devcontainer.json` for GitHub Codespaces and other Dev Container clients.
+Speak has its own development container at `.devcontainer/speak/devcontainer.json`.
 
-1. Create or rebuild a Codespace from `agent/rebuild-speak`.
-2. The container automatically starts `node apps/speak/dev-server.mjs`.
-3. Port `8080` is forwarded privately as **Aura Speak**.
-4. Open the forwarded HTTPS preview in Safari on iPhone/iPad.
-5. `/health` returns JSON with `"ok": true`.
-6. Press **ATTEMPT READ** and allow microphone access when iOS prompts.
+- Container display name: **Speak**.
+- Node.js 22 browser/dev-server environment.
+- Python 3.12 application environment in `.venv`.
+- Pinned NumPy, SciPy, Pydantic, pytest, and boto3 dependencies from `apps/speak/requirements.txt`.
+- Port `8080` forwarded privately with the label **Speak**.
+- `node apps/speak/dev-server.mjs` starts automatically.
+- Experimental neural-input and AWS IoT feature flags default OFF.
+- The repository contains no Speak AWS long-lived credentials.
 
-> iOS does not run the Linux dev container locally. Codespaces hosts it remotely; Safari connects to the forwarded HTTPS port.
+For Codespaces, select `.devcontainer/speak/devcontainer.json`. iOS does not run the Linux container locally; an iPhone connects to the forwarded HTTPS application and physical sensor acquisition remains an authorized device/collector responsibility outside the remote Codespace.
 
 ## Run locally
 
@@ -57,17 +81,19 @@ node .\apps\speak\dev-server.mjs
 
 Then open `http://localhost:8080`.
 
-## Safety boundary
+## Safety and privacy boundary
 
-Speak is an assistive voice/text interface. It does not attempt to infer thoughts, identify nearby people, bypass device security, inspect unrelated Bluetooth/Wi-Fi devices, or treat RF/network signals as human communication.
+Speak is designed for assistive communication, not generalized surveillance. Experimental sensor acquisition requires explicit participant/device authorization. It must not scan or ingest unrelated nearby devices or treat ordinary RF/network traffic as human communication. Government/public-authority privileged access is fail closed and subject to the documented lawful-authority/receipt requirements in the controlled-development specification.
 
 ## Files
 
+- `PROPRIETARY-LICENSE.md` — MVP ownership and proprietary-control notice.
 - `index.html` — application shell and controls.
 - `styles.css` — mobile-first styling.
-- `app.js` — speech synthesis, main recognition, Action button, and command allowlist.
+- `app.js` — speech synthesis, recognition, ACTION button, and command allowlist.
 - `calibration.mjs` — deterministic calibration scoring core.
 - `calibration-ui.mjs` — isolated one-shot browser calibration recognizer.
 - `calibration.test.mjs` — Node tests for normalization/scoring.
 - `dev-server.mjs` — dependency-free static dev server and `/health` endpoint.
-- `.devcontainer/devcontainer.json` — Codespaces/dev-container configuration.
+- `requirements.txt` — pinned Speak Python dependencies.
+- `.devcontainer/speak/devcontainer.json` — dedicated Speak Codespaces/dev-container configuration.
