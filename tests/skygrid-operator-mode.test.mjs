@@ -2,7 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   applyOperatorMode,
+  DEFAULT_SKYGRID_EXTENSION_CLIENT_ID,
   DEFAULT_SKYGRID_OPERATOR,
+  resolveExtensionClientConfig,
   resolveOperatorConfig,
   resolveRuntimeHost,
   sanitizeDirectListenerHeaders,
@@ -14,6 +16,36 @@ test("defaults operator identity to MVPuknowme without making it an auth primiti
   assert.equal(config.operator, DEFAULT_SKYGRID_OPERATOR);
   assert.equal(config.runtimeMode, "local");
   assert.equal(config.authorization, "independent_fail_closed_controls");
+});
+
+test("registers the approved Chromium extension as non-authorizing SKYGRID identity metadata", () => {
+  assert.equal(DEFAULT_SKYGRID_EXTENSION_CLIENT_ID, "okfgecocjjeegpcaenbohgdhfhimieik");
+  const config = resolveExtensionClientConfig({});
+  assert.deepEqual(config, {
+    clientId: DEFAULT_SKYGRID_EXTENSION_CLIENT_ID,
+    clientType: "chromium_extension",
+    authorization: "none",
+    capabilities: {
+      payment_execution: false,
+      device_activation: false,
+      production_failover: false,
+      private_data_movement: false
+    }
+  });
+});
+
+test("rejects malformed SKYGRID extension client IDs", () => {
+  assert.throws(
+    () => resolveExtensionClientConfig({ SKYGRID_EXTENSION_CLIENT_ID: "not-a-chromium-extension-id" }),
+    /invalid_skygrid_extension_client_id/
+  );
+});
+
+test("rejects valid-format but unregistered SKYGRID extension client IDs", () => {
+  assert.throws(
+    () => resolveExtensionClientConfig({ SKYGRID_EXTENSION_CLIENT_ID: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" }),
+    /unregistered_skygrid_extension_client_id/
+  );
 });
 
 test("allows Vercel hosting fallback only in local-container mode", () => {
