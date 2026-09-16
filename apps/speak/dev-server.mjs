@@ -28,7 +28,7 @@ function safePath(urlPath) {
 const server = http.createServer(async (req, res) => {
   if (req.url === '/health') {
     res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
-    res.end(JSON.stringify({ ok: true, app: 'aura-speak', port }));
+    res.end(JSON.stringify({ ok: true, app: 'speak', port }));
     return;
   }
 
@@ -49,6 +49,6 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(port, host, () => {
-  console.log(`Aura Speak dev server listening on http://${host}:${port}`);
+  console.log(`Speak dev server listening on http://${host}:${port}`);
   console.log(`Health: http://${host}:${port}/health`);
 });
