@@ -21,6 +21,13 @@
       "purpose": "Operator-controlled space for Aura memory references and approved project context.",
       "status": "reserved",
       "persistence": "manifest_only",
+      "space_metadata": {
+        "operator_declared_area": 21248,
+        "operator_declared_area_unit": "square_feet",
+        "source_label": "21248sq",
+        "verification": "operator_declared_unverified",
+        "note": "Area metadata only; not an AWS storage quota, cloud capacity measurement, or independently verified physical-property record."
+      },
       "external_reference": {
         "provider": "facebook",
         "url": "https://www.facebook.com/share/1EwYAhESFZ/?mibextid=wwXIfr.ai",
