@@ -1,4 +1,5 @@
 export const DEFAULT_SKYGRID_OPERATOR = "MVPuknowme";
+export const DEFAULT_SKYGRID_EXTENSION_CLIENT_ID = "okfgecocjjeegpcaenbohgdhfhimieik";
 
 const ALLOWED_RUNTIME_MODES = new Set([
   "local",
@@ -6,6 +7,9 @@ const ALLOWED_RUNTIME_MODES = new Set([
   "vercel",
   "vercel-build",
   "ci"
+]);
+const REGISTERED_EXTENSION_CLIENT_IDS = new Set([
+  DEFAULT_SKYGRID_EXTENSION_CLIENT_ID
 ]);
 
 function normalizedFlag(value) {
@@ -20,6 +24,31 @@ const BLOCKED_RUNTIME_POLICY_FIELDS = [
   "production_failover",
   "private_data_movement"
 ];
+
+export function resolveExtensionClientConfig(env = process.env) {
+  const clientId = String(
+    env.SKYGRID_EXTENSION_CLIENT_ID || DEFAULT_SKYGRID_EXTENSION_CLIENT_ID
+  ).trim();
+
+  if (!/^[a-p]{32}$/.test(clientId)) {
+    throw new Error("invalid_skygrid_extension_client_id");
+  }
+  if (!REGISTERED_EXTENSION_CLIENT_IDS.has(clientId)) {
+    throw new Error("unregistered_skygrid_extension_client_id");
+  }
+
+  return Object.freeze({
+    clientId,
+    clientType: "chromium_extension",
+    authorization: "none",
+    capabilities: Object.freeze({
+      payment_execution: false,
+      device_activation: false,
+      production_failover: false,
+      private_data_movement: false
+    })
+  });
+}
 
 export function resolveOperatorConfig(env = process.env) {
   const operator = String(env.SKYGRID_OPERATOR || DEFAULT_SKYGRID_OPERATOR).trim();
