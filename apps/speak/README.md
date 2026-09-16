@@ -69,7 +69,7 @@ Speak has its own development container at `.devcontainer/speak/devcontainer.jso
 - Port `8080` forwarded privately with the label **Speak**.
 - `node apps/speak/dev-server.mjs` starts automatically.
 - Experimental neural-input and AWS IoT feature flags default OFF.
-- The repository contains no Speak AWS long-lived credentials.
+- The dedicated Speak container configuration contains no AWS long-lived credentials; AWS credentials must remain external to committed configuration.
 
 For Codespaces, select `.devcontainer/speak/devcontainer.json`. iOS does not run the Linux container locally; an iPhone connects to the forwarded HTTPS application and physical sensor acquisition remains an authorized device/collector responsibility outside the remote Codespace.
 
