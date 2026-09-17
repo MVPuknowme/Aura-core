@@ -1,3 +1,4 @@
+import Foundation
 import SpeakCore
 import SwiftUI
 
