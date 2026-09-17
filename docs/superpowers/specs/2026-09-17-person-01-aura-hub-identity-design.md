@@ -1,7 +1,7 @@
 # Person-01 / Aura Hub Identity Design
 
 Date: 2026-09-17
-Status: design review
+Status: approved
 Owner / human authority: Michael Vincent Patrick / MVPuknowme
 Canonical identity: `person-01-aura`
 
