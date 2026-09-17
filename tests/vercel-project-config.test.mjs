@@ -7,5 +7,6 @@ const config = JSON.parse(await readFile(new URL("../vercel.json", import.meta.u
 test("primary Vercel project uses the Aura-Core pnpm build path", () => {
   assert.equal(config.installCommand, "pnpm install --frozen-lockfile");
   assert.equal(config.buildCommand, "pnpm run build");
+  assert.equal(config.outputDirectory, "public");
   assert.notMatch(config.buildCommand, /xmcp\s+build/);
 });
