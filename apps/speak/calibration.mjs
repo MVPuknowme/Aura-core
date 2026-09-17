@@ -1,5 +1,5 @@
 export const CALIBRATION_TARGETS = Object.freeze([
-  'Aura calibration one two three',
+  'Speak calibration one two three',
   'Orange sky seven ready',
   'Signal check ready now',
   'Speak control test five'
