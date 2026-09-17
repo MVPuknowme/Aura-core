@@ -3,6 +3,8 @@ import { SKYGRID_WALLET_LANES } from "../../config/skygrid-wallet-lanes.mjs";
 const PRODUCT = SKYGRID_WALLET_LANES.product;
 const DEFAULT_TIMEOUT_MS = 8_000;
 const BALANCE_OF_SELECTOR = "70a08231";
+const TRACE_METHOD = "debug_traceBlockByHash";
+const TRACE_TRACER = "callTracer";
 
 function sendJson(res, statusCode, payload) {
   res.statusCode = statusCode;
@@ -17,6 +19,14 @@ function sendJson(res, statusCode, payload) {
 
 function isAddress(value) {
   return /^0x[0-9a-fA-F]{40}$/.test(String(value || ""));
+}
+
+function isBlockHash(value) {
+  return /^0x[0-9a-fA-F]{64}$/.test(String(value || ""));
+}
+
+function blockTraceEnabled() {
+  return ["1", "true"].includes(String(process.env.SKYGRID_BLOCK_TRACE_ENABLED || "").toLowerCase());
 }
 
 function encodeBalanceOf(address) {
@@ -48,7 +58,7 @@ function rpcUrl(lane) {
   return process.env[lane.rpcUrlEnvironmentVariable] || lane.chain.defaultRpcUrl;
 }
 
-async function rpc(lane, method, params = []) {
+async function rpc(lane, method, params = [], { structuredResult = false } = {}) {
   if (!SKYGRID_WALLET_LANES.allowedRpcMethods.includes(method)) {
     throw new Error(`RPC method is not allowlisted: ${method}`);
   }
@@ -78,7 +88,11 @@ async function rpc(lane, method, params = []) {
       throw new Error(`${lane.chain.name} RPC ${method} failed: ${payload.error.message || "unknown error"}`);
     }
 
-    if (typeof payload?.result !== "string") {
+    if (!payload || !Object.prototype.hasOwnProperty.call(payload, "result")) {
+      throw new Error(`${lane.chain.name} RPC ${method} returned no result`);
+    }
+
+    if (!structuredResult && typeof payload.result !== "string") {
       throw new Error(`${lane.chain.name} RPC ${method} returned an invalid result`);
     }
 
@@ -92,7 +106,7 @@ function hasContractCode(code) {
   return typeof code === "string" && code !== "0x" && code !== "0x0";
 }
 
-async function inspectLane(lane, walletAddress) {
+async function inspectLane(lane, walletAddress, traceBlockHash = null) {
   try {
     const contractEntries = Object.entries(lane.requiredContracts);
     const results = await Promise.all([
@@ -146,6 +160,26 @@ async function inspectLane(lane, walletAddress) {
       };
     }
 
+    let trace;
+    if (traceBlockHash) {
+      const result = await rpc(
+        lane,
+        TRACE_METHOD,
+        [traceBlockHash, { tracer: TRACE_TRACER }],
+        { structuredResult: true }
+      );
+
+      if (!Array.isArray(result)) {
+        throw new Error(`${lane.chain.name} RPC ${TRACE_METHOD} returned an invalid trace result`);
+      }
+
+      trace = {
+        blockHash: traceBlockHash,
+        tracer: TRACE_TRACER,
+        result
+      };
+    }
+
     return {
       ok: true,
       linked: true,
@@ -169,6 +203,7 @@ async function inspectLane(lane, walletAddress) {
       },
       contractsVerified,
       contracts: contractVerification,
+      ...(trace ? { trace } : {}),
       rpc: {
         configuredByEnvironment: Boolean(process.env[lane.rpcUrlEnvironmentVariable]),
         timeoutMs: timeoutMs(lane),
@@ -202,6 +237,7 @@ export default async function handler(req, res) {
   const host = req.headers?.host || "localhost";
   const url = new URL(req.url || "/api/wallet/dual-lane", `https://${host}`);
   const requestedLane = String(url.searchParams.get("lane") || "both").toLowerCase();
+  const traceBlockHash = url.searchParams.get("traceBlockHash");
 
   if (!SKYGRID_WALLET_LANES.allowedLaneValues.includes(requestedLane)) {
     return sendJson(res, 400, {
@@ -210,6 +246,35 @@ export default async function handler(req, res) {
       error: "invalid_lane",
       allowed: SKYGRID_WALLET_LANES.allowedLaneValues
     });
+  }
+
+  if (traceBlockHash) {
+    if (!blockTraceEnabled()) {
+      return sendJson(res, 403, {
+        ok: false,
+        product: PRODUCT,
+        error: "block_trace_disabled",
+        message: "Block tracing is disabled unless SKYGRID_BLOCK_TRACE_ENABLED is explicitly enabled."
+      });
+    }
+
+    if (!isBlockHash(traceBlockHash)) {
+      return sendJson(res, 400, {
+        ok: false,
+        product: PRODUCT,
+        error: "invalid_block_hash",
+        message: "traceBlockHash must be a 0x-prefixed 32-byte EVM block hash."
+      });
+    }
+
+    if (requestedLane === "both") {
+      return sendJson(res, 400, {
+        ok: false,
+        product: PRODUCT,
+        error: "trace_requires_single_lane",
+        message: "Choose lane=base or lane=optimism for block tracing."
+      });
+    }
   }
 
   const queryAddress = url.searchParams.get("address");
@@ -231,7 +296,7 @@ export default async function handler(req, res) {
   const inspected = await Promise.all(
     laneKeys.map(async (laneKey) => [
       laneKey,
-      await inspectLane(SKYGRID_WALLET_LANES.lanes[laneKey], walletAddress)
+      await inspectLane(SKYGRID_WALLET_LANES.lanes[laneKey], walletAddress, traceBlockHash)
     ])
   );
   const lanes = Object.fromEntries(inspected);
