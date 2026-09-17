@@ -13,6 +13,12 @@ final class SessionReceiptTests: XCTestCase {
         XCTAssertNil(second.event.rawMeasurement)
     }
 
+    func testReceiptDigestMatchesKnownSHA256Vector() {
+        let t = Date(timeIntervalSince1970: 1_700_000_000)
+        let receipt = SessionReceipt.make(previousDigest: nil, event: .init(type: .sessionConfirmed, timestamp: t, profileID: "profile"))
+        XCTAssertEqual(receipt.digest, "d8ee594dc4d7e0557efd1beaf659a388cea11002c6d8286aa7095f54bf7946c8")
+    }
+
     func testChangingEventChangesDigest() {
         let t = Date(timeIntervalSince1970: 1_700_000_000)
         let confirmed = SessionReceipt.make(previousDigest: nil, event: .init(type: .sessionConfirmed, timestamp: t, profileID: "profile"))
