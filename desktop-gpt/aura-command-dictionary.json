@@ -1,11 +1,11 @@
-﻿{
-  "version": "0.2.0",
+{
+  "version": "0.3.0",
   "mode": "safe_command_recognition",
   "rules": [
     {
       "intent": "aura_vitals",
       "triggers": ["check vitals", "run vitals", "check her vitals", "is she healthy", "system health", "health check"],
-      "response": "Run a read-only Aura-Core vitals check from E:\\\\Aura-core. Check git status, Node/Vercel versions, public SKYGRID routes, and panel readiness."
+      "response": "Run a read-only Aura-Core vitals check from E:\\Aura-core. Check git status, Node/Vercel versions, public SKYGRID routes, and panel readiness."
     },
     {
       "intent": "skygrid_routes",
@@ -25,7 +25,7 @@
     {
       "intent": "git_status",
       "triggers": ["git status", "repo status", "working tree", "check repo", "what changed", "latest commit"],
-      "response": "Run git status -sb and git log -1 --oneline from the active repo. For Aura-Core, use E:\\\\Aura-core."
+      "response": "Run git status -sb and git log -1 --oneline from the active repo. For Aura-Core, use E:\\Aura-core."
     },
     {
       "intent": "secret_scan",
@@ -40,7 +40,27 @@
     {
       "intent": "desktop_app",
       "triggers": ["desktop app", "aura desktop", "windows app", "electron", "start aura"],
-      "response": "Use E:\\\\Aura-core\\\\desktop-gpt. Start with npm start, or use the detached launcher start-aura-desktop.cmd."
+      "response": "Use E:\\Aura-core\\desktop-gpt. Start with npm start, or use the detached launcher start-aura-desktop.cmd."
+    },
+    {
+      "intent": "speak_app",
+      "triggers": ["speak app", "open speak", "speak features", "thought command", "speak calibration"],
+      "response": "Treat Speak as the independent baseline local-first speech/text/control app. Its current implementation uses explicit typed or browser-transcribed input and calibration; do not represent it as verified Bluetooth thought inference."
+    },
+    {
+      "intent": "whisper_breaker",
+      "triggers": ["whisper breaker", "lrad research", "inverted speak", "frequency thought to speech"],
+      "response": "Treat Whisper Breaker as an independent experimental LRAD-oriented counterpart to Speak. Frequency-based thought-to-speech is a research hypothesis: preserve raw measured observations, controls, model version, confidence and receipts separately from inferred meaning."
+    },
+    {
+      "intent": "jaxons_aura",
+      "triggers": ["jaxon's aura", "jaxons aura", "neurodivergent translation", "azure assistants"],
+      "response": "Treat Jaxon's Aura as an independent Speak-derived neurodivergent translation and mediation app with cooperative Microsoft Azure assistants. Keep Azure authorization, configuration, data and audit boundaries explicit."
+    },
+    {
+      "intent": "rfid_inference_gate",
+      "triggers": ["rfid gate", "confidence gate", "research gate", "inference gate", "authorize sensor"],
+      "response": "Apply the fail-closed research path: RFID/device/session authorization -> measured signal -> frequency/feature analysis -> model inference -> confidence gate -> optional Speak output. RFID authenticates the configured device/session only; it does not establish that a signal is neural activity or a thought."
     }
   ]
 }
