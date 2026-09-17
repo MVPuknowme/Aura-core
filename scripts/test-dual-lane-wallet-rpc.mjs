@@ -9,6 +9,7 @@ const ONE_ETH_HEX = `0x${(10n ** 18n).toString(16)}`;
 const TWO_ETH_HEX = `0x${(2n * 10n ** 18n).toString(16)}`;
 const HUNDRED_AERO_HEX = `0x${(100n * 10n ** 18n).toString(16)}`;
 const FIFTY_OP_HEX = `0x${(50n * 10n ** 18n).toString(16)}`;
+const TRACE_METHOD = "debug_traceBlockByHash";
 
 function createResponse() {
   const headers = new Map();
@@ -76,6 +77,12 @@ const originalEnvironment = Object.fromEntries(
 const originalFetch = globalThis.fetch;
 
 try {
+  assert.equal(
+    SKYGRID_WALLET_LANES.allowedRpcMethods.includes(TRACE_METHOD),
+    true,
+    `${TRACE_METHOD} must be explicitly allowlisted for read-only block diagnostics`
+  );
+
   for (const name of managedEnvironmentVariables) delete process.env[name];
   process.env.SKYGRID_BASE_RPC_URL = BASE_RPC_URL;
   process.env.SKYGRID_OPTIMISM_RPC_URL = OPTIMISM_RPC_URL;
