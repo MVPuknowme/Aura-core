@@ -58,7 +58,17 @@ Create a native SwiftUI target at `apps/speak/ios/` with isolated components:
 - `Info.plist` and `Speak.entitlements` — narrowly scoped Bluetooth/HealthKit permissions.
 - `SpeakTests/` — state-machine, parser, and gate tests that do not require physical hardware.
 
-Use a declarative project manifest under `apps/speak/ios/` so the Xcode project can be generated reproducibly on macOS without committing a large hand-maintained project file.
+Use XcodeGen with `apps/speak/ios/project.yml` as the declarative project manifest so the Xcode project can be generated reproducibly on macOS without committing a large hand-maintained project file. The initial deployment target is iOS/iPadOS 17 or newer.
+
+## Initial supported sensor profiles
+
+The first release includes one standards-based physiology transport profile so **CONNECT TO ME** can make a concrete, restricted discovery attempt without generalized BLE scanning:
+
+- **BLE Heart Rate profile** — Bluetooth SIG Heart Rate Service UUID `0x180D`, with Heart Rate Measurement characteristic UUID `0x2A37`. Samples from this profile are labeled physiological reference data only. They are not neural samples and are never routed into a neural decoder as though they measured thoughts.
+
+Experimental neural/physiological devices beyond the standard Heart Rate Service require an explicit `SensorProfile` containing their documented service UUIDs, characteristic UUIDs, units, frame format, sample rate, and decoder version before Speak is allowed to discover or subscribe to them. No wildcard experimental profile is permitted.
+
+HealthKit remains the preferred Apple-device reference path for Apple Watch/Apple Health measurements; Speak does not assume that an Apple Watch will present itself as a generic BLE Heart Rate peripheral to the iPhone app.
 
 ## BLE connection flow
 
@@ -71,7 +81,7 @@ Connection sequence:
 Requirements:
 
 - Scanning starts only after **CONNECT TO ME**.
-- Discovery is restricted to configured supported sensor service UUIDs.
+- Discovery is restricted to configured supported sensor service UUIDs, initially `0x180D` plus any explicitly configured documented experimental profiles.
 - If no supported sensor profile is configured, Speak reports **No supported sensor profile configured** and does not perform generalized nearby-device discovery.
 - Unknown/unmatched peripherals remain unknown and cannot become a self-session source.
 - The user must choose the candidate sensor before connection.
@@ -91,10 +101,12 @@ No raw HealthKit measurements are uploaded to a cloud service by default. AWS Io
 
 Experimental Input defaults **OFF** and can be enabled only after:
 
-- a supported sensor is explicitly selected and connected;
-- the sensor profile declares the measured channel and decoding semantics;
+- a supported experimental sensor is explicitly selected and connected;
+- its sensor profile declares the measured channel and decoding semantics;
 - the user explicitly confirms the current self session; and
 - the sample stream meets configured freshness and quality requirements.
+
+The built-in BLE Heart Rate profile can contribute physiology/session context but cannot satisfy the experimental-neural-sensor requirement by itself.
 
 A configurable 0.8–4.0 Hz analysis band may be applied downstream when scientifically appropriate for the sensor/channel. It is a DSP analysis setting and is never represented as a Bluetooth carrier, BLE pairing frequency, or evidence that Bluetooth itself measures neural activity.
 
@@ -112,6 +124,7 @@ Rules:
 - Unsupported/unknown sensor: no experimental candidate.
 - Stale or invalid samples: no experimental candidate.
 - Unconfirmed self session: no experimental candidate.
+- Physiology-only profile without an experimental neural channel: no neural candidate.
 - Low inference confidence: suggestion only, never represented as the participant's words.
 - Passing confidence still requires user confirmation before external speech/message output in this phase.
 - Turning Speak OFF, turning Experimental Input OFF, disconnecting the sensor, or revoking permission cancels pending candidate communication.
@@ -189,6 +202,7 @@ The repository/dev-container can verify:
 
 A macOS/Xcode environment must verify:
 
+- `xcodegen generate` succeeds from `apps/speak/ios/`;
 - generated native project opens/builds;
 - Swift compilation;
 - HealthKit entitlement and usage-description configuration;
@@ -202,24 +216,27 @@ Real connection acceptance requires a physical supported sensor and a user gestu
 1. App opens in **Disconnected** state.
 2. No BLE scan occurs before **CONNECT TO ME**.
 3. Unsupported devices are not presented as the participant.
-4. A configured supported peripheral can be selected and connected.
-5. Health authorization remains independent and read-only.
-6. User confirmation is required to reach **Session confirmed**.
-7. Experimental Input remains OFF by default.
-8. Disconnect/revocation fails closed.
-9. No candidate communication is automatically spoken/sent.
-10. A candidate that passes configured gates still requires explicit user confirmation before Speak output.
+4. A BLE Heart Rate Service peripheral, or another explicitly configured supported peripheral, can be selected and connected when physically present.
+5. Heart-rate samples remain labeled physiology/reference data rather than neural inference.
+6. Health authorization remains independent and read-only.
+7. User confirmation is required to reach **Session confirmed**.
+8. Experimental Input remains OFF by default.
+9. Disconnect/revocation fails closed.
+10. No candidate communication is automatically spoken/sent.
+11. A candidate that passes configured gates still requires explicit user confirmation before Speak output.
 
 ## Acceptance criteria
 
 This implementation is acceptable when:
 
 - Speak has a standalone native SwiftUI source target under `apps/speak/ios/`.
+- `apps/speak/ios/project.yml` reproducibly defines the native target for XcodeGen.
 - The primary screen exposes the approved SELF CONNECTION state machine and CONNECT TO ME action.
-- BLE discovery is user-triggered and restricted to supported sensor profiles.
+- BLE discovery is user-triggered and restricted to the standard Heart Rate Service plus explicitly configured sensor profiles.
 - HealthKit access is read-only and independently consented.
 - Unknown devices cannot be attributed to a person.
-- Experimental Input is disabled by default and requires a connected supported sensor plus explicit self-session confirmation.
+- Standard heart-rate samples are kept distinct from experimental neural samples.
+- Experimental Input is disabled by default and requires a connected supported experimental sensor plus explicit self-session confirmation.
 - 0.8–4.0 Hz is represented only as optional downstream DSP analysis configuration.
 - The inference/communication path is fail closed and explicitly separates measurement, inference, and user confirmation.
 - Existing browser Speak branding is standalone Speak rather than Aura-branded.
