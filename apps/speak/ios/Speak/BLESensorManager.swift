@@ -158,12 +158,23 @@ extension BLESensorManager: CBPeripheralDelegate {
             return
         }
         peripheral.setNotifyValue(true, for: characteristic)
+    }
+
+    func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
+        guard error == nil, characteristic.isNotifying, let profile = selectedProfile,
+              characteristic.uuid == CBUUID(string: profile.measurementCharacteristicUUID) else {
+            lastError = error?.localizedDescription ?? "Sensor notification subscription failed"
+            central?.cancelPeripheralConnection(peripheral)
+            onDisconnected?()
+            return
+        }
         onConnected?(profile)
     }
 
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         guard error == nil, let data = characteristic.value, let profile = selectedProfile else {
             lastError = error?.localizedDescription ?? "Sample unavailable"
+            central?.cancelPeripheralConnection(peripheral)
             onDisconnected?()
             return
         }
@@ -175,6 +186,7 @@ extension BLESensorManager: CBPeripheralDelegate {
             }
         } catch {
             lastError = "Sample malformed or unsupported"
+            central?.cancelPeripheralConnection(peripheral)
             onDisconnected?()
         }
     }
