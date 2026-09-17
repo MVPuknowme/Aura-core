@@ -9,11 +9,11 @@ import {
 } from './calibration.mjs';
 
 test('normalizes punctuation and case', () => {
-  assert.equal(normalizeCalibrationText(' Aura, CALIBRATION!  One '), 'aura calibration one');
+  assert.equal(normalizeCalibrationText(' Speak, CALIBRATION!  One '), 'speak calibration one');
 });
 
 test('exact known-target read scores 5 of 5', () => {
-  const result = gradeCalibration('Aura calibration one two three', 'Aura calibration one two three', 0.95);
+  const result = gradeCalibration('Speak calibration one two three', 'Speak calibration one two three', 0.95);
   assert.equal(result.score, 5);
   assert.equal(result.similarity, 1);
 });
@@ -30,6 +30,6 @@ test('unrelated phrase scores low even with browser confidence', () => {
 });
 
 test('target selection is deterministic for supplied random value', () => {
-  assert.equal(pickCalibrationTarget(0), 'Aura calibration one two three');
+  assert.equal(pickCalibrationTarget(0), 'Speak calibration one two three');
   assert.equal(pickCalibrationTarget(0.99), 'Speak control test five');
 });
