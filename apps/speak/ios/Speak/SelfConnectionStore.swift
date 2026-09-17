@@ -1,3 +1,4 @@
+import Combine
 import Foundation
 import SpeakCore
 
@@ -9,6 +10,7 @@ final class SelfConnectionStore: ObservableObject {
 
     let ble: BLESensorManager
     let health: HealthReferenceStore
+    private var cancellables: Set<AnyCancellable> = []
 
     init(ble: BLESensorManager = BLESensorManager(), health: HealthReferenceStore = HealthReferenceStore()) {
         self.ble = ble
@@ -50,6 +52,11 @@ final class SelfConnectionStore: ObservableObject {
             apply(.signalQuality(envelope.quality))
             apply(.physiologyAvailable(envelope.kind == .physiologyReference))
         }
+        health.$availableCategories
+            .map { !$0.isEmpty }
+            .removeDuplicates()
+            .sink { [weak self] available in self?.apply(.healthReferenceAvailable(available)) }
+            .store(in: &cancellables)
     }
 
     private func apply(_ event: ConnectionEvent) {
