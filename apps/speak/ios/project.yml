@@ -1,0 +1,27 @@
+name: Speak
+options:
+  minimumXcodeGenVersion: 2.40.0
+  deploymentTarget:
+    iOS: "17.0"
+packages:
+  SpeakNativeCore:
+    path: .
+targets:
+  Speak:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: Speak
+    info:
+      path: Speak/Info.plist
+    entitlements:
+      path: Speak/Speak.entitlements
+    dependencies:
+      - package: SpeakNativeCore
+        product: SpeakCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.mvpuknowme.speak
+        SWIFT_VERSION: 6.0
+        TARGETED_DEVICE_FAMILY: "1,2"
