@@ -48,7 +48,9 @@ final class SelfConnectionStore: ObservableObject {
         ble.onDisconnected = { [weak self] in self?.apply(.sensorDisconnected) }
         ble.onEnvelope = { [weak self] envelope in
             guard let self else { return }
-            latestMeasuredSummary = "Measured: \(Int(envelope.numericValue)) \(envelope.unit)"
+            latestMeasuredSummary = envelope.kind == .physiologyReference
+                ? "Measured: physiological reference sample received"
+                : "Measured: experimental sensor sample received"
             apply(.signalQuality(envelope.quality))
             apply(.physiologyAvailable(envelope.kind == .physiologyReference))
         }
