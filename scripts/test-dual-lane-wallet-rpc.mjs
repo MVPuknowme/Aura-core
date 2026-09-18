@@ -9,6 +9,18 @@ const ONE_ETH_HEX = `0x${(10n ** 18n).toString(16)}`;
 const TWO_ETH_HEX = `0x${(2n * 10n ** 18n).toString(16)}`;
 const HUNDRED_AERO_HEX = `0x${(100n * 10n ** 18n).toString(16)}`;
 const FIFTY_OP_HEX = `0x${(50n * 10n ** 18n).toString(16)}`;
+const TRACE_METHOD = "debug_traceBlockByHash";
+const TRACE_HASH = "0x7bd8357213af34d3fe7f725d9b21187a5a58127e39aac5776fd0594e3391ea6e";
+const TRACE_RESULT = [{
+  txHash: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  result: {
+    type: "CALL",
+    from: TEST_ADDRESS,
+    to: "0x2222222222222222222222222222222222222222",
+    value: "0x0",
+    calls: []
+  }
+}];
 
 function createResponse() {
   const headers = new Map();
@@ -56,6 +68,8 @@ function rpcResult(laneKey, method) {
       return laneKey === "base" ? HUNDRED_AERO_HEX : FIFTY_OP_HEX;
     case "eth_getCode":
       return "0x6001600055";
+    case TRACE_METHOD:
+      return TRACE_RESULT;
     default:
       throw new Error(`Unexpected test RPC method: ${method}`);
   }
@@ -68,14 +82,22 @@ const managedEnvironmentVariables = [
   "SKYGRID_OPTIMISM_RPC_URL",
   "SKYGRID_BASE_RPC_TIMEOUT_MS",
   "SKYGRID_OPTIMISM_RPC_TIMEOUT_MS",
-  "SKYGRID_WALLET_RPC_TIMEOUT_MS"
+  "SKYGRID_WALLET_RPC_TIMEOUT_MS",
+  "SKYGRID_BLOCK_TRACE_ENABLED"
 ];
 const originalEnvironment = Object.fromEntries(
   managedEnvironmentVariables.map((name) => [name, process.env[name]])
 );
 const originalFetch = globalThis.fetch;
+const rpcRequests = [];
 
 try {
+  assert.equal(
+    SKYGRID_WALLET_LANES.allowedRpcMethods.includes(TRACE_METHOD),
+    true,
+    `${TRACE_METHOD} must be explicitly allowlisted for read-only block diagnostics`
+  );
+
   for (const name of managedEnvironmentVariables) delete process.env[name];
   process.env.SKYGRID_BASE_RPC_URL = BASE_RPC_URL;
   process.env.SKYGRID_OPTIMISM_RPC_URL = OPTIMISM_RPC_URL;
@@ -83,6 +105,7 @@ try {
   globalThis.fetch = async (url, options) => {
     const laneKey = laneFromUrl(url);
     const request = JSON.parse(options.body);
+    rpcRequests.push({ laneKey, request });
     return {
       ok: true,
       status: 200,
@@ -138,6 +161,24 @@ try {
     assert.equal(payload.permissions.broadcastsTransactions, false);
     assert.equal(payload.permissions.grantsTokenApprovals, false);
     assert.equal(payload.permissions.executesSwaps, false);
+  }
+
+  {
+    process.env.SKYGRID_BLOCK_TRACE_ENABLED = "1";
+    rpcRequests.length = 0;
+    const res = await invoke({
+      url: `/api/wallet/dual-lane?address=${TEST_ADDRESS}&lane=base&traceBlockHash=${TRACE_HASH}`
+    });
+    const payload = res.json();
+    assert.equal(res.statusCode, 200);
+    assert.deepEqual(payload.lanes.base.trace, {
+      blockHash: TRACE_HASH,
+      tracer: "callTracer",
+      result: TRACE_RESULT
+    });
+    const traceRequest = rpcRequests.find(({ request }) => request.method === TRACE_METHOD);
+    assert.deepEqual(traceRequest?.request.params, [TRACE_HASH, { tracer: "callTracer" }]);
+    delete process.env.SKYGRID_BLOCK_TRACE_ENABLED;
   }
 
   {

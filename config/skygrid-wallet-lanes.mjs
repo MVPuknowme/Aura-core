@@ -12,7 +12,8 @@ const ALLOWED_RPC_METHODS = Object.freeze([
   "eth_blockNumber",
   "eth_getBalance",
   "eth_call",
-  "eth_getCode"
+  "eth_getCode",
+  "debug_traceBlockByHash"
 ]);
 
 const base = Object.freeze({
