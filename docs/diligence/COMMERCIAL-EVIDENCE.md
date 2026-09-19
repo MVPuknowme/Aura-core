@@ -14,6 +14,25 @@ Repository activity is not customer traction. Use this ladder to prevent forecas
 | Delivery accepted | Dated deliverable receipt and customer acceptance | Supports recognition and renewal evidence |
 | Recurring revenue | Active contract, billing cadence, settlements, renewals, and churn records | Report MRR/ARR only from qualifying recurring contracts |
 
+## Current price point: $250 Protocol Validation Sprint
+
+**Offer status:** pipeline offer only; not a booking, invoice, or revenue claim.
+
+Based on the current controlled-pilot implementation, the fixed-price sprint includes:
+
+- a scoped review of the SKYGRID/Aura-Core permission and fail-closed controls;
+- one controlled local-pilot run covering the repository's 16-scenario curriculum;
+- review of acceptance and rejection receipts, event IDs, and configured p95 latency evidence;
+- a concise findings report with reproducible commands, observed gaps, and recommended next steps.
+
+**Delivery window:** five business days after receipt of the required access, test inputs, and operator contact.
+
+**Exclusions:** production deployment, production failover, WAN or field-SLA validation, cloud-region readiness, customer-data migration, credential handling, payment execution, transaction signing/broadcasting, and ongoing support or hosting.
+
+**Named owner:** MVPuknowme, pending assignment of a customer-facing delivery contact.
+
+Any expanded implementation, production readiness work, integrations, or recurring monitoring requires a separate written scope and price. The sprint price remains pipeline value until customer evidence advances it through the ladder below.
+
 ## Protocol Validation Sprint
 
 The internal `$250 Protocol Validation Sprint` task is an offer/work item until customer evidence advances it through this ladder. A backlog issue, forecast, outreach draft, payment link, or unpaid invoice does not establish booked revenue.
