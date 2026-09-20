@@ -1,0 +1,65 @@
+{
+  "pnpk_version": "0.1",
+  "system": "SKYGRID Emergency Data On-Ramp",
+  "payload_type": "safe-demo",
+  "classification": "public-demo",
+  "redaction_status": "dummy-only",
+  "source": {
+    "origin": "user-supplied-chime-referral-link",
+    "captured_utc": "2026-09-19T19:47:00Z",
+    "operator": "MVP",
+    "notes": "Referral-link verification test only. No account opening, deposit setup, payment execution, or funds movement is authorized by this packet."
+  },
+  "postman": {
+    "collection": "pnpk-referral-link-verification",
+    "environment": "demo",
+    "expected_status": 200
+  },
+  "kafka": {
+    "topic": "skygrid.auto_drill.referral_verify",
+    "partition_key": "chime-referral-michaelpatrick308",
+    "routing_intent": "verify referral-link provenance, consent gate, and fail-closed navigation envelope"
+  },
+  "auto_drill": {
+    "enabled": true,
+    "mode": "verify-only",
+    "replay_safe": true
+  },
+  "protection": {
+    "contains_secrets": false,
+    "hash_algorithm": "SHA256",
+    "payload_sha256": "3f10f60772ef33a9daa4041e8536982028f7d99ef71cc9c65ecc5c37d408f28e",
+    "encryption": "none-public-referral-test",
+    "storage_rule": "safe to commit; public referral URL only; execution remains fail-closed"
+  },
+  "payload": {
+    "ok": true,
+    "event_type": "referral.pnpk.verify",
+    "target": {
+      "provider": "Chime",
+      "url": "https://www.chime.com/r/michaelpatrick308/?c=t",
+      "expected_scheme": "https",
+      "expected_host": "www.chime.com",
+      "referral_handle": "michaelpatrick308"
+    },
+    "test_intent": "Verify referral-link provenance, consent gate, and fail-closed navigation envelope without opening an account, initiating a deposit, or moving funds.",
+    "authorization": {
+      "recipient_consent_required_before_share": true,
+      "account_opening_allowed": false,
+      "direct_deposit_setup_allowed": false,
+      "payment_execution_allowed": false,
+      "funds_movement_allowed": false
+    },
+    "expected_offer": {
+      "referred_reward_usd": 100,
+      "qualifying_direct_deposit_min_usd": 200,
+      "qualifying_deposit_window_days": 45,
+      "physical_card_activation_window_days_after_deposit": 14
+    }
+  },
+  "audit": {
+    "created_utc": "2026-09-19T19:47:00Z",
+    "created_by": "MVPuknowme / ChatGPT",
+    "review_status": "added-test-review"
+  }
+}
