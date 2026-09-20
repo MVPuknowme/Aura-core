@@ -1,0 +1,57 @@
+name: SKYGRID V2Ray Read-Only Ingest
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/15 * * * *"
+  push:
+    branches:
+      - MVPuknowme
+    paths:
+      - "scripts/skygrid-v2ray-ingest.mjs"
+      - "tests/skygrid-v2ray-ingest.test.mjs"
+      - "docs/ops/v2ray-production-ingest.md"
+      - ".github/workflows/skygrid-v2ray-ingest.yml"
+  pull_request:
+    paths:
+      - "scripts/skygrid-v2ray-ingest.mjs"
+      - "tests/skygrid-v2ray-ingest.test.mjs"
+      - "docs/ops/v2ray-production-ingest.md"
+      - ".github/workflows/skygrid-v2ray-ingest.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: skygrid-v2ray-readonly-ingest
+  cancel-in-progress: true
+
+jobs:
+  validate-and-receipt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Syntax check
+        run: node --check scripts/skygrid-v2ray-ingest.mjs
+
+      - name: Contract tests
+        run: node --test tests/skygrid-v2ray-ingest.test.mjs
+
+      - name: Fetch, validate, and receipt upstream feed
+        run: node scripts/skygrid-v2ray-ingest.mjs --min-configs=1
+
+      - name: Upload PNPK receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: skygrid-v2ray-ingest-receipt
+          path: artifacts/pnpk/v2ray/skygrid-v2ray-ingest-receipt.json
+          if-no-files-found: error
+          retention-days: 30
