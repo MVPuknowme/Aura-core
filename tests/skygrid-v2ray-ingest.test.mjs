@@ -45,3 +45,17 @@ test('fails closed on malformed or unsupported schemes', () => {
     /unsupported or malformed schemes: http:1/
   );
 });
+
+
+test('reports line numbers for missing schemes while remaining fail closed', () => {
+  const text = [
+    '#profile-title: test',
+    'vless://ok',
+    'metadata-without-scheme'
+  ].join('\n');
+
+  assert.throws(
+    () => validateFeedText(text),
+    /unsupported or malformed schemes: <missing>:1 \(line 3\)/
+  );
+});
