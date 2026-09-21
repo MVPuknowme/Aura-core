@@ -1,4 +1,4 @@
-﻿{
+{
   "service": "SKYGRID Social Integrity Gate",
   "product": "SKYGRID Emergency Data On-Ramp",
   "mode": "controlled_pilot",
@@ -6,7 +6,8 @@
   "platforms": [
     "instagram",
     "snapchat",
-    "tiktok"
+    "tiktok",
+    "facebook"
   ],
   "thresholds": {
     "allow": 90,
@@ -29,5 +30,14 @@
     "snapchat": "/api/social/snapchat",
     "tiktok": "/api/social/tiktok",
     "unified": "/api/social/integrity"
+  },
+  "urlPolicy": {
+    "action": "quarantine",
+    "blockedQueryParameterPrefixes": [
+      "mibex"
+    ],
+    "classification": "untrusted_url_indicator",
+    "malwareConfirmed": false,
+    "note": "Block opaque/tracking URL metadata without claiming malware absent independent evidence."
   }
 }
