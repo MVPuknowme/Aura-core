@@ -211,43 +211,47 @@ export async function evaluateSynchronousPreflight({
     return { ...decision, receipt: makeReceipt(intent, decision, now), executionAllowed: false };
   }
 
-  let adapterResult = {
-    state: "Passed",
-    reason: "dry_run_normalized",
-    mutated: false,
-    evidence: {}
-  };
+  if (typeof adapter !== "function") {
+    const decision = {
+      state: "Blocked",
+      reason: "adapter_unavailable",
+      requiredApprovals: []
+    };
+    return {
+      ...decision,
+      receipt: makeReceipt(intent, decision, now),
+      executionAllowed: false
+    };
+  }
 
-  if (adapter) {
-    adapterResult = await adapter(intent);
+  const adapterResult = await adapter(intent);
 
-    if (adapterResult?.mutated !== false) {
-      const decision = {
-        state: "Blocked",
-        reason: "adapter_mutation_not_permitted",
-        requiredApprovals: []
-      };
-      return {
-        ...decision,
-        adapterResult,
-        receipt: makeReceipt(intent, decision, now),
-        executionAllowed: false
-      };
-    }
+  if (adapterResult?.mutated !== false) {
+    const decision = {
+      state: "Blocked",
+      reason: "adapter_mutation_not_permitted",
+      requiredApprovals: []
+    };
+    return {
+      ...decision,
+      adapterResult,
+      receipt: makeReceipt(intent, decision, now),
+      executionAllowed: false
+    };
+  }
 
-    if (adapterResult.state === "Failed" || adapterResult.state === "Blocked") {
-      const decision = {
-        state: adapterResult.state,
-        reason: adapterResult.reason ?? "adapter_preflight_failed",
-        requiredApprovals: []
-      };
-      return {
-        ...decision,
-        adapterResult,
-        receipt: makeReceipt(intent, decision, now),
-        executionAllowed: false
-      };
-    }
+  if (adapterResult.state === "Failed" || adapterResult.state === "Blocked") {
+    const decision = {
+      state: adapterResult.state,
+      reason: adapterResult.reason ?? "adapter_preflight_failed",
+      requiredApprovals: []
+    };
+    return {
+      ...decision,
+      adapterResult,
+      receipt: makeReceipt(intent, decision, now),
+      executionAllowed: false
+    };
   }
 
   const warning = dependencies.unexpectedDependency?.severity === "Warning";
