@@ -1,3 +1,5 @@
+import { findBlockedExternalUrl } from "../../lib/social-url-policy.mjs";
+
 // Dedicated SKYGRID intake route
 // Ensures /api/skygrid/intake resolves without depending on vercel.json rewrites.
 
@@ -100,6 +102,20 @@ export default async function handler(req, res) {
   }
 
   const body = await readBody(req);
+  const blockedUrl = findBlockedExternalUrl(body);
+  if (blockedUrl) {
+    return json(res, 403, {
+      accepted: false,
+      status: "quarantined",
+      reason: blockedUrl.reason,
+      classification: blockedUrl.classification,
+      parameter: blockedUrl.parameter,
+      malware_confirmed: false,
+      source_path: blockedUrl.trail,
+      timestamp: now()
+    });
+  }
+
   const decision = auraCoreDecision(body);
   const event = {
     eventId: `skygrid_${Date.now()}_${Math.random().toString(16).slice(2)}`,
