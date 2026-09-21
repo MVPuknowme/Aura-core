@@ -10,8 +10,16 @@ export const PROVIDERS = Object.freeze([
   "skygrid-dashboard"
 ]);
 
+export const POLICY_VERSION = "mvp-82-v1";
+
 const RISK_LEVELS = new Set(["Info", "Low", "Medium", "High", "Critical"]);
 const HIGH_RISK_ACTION = /(production|promot|destroy|delete|secret|credential|permission|iam|client-facing|publish|legal|invoice|wallet|web3|contract|payment|token|ownership|value)/i;
+
+function normalizedEvidenceUrls(intent) {
+  return Array.isArray(intent.evidenceUrls)
+    ? [...intent.evidenceUrls].map(String).sort()
+    : [];
+}
 
 function stableIntent(intent) {
   return {
@@ -30,7 +38,8 @@ function stableIntent(intent) {
     clientFacing: Boolean(intent.clientFacing),
     destructive: Boolean(intent.destructive),
     payloadFingerprint: intent.payloadFingerprint ?? null,
-    policyVersion: intent.policyVersion ?? "mvp-82-v1"
+    evidenceUrls: normalizedEvidenceUrls(intent),
+    policyVersion: intent.policyVersion ?? POLICY_VERSION
   };
 }
 
@@ -68,8 +77,11 @@ function requiresHumanApproval(intent) {
   );
 }
 
-function approvalMatches(intent, approval) {
+function approvalMatches(intent, approval, trustedApprovers) {
   if (!approval?.approvedBy || !approval?.intentFingerprint) return false;
+  if (!(trustedApprovers instanceof Set) || !trustedApprovers.has(approval.approvedBy)) {
+    return false;
+  }
   return approval.intentFingerprint === fingerprintIntent(intent);
 }
 
@@ -91,13 +103,13 @@ function dependencyStop(intent, dependencies = {}) {
     return { state: "Blocked", reason: "azure_readiness_check_failed" };
   }
 
-  if (
-    intent.provider === "vercel" &&
-    dependencies.approvedGitCommit &&
-    intent.gitCommit &&
-    dependencies.approvedGitCommit !== intent.gitCommit
-  ) {
-    return { state: "Failed", reason: "vercel_commit_mismatch" };
+  if (intent.provider === "vercel" && dependencies.approvedGitCommit) {
+    if (!intent.gitCommit) {
+      return { state: "Failed", reason: "vercel_commit_missing" };
+    }
+    if (dependencies.approvedGitCommit !== intent.gitCommit) {
+      return { state: "Failed", reason: "vercel_commit_mismatch" };
+    }
   }
 
   if (dependencies.unexpectedDependency?.severity === "Failed") {
@@ -120,8 +132,8 @@ function makeReceipt(intent, decision, now) {
     requestedAction: intent.requestedAction,
     riskLevel: intent.riskLevel,
     requiredApprovals: decision.requiredApprovals,
-    evidenceUrls: Array.isArray(intent.evidenceUrls) ? intent.evidenceUrls : [],
-    policyVersion: intent.policyVersion ?? "mvp-82-v1",
+    evidenceUrls: normalizedEvidenceUrls(intent),
+    policyVersion: POLICY_VERSION,
     timestamp: now(),
     finalDecision: decision.state,
     reason: decision.reason,
@@ -134,6 +146,7 @@ export async function evaluateSynchronousPreflight({
   adapter,
   dependencies = {},
   approval,
+  trustedApprovers = new Set(),
   now = () => new Date().toISOString()
 }) {
   const missing = missingRequired(intent);
@@ -160,6 +173,15 @@ export async function evaluateSynchronousPreflight({
     const decision = {
       state: "Blocked",
       reason: "risk_level_invalid",
+      requiredApprovals: []
+    };
+    return { ...decision, receipt: makeReceipt(intent, decision, now), executionAllowed: false };
+  }
+
+  if ((intent.policyVersion ?? POLICY_VERSION) !== POLICY_VERSION) {
+    const decision = {
+      state: "Blocked",
+      reason: "policy_version_unsupported",
       requiredApprovals: []
     };
     return { ...decision, receipt: makeReceipt(intent, decision, now), executionAllowed: false };
@@ -198,6 +220,7 @@ export async function evaluateSynchronousPreflight({
 
   if (adapter) {
     adapterResult = await adapter(intent);
+
     if (adapterResult?.mutated !== false) {
       const decision = {
         state: "Blocked",
@@ -230,10 +253,10 @@ export async function evaluateSynchronousPreflight({
   const warning = dependencies.unexpectedDependency?.severity === "Warning";
   const approvalRequired = requiresHumanApproval(intent);
 
-  if (approvalRequired && !approvalMatches(intent, approval)) {
+  if (approvalRequired && !approvalMatches(intent, approval, trustedApprovers)) {
     const decision = {
       state: "Waiting Human Approval",
-      reason: "explicit_human_approval_required",
+      reason: "explicit_trusted_human_approval_required",
       requiredApprovals: ["human"]
     };
     return {
@@ -253,12 +276,13 @@ export async function evaluateSynchronousPreflight({
           ? "Approved"
           : "Passed";
 
+  let reason = adapterResult.reason ?? "dry_run_passed";
+  if (warning) reason = "unexpected_dependency_warning";
+  if (state === "Approved") reason = "bound_trusted_human_approval_verified";
+
   const decision = {
     state,
-    reason:
-      state === "Approved"
-        ? "bound_human_approval_verified"
-        : adapterResult.reason ?? (warning ? "unexpected_dependency_warning" : "dry_run_passed"),
+    reason,
     requiredApprovals: approvalRequired ? ["human"] : []
   };
 
