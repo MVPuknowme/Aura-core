@@ -26,7 +26,7 @@
         "training:verify-receipts": "node scripts/verify-skygrid-training-receipts.mjs",
         "training:all": "pnpm run training:drill && pnpm run training:fail-closed",
         "skygrid:training": "node --import ./scripts/skygrid-training-signed-fetch.mjs scripts/skygrid-training-drill.mjs",
-        "build": "node --test tests/skygrid-operator-mode.test.mjs tests/skygrid-operator-artifact.test.mjs tests/skygrid-opensea-preflight.test.mjs tests/transc.MVPuknowme.test.mjs && node scripts/test-runtime-security.mjs && node scripts/test-aerodrome-wallet-rpc.mjs && node scripts/test-dual-lane-wallet-rpc.mjs && node scripts/test-local-wallet-routing.mjs && node scripts/skygrid-build.mjs",
+        "build": "node --test tests/skygrid-operator-mode.test.mjs tests/skygrid-operator-artifact.test.mjs tests/skygrid-opensea-preflight.test.mjs tests/transc.MVPuknowme.test.mjs tests/skygrid-synchronous-preflight.test.mjs && node scripts/test-runtime-security.mjs && node scripts/test-aerodrome-wallet-rpc.mjs && node scripts/test-dual-lane-wallet-rpc.mjs && node scripts/test-local-wallet-routing.mjs && node scripts/skygrid-build.mjs",
         "postbuild": "node scripts/run-pnpk-postbuild.mjs",
         "npm:env:check": "node scripts/check-npm-env-config.mjs",
         "npm:env:test": "node --test tests/npm-env-config.test.mjs",
