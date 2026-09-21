@@ -1,4 +1,3 @@
-vali'validate supported protocols without exposing endpoint content in the result', () => {
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { mkdtemp, readdir, rm } from 'node:fs/promises';
