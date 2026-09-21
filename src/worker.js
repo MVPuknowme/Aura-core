@@ -1,3 +1,5 @@
+import { findBlockedExternalUrl } from "../lib/social-url-policy.mjs";
+
 const PRODUCT = "SKYGRID Emergency Data On-Ramp";
 const VERSION = "2026-06-14-skygrid-protocol-sponsors";
 
@@ -153,6 +155,26 @@ export default {
         payload = await request.json();
       } catch {
         payload = {};
+      }
+
+      const blockedUrl = findBlockedExternalUrl(payload);
+      if (blockedUrl) {
+        return json(
+          {
+            accepted: false,
+            mode: "controlled_pilot",
+            service: PRODUCT,
+            runtime: "cloudflare-worker",
+            status: "quarantined",
+            reason: blockedUrl.reason,
+            classification: blockedUrl.classification,
+            parameter: blockedUrl.parameter,
+            malware_confirmed: false,
+            source_path: blockedUrl.trail,
+            generated_at: new Date().toISOString()
+          },
+          403
+        );
       }
 
       return json(
