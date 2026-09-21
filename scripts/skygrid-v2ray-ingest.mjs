@@ -60,7 +60,8 @@ export function assertAllowedSource(source) {
   const allowedPath = /^\/barry-far\/V2ray-Config\/(?:main|master)\/All_Configs_Sub\.txt$/i.test(url.pathname)
     || url.pathname.toLowerCase() === new URL(DEFAULT_SOURCE).pathname.toLowerCase();
 
-  if (!allowedHost || !allowedPath || url.username || url.password || url.port || url.search || url.hash) {
+  // search/hash are empty for bare '?'/'#', but href retains those delimiters.
+  if (!allowedHost || !allowedPath || url.username || url.password || url.port || /[?#]/.test(url.href)) {
     throw new Error('V2Ray ingest source is not allowlisted');
   }
 

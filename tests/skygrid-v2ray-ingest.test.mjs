@@ -22,7 +22,7 @@ test('accepts the reviewed immutable snapshot but rejects arbitrary revisions an
   assert.equal(assertAllowedSource(pinned), pinned);
   for (const source of [
     pinned.replace('8a01d90f48a5432b174c714efbc3181903ecf578', '0'.repeat(40)),
-    `${pinned}?raw=1`, `${pinned}#fragment`,
+    `${pinned}?raw=1`, `${pinned}#fragment`, `${pinned}?`, `${pinned}#`,
     pinned.replace('raw.githubusercontent.com/', 'raw.githubusercontent.com:444/'),
     pinned.replace('barry-far/', 'other-owner/')
   ]) assert.throws(() => assertAllowedSource(source), /not allowlisted/);
@@ -112,3 +112,25 @@ test('reports line numbers for missing schemes while remaining fail closed', () 
     /unsupported or malformed schemes: <missing>:1 \(line 3\)/
   );
 });
+
+test('bare URL delimiters fail before fetching or writing a success receipt', async () => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'v2ray-delimiters-'));
+  try {
+    for (const delimiter of ['?', '#', '?#']) {
+      let fetches = 0;
+      const source = `https://raw.githubusercontent.com/barry-far/V2ray-Config/8a01d90f48a5432b174c714efbc3181903ecf578/All_Configs_Sub.txt${delimiter}`;
+      await assert.rejects(run([`--source=${source}`, `--receipt=${path.join(directory, 'receipt.json')}`], {
+        fetchImpl: async () => {
+          fetches += 1;
+          return new Response('vless://changed@example.test:443\n');
+        },
+        logger: { log() {} }
+      }), /not allowlisted/);
+      assert.equal(fetches, 0);
+      assert.deepEqual(await readdir(directory), []);
+    }
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
