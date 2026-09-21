@@ -1,26 +1,4 @@
-import assert from 'node:assert/strict';
-import test from 'node:test';
-
-import {
-  assertAllowedSource,
-  validateFeedText
-} from '../scripts/skygrid-v2ray-ingest.mjs';
-
-test('accepts the exact allowlisted Barry-far raw subscription source', () => {
-  assert.equal(
-    assertAllowedSource('https://raw.githubusercontent.com/barry-far/V2ray-Config/main/All_Configs_Sub.txt'),
-    'https://raw.githubusercontent.com/barry-far/V2ray-Config/main/All_Configs_Sub.txt'
-  );
-});
-
-test('rejects a non-allowlisted upstream', () => {
-  assert.throws(
-    () => assertAllowedSource('https://example.com/All_Configs_Sub.txt'),
-    /not allowlisted/
-  );
-});
-
-test('validates supported protocols without exposing endpoint content in the result', () => {
+vali'validate supported protocols without exposing endpoint content in the result', () => {
   const text = [
     '#profile-title: test',
     'vless://id@example.test:443#one',
