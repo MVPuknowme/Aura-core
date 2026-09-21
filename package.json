@@ -81,7 +81,8 @@
         "express": "^5.2.1",
         "openai": "^6.47.0",
         "xmcp": "^0.6.13",
-        "zod": "^3.25.76"
+        "zod": "^3.25.76",
+        "@vercel/speed-insights": "^2.0.0"
     },
     "bin": {
         "ng": "tools/ng/index.mjs",
