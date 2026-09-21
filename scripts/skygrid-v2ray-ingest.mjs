@@ -71,17 +71,20 @@ export function validateFeedText(text, { minConfigs = 1 } = {}) {
   const counts = Object.fromEntries(ALLOWED_SCHEMES.map((scheme) => [scheme, 0]));
   const seen = new Set();
   const unsupported = new Map();
+  const malformedLines = [];
   let configCount = 0;
   let duplicateCount = 0;
 
-  for (const rawLine of text.split(/\r?\n/)) {
-    const line = rawLine.trim();
+  const lines = text.split(/\r?\n/);
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index].trim();
     if (!line || line.startsWith('#')) continue;
 
     const marker = line.indexOf('://');
     const scheme = marker > 0 ? line.slice(0, marker).toLowerCase() : '<missing>';
     if (!ALLOWED_SCHEMES.includes(scheme)) {
       unsupported.set(scheme, (unsupported.get(scheme) || 0) + 1);
+      malformedLines.push(index + 1);
       continue;
     }
 
@@ -93,7 +96,10 @@ export function validateFeedText(text, { minConfigs = 1 } = {}) {
 
   if (unsupported.size > 0) {
     const detail = [...unsupported.entries()].map(([scheme, count]) => `${scheme}:${count}`).join(', ');
-    throw new Error(`Feed contains unsupported or malformed schemes: ${detail}`);
+    const locations = malformedLines.slice(0, 10).map((lineNumber) => `line ${lineNumber}`).join(', ');
+    throw new Error(
+      `Feed contains unsupported or malformed schemes: ${detail}${locations ? ` (${locations})` : ''}`
+    );
   }
 
   if (configCount < minConfigs) {
