@@ -1,4 +1,5 @@
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { ReactNode } from "react";
 
 export const metadata = {
@@ -12,6 +13,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body style={{ margin: 0, background: "#090b18", color: "#eef2ff" }}>
         {children}
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
