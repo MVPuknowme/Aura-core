@@ -59,6 +59,7 @@ function requiresHumanApproval(intent) {
     intent.riskLevel === "High" ||
     intent.riskLevel === "Critical" ||
     intent.walletRequired === true ||
+    intent.infrastructureChange === true ||
     intent.financialAction === true ||
     intent.legalAction === true ||
     intent.clientFacing === true ||
