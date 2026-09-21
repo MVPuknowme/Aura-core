@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0.0",
+  "product": "SKYGRID Emergency Data On-Ramp",
+  "mode": "controlled_pilot",
+  "sentinel": "fail_closed",
+  "candidates": [
+    {
+      "id": "iquasar",
+      "legal_name": "iQuasar, LLC",
+      "service_brand": "iQuasar Software",
+      "status": "candidate",
+      "company_verification": "public_sources_confirmed",
+      "engagement_verification": "pending",
+      "contact": {
+        "software_phone_e164": "+17039368827",
+        "software_phone_display": "(703) 936-8827",
+        "official_email_domains": [
+          "iquasar.com",
+          "iquasar.us"
+        ],
+        "website": "https://iquasar.com/",
+        "software_website": "https://software.iquasar.com/"
+      },
+      "capabilities": [
+        "devops",
+        "system_integration",
+        "custom_software_development",
+        "ai_integration",
+        "software_testing_qa",
+        "software_team_augmentation",
+        "govcon_support",
+        "cleared_recruitment"
+      ],
+      "skygrid_fit": [
+        "ci_cd_reliability",
+        "cloud_integration",
+        "api_and_system_integration",
+        "software_qa",
+        "engineering_staff_augmentation",
+        "government_market_support"
+      ],
+      "authority": {
+        "pnpk_authorized": false,
+        "production_execution": false,
+        "credential_access": false,
+        "private_data_access": false,
+        "wallet_signing": false,
+        "transaction_broadcast": false
+      },
+      "approval_gates": [
+        "verify_named_contact_via_official_domain",
+        "confirm_scope_and_statement_of_work",
+        "approve_least_privilege_access",
+        "issue_pnpk_authorization_receipt",
+        "record_owner_approval"
+      ],
+      "source_urls": [
+        "https://software.iquasar.com/contact-us/",
+        "https://software.iquasar.com/",
+        "https://software.iquasar.com/system-integration-services/",
+        "https://iquasar.com/news/iquasar-llc-outreach-verification-guidelines-to-ensure-trust-and-transparency/"
+      ]
+    }
+  ]
+}
