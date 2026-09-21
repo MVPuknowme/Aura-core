@@ -3,6 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <title>Aura GPT Desktop</title>
+  <script>
+    window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/speed-insights/script.js"></script>
   <style>
     body {
       margin: 0;
@@ -452,7 +456,7 @@
         setText("aura-pip-mode", "mode: " + (snap.auraMode || "local"));
         setText("aura-pip-openai", "openai: " + (snap.openAiMode || "offline"));
         setText("aura-pip-safe", "safe: " + (snap.safeMode ? "yes" : "check"));
-        setText("aura-pip-refresh", "Updated: " + new Date().toLocaleTimeString() + " · " + (snap.source || "local"));
+        setText("aura-pip-refresh", "Updated: " + new Date().toLocaleTimeString() + " ï¿½ " + (snap.source || "local"));
 
         classify(snap.cpuPercent, snap.memoryUsedPercent, snap.diskUsedPercent);
       } catch (error) {
@@ -486,12 +490,12 @@
         return ''
           + '<div class="aura-ping-row">'
           + '<span>' + check.label + '</span>'
-          + '<span>' + check.statusCode + ' · ' + check.latencyMs + 'ms</span>'
+          + '<span>' + check.statusCode + ' ï¿½ ' + check.latencyMs + 'ms</span>'
           + '<span class="aura-ping-status ' + pingStatusClass(check) + '"></span>'
           + '</div>';
       }).join("");
 
-      footer.textContent = (snapshot.routeName || "route") + " · " + (snapshot.status || "unknown") + " · " + new Date().toLocaleTimeString();
+      footer.textContent = (snapshot.routeName || "route") + " ï¿½ " + (snapshot.status || "unknown") + " ï¿½ " + new Date().toLocaleTimeString();
     }
 
     async function refreshAuraPings() {
