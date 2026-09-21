@@ -69,7 +69,8 @@
         "etherscan:read-test": "node --test tests/skygrid-etherscan-read.test.mjs",
         "route:matrix:test": "node --test tests/skygrid-global-route-matrix.test.mjs tests/skygrid-global-route-matrix-api.test.mjs",
         "transc:MVPuknowme": "node scripts/transc.MVPuknowme.mjs",
-        "transc:MVPuknowme:test": "node --test tests/transc.MVPuknowme.test.mjs"
+        "transc:MVPuknowme:test": "node --test tests/transc.MVPuknowme.test.mjs",
+        "preflight:governance-test": "node --test tests/skygrid-synchronous-preflight.test.mjs"
     },
     "dependencies": {
         "@allbridge/bridge-core-sdk": "^3.34.0",
