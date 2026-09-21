@@ -85,19 +85,21 @@ function approvalMatches(intent, approval, trustedApprovers) {
   return approval.intentFingerprint === fingerprintIntent(intent);
 }
 
+const TERMINAL_DEPENDENCY_STATES = new Set(["Failed", "Blocked"]);
+
 function dependencyStop(intent, dependencies = {}) {
-  if (dependencies.github === "Failed") {
+  if (TERMINAL_DEPENDENCY_STATES.has(dependencies.github)) {
     return { state: "Blocked", reason: "github_failed" };
   }
 
-  if (intent.provider === "azure" && dependencies.railway === "Failed") {
+  if (intent.provider === "azure" && TERMINAL_DEPENDENCY_STATES.has(dependencies.railway)) {
     return { state: "Blocked", reason: "railway_staging_failed" };
   }
 
   if (
     intent.clientFacing === true &&
-    ["identity", "secret", "resource", "target"].some(
-      (check) => dependencies.azureChecks?.[check] === "Failed"
+    ["identity", "secret", "resource", "target"].some((check) =>
+      TERMINAL_DEPENDENCY_STATES.has(dependencies.azureChecks?.[check])
     )
   ) {
     return { state: "Blocked", reason: "azure_readiness_check_failed" };
