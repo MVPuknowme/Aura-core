@@ -4,7 +4,11 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const DEFAULT_SOURCE = 'https://raw.githubusercontent.com/barry-far/V2ray-Config/main/All_Configs_Sub.txt';
+// Recovery snapshot: tracking main contains malformed binary-like input.
+// Refresh this revision and digest together after validating the complete feed.
+export const PINNED_SOURCE_REVISION = '8a01d90f48a5432b174c714efbc3181903ecf578';
+export const PINNED_SOURCE_SHA256 = 'abea0ee15ae8e6c7f94ecf6cbc98a02ec7f143a1b0be157ae215d169bcf60936';
+export const DEFAULT_SOURCE = `https://raw.githubusercontent.com/barry-far/V2ray-Config/${PINNED_SOURCE_REVISION}/All_Configs_Sub.txt`;
 export const DEFAULT_RECEIPT = 'artifacts/pnpk/v2ray/skygrid-v2ray-ingest-receipt.json';
 export const MAX_SOURCE_BYTES = 12 * 1024 * 1024;
 export const ALLOWED_SCHEMES = Object.freeze([
@@ -53,9 +57,10 @@ function helpText() {
 export function assertAllowedSource(source) {
   const url = new URL(source);
   const allowedHost = url.protocol === 'https:' && url.hostname === 'raw.githubusercontent.com';
-  const allowedPath = /^\/barry-far\/V2ray-Config\/(?:main|master)\/All_Configs_Sub\.txt$/i.test(url.pathname);
+  const allowedPath = /^\/barry-far\/V2ray-Config\/(?:main|master)\/All_Configs_Sub\.txt$/i.test(url.pathname)
+    || url.pathname.toLowerCase() === new URL(DEFAULT_SOURCE).pathname.toLowerCase();
 
-  if (!allowedHost || !allowedPath || url.username || url.password) {
+  if (!allowedHost || !allowedPath || url.username || url.password || url.port || url.search || url.hash) {
     throw new Error('V2Ray ingest source is not allowlisted');
   }
 
@@ -157,6 +162,7 @@ async function readInput(args, fetchImpl = fetch) {
 }
 
 function buildReceipt(input, validation) {
+  const pinned = input.source.toLowerCase() === DEFAULT_SOURCE.toLowerCase();
   return {
     ok: true,
     profile: 'skygrid.v2ray.read_only_ingest',
@@ -166,6 +172,9 @@ function buildReceipt(input, validation) {
     sentinel: 'fail_closed',
     source: {
       location: input.source,
+      selection: pinned ? 'pinned_snapshot' : input.source.startsWith('file:') ? 'local_file' : 'tracking_branch',
+      revision: pinned ? PINNED_SOURCE_REVISION : null,
+      snapshot_committed_at: pinned ? '2026-09-20T15:30:12Z' : null,
       etag: input.etag || null,
       last_modified: input.last_modified || null,
       bytes: validation.bytes,
@@ -208,6 +217,9 @@ export async function run(argv = process.argv.slice(2), { fetchImpl = fetch, log
 
   const input = await readInput(args, fetchImpl);
   const validation = validateFeedText(input.text, { minConfigs: args.minConfigs });
+  if (input.source.toLowerCase() === DEFAULT_SOURCE.toLowerCase() && validation.sha256 !== PINNED_SOURCE_SHA256) {
+    throw new Error('Pinned V2Ray snapshot SHA-256 mismatch');
+  }
   const receipt = buildReceipt(input, validation);
 
   let receiptPath = null;
@@ -216,6 +228,7 @@ export async function run(argv = process.argv.slice(2), { fetchImpl = fetch, log
   logger.log(`V2Ray ingest verified: ${validation.config_count} configs (${validation.unique_config_count} unique)`);
   logger.log(`Protocols: ${JSON.stringify(validation.protocols)}`);
   logger.log(`SHA-256: ${validation.sha256}`);
+  logger.log(`Source selection: ${receipt.source.selection}${receipt.source.revision ? ` (${receipt.source.revision})` : ''}`);
   logger.log('Authority: read-only ingest; proxy activation and route mutation are blocked.');
   if (receiptPath) logger.log(`Receipt: ${receiptPath}`);
 
