@@ -21,6 +21,12 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6
 
+      - name: Enable pnpm 10.23.0
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.23.0
+          run_install: false
+
       - name: Deploy Worker with Wrangler
         uses: cloudflare/wrangler-action@v3
         with:
