@@ -8,6 +8,7 @@ on:
       - master
     paths:
       - "src/worker.js"
+      - "lib/social-url-policy.mjs"
       - "wrangler.toml"
       - ".github/workflows/cloudflare-worker.yml"
 
