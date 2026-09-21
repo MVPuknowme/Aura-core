@@ -1,3 +1,4 @@
+vali'validate supported protocols without exposing endpoint content in the result', () => {
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { mkdtemp, readdir, rm } from 'node:fs/promises';
@@ -96,5 +97,19 @@ test('fails closed on malformed or unsupported schemes', () => {
   assert.throws(
     () => validateFeedText('vless://ok\nhttp://not-a-proxy-config\n'),
     /unsupported or malformed schemes: http:1/
+  );
+});
+
+
+test('reports line numbers for missing schemes while remaining fail closed', () => {
+  const text = [
+    '#profile-title: test',
+    'vless://ok',
+    'metadata-without-scheme'
+  ].join('\n');
+
+  assert.throws(
+    () => validateFeedText(text),
+    /unsupported or malformed schemes: <missing>:1 \(line 3\)/
   );
 });
