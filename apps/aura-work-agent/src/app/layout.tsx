@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/next";
 import type { ReactNode } from "react";
 
 export const metadata = {
@@ -10,6 +11,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en">
       <body style={{ margin: 0, background: "#090b18", color: "#eef2ff" }}>
         {children}
+        <Analytics />
       </body>
     </html>
   );
