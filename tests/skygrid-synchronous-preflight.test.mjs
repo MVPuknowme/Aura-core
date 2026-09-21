@@ -4,11 +4,13 @@ import test from "node:test";
 import {
   evaluateSynchronousPreflight,
   fingerprintIntent,
+  POLICY_VERSION,
   PROVIDERS
 } from "../src/preflight/skygrid-synchronous-preflight.mjs";
 import { getDryRunAdapter } from "../src/preflight/dry-run-adapters.mjs";
 
 const NOW = "2026-09-21T05:40:00.000Z";
+const TRUSTED = new Set(["MVPuknowme"]);
 
 function intent(overrides = {}) {
   return {
@@ -21,7 +23,7 @@ function intent(overrides = {}) {
     requestedAction: "inspect branch and workflow readiness",
     riskLevel: "Low",
     mode: "dry-run",
-    policyVersion: "mvp-82-v1",
+    policyVersion: POLICY_VERSION,
     ...overrides
   };
 }
@@ -31,6 +33,7 @@ async function evaluate(overrides = {}, options = {}) {
   return evaluateSynchronousPreflight({
     intent: value,
     adapter: getDryRunAdapter(value.provider),
+    trustedApprovers: TRUSTED,
     now: () => NOW,
     ...options
   });
@@ -54,11 +57,11 @@ test("all seven provider fixtures normalize without mutation", async () => {
   }
 });
 
-test("high-risk operations stop at Waiting Human Approval", async () => {
+test("high-risk and declared infrastructure changes require approval", async () => {
   const cases = [
     { riskLevel: "High", requestedAction: "inspect production deployment" },
     { requestedAction: "delete production resource", destructive: true },
-    { requestedAction: "rotate secret", infrastructureChange: true },
+    { requestedAction: "provision staging VM", infrastructureChange: true },
     { requestedAction: "publish client-facing proof", clientFacing: true },
     { requestedAction: "prepare legal invoice", legalAction: true },
     { requestedAction: "wallet transfer", walletRequired: true, financialAction: true }
@@ -72,39 +75,55 @@ test("high-risk operations stop at Waiting Human Approval", async () => {
   }
 });
 
-test("approval is bound to the exact intent fingerprint", async () => {
+test("approval requires a trusted approver and exact fingerprint", async () => {
   const highRisk = intent({
     provider: "azure",
     riskLevel: "High",
     requestedAction: "production promotion",
-    targetEnvironment: "production"
+    targetEnvironment: "production",
+    evidenceUrls: ["https://example.invalid/a"]
   });
 
-  const result = await evaluateSynchronousPreflight({
+  const fingerprint = fingerprintIntent(highRisk);
+
+  const untrusted = await evaluateSynchronousPreflight({
     intent: highRisk,
     adapter: getDryRunAdapter(highRisk.provider),
-    approval: {
-      approvedBy: "MVPuknowme",
-      intentFingerprint: fingerprintIntent(highRisk)
-    },
+    approval: { approvedBy: "bot", intentFingerprint: fingerprint },
+    trustedApprovers: TRUSTED,
     now: () => NOW
   });
+  assert.equal(untrusted.state, "Waiting Human Approval");
 
-  assert.equal(result.state, "Approved");
-  assert.equal(result.executionAllowed, false);
-
-  const changed = { ...highRisk, requestedAction: "production promotion plus secret rotation" };
-  const changedResult = await evaluateSynchronousPreflight({
-    intent: changed,
-    adapter: getDryRunAdapter(changed.provider),
-    approval: {
-      approvedBy: "MVPuknowme",
-      intentFingerprint: fingerprintIntent(highRisk)
-    },
+  const approved = await evaluateSynchronousPreflight({
+    intent: highRisk,
+    adapter: getDryRunAdapter(highRisk.provider),
+    approval: { approvedBy: "MVPuknowme", intentFingerprint: fingerprint },
+    trustedApprovers: TRUSTED,
     now: () => NOW
   });
+  assert.equal(approved.state, "Approved");
+  assert.equal(approved.executionAllowed, false);
 
-  assert.equal(changedResult.state, "Waiting Human Approval");
+  const changedAction = { ...highRisk, requestedAction: "production promotion plus secret rotation" };
+  const changedActionResult = await evaluateSynchronousPreflight({
+    intent: changedAction,
+    adapter: getDryRunAdapter(changedAction.provider),
+    approval: { approvedBy: "MVPuknowme", intentFingerprint: fingerprint },
+    trustedApprovers: TRUSTED,
+    now: () => NOW
+  });
+  assert.equal(changedActionResult.state, "Waiting Human Approval");
+
+  const changedEvidence = { ...highRisk, evidenceUrls: ["https://example.invalid/b"] };
+  const changedEvidenceResult = await evaluateSynchronousPreflight({
+    intent: changedEvidence,
+    adapter: getDryRunAdapter(changedEvidence.provider),
+    approval: { approvedBy: "MVPuknowme", intentFingerprint: fingerprint },
+    trustedApprovers: TRUSTED,
+    now: () => NOW
+  });
+  assert.equal(changedEvidenceResult.state, "Waiting Human Approval");
 });
 
 test("GitHub failure stops downstream providers", async () => {
@@ -133,13 +152,37 @@ test("Azure identity or secret failures block client-facing readiness", async ()
   assert.equal(result.reason, "azure_readiness_check_failed");
 });
 
-test("Vercel wrong commit fails the lane", async () => {
-  const result = await evaluate(
+test("Vercel fails closed on missing or wrong commit", async () => {
+  const missing = await evaluate(
+    { provider: "vercel" },
+    { dependencies: { approvedGitCommit: "approved-commit" } }
+  );
+  assert.equal(missing.state, "Failed");
+  assert.equal(missing.reason, "vercel_commit_missing");
+
+  const wrong = await evaluate(
     { provider: "vercel", gitCommit: "bad-commit" },
     { dependencies: { approvedGitCommit: "approved-commit" } }
   );
-  assert.equal(result.state, "Failed");
-  assert.equal(result.reason, "vercel_commit_mismatch");
+  assert.equal(wrong.state, "Failed");
+  assert.equal(wrong.reason, "vercel_commit_mismatch");
+});
+
+test("unexpected dependency warnings preserve the governance reason", async () => {
+  const result = await evaluate(
+    {},
+    { dependencies: { unexpectedDependency: { severity: "Warning" } } }
+  );
+  assert.equal(result.state, "Warning");
+  assert.equal(result.reason, "unexpected_dependency_warning");
+  assert.equal(result.receipt.reason, "unexpected_dependency_warning");
+});
+
+test("unsupported policy versions fail closed", async () => {
+  const result = await evaluate({ policyVersion: "mvp-99-v9" });
+  assert.equal(result.state, "Blocked");
+  assert.equal(result.reason, "policy_version_unsupported");
+  assert.equal(result.receipt.policyVersion, POLICY_VERSION);
 });
 
 test("optional Airtable and Clio credentials degrade to Skipped", async () => {
@@ -193,7 +236,7 @@ test("receipts include the MVP-82 governance evidence fields", async () => {
       targetEnvironment: "staging",
       requestedAction: "inspect branch and workflow readiness",
       riskLevel: "Low",
-      policyVersion: "mvp-82-v1",
+      policyVersion: POLICY_VERSION,
       timestamp: NOW,
       finalDecision: "Passed",
       executionAllowed: false
