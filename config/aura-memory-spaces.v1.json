@@ -30,10 +30,14 @@
       },
       "external_reference": {
         "provider": "facebook",
-        "url": "https://www.facebook.com/share/1EwYAhESFZ/?mibextid=wwXIfr.ai",
+        "url": "https://www.facebook.com/share/1EwYAhESFZ/",
         "verification": "unverified_reference_only",
         "content_import_enabled": false,
-        "background_access_enabled": false
+        "background_access_enabled": false,
+        "tracking_parameters_stripped": [
+          "mibextid"
+        ],
+        "url_policy": "quarantine_mibex_prefixed_query_parameters"
       },
       "cloud_backend": {
         "provider": "aws",
