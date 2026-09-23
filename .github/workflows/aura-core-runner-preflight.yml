@@ -12,6 +12,7 @@ on:
       - "tests/skygrid-operator-*.test.mjs"
       - "config/skygrid-operator.mjs"
       - "Dockerfile.operator"
+      - "lib/social-url-policy.mjs"
       - ".dockerignore"
       - "requirements-mcp.txt"
       - "package.json"
@@ -27,6 +28,7 @@ on:
       - "tests/skygrid-operator-*.test.mjs"
       - "config/skygrid-operator.mjs"
       - "Dockerfile.operator"
+      - "lib/social-url-policy.mjs"
       - ".dockerignore"
       - "requirements-mcp.txt"
       - "package.json"
@@ -37,13 +39,13 @@ jobs:
     runs-on: windows-latest
 
     env:
-      SKYGRID_BASE_URL: https://aura-core-home-e539c0b1.vercel.app
+      SKYGRID_BASE_URL: https://aura-sky.skygrid-protocol.net
       SKYGRID_ALLOW_PENDING_DOMAIN: "true"
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Add pre-installed MSYS2 to PATH
         shell: pwsh
@@ -59,7 +61,7 @@ jobs:
           pacman --version
 
       - name: Setup Node 24
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "24"
 
@@ -103,10 +105,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node 24
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "24"
 

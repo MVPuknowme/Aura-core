@@ -9,6 +9,7 @@ RUN pnpm install --frozen-lockfile --prod
 
 COPY config/aerodrome-base-rpc.mjs config/skygrid-operator.mjs config/skygrid-wallet-lanes.mjs ./config/
 COPY api/runtime.mjs api/runtime-core.mjs ./api/
+COPY lib/social-url-policy.mjs ./lib/
 COPY api/aerodrome/wallet.mjs ./api/aerodrome/
 COPY api/wallet/dual-lane.mjs ./api/wallet/
 COPY bridge/skygrid-emergency-onramp.pnpk ./bridge/

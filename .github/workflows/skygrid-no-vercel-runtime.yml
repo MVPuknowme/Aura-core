@@ -1,6 +1,7 @@
-name: SKYGRID No-Vercel Runtime
+name: SKYGRID Provider-Neutral Runtime
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - MVPuknowme
@@ -8,6 +9,7 @@ on:
       - 'bridge/skygrid-emergency-onramp.pnpk'
       - 'config/skygrid-route-manifest.json'
       - 'package.json'
+      - 'vercel.json'
       - 'scripts/seaport.mjs'
       - 'scripts/vercel-build.mjs'
       - 'scripts/verify-skygrid-manifest-sync.mjs'
@@ -20,6 +22,7 @@ on:
       - 'bridge/skygrid-emergency-onramp.pnpk'
       - 'config/skygrid-route-manifest.json'
       - 'package.json'
+      - 'vercel.json'
       - 'scripts/seaport.mjs'
       - 'scripts/vercel-build.mjs'
       - 'scripts/verify-skygrid-manifest-sync.mjs'
@@ -32,11 +35,11 @@ jobs:
   policy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: 24
-      - name: Verify Vercel is not selectable
+      - name: Verify Vercel is deployment-only
         run: node --test tests/skygrid-no-vercel-runtime.test.mjs
       - name: Verify Seaport is fail-closed on Arbitrum One
         run: node --test tests/skygrid-seaport-config.test.mjs

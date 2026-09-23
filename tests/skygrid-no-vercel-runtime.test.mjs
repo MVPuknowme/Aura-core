@@ -34,14 +34,29 @@ test('canonical SKYGRID policy does not allow Vercel as a runtime or ramp', () =
   assert.equal(String(policy.aura_core_ai_switch?.purpose || '').toLowerCase().includes('vercel'), false);
 });
 
-test('top-level Vercel deployment entry points are removed', () => {
-  assert.equal(fs.existsSync(path.join(root, 'vercel.json')), false);
-  assert.equal(fs.existsSync(path.join(root, 'scripts', 'vercel-build.mjs')), false);
+test('top-level Vercel config is deployment-only and preserves fail-closed policy', () => {
+  const vercelPath = path.join(root, 'vercel.json');
+  assert.equal(fs.existsSync(vercelPath), true, 'vercel.json must exist for the deployment adapter');
 
+  const vercel = JSON.parse(fs.readFileSync(vercelPath, 'utf8'));
+  assert.equal(vercel.framework, null);
+  assert.equal(vercel.installCommand, 'pnpm install --frozen-lockfile');
+  assert.equal(vercel.buildCommand, 'pnpm run build');
+  assert.ok(Array.isArray(vercel.rewrites) && vercel.rewrites.length > 0, 'runtime rewrites are required');
+  for (const rewrite of vercel.rewrites) {
+    assert.equal(rewrite.destination, '/api/runtime', `${rewrite.source} must stay behind the hardened runtime`);
+  }
+
+  assert.equal(fs.existsSync(path.join(root, 'scripts', 'vercel-build.mjs')), false);
   const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
   assert.equal(Object.hasOwn(pkg.scripts || {}, 'operator:vercel-build'), false);
   for (const command of Object.values(pkg.scripts || {})) {
     assert.equal(String(command).includes('--vercel'), false);
+  }
+
+  const manifest = loadManifest();
+  for (const key of ['device_activation', 'production_failover', 'private_data_movement', 'wallet_signing', 'transaction_broadcast']) {
+    assert.equal(manifest.policy?.[key], false, `${key} must remain fail-closed`);
   }
 });
 

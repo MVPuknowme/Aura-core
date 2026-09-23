@@ -8,6 +8,7 @@ on:
       - master
     paths:
       - "src/worker.js"
+      - "lib/social-url-policy.mjs"
       - "wrangler.toml"
       - ".github/workflows/cloudflare-worker.yml"
 
@@ -21,8 +22,32 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6
 
+      - name: Setup Node 24
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+
+      - name: Enable pnpm 10.23.0
+        shell: bash
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.23.0 --activate
+          pnpm --version
+
+      - name: Validate Cloudflare authentication
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error title=Cloudflare authentication missing::Add CLOUDFLARE_API_TOKEN as a GitHub Actions repository secret before deploying."
+            exit 1
+          fi
+
       - name: Deploy Worker with Wrangler
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          packageManager: pnpm
+          wranglerVersion: "4"
+          command: deploy

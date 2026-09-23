@@ -4,5 +4,5 @@ compatibility_date = "2026-06-04"
 workers_dev = true
 
 [[routes]]
-pattern = "api.skygrid-protocol.net/*"
-zone_name = "skygrid-protocol.net"
+pattern = "api.skygrid-protocol.net"
+custom_domain = true

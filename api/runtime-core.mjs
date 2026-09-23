@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { findBlockedExternalUrl } from "../lib/social-url-policy.mjs";
 import {
   createCapacityAgreementPacket,
   createCapacityOffer
@@ -450,6 +451,23 @@ export default async function handler(req, res) {
 
   if (req.method === "POST" && ["/api/skygrid/intake", "/intake", "/api/aura-core/decide", "/api/agent/signals"].includes(path)) {
     const body = await readBody(req);
+    const blockedUrl = findBlockedExternalUrl(body);
+    if (blockedUrl) {
+      return json(res, 403, {
+        accepted: false,
+        advisoryOnly: true,
+        product: PRODUCT,
+        route: path,
+        status: "quarantined",
+        reason: blockedUrl.reason,
+        classification: blockedUrl.classification,
+        parameter: blockedUrl.parameter,
+        malware_confirmed: false,
+        source_path: blockedUrl.trail,
+        timestamp: now()
+      });
+    }
+
     const routeDecision = decision(body);
     const status = routeDecision.http_status || (routeDecision.ok ? 202 : 403);
 
