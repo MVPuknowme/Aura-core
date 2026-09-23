@@ -3,7 +3,6 @@
   "version": 2,
   "framework": null,
   "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "node -e \"console.log('SKYGRID Emergency Data On-Ramp API deployment: no frontend build required')\""
   "buildCommand": "pnpm run build",
   "devCommand": "node scripts/skygrid-local-runtime-server.mjs --port $PORT",
   "rewrites": [
