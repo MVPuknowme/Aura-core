@@ -1,17 +1,11 @@
 name: Vercel Production Promotion
 
 on:
-  push:
-    branches:
-      - MVPuknowme
-    paths:
-      - '.github/workflows/vercel-production-promote.yml'
   workflow_dispatch:
     inputs:
       deployment_url:
         description: Verified Vercel deployment URL to promote
         required: true
-        default: https://aura-core-2q5an2jm8-home-e539c0b1.vercel.app
 
 permissions:
   contents: read
@@ -26,7 +20,7 @@ jobs:
     env:
       VERCEL_ORG_ID: team_tktkgTngfxCrLgFeyi8M5Cy0
       VERCEL_PROJECT_ID: prj_z9Ker7gTAPdyFyO4n6y4aPJL4KZ8
-      DEPLOYMENT_URL: ${{ github.event.inputs.deployment_url || 'https://aura-core-2q5an2jm8-home-e539c0b1.vercel.app' }}
+      DEPLOYMENT_URL: ${{ inputs.deployment_url }}
     steps:
       - uses: actions/setup-node@v6
         with:
