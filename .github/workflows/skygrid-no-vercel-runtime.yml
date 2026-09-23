@@ -1,4 +1,4 @@
-name: SKYGRID No-Vercel Runtime
+name: SKYGRID Provider-Neutral Runtime
 
 on:
   workflow_dispatch:
@@ -39,7 +39,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-      - name: Verify Vercel is not selectable
+      - name: Verify Vercel is deployment-only
         run: node --test tests/skygrid-no-vercel-runtime.test.mjs
       - name: Verify Seaport is fail-closed on Arbitrum One
         run: node --test tests/skygrid-seaport-config.test.mjs
