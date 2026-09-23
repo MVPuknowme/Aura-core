@@ -1,0 +1,64 @@
+name: Vercel Production Promotion
+
+on:
+  push:
+    branches:
+      - MVPuknowme
+    paths:
+      - '.github/workflows/vercel-production-promote.yml'
+  workflow_dispatch:
+    inputs:
+      deployment_url:
+        description: Verified Vercel deployment URL to promote
+        required: true
+        default: https://aura-core-2q5an2jm8-home-e539c0b1.vercel.app
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vercel-production-promotion
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: team_tktkgTngfxCrLgFeyi8M5Cy0
+      VERCEL_PROJECT_ID: prj_z9Ker7gTAPdyFyO4n6y4aPJL4KZ8
+      DEPLOYMENT_URL: ${{ github.event.inputs.deployment_url || 'https://aura-core-2q5an2jm8-home-e539c0b1.vercel.app' }}
+    steps:
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Require Vercel promotion credential
+        shell: pwsh
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:VERCEL_TOKEN)) {
+            Write-Error "VERCEL_TOKEN is not configured; refusing production promotion."
+            exit 1
+          }
+
+      - name: Inspect verified deployment
+        shell: pwsh
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          npx --yes vercel@59.23.2 inspect $env:DEPLOYMENT_URL --token=$env:VERCEL_TOKEN --scope=home-e539c0b1
+
+      - name: Promote verified deployment
+        shell: pwsh
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          npx --yes vercel@59.23.2 promote $env:DEPLOYMENT_URL --token=$env:VERCEL_TOKEN --scope=home-e539c0b1 --yes
+
+      - name: Confirm production alias
+        shell: pwsh
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          npx --yes vercel@59.23.2 inspect https://aura-core.vercel.app --token=$env:VERCEL_TOKEN --scope=home-e539c0b1
