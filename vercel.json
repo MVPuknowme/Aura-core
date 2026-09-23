@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
+  "framework": null,
   "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm run build",
-  "outputDirectory": "public"
+  "buildCommand": "node -e \"console.log('SKYGRID Emergency Data On-Ramp API deployment: no frontend build required')\""
 }
