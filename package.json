@@ -72,7 +72,9 @@
         "transc:MVPuknowme:test": "node --test tests/transc.MVPuknowme.test.mjs",
         "preflight:governance-test": "node --test tests/skygrid-synchronous-preflight.test.mjs",
         "partner:candidates:test": "node --test tests/skygrid-partner-candidates.test.mjs",
-        "social:url-policy-test": "node --test tests/social-url-policy.test.mjs"
+        "social:url-policy-test": "node --test tests/social-url-policy.test.mjs",
+        "referral:coinbase:preflight": "node scripts/coinbase-referral-preflight.mjs",
+        "referral:coinbase:test": "node --test tests/coinbase-referral-preflight.test.mjs"
     },
     "dependencies": {
         "@allbridge/bridge-core-sdk": "^3.34.0",
