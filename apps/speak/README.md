@@ -4,6 +4,7 @@ Speak is a local-first browser speech interface inside Aura-core.
 
 ## Current rebuild
 
+- **Speak master power OFF by default on every load; speech and microphone features require an explicit user enable action.**
 - Text-to-speech using the browser `speechSynthesis` API.
 - Speech-to-text using `SpeechRecognition` or `webkitSpeechRecognition` when available.
 - Large iOS-friendly **ACTION** button.
@@ -11,6 +12,10 @@ Speak is a local-first browser speech interface inside Aura-core.
 - One-shot **Calibration Read** with a known target phrase and 1–5 read-confidence result.
 - Responsive mobile-first Aura styling.
 - No application-level network calls, analytics, background listening, or device discovery.
+
+## Explicit-enable policy
+
+Speak is fail-closed for audio and microphone features. Each page load starts with **Speak power OFF**. No speech synthesis, speech recognition, calibration read, or command-driven speech can start until the user explicitly turns Speak power ON. The enabled state is not silently restored across page loads.
 
 ## Action + Thought Command
 
