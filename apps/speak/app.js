@@ -26,7 +26,8 @@
   let finalTranscript = '';
   let listening = false;
   let thoughtCommandEnabled = false;
-  let masterEnabled = true;
+  // Fail closed: Speak stays disabled until the user explicitly enables it.
+  let masterEnabled = false;
 
   function setStatus(target, message) {
     target.textContent = message;
@@ -353,5 +354,5 @@
   loadVoices();
   if ('speechSynthesis' in window) window.speechSynthesis.onvoiceschanged = loadVoices;
   setupRecognition();
-  setMasterEnabled(true);
+  setMasterEnabled(false);
 })();
