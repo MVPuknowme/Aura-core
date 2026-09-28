@@ -8,7 +8,7 @@ const scoreEl = document.getElementById('calibration-score');
 
 let target = pickCalibrationTarget();
 let activeRead = null;
-let masterEnabled = document.documentElement.dataset.speakEnabled !== 'false';
+let masterEnabled = document.documentElement.dataset.speakEnabled === 'true';
 
 targetEl.textContent = target;
 
