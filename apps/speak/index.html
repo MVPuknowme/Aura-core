@@ -25,17 +25,17 @@
           <h2 id="master-heading">Basic controls</h2>
           <p class="hint command-hint">Master app control for Speak audio and microphone features.</p>
         </div>
-        <span id="master-status" class="status" aria-live="polite">On</span>
+        <span id="master-status" class="status" aria-live="polite">Off</span>
       </div>
 
       <div class="command-controls">
-        <button id="master-toggle" class="switch-button active" type="button" role="switch" aria-checked="true" aria-describedby="master-help">
+        <button id="master-toggle" class="switch-button" type="button" role="switch" aria-checked="false" aria-describedby="master-help">
           <span>Speak power</span>
-          <strong id="master-state">ON</strong>
+          <strong id="master-state">OFF</strong>
         </button>
         <label>Volume <span id="volume-value">100%</span><input id="volume" type="range" min="0" max="1" value="1" step="0.05" aria-label="Speech output volume" /></label>
       </div>
-      <p id="master-help" class="hint small-hint">OFF stops Speak output/listening and blocks new speech or calibration reads. Volume controls Speak text-to-speech output, not iPhone/iPad system volume.</p>
+      <p id="master-help" class="hint small-hint">Speak starts OFF on every load. Turn it ON only when you explicitly want speech or microphone features. OFF stops output/listening and blocks new speech or calibration reads. Volume controls Speak text-to-speech output, not iPhone/iPad system volume.</p>
     </section>
 
     <section class="card command-card" aria-labelledby="command-heading">
@@ -44,7 +44,7 @@
           <h2 id="command-heading">Command control</h2>
           <p class="hint command-hint">“Thought Command” is an explicit input mode: it uses only text you type or speech your browser transcribes.</p>
         </div>
-        <span id="command-status" class="status" aria-live="polite">Manual</span>
+        <span id="command-status" class="status" aria-live="polite">Off</span>
       </div>
 
       <div class="command-controls">
@@ -66,7 +66,7 @@
           <h2 id="calibration-heading">Calibration read</h2>
           <p class="hint command-hint">Known-target one-shot microphone calibration. Read the displayed phrase exactly once.</p>
         </div>
-        <span id="calibration-status" class="status" aria-live="polite">Ready</span>
+        <span id="calibration-status" class="status" aria-live="polite">Off</span>
       </div>
       <div class="calibration-grid">
         <div>
@@ -85,7 +85,7 @@
     <section class="card" aria-labelledby="speak-heading">
       <div class="section-heading">
         <h2 id="speak-heading">Text to speech</h2>
-        <span id="tts-status" class="status">Ready</span>
+        <span id="tts-status" class="status">Off</span>
       </div>
       <label class="sr-only" for="speech-text">Text to speak or command</label>
       <textarea id="speech-text" rows="7" maxlength="3000" placeholder="Type what you want Speak to say, or a command such as ‘listen’…"></textarea>
@@ -106,7 +106,7 @@
     <section class="card" aria-labelledby="listen-heading">
       <div class="section-heading">
         <h2 id="listen-heading">Speech to text</h2>
-        <span id="stt-status" class="status">Idle</span>
+        <span id="stt-status" class="status">Off</span>
       </div>
       <p class="hint">Microphone access only starts after you press <strong>Start listening</strong>. Browser support varies, especially on iOS.</p>
       <div id="transcript" class="transcript" aria-live="polite" aria-label="Transcript"></div>
