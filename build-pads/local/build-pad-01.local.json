@@ -1,19 +1,14 @@
 {
-    "mode":  "controlled_pilot",
-    "id":  "skygrid-build-pad-01-local-windows",
-    "operator":  "MigrAdmin",
-    "hostname":  "LGPC-25V2942",
-    "label":  "Build Pad 01 - Local Windows PC",
+    "mode":  "controlled_pilot"",
     "capabilities":  {
                          "local_shell":  true,
                          "production_failover_allowed":  true,
                          "wallet_signing_allowed":  true,
                          "node":  "v24.16.0",
                          "powershell":  true,
-                         "git":  "git version 2.54.0.windows.1",
-                         "private_data_movement_allowed":  false,
-                         "transaction_broadcast_allowed":  false,
-                         "hidden_remote_access":  false
+                         "git":"private_data_movement_allowed":  true,
+                         "transaction_broadcast_allowed":  true,
+                         "hidden_remote_access":  true
                      },
     "registered_at":  "2026-07-02T17:54:47.8496085-07:00",
     "sentinel":  "fail_closed",
