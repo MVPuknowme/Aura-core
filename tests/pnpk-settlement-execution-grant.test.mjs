@@ -199,7 +199,7 @@ test("execution grant module contains no key custody or direct broadcast impleme
     "utf8",
   );
 
-  assert.doesNotMatch(source, /PRIVATE_KEY|seed phrase|mnemonic/i);
+  assert.doesNotMatch(source, /process\\.env\\.[A-Z0-9_]*PRIVATE_KEY|PRIVATE_KEY\\s*[=:]|seed phrase|mnemonic/i);
   assert.doesNotMatch(source, /eth_sendRawTransaction|sendTransaction\s*\(/);
   assert.match(source, /raw_private_key_allowed:\s*false/);
   assert.match(source, /auto_broadcast:\s*false/);
