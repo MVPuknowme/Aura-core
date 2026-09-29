@@ -73,6 +73,8 @@
         "preflight:governance-test": "node --test tests/skygrid-synchronous-preflight.test.mjs",
         "partner:candidates:test": "node --test tests/skygrid-partner-candidates.test.mjs",
         "social:url-policy-test": "node --test tests/social-url-policy.test.mjs",
+        "referral:coinbase:preflight": "node scripts/coinbase-referral-preflight.mjs",
+        "referral:coinbase:test": "node --test tests/coinbase-referral-preflight.test.mjs"
         "pnpk:settlement-execution-test": "node --test tests/pnpk-settlement-execution-grant.test.mjs",
         "basepay:adapter-test": "node --test tests/base-account-pay-adapter.test.mjs",
         "aura:super-intelligence:test": "node --test tests/aura-super-intelligence.test.mjs"
