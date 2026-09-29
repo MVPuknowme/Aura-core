@@ -84,7 +84,7 @@ The evaluator emits exactly one advisory decision:
 | `AWAIT_APPROVAL` | Elevated/critical or explicitly approval-bound work needs attributable operator approval. |
 | `FAIL_CLOSED` | Evidence, scope, provenance, policy, or authority requirements are not satisfied. |
 
-For elevated, critical, or explicitly approval-bound work, approval must be attributable to an authorized approver and bound to the exact request fingerprint. A stale or mismatched approval leaves the decision at `AWAIT_APPROVAL`.
+For elevated, critical, or explicitly approval-bound work, approval must be attributable to an authorized approver and bound to both the exact request fingerprint and the focused evidence-binding snapshot. If the request or evidence changes, the approval fingerprint changes. A stale or mismatched approval leaves the decision at `AWAIT_APPROVAL`.
 
 Operator approval changes the advisory state only. It does not grant execution inside this evaluator.
 
@@ -109,6 +109,7 @@ Every completed evaluation emits an `aura-super-intelligence-receipt/v1` receipt
 - request and operator identity;
 - requested action and target;
 - evidence hash bindings;
+- approval fingerprint bound to the request and focused evidence snapshot;
 - confidence and severity;
 - alternatives and counter-evidence;
 - PNPK gate results;
