@@ -84,6 +84,8 @@ The evaluator emits exactly one advisory decision:
 | `AWAIT_APPROVAL` | Elevated/critical or explicitly approval-bound work needs attributable operator approval. |
 | `FAIL_CLOSED` | Evidence, scope, provenance, policy, or authority requirements are not satisfied. |
 
+For elevated, critical, or explicitly approval-bound work, approval must be attributable to an authorized approver and bound to the exact request fingerprint. A stale or mismatched approval leaves the decision at `AWAIT_APPROVAL`.
+
 Operator approval changes the advisory state only. It does not grant execution inside this evaluator.
 
 ### EXECUTION
