@@ -118,6 +118,13 @@ test("unauthorized requested evidence fails closed", () => {
     AURA_SUPER_INTELLIGENCE_DECISIONS.FAIL_CLOSED
   );
   assert.equal(result.architecture.decide.reason, "evidence_scope_not_authorized");
+  assert.equal(result.architecture.focus.bindings.length, 1);
+  assert.equal(
+    result.architecture.global.evidencePlanes.some(
+      (plane) => plane.id === "validator-health/us-west-2"
+    ),
+    false
+  );
   assert.equal(result.executionAllowed, false);
 });
 
@@ -158,6 +165,18 @@ test("critical decisions await explicit operator approval", () => {
   );
 
   const criticalRequest = request({ severity: "critical" });
+  const waitingForBoundApproval = evaluateAuraSuperIntelligence({
+    request: criticalRequest,
+    evidencePlanes: evidence(),
+    pnpk: {
+      policyVersion: AURA_SUPER_INTELLIGENCE_POLICY_VERSION,
+      authorityCheck: true,
+      receiptRequired: true
+    },
+    authorizedApprovers: new Set(["MVPuknowme"]),
+    now: () => NOW
+  });
+
   const approved = evaluateAuraSuperIntelligence({
     request: criticalRequest,
     evidencePlanes: evidence(),
@@ -169,7 +188,8 @@ test("critical decisions await explicit operator approval", () => {
     approval: {
       approved: true,
       approvedBy: "MVPuknowme",
-      requestFingerprint: fingerprintAuraSuperIntelligenceRequest(criticalRequest)
+      requestFingerprint: fingerprintAuraSuperIntelligenceRequest(criticalRequest),
+      approvalFingerprint: waitingForBoundApproval.receipt.approvalFingerprint
     },
     authorizedApprovers: new Set(["MVPuknowme"]),
     now: () => NOW
@@ -186,12 +206,31 @@ test("critical decisions await explicit operator approval", () => {
     approval: {
       approved: true,
       approvedBy: "MVPuknowme",
-      requestFingerprint: "wrong"
+      requestFingerprint: "wrong",
+      approvalFingerprint: waitingForBoundApproval.receipt.approvalFingerprint
     }
   });
   assert.equal(
     unbound.architecture.decide.decision,
     AURA_SUPER_INTELLIGENCE_DECISIONS.AWAIT_APPROVAL
+  );
+});
+
+test("approval fingerprint changes when focused evidence changes", () => {
+  const baseline = evaluate({ request: { severity: "critical" } });
+  const changedPlanes = evidence();
+  changedPlanes[0] = {
+    ...changedPlanes[0],
+    payload: { healthy: false, quorum: 1 }
+  };
+  const changed = evaluate({
+    request: { severity: "critical" },
+    evidencePlanes: changedPlanes
+  });
+
+  assert.notEqual(
+    baseline.receipt.approvalFingerprint,
+    changed.receipt.approvalFingerprint
   );
 });
 
