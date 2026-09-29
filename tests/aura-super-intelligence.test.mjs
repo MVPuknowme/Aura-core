@@ -5,6 +5,7 @@ import {
   AURA_SUPER_INTELLIGENCE_DECISIONS,
   AURA_SUPER_INTELLIGENCE_POLICY_VERSION,
   evaluateAuraSuperIntelligence,
+  fingerprintAuraSuperIntelligenceRequest,
   hashCanonical
 } from "../src/intelligence/aura-super-intelligence.mjs";
 
@@ -56,8 +57,9 @@ function evidence(overrides = {}) {
 }
 
 function evaluate(overrides = {}) {
+  const value = request(overrides.request);
   return evaluateAuraSuperIntelligence({
-    request: request(overrides.request),
+    request: value,
     evidencePlanes: overrides.evidencePlanes ?? evidence(),
     pnpk: {
       policyVersion: AURA_SUPER_INTELLIGENCE_POLICY_VERSION,
@@ -66,6 +68,7 @@ function evaluate(overrides = {}) {
       ...overrides.pnpk
     },
     approval: overrides.approval ?? null,
+    authorizedApprovers: overrides.authorizedApprovers ?? new Set(["MVPuknowme"]),
     now: () => NOW
   });
 }
@@ -154,9 +157,22 @@ test("critical decisions await explicit operator approval", () => {
     AURA_SUPER_INTELLIGENCE_DECISIONS.AWAIT_APPROVAL
   );
 
-  const approved = evaluate({
-    request: { severity: "critical" },
-    approval: { approved: true, approvedBy: "MVPuknowme" }
+  const criticalRequest = request({ severity: "critical" });
+  const approved = evaluateAuraSuperIntelligence({
+    request: criticalRequest,
+    evidencePlanes: evidence(),
+    pnpk: {
+      policyVersion: AURA_SUPER_INTELLIGENCE_POLICY_VERSION,
+      authorityCheck: true,
+      receiptRequired: true
+    },
+    approval: {
+      approved: true,
+      approvedBy: "MVPuknowme",
+      requestFingerprint: fingerprintAuraSuperIntelligenceRequest(criticalRequest)
+    },
+    authorizedApprovers: new Set(["MVPuknowme"]),
+    now: () => NOW
   });
 
   assert.equal(
@@ -164,6 +180,19 @@ test("critical decisions await explicit operator approval", () => {
     AURA_SUPER_INTELLIGENCE_DECISIONS.RECOMMEND
   );
   assert.equal(approved.executionAllowed, false);
+
+  const unbound = evaluate({
+    request: { severity: "critical" },
+    approval: {
+      approved: true,
+      approvedBy: "MVPuknowme",
+      requestFingerprint: "wrong"
+    }
+  });
+  assert.equal(
+    unbound.architecture.decide.decision,
+    AURA_SUPER_INTELLIGENCE_DECISIONS.AWAIT_APPROVAL
+  );
 });
 
 test("policy mismatch fails closed", () => {
