@@ -167,6 +167,7 @@ function baseResult({
     timestamp,
     mode: "advisory",
     evidenceBindings: focus.bindings,
+    approvalFingerprint: focus.approvalFingerprint,
     confidence: reason.confidence,
     severity: reason.severity,
     alternatives: reason.alternatives,
@@ -209,7 +210,9 @@ export function evaluateAuraSuperIntelligence({
   const timestamp = now();
   const global = {
     phase: "GLOBAL",
-    evidencePlanes: evidencePlanes.map(globalMetadata)
+    evidencePlanes: evidencePlanes
+      .filter((plane) => plane?.authorized === true)
+      .map(globalMetadata)
   };
 
   const requestProblem = validateRequest(request);
@@ -230,14 +233,27 @@ export function evaluateAuraSuperIntelligence({
     .filter((plane) => !EVIDENCE_CLASSES.has(text(plane.evidenceClass)))
     .map((plane) => text(plane.id));
 
+  const bindablePlanes = focusedPlanes.filter(
+    (plane) =>
+      plane.authorized === true &&
+      plane.provenanceValid === true &&
+      EVIDENCE_CLASSES.has(text(plane.evidenceClass))
+  );
+
   const focus = {
     phase: "FOCUS",
     requestedScopes,
     selectedScopes: focusedPlanes.map((plane) => text(plane.id)),
-    bindings: focusedPlanes.map(bindEvidencePlane),
+    bindings: bindablePlanes.map(bindEvidencePlane),
     missingScopes,
     unauthorizedScopes
   };
+
+  focus.approvalFingerprint = hashCanonical({
+    requestFingerprint: fingerprintAuraSuperIntelligenceRequest(request),
+    evidenceBindings: focus.bindings,
+    policyVersion: AURA_SUPER_INTELLIGENCE_POLICY_VERSION
+  });
 
   const confidence = assessConfidence(focusedPlanes);
   const reason = {
@@ -320,7 +336,8 @@ export function evaluateAuraSuperIntelligence({
       authorizedApprovers instanceof Set &&
       authorizedApprovers.has(approval.approvedBy) &&
       approval.requestFingerprint ===
-        fingerprintAuraSuperIntelligenceRequest(request);
+        fingerprintAuraSuperIntelligenceRequest(request) &&
+      approval.approvalFingerprint === focus.approvalFingerprint;
 
     if (approvalRequired && !approvalValid) {
       decision = {
