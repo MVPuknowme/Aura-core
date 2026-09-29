@@ -30,6 +30,24 @@ export function hashCanonical(value) {
     .digest("hex");
 }
 
+export function fingerprintAuraSuperIntelligenceRequest(request) {
+  return hashCanonical({
+    requestId: request?.requestId ?? null,
+    operator: request?.operator ?? null,
+    requestedAction: request?.requestedAction ?? null,
+    target: request?.target ?? null,
+    requestedEvidenceScopes: Array.isArray(request?.requestedEvidenceScopes)
+      ? [...new Set(request.requestedEvidenceScopes.map(String))].sort()
+      : [],
+    severity: request?.severity ?? null,
+    requiresApproval: request?.requiresApproval === true,
+    alternatives: Array.isArray(request?.alternatives) ? request.alternatives : [],
+    counterEvidence: Array.isArray(request?.counterEvidence)
+      ? request.counterEvidence
+      : []
+  });
+}
+
 function text(value) {
   return typeof value === "string" ? value.trim() : "";
 }
@@ -185,6 +203,7 @@ export function evaluateAuraSuperIntelligence({
   evidencePlanes = [],
   pnpk = {},
   approval = null,
+  authorizedApprovers = new Set(),
   now = () => new Date().toISOString()
 } = {}) {
   const timestamp = now();
@@ -295,11 +314,19 @@ export function evaluateAuraSuperIntelligence({
       request.severity === "elevated" ||
       request.severity === "critical";
 
-    if (approvalRequired && approval?.approved !== true) {
+    const approvalValid =
+      approval?.approved === true &&
+      text(approval?.approvedBy) !== "" &&
+      authorizedApprovers instanceof Set &&
+      authorizedApprovers.has(approval.approvedBy) &&
+      approval.requestFingerprint ===
+        fingerprintAuraSuperIntelligenceRequest(request);
+
+    if (approvalRequired && !approvalValid) {
       decision = {
         phase: "DECIDE",
         decision: AURA_SUPER_INTELLIGENCE_DECISIONS.AWAIT_APPROVAL,
-        reason: "explicit_operator_approval_required"
+        reason: "bound_authorized_operator_approval_required"
       };
     } else if (confidence.level === "low") {
       decision = {
