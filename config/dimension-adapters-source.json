@@ -1,0 +1,32 @@
+{
+  "schema": "skygrid.dimension_source.v1",
+  "source": {
+    "provider": "dimension-adapters",
+    "repository": "MVPuknowme/dimension-adapters",
+    "branch": "master",
+    "codeload_url": "https://codeload.github.com/MVPuknowme/dimension-adapters/zip/refs/heads/master",
+    "source_mode": "read_only_evidence"
+  },
+  "allowed_dimensions": [
+    "dailyBridgeVolume",
+    "dailyFees",
+    "dailyRevenue",
+    "dailySupplySideRevenue",
+    "dailyUserFees",
+    "dailyProtocolRevenue",
+    "dailyHoldersRevenue",
+    "dailyVolume",
+    "openInterestAtEnd"
+  ],
+  "policy": {
+    "may_authorize_settlement": false,
+    "may_sign_transactions": false,
+    "may_broadcast_transactions": false,
+    "may_modify_wallet_state": false,
+    "require_source_commit_sha": true,
+    "require_observation_window": true,
+    "require_hash_bound_receipt": true,
+    "require_pnpk_validation": true,
+    "fail_closed": true
+  }
+}
