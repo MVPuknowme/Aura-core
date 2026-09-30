@@ -1,0 +1,11 @@
+[package]
+name = "skygrid-sec-edgar-parser"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Read-only, fail-closed SEC EDGAR submissions parser for SKYGRID evidence ingestion"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
