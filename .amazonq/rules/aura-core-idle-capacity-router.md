@@ -137,6 +137,20 @@ Is emergency or failover traffic active?
                 evaluate approved idle workloads
 ```
 
+## Shared Capacity Commercial Rule
+
+SKYGRID capacity is a shared-use revenue model, not an hourly-rent purchase model.
+
+- Upfront capacity rent paid by SKYGRID: **$0**.
+- Capacity is authorized for a time tier (for example, a requested number of hours), not purchased at an hourly rate.
+- After activation, approved workloads may generate operating revenue from failover protection, validation, routing, storage, proof/archive, or other explicitly approved work.
+- Every billable failover or validation event must be supported by an invoice and hash-bound operating receipt before settlement.
+- SKYGRID fee: **3.5% (350 bps)** of verified operating revenue.
+- Capacity-owner / leasee share: **96.5% (9,650 bps)** of verified operating revenue.
+- No party is paid from projected or estimated revenue.
+
+The split applies only to verified operating revenue generated while the shared-capacity agreement is active. It does not turn capacity availability by itself into realized income.
+
 ## Payout Rule
 
 Aura-Core must never pay leasees from estimates alone.
