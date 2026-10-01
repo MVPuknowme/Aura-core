@@ -83,7 +83,7 @@ function normalizeChainRef(asset = {}) {
     }
     if (explicit.startsWith("eip155:")) {
       const suffix = explicit.slice("eip155:".length);
-      if (!/^[1-9]\\d*$/.test(suffix)) throw new Error("chain_ref_invalid");
+      if (!/^[1-9]\d*$/.test(suffix)) throw new Error("chain_ref_invalid");
       const n = Number(suffix);
       if (!Number.isSafeInteger(n) || n <= 0 || String(n) !== suffix) {
         throw new Error("chain_ref_invalid");
