@@ -1,18 +1,25 @@
 name: Klamath Validator Control
 
 on:
+  pull_request:
+    paths:
+      - ".github/workflows/klamath-validator-control.yml"
+      - "configs/klamath-validator-control.v1.json"
+      - "bridge/skygrid-emergency-onramp.pnpk"
+      - "lib/skygrid-live-validation.mjs"
+      - "scripts/skygrid-live-validation.mjs"
+      - "scripts/validate-pnpk.mjs"
+      - "tests/skygrid-live-validation.test.mjs"
   push:
     branches: ["MVPuknowme"]
     paths:
       - ".github/workflows/klamath-validator-control.yml"
       - "configs/klamath-validator-control.v1.json"
       - "bridge/skygrid-emergency-onramp.pnpk"
+      - "lib/skygrid-live-validation.mjs"
+      - "scripts/skygrid-live-validation.mjs"
       - "scripts/validate-pnpk.mjs"
-      - "scripts/run-pnpk-postbuild.mjs"
-      - "scripts/pnpk-access-transparency-policy.mjs"
-      - "scripts/validate-power-mesh-fixture.mjs"
-      - "fixtures/skygrid-power-mesh/**"
-      - "schemas/skygrid-power-mesh-telemetry.schema.json"
+      - "tests/skygrid-live-validation.test.mjs"
   schedule:
     - cron: "1 * * * *"
   workflow_dispatch:
@@ -27,40 +34,45 @@ concurrency:
 env:
   CONTROL_TIMEZONE: America/Los_Angeles
   PNPK_PATH: bridge/skygrid-emergency-onramp.pnpk
+  SKYGRID_LIVE_VALIDATION_BASE_URL: https://api.skygrid-protocol.net
+  SKYGRID_LIVE_VALIDATION_ALLOWED_HOSTS: api.skygrid-protocol.net,aura-sky.skygrid-protocol.net
+  SKYGRID_LIVE_VALIDATION_TARGETS: /health.json,/dispatch,/api/highway/status
 
 jobs:
-  klamath-safe-validation:
-    name: Klamath safe validation
+  klamath-live-validation:
+    name: Klamath live validation
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
     steps:
-      - name: Confirm 100 percent validator availability target
-        id: availability
-        shell: bash
-        run: |
-          echo "run=true" >> "$GITHUB_OUTPUT"
-          echo "Validator proof work eligible at this checkpoint; availability target is 100%."
-          echo "Financial, signing, private-data, payout, and production-failover authorities remain blocked."
-
       - name: Checkout
-        if: steps.availability.outputs.run == 'true'
         uses: actions/checkout@v4
 
       - name: Setup Node.js
-        if: steps.availability.outputs.run == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: "24.x"
 
       - name: PNPK pre-flight gate
         id: pnpk
-        if: steps.availability.outputs.run == 'true'
         run: node scripts/validate-pnpk.mjs
 
-      - name: Run Klamath telemetry validator
-        if: steps.availability.outputs.run == 'true' && steps.pnpk.outcome == 'success'
-        run: node scripts/validate-power-mesh-fixture.mjs
+      - name: Unit-test live validation
+        if: steps.pnpk.outcome == 'success'
+        run: node --test tests/skygrid-live-validation.test.mjs
+
+      - name: Run live SKYGRID route validation
+        id: live_validation
+        if: steps.pnpk.outcome == 'success'
+        run: node scripts/skygrid-live-validation.mjs
+
+      - name: Upload live validation receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: klamath-live-validation-receipt
+          path: artifacts/pnpk/proofs/live-validation-latest.json
+          if-no-files-found: error
 
       - name: Record proof summary
         if: always()
@@ -69,17 +81,17 @@ jobs:
           {
             echo "## Klamath Validator Control"
             echo "- Node: klamath-falls-core"
-            echo "- Mode: safe_validation_work"
-            echo "- Live execution: false"
-            echo "- Availability target: 100%"
+            echo "- Mode: production_validation_work"
+            echo "- Live validation: true"
+            echo "- Validation method: GET-only on allowlisted SKYGRID endpoints"
+            echo "- Global production failover: false"
+            echo "- Network relight: separate signed PNPK preflight + configured executor only"
             echo "- Schedule: hourly / 24x7 eligible"
             echo "- Control timezone: America/Los_Angeles"
             echo "- Event: ${{ github.event_name }}"
-            echo "- Validator eligible: ${{ steps.availability.outputs.run }}"
             echo "- PNPK gate: ${{ steps.pnpk.outcome }}"
-            echo "- PNPK path: bridge/skygrid-emergency-onramp.pnpk"
+            echo "- Live validation: ${{ steps.live_validation.outcome }}"
             echo "- PNPK semantics: fail_closed"
-            echo "- Trust-interest guard: asset movement, wallet signing, transaction broadcast, payment execution, private-data movement, revenue promotion, and production failover blocked"
-            echo "- UTC timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
             echo "- Revenue/payout promotion: disabled"
+            echo "- UTC timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
           } >> "$GITHUB_STEP_SUMMARY"
