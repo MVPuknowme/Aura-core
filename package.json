@@ -26,7 +26,7 @@
         "training:verify-receipts": "node scripts/verify-skygrid-training-receipts.mjs",
         "training:all": "pnpm run training:drill && pnpm run training:fail-closed",
         "skygrid:training": "node --import ./scripts/skygrid-training-signed-fetch.mjs scripts/skygrid-training-drill.mjs",
-        "build": "node --test tests/skygrid-operator-mode.test.mjs tests/skygrid-operator-artifact.test.mjs tests/skygrid-opensea-preflight.test.mjs tests/transc.MVPuknowme.test.mjs tests/skygrid-synchronous-preflight.test.mjs tests/skygrid-partner-candidates.test.mjs tests/social-url-policy.test.mjs tests/base-account-pay-adapter.test.mjs tests/pnpk-settlement-execution-grant.test.mjs tests/aura-super-intelligence.test.mjs tests/thorium-router.test.mjs tests/skygrid-validator-economics.test.mjs && node scripts/test-runtime-security.mjs && node scripts/test-aerodrome-wallet-rpc.mjs && node scripts/test-dual-lane-wallet-rpc.mjs && node scripts/test-local-wallet-routing.mjs && node scripts/skygrid-build.mjs",
+        "build": "node --test tests/skygrid-operator-mode.test.mjs tests/skygrid-operator-artifact.test.mjs tests/skygrid-opensea-preflight.test.mjs tests/transc.MVPuknowme.test.mjs tests/skygrid-synchronous-preflight.test.mjs tests/skygrid-partner-candidates.test.mjs tests/social-url-policy.test.mjs tests/base-account-pay-adapter.test.mjs tests/pnpk-settlement-execution-grant.test.mjs tests/aura-super-intelligence.test.mjs tests/thorium-router.test.mjs tests/skygrid-validator-economics.test.mjs tests/philanthropy-readiness.test.mjs && node scripts/test-runtime-security.mjs && node scripts/test-aerodrome-wallet-rpc.mjs && node scripts/test-dual-lane-wallet-rpc.mjs && node scripts/test-local-wallet-routing.mjs && node scripts/skygrid-build.mjs",
         "postbuild": "node scripts/run-pnpk-postbuild.mjs",
         "npm:env:check": "node scripts/check-npm-env-config.mjs",
         "npm:env:test": "node --test tests/npm-env-config.test.mjs",
@@ -80,7 +80,8 @@
         "basepay:adapter-test": "node --test tests/base-account-pay-adapter.test.mjs",
         "aura:super-intelligence:test": "node --test tests/aura-super-intelligence.test.mjs",
         "validator:economics": "node scripts/skygrid-validator-economics.mjs",
-        "validator:economics:test": "node --test tests/skygrid-validator-economics.test.mjs"
+        "validator:economics:test": "node --test tests/skygrid-validator-economics.test.mjs",
+        "philanthropy:readiness:test": "node --test tests/philanthropy-readiness.test.mjs"
     },
     "dependencies": {
         "@allbridge/bridge-core-sdk": "^3.34.0",
