@@ -34,7 +34,7 @@ export function capacityLeasePage({ apiBase = "/edge/lease" } = {}) {
     <span class="badge">PNPK capacity lease pilot</span>
     <div class="eyebrow">SKYGRID Emergency Data On-Ramp</div>
     <h1>Turn available compute into a controlled capacity offer.</h1>
-    <p>The preflight estimates storage, CPU, memory, and GPU capacity, presents lease options, and produces a signed-proof-ready PNPK agreement packet. No disk is partitioned and no compute is activated from this webpage.</p>
+    <p>The preflight estimates storage, CPU, memory, and GPU capacity, presents shared-capacity options, and produces a signed-proof-ready PNPK agreement packet. Capacity is time-tiered with no upfront hourly rent; verified operating revenue is reconciled after invoiced failover/validation work. No disk is partitioned and no compute is activated from this webpage.</p>
     <div class="steps">
       <div class="step"><strong>1. Evaluate</strong><span>Browser estimate or signed local-agent inventory.</span></div>
       <div class="step"><strong>2. Select</strong><span>Choose storage, compute, GPU, or proof-only capacity.</span></div>
@@ -58,8 +58,7 @@ export function capacityLeasePage({ apiBase = "/edge/lease" } = {}) {
         <div class="field"><label for="gpu-count">GPU count</label><input id="gpu-count" name="gpu_count" type="number" min="0" max="256" value="0"></div>
         <div class="field"><label for="gpu-vram">Total GPU VRAM (MB)</label><input id="gpu-vram" name="gpu_vram_total_mb" type="number" min="0" value="0"></div>
         <div class="field"><label for="gpu-runtime">GPU runtime</label><select id="gpu-runtime" name="gpu_runtime"><option>unknown</option><option>cuda</option><option>rocm</option><option>directml</option><option>webgpu</option></select></div>
-        <div class="field"><label for="hours">Requested lease hours</label><input id="hours" name="requested_lease_hours" type="number" min="1" max="8760" value="24" required></div>
-        <div class="field"><label for="rate">Requested rate (USD/hour)</label><input id="rate" name="requested_rate_usd_per_hour" type="number" min="0" step="0.01" value="0"></div>
+        <div class="field"><label for="hours">Shared-capacity time tier (hours)</label><input id="hours" name="requested_lease_hours" type="number" min="1" max="8760" value="24" required><small>No upfront hourly rent. Verified operating revenue is split 3.5% SKYGRID / 96.5% capacity owner.</small></div>
         <div class="field"><label for="region">Region</label><input id="region" name="region" maxlength="80" placeholder="Pacific Northwest"></div>
       </div>
       <div class="checks"><label><input id="owner-control" type="checkbox" required>I own or am explicitly authorized to offer this hardware.</label></div>
@@ -146,7 +145,7 @@ export function capacityLeasePage({ apiBase = "/edge/lease" } = {}) {
   });
 
   document.querySelector("#clear").addEventListener("click", () => {
-    form.reset(); value("#hours", 24); value("#rate", 0); value("#gpu-count", 0); value("#gpu-vram", 0); value("#unallocated", 0);
+    form.reset(); value("#hours", 24); value("#gpu-count", 0); value("#gpu-vram", 0); value("#unallocated", 0);
     detectStatus.className = "status"; detectStatus.textContent = "Waiting to evaluate this device.";
   });
 
@@ -173,7 +172,6 @@ export function capacityLeasePage({ apiBase = "/edge/lease" } = {}) {
           owner_control_confirmed: checked("#owner-control")
         },
         requested_lease_hours: Number(value("#hours")),
-        requested_rate_usd_per_hour: Number(value("#rate")),
         region: value("#region")
       };
       const response = await fetch(apiBase + "/preflight", { method:"POST", headers:{"content-type":"application/json"}, body:JSON.stringify(payload) });
