@@ -122,6 +122,79 @@ for (const key of [
   }
 }
 
+
+const productionOperations = pnpk.provisioning_router?.production_operations;
+const productionRelight = productionOperations?.lanes?.network_relight;
+
+if (
+  productionOperations?.enabled !== true ||
+  productionOperations?.sentinel !== "fail_closed" ||
+  productionRelight?.enabled !== true
+) {
+  console.error("PNPK validation failed: production relight lane must be enabled and fail closed");
+  process.exit(1);
+}
+
+for (const key of [
+  "exact_route_binding_required",
+  "signed_activation_grant_required",
+  "dual_approval_required",
+  "health_quorum_required",
+  "rollback_proof_required",
+  "receipt_required_before_and_after",
+  "executor_config_required",
+  "executor_https_required",
+  "post_health_validation_required"
+]) {
+  if (productionRelight?.[key] !== true) {
+    const label = key === "health_quorum_required"
+      ? "health quorum"
+      : key.replaceAll("_", " ");
+    console.error(`PNPK validation failed: production relight requires ${label}`);
+    process.exit(1);
+  }
+}
+
+for (const key of [
+  "autonomous_route_creation_allowed",
+  "third_party_network_mutation_allowed",
+  "os_interface_reconfiguration_allowed",
+  "payment_execution_allowed",
+  "wallet_signing_allowed",
+  "transaction_broadcast_allowed"
+]) {
+  if (productionRelight?.[key] !== false) {
+    console.error(`PNPK validation failed: production relight ${key} must be false`);
+    process.exit(1);
+  }
+}
+
+if (productionRelight?.max_activation_window_minutes !== 15) {
+  console.error("PNPK validation failed: production relight activation window must be exactly 15 minutes");
+  process.exit(1);
+}
+
+if (productionRelight?.trusted_signers_source !== "operator_environment_only") {
+  console.error("PNPK validation failed: production relight trusted signers must come from operator environment");
+  process.exit(1);
+}
+
+const relightPartition = pnpk.partitions?.network_relight;
+if (
+  relightPartition?.sentinel !== "fail_closed" ||
+  relightPartition?.execution_authority !== "separate_signed_executor" ||
+  relightPartition?.signed_activation_grant_required !== true ||
+  relightPartition?.exact_route_binding_required !== true ||
+  relightPartition?.dual_approval_required !== true ||
+  relightPartition?.health_quorum_required !== true ||
+  relightPartition?.rollback_proof_required !== true ||
+  relightPartition?.receipt_required_before_and_after !== true ||
+  relightPartition?.max_activation_window_minutes !== 15
+) {
+  console.error("PNPK validation failed: network relight partition must preserve all scoped production recovery controls");
+  process.exit(1);
+}
+
 for (const [name, partition] of Object.entries(pnpk.partitions)) {
   if (partition.sentinel !== "fail_closed") {
     console.error(`PNPK validation failed: partition ${name} must fail closed`);

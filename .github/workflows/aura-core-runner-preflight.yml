@@ -39,6 +39,8 @@ jobs:
     runs-on: windows-latest
 
     env:
+      # Trace deprecations in JavaScript actions, including post-job cleanup.
+      NODE_OPTIONS: "--trace-deprecation"
       SKYGRID_BASE_URL: https://aura-sky.skygrid-protocol.net
       SKYGRID_ALLOW_PENDING_DOMAIN: "true"
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -66,7 +68,7 @@ jobs:
           node-version: "24"
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 

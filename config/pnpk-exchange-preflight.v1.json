@@ -1,0 +1,40 @@
+{
+  "schema": "pnpk.exchange-preflight-policy.v1",
+  "mode": "fail_closed",
+  "applies_before": [
+    "currency_exchange",
+    "token_swap",
+    "bridge_settlement",
+    "broker_routing"
+  ],
+  "required_checks": [
+    "network_reachable",
+    "dns_valid",
+    "tls_valid",
+    "clock_synchronized",
+    "provider_healthy",
+    "vpn_policy",
+    "asset_supported",
+    "venue_available",
+    "liquidity_sufficient",
+    "quote_freshness",
+    "slippage_limit",
+    "price_impact_limit"
+  ],
+  "default_limits": {
+    "max_quote_age_ms": 5000,
+    "max_slippage_bps": 50,
+    "max_price_impact_bps": 100
+  },
+  "execution": {
+    "wallet_signing_allowed": false,
+    "transaction_broadcast_allowed": false,
+    "auto_execution_allowed": false
+  },
+  "claims": {
+    "can_block_known_preflight_failures": true,
+    "can_guarantee_every_failure_is_discovered": false,
+    "can_guarantee_profit": false,
+    "can_guarantee_loss_free_exchange": false
+  }
+}

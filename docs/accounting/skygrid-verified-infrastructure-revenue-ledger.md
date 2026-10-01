@@ -29,7 +29,7 @@ The `contracted` state is intentionally separate from `accrued`: a signed subscr
 - `staking` — evidence-backed staking or validator rewards.
 - `infrastructure` — RPC, hosted node, compute, or other infrastructure service revenue.
 - `subscription` — recurring SKYGRID service subscriptions evaluated with an agreement ID, billing interval, and recurring amount.
-- `lease` — capacity or infrastructure leases evaluated with an agreement ID and contract value (explicit or derived from lease hours × hourly rate).
+- `lease` — capacity or infrastructure agreements. Legacy fixed-price leases may use contract value or hourly rate; shared-capacity agreements use a revenue-share model with zero upfront rent.
 - `protocol` — proving, relaying, routing, sequencing, or other protocol-level compensation where SKYGRID has an evidenced entitlement.
 - `treasury` — realized treasury investment income. Unrealized token appreciation remains `unrealized`.
 
@@ -81,6 +81,11 @@ A subscription agreement by itself does not qualify as realized income.
 
 ## Lease evaluation
 
+SKYGRID supports two lease commercial models:
+
+1. `lease` — legacy fixed-price capacity, using contract value or hours × hourly rate.
+2. `revenue_share_lease` — shared capacity with **$0 upfront capacity rent**, a time tier, and settlement only from verified operating revenue. The canonical shared-capacity split is **350 bps (3.5%) to SKYGRID** and **9,650 bps (96.5%) to the capacity owner**.
+
 A `lease` record requires a `commercial` object with:
 
 - `agreement_id`
@@ -89,9 +94,19 @@ A `lease` record requires a `commercial` object with:
   - `rate_usd_per_hour`
 - optional `status`, `starts_at`, and `ends_at`
 
-When explicit contract value is omitted, SKYGRID derives:
+For a legacy fixed-price lease, when explicit contract value is omitted, SKYGRID derives:
 
 `contract_value_usd = lease_hours × rate_usd_per_hour`
+
+For a `revenue_share_lease`, fixed contract value is not required. It instead requires:
+
+- `agreement_id`
+- `revenue_share_bps`
+- `counterparty_share_bps`
+- `upfront_capacity_cost_usd = 0`
+- optional `gross_revenue_usd` and `revenue_event_id`
+
+The two share fields must total 10,000 bps.
 
 The response reports:
 
@@ -144,6 +159,10 @@ The ledger also accepts evidence used for accruals, costs, and audit context:
 - `lease_invoice`
 - `cloud_billing`
 - `vendor_invoice`
+- `failover_invoice`
+- `validation_receipt`
+- `operating_revenue_event`
+- `operating_revenue_settlement`
 
 Every evidence item contains at minimum a `type` and a `reference`. References should use transaction hashes, processor IDs, invoice IDs, contract identifiers, lease identifiers, or other auditable identifiers. Do not store private keys, seed phrases, bank credentials, or other secrets in ledger records.
 

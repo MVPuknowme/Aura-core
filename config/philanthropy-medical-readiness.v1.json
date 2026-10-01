@@ -1,0 +1,26 @@
+{
+  "schema": "skygrid.philanthropy-readiness-config.v1",
+  "status": "ready_pending_medical_allocation",
+  "basis": "positive_net_realized_income_only",
+  "current_hrj2": {
+    "purpose": "philanthropic_debt_relief",
+    "allocation_percent": 100,
+    "preserve_until_explicit_amendment": true
+  },
+  "medical_foundation": {
+    "working_name": "SKYGRID Medical Foundation",
+    "legal_entity_status": "not_established",
+    "allocation_percent": null,
+    "requires_owner_allocation_decision": true,
+    "requires_jurisdiction_selection": true,
+    "requires_governance_documents": true,
+    "requires_tax_and_legal_review": true
+  },
+  "execution": {
+    "designation_only": true,
+    "payment_authority": false,
+    "wallet_signing_allowed": false,
+    "transaction_broadcast_allowed": false,
+    "automatic_disbursement_allowed": false
+  }
+}

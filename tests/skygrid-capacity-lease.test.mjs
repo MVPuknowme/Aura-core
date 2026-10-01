@@ -74,6 +74,13 @@ test("creates a fail-closed PNPK offer from browser inventory", async () => {
   assert.equal(payload.offer.partition_policy.system_or_boot_disk_allowed, false);
   assert.equal(payload.offer.options.find((item) => item.option_id === "storage-reserve").partition_mode, "reservation_only_no_partition");
   assert.ok(payload.offer.options.some((item) => item.option_id === "gpu-wall-node"));
+  assert.equal(payload.offer.requested_terms.commercial_model, "shared_capacity_revenue_share");
+  assert.equal(payload.offer.requested_terms.time_tier_hours, 24);
+  assert.equal(payload.offer.requested_terms.upfront_capacity_cost_usd, 0);
+  assert.equal(payload.offer.requested_terms.skygrid_fee_bps, 350);
+  assert.equal(payload.offer.requested_terms.capacity_owner_share_bps, 9650);
+  assert.equal(payload.offer.requested_terms.legacy_requested_rate_usd_per_hour, 2.5);
+  assert.equal(payload.offer.requested_terms.legacy_rate_applied, false);
   assert.ok(payload.agreement_token);
 });
 
