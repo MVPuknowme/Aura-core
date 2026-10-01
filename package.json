@@ -76,6 +76,8 @@
         "referral:coinbase:preflight": "node scripts/coinbase-referral-preflight.mjs",
         "referral:coinbase:test": "node --test tests/coinbase-referral-preflight.test.mjs",
         "thorium:router:test": "node --test tests/thorium-router.test.mjs",
+        "thorium:taiwan:economics": "node scripts/thorium-taiwan-economics.mjs",
+        "thorium:taiwan:economics:test": "node --test tests/thorium-taiwan-economics.test.mjs",
         "pnpk:settlement-execution-test": "node --test tests/pnpk-settlement-execution-grant.test.mjs",
         "basepay:adapter-test": "node --test tests/base-account-pay-adapter.test.mjs",
         "aura:super-intelligence:test": "node --test tests/aura-super-intelligence.test.mjs",
