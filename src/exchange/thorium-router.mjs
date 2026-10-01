@@ -2,19 +2,45 @@ import { createHash } from "node:crypto";
 
 export const THORIUM_POLICY_VERSION = "thorium-pad1-v1";
 
-function canonicalize(value) {
-  if (Array.isArray(value)) return value.map(canonicalize);
-  if (value && typeof value === "object") {
-    return Object.fromEntries(
-      Object.keys(value).sort().map((key) => [key, canonicalize(value[key])])
-    );
+function assertCanonicalJson(value, field = "value", seen = new Set()) {
+  if (value === null || typeof value === "string" || typeof value === "boolean") {
+    return value;
   }
-  return value;
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) throw new Error(`${field}_not_canonical_json`);
+    return value;
+  }
+  if (["undefined", "bigint", "function", "symbol"].includes(typeof value)) {
+    throw new Error(`${field}_not_canonical_json`);
+  }
+  if (Array.isArray(value)) {
+    if (seen.has(value)) throw new Error(`${field}_circular`);
+    seen.add(value);
+    const out = value.map((item, index) =>
+      assertCanonicalJson(item, `${field}_${index}`, seen)
+    );
+    seen.delete(value);
+    return out;
+  }
+  if (value && typeof value === "object") {
+    if (Object.getPrototypeOf(value) !== Object.prototype) {
+      throw new Error(`${field}_not_plain_object`);
+    }
+    if (seen.has(value)) throw new Error(`${field}_circular`);
+    seen.add(value);
+    const out = {};
+    for (const key of Object.keys(value).sort()) {
+      out[key] = assertCanonicalJson(value[key], `${field}_${key}`, seen);
+    }
+    seen.delete(value);
+    return out;
+  }
+  throw new Error(`${field}_not_canonical_json`);
 }
 
 export function hashCanonical(value) {
   return createHash("sha256")
-    .update(JSON.stringify(canonicalize(value)))
+    .update(JSON.stringify(assertCanonicalJson(value, "canonical")))
     .digest("hex");
 }
 
@@ -22,137 +48,257 @@ function text(value) {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function integerString(value, field) {
-  const normalized = String(value ?? "").trim();
+function atomicIntegerString(value, field) {
+  let normalized;
+  if (typeof value === "bigint") {
+    if (value < 0n) throw new Error(`${field}_invalid`);
+    normalized = value.toString();
+  } else if (typeof value === "number") {
+    if (!Number.isSafeInteger(value) || value < 0) {
+      throw new Error(`${field}_invalid`);
+    }
+    normalized = String(value);
+  } else if (typeof value === "string") {
+    normalized = value.trim();
+  } else {
+    throw new Error(`${field}_invalid`);
+  }
   if (!/^(0|[1-9]\d*)$/.test(normalized)) {
     throw new Error(`${field}_invalid`);
   }
   return normalized;
 }
 
-function normalizeChainId(value) {
-  const n = Number(value);
-  if (!Number.isSafeInteger(n) || n <= 0) {
-    throw new Error("chain_id_invalid");
+function normalizeChainRef(asset = {}) {
+  const explicit = text(asset.chainRef ?? asset.chain);
+  if (explicit) {
+    if (!/^[a-z0-9][a-z0-9-]{0,31}:[A-Za-z0-9._-]{1,64}$/.test(explicit)) {
+      throw new Error("chain_ref_invalid");
+    }
+    return explicit;
   }
-  return n;
+  const n = Number(asset.chainId);
+  if (!Number.isSafeInteger(n) || n <= 0) throw new Error("chain_id_invalid");
+  return `eip155:${n}`;
 }
 
-function normalizeAddress(address) {
-  const value = text(address);
-  if (!/^0x[a-fA-F0-9]{40}$/.test(value)) {
-    throw new Error("token_address_invalid");
+function normalizeDecimals(value, { defaultValue } = {}) {
+  if (value === undefined || value === null) {
+    if (defaultValue === undefined) throw new Error("asset_decimals_invalid");
+    return defaultValue;
   }
-  return value.toLowerCase();
+  if (
+    typeof value !== "number" ||
+    !Number.isInteger(value) ||
+    value < 0 ||
+    value > 255
+  ) {
+    throw new Error("asset_decimals_invalid");
+  }
+  return value;
+}
+
+function normalizeTokenReference(asset, chainRef) {
+  const raw = text(asset.tokenRef ?? asset.address ?? asset.assetId);
+  if (!raw) throw new Error("token_reference_required");
+
+  if (chainRef.startsWith("eip155:")) {
+    if (!/^0x[a-fA-F0-9]{40}$/.test(raw)) {
+      throw new Error("token_address_invalid");
+    }
+    return raw.toLowerCase();
+  }
+
+  if (raw.length > 200 || /[\u0000-\u001f\u007f\s]/.test(raw)) {
+    throw new Error("token_reference_invalid");
+  }
+  return raw;
 }
 
 export function normalizeThoriumAsset(asset = {}) {
-  const chainId = normalizeChainId(asset.chainId);
-  const native = asset.native === true;
+  const chainRef = normalizeChainRef(asset);
+  const native = asset.native === true || asset.kind === "native";
   const symbol = text(asset.symbol);
-
   if (!symbol) throw new Error("asset_symbol_required");
 
   if (native) {
     return {
-      chainId,
+      chainRef,
+      chainId: chainRef.startsWith("eip155:")
+        ? Number(chainRef.slice("eip155:".length))
+        : null,
       kind: "native",
       symbol,
+      tokenRef: null,
       address: null,
-      decimals: Number.isInteger(asset.decimals) ? asset.decimals : 18
+      decimals: normalizeDecimals(asset.decimals, { defaultValue: 18 })
     };
   }
 
-  const decimals = Number(asset.decimals);
-  if (!Number.isInteger(decimals) || decimals < 0 || decimals > 255) {
-    throw new Error("asset_decimals_invalid");
-  }
-
+  const tokenRef = normalizeTokenReference(asset, chainRef);
   return {
-    chainId,
+    chainRef,
+    chainId: chainRef.startsWith("eip155:")
+      ? Number(chainRef.slice("eip155:".length))
+      : null,
     kind: "token",
     symbol,
-    address: normalizeAddress(asset.address),
-    decimals
+    tokenRef,
+    address: chainRef.startsWith("eip155:") ? tokenRef : null,
+    decimals: normalizeDecimals(asset.decimals)
   };
 }
 
 export function thoriumAssetId(asset) {
   const normalized = normalizeThoriumAsset(asset);
   return normalized.kind === "native"
-    ? `${normalized.chainId}:native:${normalized.symbol.toUpperCase()}`
-    : `${normalized.chainId}:erc20:${normalized.address}`;
+    ? `${normalized.chainRef}:native`
+    : `${normalized.chainRef}:token:${normalized.tokenRef}`;
 }
 
 function sameAsset(a, b) {
   return thoriumAssetId(a) === thoriumAssetId(b);
 }
 
-function parseTime(value, field) {
+function sameAssetMetadata(a, b) {
+  const left = normalizeThoriumAsset(a);
+  const right = normalizeThoriumAsset(b);
+  return (
+    thoriumAssetId(left) === thoriumAssetId(right) &&
+    left.symbol === right.symbol &&
+    left.decimals === right.decimals
+  );
+}
+
+function parseStrictRfc3339(value, field) {
+  if (typeof value !== "string") throw new Error(`${field}_invalid`);
+  const match = value.match(
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,9}))?(Z|[+-]\d{2}:\d{2})$/
+  );
+  if (!match) throw new Error(`${field}_invalid`);
+
+  const [, y, mo, d, h, mi, s, , zone] = match;
+  const year = Number(y);
+  const month = Number(mo);
+  const day = Number(d);
+  const hour = Number(h);
+  const minute = Number(mi);
+  const second = Number(s);
+
+  if (
+    month < 1 || month > 12 ||
+    day < 1 || day > 31 ||
+    hour > 23 ||
+    minute > 59 ||
+    second > 59
+  ) {
+    throw new Error(`${field}_invalid`);
+  }
+
+  const check = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
+  if (
+    check.getUTCFullYear() !== year ||
+    check.getUTCMonth() !== month - 1 ||
+    check.getUTCDate() !== day ||
+    check.getUTCHours() !== hour ||
+    check.getUTCMinutes() !== minute ||
+    check.getUTCSeconds() !== second
+  ) {
+    throw new Error(`${field}_invalid`);
+  }
+
+  if (zone !== "Z") {
+    const offsetHour = Number(zone.slice(1, 3));
+    const offsetMinute = Number(zone.slice(4, 6));
+    if (offsetHour > 23 || offsetMinute > 59) {
+      throw new Error(`${field}_invalid`);
+    }
+  }
+
   const ms = Date.parse(value);
   if (!Number.isFinite(ms)) throw new Error(`${field}_invalid`);
   return ms;
 }
 
+function nonnegativeFiniteNumber(value, field, { allowNull = false } = {}) {
+  if ((value === undefined || value === null || value === "") && allowNull) {
+    return null;
+  }
+  const n = Number(value);
+  if (!Number.isFinite(n) || n < 0) throw new Error(`${field}_invalid`);
+  return n;
+}
+
 function normalizeQuote(quote, request, nowMs) {
   const provider = text(quote?.provider);
   const quoteId = text(quote?.quoteId);
-
   if (!provider || !quoteId) throw new Error("quote_identity_required");
+
   if (!sameAsset(quote.inputAsset, request.inputAsset)) {
     throw new Error("quote_input_asset_mismatch");
   }
   if (!sameAsset(quote.outputAsset, request.outputAsset)) {
     throw new Error("quote_output_asset_mismatch");
   }
+  if (!sameAssetMetadata(quote.inputAsset, request.inputAsset)) {
+    throw new Error("quote_input_metadata_mismatch");
+  }
+  if (!sameAssetMetadata(quote.outputAsset, request.outputAsset)) {
+    throw new Error("quote_output_metadata_mismatch");
+  }
 
-  const amountIn = integerString(quote.amountInBaseUnits, "quote_amount_in");
+  const amountIn = atomicIntegerString(quote.amountInBaseUnits, "quote_amount_in");
   if (amountIn !== request.amountInBaseUnits) {
     throw new Error("quote_amount_in_mismatch");
   }
 
   const amountOut = BigInt(
-    integerString(quote.amountOutBaseUnits, "quote_amount_out")
+    atomicIntegerString(quote.amountOutBaseUnits, "quote_amount_out")
   );
   const outputFee = BigInt(
-    integerString(quote.outputFeeBaseUnits ?? "0", "quote_output_fee")
+    atomicIntegerString(quote.outputFeeBaseUnits ?? "0", "quote_output_fee")
   );
-
   if (outputFee > amountOut) throw new Error("quote_output_fee_exceeds_output");
 
-  const expiresAtMs = parseTime(quote.expiresAt, "quote_expires_at");
+  const expiresAtMs = parseStrictRfc3339(quote.expiresAt, "quote_expires_at");
   const stale = expiresAtMs <= nowMs;
-  const slippageBps = Number(quote.slippageBps ?? 0);
-  const priceImpactBps = Number(quote.priceImpactBps ?? 0);
-
-  if (!Number.isFinite(slippageBps) || slippageBps < 0) {
-    throw new Error("quote_slippage_invalid");
-  }
-  if (!Number.isFinite(priceImpactBps) || priceImpactBps < 0) {
-    throw new Error("quote_price_impact_invalid");
-  }
+  const slippageBps = nonnegativeFiniteNumber(
+    quote.slippageBps ?? 0,
+    "quote_slippage"
+  );
+  const priceImpactBps = nonnegativeFiniteNumber(
+    quote.priceImpactBps ?? 0,
+    "quote_price_impact"
+  );
+  const gasCostUsd = nonnegativeFiniteNumber(
+    quote.gasCostUsd,
+    "quote_gas_cost",
+    { allowNull: true }
+  );
+  const metadata =
+    quote.metadata === undefined || quote.metadata === null
+      ? null
+      : assertCanonicalJson(quote.metadata, "quote_metadata");
 
   return {
     provider,
     quoteId,
     routeId: text(quote.routeId) || quoteId,
     sourceUrl: text(quote.sourceUrl) || null,
-    inputAsset: normalizeThoriumAsset(quote.inputAsset),
-    outputAsset: normalizeThoriumAsset(quote.outputAsset),
+    inputAsset: request.inputAsset,
+    outputAsset: request.outputAsset,
     amountInBaseUnits: amountIn,
     amountOutBaseUnits: amountOut.toString(),
     outputFeeBaseUnits: outputFee.toString(),
     effectiveOutputBaseUnits: (amountOut - outputFee).toString(),
-    gasCostUsd: Number.isFinite(Number(quote.gasCostUsd))
-      ? Number(quote.gasCostUsd)
-      : null,
+    gasCostUsd,
     slippageBps,
     priceImpactBps,
     expiresAt: new Date(expiresAtMs).toISOString(),
     stale,
     requiresApproval: quote.requiresApproval === true,
     bridge: quote.bridge ? String(quote.bridge) : null,
-    metadata: quote.metadata ?? null
+    metadata
   };
 }
 
@@ -166,13 +312,23 @@ export function planThoriumExchange({
   if (!request || typeof request !== "object") {
     throw new Error("thorium_request_required");
   }
+  if (!Array.isArray(quotes)) throw new Error("thorium_quotes_invalid");
+
+  const slippageLimit = nonnegativeFiniteNumber(
+    maxSlippageBps,
+    "thorium_max_slippage_bps"
+  );
+  const priceImpactLimit = nonnegativeFiniteNumber(
+    maxPriceImpactBps,
+    "thorium_max_price_impact_bps"
+  );
 
   const normalizedRequest = {
     requestId: text(request.requestId),
     operator: text(request.operator),
     inputAsset: normalizeThoriumAsset(request.inputAsset),
     outputAsset: normalizeThoriumAsset(request.outputAsset),
-    amountInBaseUnits: integerString(
+    amountInBaseUnits: atomicIntegerString(
       request.amountInBaseUnits,
       "request_amount_in"
     ),
@@ -181,6 +337,9 @@ export function planThoriumExchange({
 
   if (!normalizedRequest.requestId || !normalizedRequest.operator) {
     throw new Error("thorium_request_identity_required");
+  }
+  if (BigInt(normalizedRequest.amountInBaseUnits) <= 0n) {
+    throw new Error("request_amount_in_must_be_positive");
   }
   if (sameAsset(normalizedRequest.inputAsset, normalizedRequest.outputAsset)) {
     throw new Error("thorium_assets_must_differ");
@@ -196,12 +355,11 @@ export function planThoriumExchange({
     try {
       const normalized = normalizeQuote(quote, normalizedRequest, nowMs);
       const reasons = [];
-
       if (normalized.stale) reasons.push("quote_expired");
-      if (normalized.slippageBps > maxSlippageBps) {
+      if (normalized.slippageBps > slippageLimit) {
         reasons.push("slippage_above_limit");
       }
-      if (normalized.priceImpactBps > maxPriceImpactBps) {
+      if (normalized.priceImpactBps > priceImpactLimit) {
         reasons.push("price_impact_above_limit");
       }
       if (BigInt(normalized.effectiveOutputBaseUnits) <= 0n) {
@@ -240,6 +398,16 @@ export function planThoriumExchange({
   const selected = accepted[0] ?? null;
   const requestHash = hashCanonical(normalizedRequest);
   const quoteHash = selected ? hashCanonical(selected) : null;
+  const status = selected ? "ROUTE_SELECTED" : "NO_VALID_ROUTE";
+  const receiptHash = hashCanonical({
+    schema: "thorium-route-receipt/v1",
+    policyVersion: THORIUM_POLICY_VERSION,
+    status,
+    requestHash,
+    selectedQuoteHash: quoteHash,
+    selectedProvider: selected?.provider ?? null,
+    selectedQuoteId: selected?.quoteId ?? null
+  });
 
   return {
     system: "Thorium",
@@ -249,8 +417,9 @@ export function planThoriumExchange({
       mode: "provider_discovered",
       staticTokenAllowlist: false,
       tokenCountLimit: null,
+      chainCountLimit: null,
       note:
-        "Any asset may be evaluated when it has a valid chain identifier and provider quote; execution still depends on wallet, liquidity, network, and venue constraints."
+        "Any provider-qualified asset may be evaluated using a CAIP-style chain reference and token reference; execution still depends on wallet, liquidity, network, venue, and legal constraints."
     },
     request: normalizedRequest,
     requestHash,
@@ -261,9 +430,10 @@ export function planThoriumExchange({
       schema: "thorium-route-receipt/v1",
       requestHash,
       selectedQuoteHash: quoteHash,
+      receiptHash,
       selectedProvider: selected?.provider ?? null,
       selectedQuoteId: selected?.quoteId ?? null,
-      status: selected ? "ROUTE_SELECTED" : "NO_VALID_ROUTE"
+      status
     },
     execution: {
       allowed: false,
