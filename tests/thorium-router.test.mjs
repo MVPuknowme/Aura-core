@@ -379,3 +379,16 @@ test("rejects malformed approval flags", () => {
     );
   }
 });
+
+
+test("accepts canonical explicit EIP-155 references", () => {
+  assert.equal(
+    thoriumAssetId({
+      chainRef: "eip155:8453",
+      address: USDC_BASE.address,
+      symbol: "USDC",
+      decimals: 6
+    }),
+    "eip155:8453:token:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
+  );
+});
