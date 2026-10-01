@@ -28,7 +28,7 @@
     "enabled": true
   },
   {
-    "phrase": "validate training",
+    "phrase": "validate contract",
     "intent": "validate_training",
     "skill": "Invoke-AuraValidateTraining",
     "safety_level": "safe-local",
