@@ -26,7 +26,9 @@
     "pay": "/pay",
     "capacity_lease": "/lease",
     "capacity_preflight": "/api/node-lease/preflight",
-    "capacity_agreement": "/api/node-lease/agreements"
+    "capacity_agreement": "/api/node-lease/agreements",
+    "network_relight_preflight": "/api/skygrid/network-relight/preflight",
+    "network_relight_execute": "/api/skygrid/network-relight/execute"
   },
   "platforms": {
     "cloudflare_worker": {
@@ -91,7 +93,8 @@
       "lambda": "aws_lambda.emergency_validation_runtime",
       "web3": "ethereum.provisional_lease_quote_runtime",
       "allbridge_core": "allbridge_core.preflight_candidate",
-      "solana_playground": "solana_playground.post_build_validation_target"
+      "solana_playground": "solana_playground.post_build_validation_target",
+      "network_relight": "pnpk.production_operations.network_relight"
     },
     "route_rules": [
       {
@@ -133,6 +136,11 @@
         "when": "route_type=solana_playground",
         "select": "solana_playground_preflight",
         "reason": "Solana Playground receives build-artifact and policy verification only"
+      },
+      {
+        "when": "route_type=network_relight",
+        "select": "network_relight_preflight",
+        "reason": "production recovery is eligible only through authenticated route-bound PNPK relight preflight"
       }
     ],
     "end_user_offer_gate": {
@@ -305,7 +313,11 @@
           "os_interface_reconfiguration_allowed": false,
           "payment_execution_allowed": false,
           "wallet_signing_allowed": false,
-          "transaction_broadcast_allowed": false
+          "transaction_broadcast_allowed": false,
+          "trusted_signers_source": "operator_environment_only",
+          "executor_config_required": true,
+          "executor_https_required": true,
+          "post_health_validation_required": true
         }
       }
     }
@@ -506,6 +518,23 @@
       "route": "/api/node-lease/agreements",
       "result": "owner_accepted_pending_operator",
       "activation_grant_required": true
+    },
+    "network_relight_preflight": {
+      "enabled": true,
+      "method": "POST",
+      "route": "/api/skygrid/network-relight/preflight",
+      "authentication_required": true,
+      "trusted_signers_source": "operator_environment_only",
+      "expected_sentinel": "fail_closed"
+    },
+    "network_relight_execute": {
+      "enabled": true,
+      "method": "POST",
+      "route": "/api/skygrid/network-relight/execute",
+      "authentication_required": true,
+      "executor_config_required": true,
+      "post_health_validation_required": true,
+      "expected_sentinel": "fail_closed"
     }
   },
   "partitions": {
@@ -629,6 +658,31 @@
       "wallet_signing_allowed": false,
       "transaction_broadcast_allowed": false,
       "program_deployment_allowed": false
+    },
+    "network_relight": {
+      "allowed_ramps": [
+        "aws_lambda",
+        "cloudflare_worker"
+      ],
+      "allowed_nodes": [
+        "validator",
+        "edge"
+      ],
+      "mode": "production_recovery_preflight",
+      "sentinel": "fail_closed",
+      "execution_authority": "separate_signed_executor",
+      "signed_activation_grant_required": true,
+      "exact_route_binding_required": true,
+      "dual_approval_required": true,
+      "health_quorum_required": true,
+      "rollback_proof_required": true,
+      "receipt_required_before_and_after": true,
+      "max_activation_window_minutes": 15,
+      "third_party_network_mutation_allowed": false,
+      "os_interface_reconfiguration_allowed": false,
+      "payment_execution_allowed": false,
+      "wallet_signing_allowed": false,
+      "transaction_broadcast_allowed": false
     }
   },
   "dual_approval_gate": {

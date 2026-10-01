@@ -1,34 +1,40 @@
-pnpk_version: "1.0"
-package_id: "patrick-newman-autodrill.healthcheck"
-kind: "autodrill"
-service: "SKYGRID Emergency Data On-Ramp"
-mode: "controlled_pilot"
-
-autodrill:
-  name: "Auto-Drill Healthcheck"
-  purpose: "Validate health routes, failover readiness, and route behavior without triggering production actions"
-  drill_types:
-    - "health_check"
-    - "route_validation"
-    - "outage_simulation"
-    - "failover_readiness"
-  targets:
-    - "/health.json"
-    - "/dispatch"
-    - "/api/highway/status"
-  no_real_payment_execution: true
-  no_device_activation: true
-  no_production_failover: true
-
-validation:
-  require_schema: true
-  require_auth_for_private_routes: true
-  fail_closed: true
-  log_every_event: true
-
-guardrails:
-  - "Controlled pilot only"
-  - "Simulation only"
-  - "No real payment execution"
-  - "No device activation"
-  - "No production failover"
+{
+  "pnpk_version": "1.0",
+  "pnpk_profile": "autodrill-healthcheck",
+  "package_id": "patrick-newman-autodrill.healthcheck",
+  "kind": "autodrill",
+  "service": "SKYGRID Emergency Data On-Ramp",
+  "mode": "controlled_pilot",
+  "autodrill": {
+    "name": "Auto-Drill Healthcheck",
+    "purpose": "Validate live health routes, failover readiness, and route behavior without triggering production actions",
+    "drill_types": [
+      "health_check",
+      "route_validation",
+      "outage_simulation",
+      "failover_readiness"
+    ],
+    "targets": [
+      "/health.json",
+      "/dispatch",
+      "/api/highway/status"
+    ],
+    "no_real_payment_execution": true,
+    "no_device_activation": true,
+    "no_production_failover": true
+  },
+  "validation": {
+    "require_schema": true,
+    "require_auth_for_private_routes": true,
+    "fail_closed": true,
+    "log_every_event": true,
+    "live_get_validation_allowed": true
+  },
+  "guardrails": [
+    "Controlled pilot policy",
+    "GET-only live validation",
+    "No real payment execution",
+    "No device activation",
+    "No production failover"
+  ]
+}

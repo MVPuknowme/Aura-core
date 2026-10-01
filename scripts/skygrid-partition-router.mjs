@@ -7,7 +7,8 @@ export function routePartitionDecision(envelope, pnpk) {
     autodrill: 'autodrill',
     capacity_lease: 'capacity_lease',
     bridge_preflight: 'bridge_preflight',
-    solana_playground: 'solana_playground'
+    solana_playground: 'solana_playground',
+    network_relight: 'network_relight'
   };
 
   const selected_partition = routeMap[envelope.route_type];
