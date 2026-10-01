@@ -85,7 +85,7 @@
   "provisioning_router": {
     "enabled": true,
     "controller": "aura_core_ai_switch",
-    "selection_mode": "route_need_and_end_user_lease_value_fail_closed",
+    "selection_mode": "route_need_shared_capacity_revenue_share_fail_closed",
     "runtime_targets": {
       "postman": "/api/highway/postman",
       "lambda": "aws_lambda.emergency_validation_runtime",
@@ -170,8 +170,8 @@
     },
     "capacity_lease_delivery": {
       "enabled": true,
-      "packet_version": "1.1.0",
-      "agreement_version": "skygrid-capacity-lease-pilot-v1",
+      "packet_version": "2.0.0",
+      "agreement_version": "skygrid-capacity-share-v2",
       "website_route": "/lease",
       "preflight_route": "/api/node-lease/preflight",
       "agreement_route": "/api/node-lease/agreements",
@@ -204,7 +204,17 @@
         "released",
         "rejected",
         "expired"
-      ]
+      ],
+      "commercial_model": {
+        "type": "shared_capacity_revenue_share",
+        "time_tiered": true,
+        "upfront_capacity_cost_usd": 0,
+        "skygrid_fee_bps": 350,
+        "capacity_owner_share_bps": 9650,
+        "settlement_basis": "verified_operating_revenue",
+        "invoice_required": true,
+        "revenue_event_receipt_required": true
+      }
     },
     "guardrails": [
       "Advisory controlled pilot only",
@@ -219,27 +229,30 @@
       "No Allbridge transaction execution",
       "No Solana program deployment",
       "Regional Aura clones are planning identities only",
-      "Elastic compute is bounded by inventory, budget, policy, and activation grants",
-      "No autonomous cloud provisioning or uncapped cloud spend",
-      "Social-return allocation consumes realized-income accounting only"
+      "Social-return allocation consumes realized-income accounting only",
+      "Shared capacity uses no upfront hourly rent",
+      "SKYGRID receives 3.5 percent only from verified operating revenue",
+      "Capacity owner receives 96.5 percent of verified operating revenue",
+      "Failover and validation revenue require invoice and receipt reconciliation before settlement"
     ],
     "regional_lease_fabric": {
       "enabled": true,
       "config_path": "config/autodrill-regional-lease-fabric.v1.json",
       "planner_module": "lib/autodrill-regional-lease-fabric.mjs",
-      "mode": "quote_and_reserve_only",
+      "mode": "shared_capacity_revenue_share",
       "sentinel": "fail_closed",
       "agent_model": "policy_identical_region_scoped_clones",
       "elastic_compute_strategy": "provider_neutral_regionally_distributed",
-      "capacity_claim": "bounded_by_inventory_budget_policy_and_activation_grants",
+      "capacity_claim": "bounded_by_available_shared_capacity_policy_and_activation_grants",
       "candidate_requirements": [
         "pnpk_route_approved",
         "hash_bound_receipt",
         "owner_agreement_ready",
         "health_within_policy",
         "latency_within_policy",
-        "regional_spend_within_cap",
-        "aggregate_spend_within_cap"
+        "zero_upfront_capacity_rent",
+        "skygrid_fee_350_bps",
+        "revenue_share_sums_to_100_percent"
       ],
       "execution_authority": "none",
       "activation_grant_required": true,
@@ -252,6 +265,14 @@
         "route": "verified_revenue_ledger_to_philanthropy_governance",
         "autonomous_beneficiary_selection_allowed": false,
         "protected_trait_inference_allowed": false
+      },
+      "commercial_model": {
+        "type": "shared_capacity_revenue_share",
+        "upfront_capacity_cost_usd": 0,
+        "skygrid_fee_bps": 350,
+        "capacity_owner_share_bps": 9650,
+        "settlement_basis": "verified_operating_revenue",
+        "time_tiered": true
       }
     }
   },
@@ -354,9 +375,11 @@
       "solana_build_artifact_hash",
       "regional_lease_candidates",
       "regional_lease_policy",
-      "regional_spend_cap",
-      "aggregate_spend_cap",
-      "regional_pnpk_receipts"
+      "regional_pnpk_receipts",
+      "shared_capacity_time_tier",
+      "skygrid_fee_bps",
+      "capacity_owner_share_bps",
+      "operating_revenue_receipt"
     ],
     "decision_output": {
       "active_ramp": null,
