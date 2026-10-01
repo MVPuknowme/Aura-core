@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  hashCanonical,
   planThoriumExchange,
   thoriumAssetId
 } from "../src/exchange/thorium-router.mjs";
@@ -49,7 +50,7 @@ function quote(overrides = {}) {
   };
 }
 
-test("does not impose a static token allowlist", () => {
+test("does not impose a static token or chain allowlist", () => {
   const result = planThoriumExchange({
     request: request(),
     quotes: [quote()],
@@ -58,6 +59,7 @@ test("does not impose a static token allowlist", () => {
 
   assert.equal(result.assetUniverse.staticTokenAllowlist, false);
   assert.equal(result.assetUniverse.tokenCountLimit, null);
+  assert.equal(result.assetUniverse.chainCountLimit, null);
   assert.equal(result.selected.provider, "provider-a");
   assert.equal(result.execution.allowed, false);
 });
@@ -102,35 +104,185 @@ test("rejects expired or excessive-impact routes", () => {
 });
 
 test("supports cross-chain assets without hard-coded chain allowlists", () => {
-  const SOL_WRAPPED = {
-    chainId: 534352,
-    address: "0x1111111111111111111111111111111111111111",
-    symbol: "XASSET",
-    decimals: 18
+  const crossChainAsset = {
+    chainRef: "solana:mainnet",
+    tokenRef: "So11111111111111111111111111111111111111112",
+    symbol: "SOL",
+    decimals: 9
   };
 
   const result = planThoriumExchange({
     request: {
       ...request(),
-      outputAsset: SOL_WRAPPED
+      outputAsset: crossChainAsset
     },
     quotes: [
       quote({
-        outputAsset: SOL_WRAPPED,
+        outputAsset: crossChainAsset,
         bridge: "provider-bridge",
-        amountOutBaseUnits: "123456789"
+        amountOutBaseUnits: "123456789",
+        outputFeeBaseUnits: "1000000"
       })
     ],
     now: () => Date.parse("2026-10-01T07:00:00.000Z")
   });
 
-  assert.equal(result.selected.outputAsset.chainId, 534352);
+  assert.equal(result.selected.outputAsset.chainRef, "solana:mainnet");
   assert.equal(result.selected.bridge, "provider-bridge");
+});
+
+test("native asset identity does not depend on display symbol", () => {
+  const nativeA = { chainId: 8453, native: true, symbol: "ETH", decimals: 18 };
+  const nativeB = { chainId: 8453, native: true, symbol: "Base ETH", decimals: 18 };
+  assert.equal(thoriumAssetId(nativeA), thoriumAssetId(nativeB));
+
+  assert.throws(
+    () =>
+      planThoriumExchange({
+        request: {
+          ...request(),
+          inputAsset: nativeA,
+          outputAsset: nativeB
+        },
+        quotes: []
+      }),
+    /thorium_assets_must_differ/
+  );
+});
+
+test("rejects unsafe numeric atomic amounts and zero input", () => {
+  assert.throws(
+    () =>
+      planThoriumExchange({
+        request: { ...request(), amountInBaseUnits: 9007199254740993 },
+        quotes: []
+      }),
+    /request_amount_in_invalid/
+  );
+
+  assert.throws(
+    () =>
+      planThoriumExchange({
+        request: { ...request(), amountInBaseUnits: "0" },
+        quotes: []
+      }),
+    /request_amount_in_must_be_positive/
+  );
+});
+
+test("rejects invalid risk limits and negative gas costs", () => {
+  assert.throws(
+    () =>
+      planThoriumExchange({
+        request: request(),
+        quotes: [quote()],
+        maxSlippageBps: Number.NaN
+      }),
+    /thorium_max_slippage_bps_invalid/
+  );
+
+  const result = planThoriumExchange({
+    request: request(),
+    quotes: [quote({ gasCostUsd: -1 })],
+    now: () => Date.parse("2026-10-01T07:00:00.000Z")
+  });
+  assert.equal(result.selected, null);
+  assert.match(result.rejected[0].reasons[0], /quote_gas_cost_invalid/);
+});
+
+test("rejects mismatched provider asset metadata", () => {
+  const result = planThoriumExchange({
+    request: request(),
+    quotes: [
+      quote({
+        outputAsset: { ...WETH_BASE, decimals: 6 }
+      })
+    ],
+    now: () => Date.parse("2026-10-01T07:00:00.000Z")
+  });
+
+  assert.equal(result.selected, null);
+  assert.match(result.rejected[0].reasons[0], /quote_output_metadata_mismatch/);
+});
+
+test("rejects malformed or timezone-ambiguous quote expiry", () => {
+  for (const expiresAt of [
+    "2099-02-30T00:00:00Z",
+    "2026-10-01T07:30:00"
+  ]) {
+    const result = planThoriumExchange({
+      request: request(),
+      quotes: [quote({ expiresAt })],
+      now: () => Date.parse("2026-10-01T07:00:00.000Z")
+    });
+    assert.equal(result.selected, null);
+    assert.match(result.rejected[0].reasons[0], /quote_expires_at_invalid/);
+  }
+});
+
+test("rejects non-canonical provider metadata without aborting all quotes", () => {
+  const circular = {};
+  circular.self = circular;
+
+  const result = planThoriumExchange({
+    request: request(),
+    quotes: [
+      quote({ quoteId: "bad", metadata: circular }),
+      quote({ quoteId: "good", metadata: { venue: "safe" } })
+    ],
+    now: () => Date.parse("2026-10-01T07:00:00.000Z")
+  });
+
+  assert.equal(result.selected.quoteId, "good");
+  assert.match(result.rejected[0].reasons[0], /quote_metadata.*circular/);
+});
+
+test("receipt binds request and quote selection in one digest", () => {
+  const result = planThoriumExchange({
+    request: request(),
+    quotes: [quote()],
+    now: () => Date.parse("2026-10-01T07:00:00.000Z")
+  });
+
+  const expected = hashCanonical({
+    schema: "thorium-route-receipt/v1",
+    policyVersion: result.policyVersion,
+    status: result.receipt.status,
+    requestHash: result.receipt.requestHash,
+    selectedQuoteHash: result.receipt.selectedQuoteHash,
+    selectedProvider: result.receipt.selectedProvider,
+    selectedQuoteId: result.receipt.selectedQuoteId
+  });
+
+  assert.equal(result.receipt.receiptHash, expected);
+});
+
+test("native decimals must be explicit valid integers when supplied", () => {
+  assert.throws(
+    () =>
+      thoriumAssetId({
+        chainId: 8453,
+        native: true,
+        symbol: "ETH",
+        decimals: "18"
+      }),
+    /asset_decimals_invalid/
+  );
+  assert.throws(
+    () =>
+      thoriumAssetId({
+        chainId: 8453,
+        native: true,
+        symbol: "ETH",
+        decimals: -1
+      }),
+    /asset_decimals_invalid/
+  );
 });
 
 test("asset ids are deterministic", () => {
   assert.equal(
     thoriumAssetId(USDC_BASE),
-    "8453:erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
+    "eip155:8453:token:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
   );
 });
