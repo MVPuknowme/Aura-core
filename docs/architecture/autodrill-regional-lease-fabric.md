@@ -5,8 +5,9 @@ for elastic compute and lease-space discovery.
 
 It intentionally does not use the phrase "limitless compute" as a technical
 guarantee. The operating target is elastic capacity across many providers and
-regions, bounded by actual inventory, budget, policy, and explicit activation
-grants.
+regions, bounded by actual available shared capacity, PNPK policy, and explicit
+activation grants. The commercial model does not purchase regional capacity by
+the hour.
 
 ## Regional Aura agents
 
@@ -38,10 +39,28 @@ A candidate is eligible only when:
 2. a hash-bound receipt is present;
 3. owner agreement status is sufficiently advanced;
 4. health and latency stay inside policy;
-5. regional and aggregate spend remain inside explicit caps.
+5. upfront capacity rent is zero;
+6. the agreement uses the canonical 3.5% SKYGRID / 96.5% capacity-owner revenue split.
 
-The planner selects at most one winning offer per region. An actual deployment
-still requires a separate activation/provisioning grant.
+The planner selects at most one winning offer per region. Time tiers determine
+how long shared capacity is available; they are not hourly purchase prices. An
+actual deployment still requires a separate activation/provisioning grant.
+
+## Commercial flow
+
+```text
+shared capacity available
+  -> PNPK + owner agreement
+  -> time-tier activation
+  -> failover / validation / approved idle work
+  -> invoice + operating receipt
+  -> verified gross operating revenue
+  -> 3.5% SKYGRID share
+  -> 96.5% capacity-owner share
+```
+
+Availability alone is not billable revenue. Settlement begins only after a
+verified operating revenue event exists.
 
 ## Social-return reconciliation
 
