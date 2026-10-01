@@ -1,0 +1,40 @@
+{
+  "market": {
+    "name": "Taiwan launch reference",
+    "observedAt": "2026-10-01",
+    "registeredVaspCount": 10,
+    "visibleVenueCount": 2,
+    "visibleDailyVolumeUsd": 36035253.22,
+    "sources": [
+      {
+        "name": "Taiwan Securities and Futures Bureau",
+        "note": "10 VASPs shown as having completed AML registration on the 2026-09-29 list."
+      },
+      {
+        "name": "CoinGecko BitoPro",
+        "dailyVolumeUsd": 22466882.22
+      },
+      {
+        "name": "CoinGecko MAX MaiCoin",
+        "dailyVolumeUsd": 13568371
+      }
+    ]
+  },
+  "tiers": [
+    {
+      "name": "Tier 1 - pilot",
+      "captureBps": 25,
+      "takeRateBps": 3
+    },
+    {
+      "name": "Tier 2 - scaled",
+      "captureBps": 200,
+      "takeRateBps": 5
+    },
+    {
+      "name": "Tier 3 - best case",
+      "captureBps": 1000,
+      "takeRateBps": 8
+    }
+  ]
+}
