@@ -19,8 +19,10 @@ on:
       - "tests/skygrid-capacity-lease.test.mjs"
       - "lib/pnpk-production-relight-preflight.mjs"
       - "tests/pnpk-production-relight-preflight.test.mjs"
-      - "tests/pnpk-production-hardening.test.mjs"
+      - "tests/pnpk-production-hardening.test.mjs tests/pnpk-production-relight-executor.test.mjs"
       - "examples/autodrill-healthcheck.pnpk"
+      - "lib/pnpk-production-relight-executor.mjs"
+      - "tests/pnpk-production-relight-executor.test.mjs"
       - "package.json"
   push:
     branches:
@@ -43,6 +45,8 @@ on:
       - "tests/pnpk-production-relight-preflight.test.mjs"
       - "tests/pnpk-production-hardening.test.mjs"
       - "examples/autodrill-healthcheck.pnpk"
+      - "lib/pnpk-production-relight-executor.mjs"
+      - "tests/pnpk-production-relight-executor.test.mjs"
       - "package.json"
 
 permissions:
