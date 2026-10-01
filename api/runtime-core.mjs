@@ -6,6 +6,8 @@ import {
   createCapacityOffer
 } from "../cloudflare/skygrid-edge-worker/src/capacity-lease.js";
 import { capacityLeasePage } from "../cloudflare/skygrid-edge-worker/src/lease-page.js";
+import { evaluateProductionRelightPreflight } from "../lib/pnpk-production-relight-preflight.mjs";
+import { executeProductionRelight } from "../lib/pnpk-production-relight-executor.mjs";
 const PRODUCT = "SKYGRID Emergency Data On-Ramp";
 const VERSION = "2026-07-04-aura-sky-front-door";
 const CANONICAL_HOST = "aura-sky.skygrid-protocol.net";
@@ -54,7 +56,7 @@ function routeMap() {
     "/dashboard/command-center", "/dashboard/validation-panel", "/dashboard/deployment-review", "/dashboard/receipts",
     "/api/skygrid/status", "/api/skygrid/intake", "/api/skygrid/opensea-preflight", "/api/skygrid/etherscan-read", "/api/aura-core/decide", "/api/agent/signals", "/api/highway/status",
     "/api/highway/flasks", "/api/highway/postman", "/api/pay/quote?amount=25", "/api/autodrill/latest",
-    "/api/build-pad/quote", "/api/node-lease/intake", "/api/node-lease/preflight", "/api/node-lease/agreements", "/api/failover/status", "/api/panels/summary", "/api/stripe/device-link"
+    "/api/build-pad/quote", "/api/node-lease/intake", "/api/node-lease/preflight", "/api/node-lease/agreements", "/api/skygrid/network-relight/preflight", "/api/skygrid/network-relight/execute", "/api/failover/status", "/api/panels/summary", "/api/stripe/device-link"
   ];
 }
 
@@ -217,6 +219,26 @@ function normalizeRoutingInput(body = {}) {
   };
 }
 
+function loadRelightTrustedSigners() {
+  const raw = String(process.env.PNPK_RELIGHT_TRUSTED_SIGNERS_JSON || "").trim();
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function relightExecutorConfigured() {
+  return (
+    String(process.env.SKYGRID_RELIGHT_EXECUTOR_ENABLED || "").toLowerCase() === "true" &&
+    Boolean(String(process.env.SKYGRID_RELIGHT_EXECUTOR_URL || "").trim()) &&
+    Boolean(String(process.env.SKYGRID_RELIGHT_HEALTH_URL || "").trim())
+  );
+}
+
 function loadPnpkPolicy() {
   const policyPath = path.resolve(
     process.cwd(),
@@ -324,7 +346,31 @@ function decision(body = {}) {
 }
 
 function failoverStatus() {
-  return { ok: true, product: PRODUCT, canonical_front_page: CANONICAL_URL, mode: "controlled_pilot", sentinel: "fail_closed", failover_state: "blocked", manual_failover: "operator_gate_required", readiness: { github_manifest: true, postman_proof_lane: true, dashboard_routes: true, public_front_page: true, aws_persistence_ready: false }, timestamp: now() };
+  return {
+    ok: true,
+    product: PRODUCT,
+    canonical_front_page: CANONICAL_URL,
+    mode: "controlled_pilot",
+    sentinel: "fail_closed",
+    failover_state: "blocked",
+    manual_failover: "operator_gate_required",
+    network_relight: {
+      preflight_route_live: true,
+      execute_route_live: true,
+      trusted_signers_configured: Boolean(loadRelightTrustedSigners()),
+      executor_configured: relightExecutorConfigured(),
+      global_failover_enabled: false,
+      execution_scope: "previously_authorized_owned_routes_only"
+    },
+    readiness: {
+      github_manifest: true,
+      postman_proof_lane: true,
+      dashboard_routes: true,
+      public_front_page: true,
+      aws_persistence_ready: false
+    },
+    timestamp: now()
+  };
 }
 
 function panelSummary(path) {
@@ -362,6 +408,83 @@ export default async function handler(req, res) {
   if (req.method === "GET" && path === "/api/autodrill/latest") return json(res, 200, { ok: true, product: PRODUCT, route: path, proof_owner: "postman", result: "pass_with_warnings", checks: ["front_page", "health", "status", "dashboard", "failover"], timestamp: now() });
   if (req.method === "GET" && path === "/api/highway/postman") return json(res, 200, { ok: true, product: PRODUCT, collection: "skygrid-autodrill.collection.json", checks: ["front-page", "status", "health", "intake", "dashboard", "failover-status"], timestamp: now() });
   if (req.method === "GET" && path === "/api/highway/flasks") return json(res, 200, { ok: true, product: PRODUCT, flasks: [{ id: "aws", status: "protected" }, { id: "vercel", status: "public-bridge" }, { id: "postman", status: "proof-runner" }], timestamp: now() });
+
+  if (req.method === "POST" && path === "/api/skygrid/network-relight/preflight") {
+    const body = await readBody(req);
+    const trustedSigners = loadRelightTrustedSigners();
+    if (!trustedSigners) {
+      return json(res, 503, {
+        ok: false,
+        decision: "FAIL_CLOSED",
+        sentinel: "fail_closed",
+        reason: "relight_trusted_signers_not_configured",
+        timestamp: now()
+      });
+    }
+
+    try {
+      const receipt = evaluateProductionRelightPreflight(
+        body,
+        new Date(),
+        trustedSigners
+      );
+      return json(
+        res,
+        receipt.decision === "RELIGHT_APPROVED" ? 202 : 403,
+        receipt
+      );
+    } catch (error) {
+      return json(res, 403, {
+        ok: false,
+        decision: "FAIL_CLOSED",
+        sentinel: "fail_closed",
+        reason: error.message,
+        timestamp: now()
+      });
+    }
+  }
+
+  if (req.method === "POST" && path === "/api/skygrid/network-relight/execute") {
+    if (!relightExecutorConfigured()) {
+      return json(res, 503, {
+        ok: false,
+        decision: "FAIL_CLOSED",
+        sentinel: "fail_closed",
+        reason: "relight_executor_not_configured",
+        timestamp: now()
+      });
+    }
+
+    const body = await readBody(req);
+    try {
+      const result = await executeProductionRelight({
+        routeId: body.routeId,
+        preflight: body.preflight,
+        executorUrl: process.env.SKYGRID_RELIGHT_EXECUTOR_URL,
+        healthUrl: process.env.SKYGRID_RELIGHT_HEALTH_URL,
+        executorToken: process.env.SKYGRID_RELIGHT_EXECUTOR_TOKEN || "",
+        now: new Date()
+      });
+
+      return json(
+        res,
+        result.decision === "RELIGHT_COMPLETED" ? 200 : 409,
+        {
+          ok: result.decision === "RELIGHT_COMPLETED",
+          sentinel: "fail_closed",
+          ...result
+        }
+      );
+    } catch (error) {
+      return json(res, 403, {
+        ok: false,
+        decision: "FAIL_CLOSED",
+        sentinel: "fail_closed",
+        reason: error.message,
+        timestamp: now()
+      });
+    }
+  }
 
   if (req.method === "POST" && path === "/api/build-pad/quote") {
     const body = await readBody(req);
