@@ -59,3 +59,19 @@ Run:
 pnpm run thorium:taiwan:economics
 pnpm run thorium:taiwan:economics:test
 ```
+
+
+## Funding source policy
+
+Owner funding is classified as **network operating income**.
+
+The current operating record supports treating SKYGRID / Aura-Core as having
+approximately 90 days of deployment history by October 1, 2026. Deployment age
+is operational evidence only: it does not create revenue by itself and must not
+be multiplied into a payout without matching work, invoice, route, or settlement
+evidence.
+
+The first owner-deposit target remains USD 27.03 (Tier 1). It may be promoted
+from projected to fundable only when the matching network-operating income is
+realized and supported by accepted settlement evidence. Until a write-capable
+brokerage funding rail is connected, PNPK must fail closed at execution.
