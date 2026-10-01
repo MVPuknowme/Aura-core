@@ -23,5 +23,16 @@
       "annualUsd": 533995,
       "source": "configs/skygrid-validation-node-work-queue.v1.json"
     }
-  ]
+  ],
+  "operatingHistory": {
+    "userReportedDays": 365,
+    "userReportedDescription": "Klamath Falls network switch and hub has been operating for approximately one year.",
+    "evidenceStatus": "partially_corroborated_operational_history",
+    "repositoryCorroboration": [
+      "klamath-falls-core is recorded as the west_resilience_anchor",
+      "Klamath validation control and work-queue records exist",
+      "schema-backed telemetry validation is defined"
+    ],
+    "limitation": "Repository evidence does not yet establish 365 consecutive days of production uptime or 365 days of realized revenue."
+  }
 }
