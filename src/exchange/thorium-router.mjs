@@ -23,14 +23,20 @@ function assertCanonicalJson(value, field = "value", seen = new Set()) {
     return out;
   }
   if (value && typeof value === "object") {
-    if (Object.getPrototypeOf(value) !== Object.prototype) {
+    const prototype = Object.getPrototypeOf(value);
+    if (prototype !== Object.prototype && prototype !== null) {
       throw new Error(`${field}_not_plain_object`);
     }
     if (seen.has(value)) throw new Error(`${field}_circular`);
     seen.add(value);
-    const out = {};
+    const out = Object.create(null);
     for (const key of Object.keys(value).sort()) {
-      out[key] = assertCanonicalJson(value[key], `${field}_${key}`, seen);
+      Object.defineProperty(out, key, {
+        value: assertCanonicalJson(value[key], `${field}_${key}`, seen),
+        enumerable: true,
+        configurable: false,
+        writable: false
+      });
     }
     seen.delete(value);
     return out;
@@ -74,6 +80,15 @@ function normalizeChainRef(asset = {}) {
   if (explicit) {
     if (!/^[a-z0-9][a-z0-9-]{0,31}:[A-Za-z0-9._-]{1,64}$/.test(explicit)) {
       throw new Error("chain_ref_invalid");
+    }
+    if (explicit.startsWith("eip155:")) {
+      const suffix = explicit.slice("eip155:".length);
+      if (!/^[1-9]\\d*$/.test(suffix)) throw new Error("chain_ref_invalid");
+      const n = Number(suffix);
+      if (!Number.isSafeInteger(n) || n <= 0 || String(n) !== suffix) {
+        throw new Error("chain_ref_invalid");
+      }
+      return `eip155:${n}`;
     }
     return explicit;
   }
@@ -221,12 +236,17 @@ function parseStrictRfc3339(value, field) {
 }
 
 function nonnegativeFiniteNumber(value, field, { allowNull = false } = {}) {
-  if ((value === undefined || value === null || value === "") && allowNull) {
-    return null;
+  if ((value === undefined || value === null) && allowNull) return null;
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
+    throw new Error(`${field}_invalid`);
   }
-  const n = Number(value);
-  if (!Number.isFinite(n) || n < 0) throw new Error(`${field}_invalid`);
-  return n;
+  return value;
+}
+
+function optionalBoolean(value, field, defaultValue = false) {
+  if (value === undefined) return defaultValue;
+  if (typeof value !== "boolean") throw new Error(`${field}_invalid`);
+  return value;
 }
 
 function normalizeQuote(quote, request, nowMs) {
@@ -263,17 +283,21 @@ function normalizeQuote(quote, request, nowMs) {
   const expiresAtMs = parseStrictRfc3339(quote.expiresAt, "quote_expires_at");
   const stale = expiresAtMs <= nowMs;
   const slippageBps = nonnegativeFiniteNumber(
-    quote.slippageBps ?? 0,
+    quote.slippageBps,
     "quote_slippage"
   );
   const priceImpactBps = nonnegativeFiniteNumber(
-    quote.priceImpactBps ?? 0,
+    quote.priceImpactBps,
     "quote_price_impact"
   );
   const gasCostUsd = nonnegativeFiniteNumber(
     quote.gasCostUsd,
     "quote_gas_cost",
     { allowNull: true }
+  );
+  const requiresApproval = optionalBoolean(
+    quote.requiresApproval,
+    "quote_requires_approval"
   );
   const metadata =
     quote.metadata === undefined || quote.metadata === null
@@ -296,7 +320,7 @@ function normalizeQuote(quote, request, nowMs) {
     priceImpactBps,
     expiresAt: new Date(expiresAtMs).toISOString(),
     stale,
-    requiresApproval: quote.requiresApproval === true,
+    requiresApproval,
     bridge: quote.bridge ? String(quote.bridge) : null,
     metadata
   };
@@ -322,6 +346,10 @@ export function planThoriumExchange({
     maxPriceImpactBps,
     "thorium_max_price_impact_bps"
   );
+  const riskLimits = {
+    maxSlippageBps: slippageLimit,
+    maxPriceImpactBps: priceImpactLimit
+  };
 
   const normalizedRequest = {
     requestId: text(request.requestId),
@@ -406,7 +434,8 @@ export function planThoriumExchange({
     requestHash,
     selectedQuoteHash: quoteHash,
     selectedProvider: selected?.provider ?? null,
-    selectedQuoteId: selected?.quoteId ?? null
+    selectedQuoteId: selected?.quoteId ?? null,
+    riskLimits
   });
 
   return {
@@ -423,6 +452,7 @@ export function planThoriumExchange({
     },
     request: normalizedRequest,
     requestHash,
+    riskLimits,
     candidates: accepted,
     rejected,
     selected,
@@ -433,6 +463,7 @@ export function planThoriumExchange({
       receiptHash,
       selectedProvider: selected?.provider ?? null,
       selectedQuoteId: selected?.quoteId ?? null,
+      riskLimits,
       status
     },
     execution: {
