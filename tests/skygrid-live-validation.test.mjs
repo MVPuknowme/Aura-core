@@ -55,8 +55,8 @@ test("fails closed for non-HTTPS or non-allowlisted targets", async () => {
 
 test("reports fail closed when any required route is unhealthy", async () => {
   const fetchImpl = async (url) => ({
-    ok: !url.includes("/dispatch"),
-    status: url.includes("/dispatch") ? 503 : 200,
+    ok: !String(url).includes("/dispatch"),
+    status: String(url).includes("/dispatch") ? 503 : 200,
     headers: new Map(),
     async text() { return ""; }
   });
