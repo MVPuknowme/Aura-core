@@ -3,19 +3,20 @@
   "system": "SKYGRID Emergency Data On-Ramp",
   "created_at_local": "2026-07-02T18:45:00-07:00",
   "created_at_utc": "2026-07-03T01:45:00Z",
-  "updated_at_local": "2026-09-02T10:58:00-07:00",
-  "updated_at_utc": "2026-09-02T17:58:00Z",
-  "mode": "safe_validation_work",
-  "live_execution": false,
-  "purpose": "Assign useful validation work to known nodes without changing payout status, moving private data, scanning third-party systems, or activating production failover.",
+  "updated_at_local": "2026-10-01T07:25:00-07:00",
+  "updated_at_utc": "2026-10-01T14:25:00Z",
+  "mode": "production_validation_work",
+  "live_execution": true,
+  "purpose": "Run authorized live validation work on SKYGRID-owned or owner-authorized leased production targets while preserving fail-closed controls, evidence separation, and bounded network-relight recovery.",
   "value_boundary": "Validation output values are operational ledger/readiness values only. They are not verified paid revenue, do not authorize payout, and do not promote payout status.",
   "global_guardrails": [
     "No unauthorized scanning or traffic routing.",
     "No private user data movement.",
     "No payout or revenue status promotion from validation work alone.",
-    "No production failover activation without operator approval and health quorum.",
-    "Only test owned/public SKYGRID endpoints and local fixtures.",
-    "Log results as proof artifacts before promotion."
+    "Live production validation is limited to SKYGRID-owned or owner-authorized leased targets.",
+    "Network relights require PNPK preflight, operator approval, activation grant, health quorum, and rollback evidence.",
+    "Unrestricted production failover remains blocked.",
+    "Log results as proof artifacts before accounting or operational promotion."
   ],
   "jobs": [
     {
@@ -195,5 +196,18 @@
     "job-lincoln-heartbeat-004",
     "job-silverton-score-005",
     "job-accounting-guardrail-006"
-  ]
+  ],
+  "production_preflight": {
+    "policy_path": "config/pnpk-production-operations.v1.json",
+    "module": "lib/pnpk-production-operations-preflight.mjs",
+    "validation_plan_hash_required": true,
+    "audit_write_required": true,
+    "network_relight_enabled": true,
+    "network_relight_requires_operator_approval": true,
+    "network_relight_requires_activation_grant": true,
+    "network_relight_minimum_health_quorum": 2,
+    "network_relight_minimum_confidence_score": 0.9,
+    "network_relight_requires_rollback": true,
+    "unrestricted_production_failover_allowed": false
+  }
 }
