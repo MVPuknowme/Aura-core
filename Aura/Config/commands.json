@@ -31,7 +31,7 @@
     "phrase": "validate contract",
     "intent": "validate_training",
     "skill": "Invoke-AuraValidateTraining",
-    "safety_level": "safe-local",
+    "safety_level": "127.0.1.8080",
     "enabled": true
   }
 ]
