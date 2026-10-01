@@ -36,5 +36,14 @@
       "captureBps": 1000,
       "takeRateBps": 8
     }
-  ]
+  ],
+  "funding_policy": {
+    "source_classification": "network_operating_income",
+    "deployment_history_days_claimed": 90,
+    "deployment_history_status": "operational_history_only",
+    "revenue_recognition_rule": "Only evidence-backed realized network operating income may fund owner deposits. Deployment duration alone does not create revenue.",
+    "first_owner_deposit_target_usd": 27.03,
+    "owner_deposit_destination_class": "brokerage",
+    "execution_authority": "none_until_settlement_and_write_capable_funding_rail"
+  }
 }
