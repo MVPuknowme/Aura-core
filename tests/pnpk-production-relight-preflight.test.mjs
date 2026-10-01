@@ -95,7 +95,7 @@ function good(overrides = {}) {
 
 test("approves only a trusted, exact-bound, unexpired relight grant", () => {
   const { input, grant } = good();
-  const out = evaluateProductionRelightPreflight(input, NOW);
+  const out = evaluateProductionRelightPreflight(input, NOW, input.trustedSigners);
 
   assert.equal(out.decision, "RELIGHT_APPROVED");
   assert.equal(out.failures.length, 0);
@@ -107,7 +107,7 @@ test("approves only a trusted, exact-bound, unexpired relight grant", () => {
 
 test("fails closed when the activation grant is bound to another route", () => {
   const { input } = good({ routeId: "skygrid:route:other" });
-  const out = evaluateProductionRelightPreflight(input, NOW);
+  const out = evaluateProductionRelightPreflight(input, NOW, input.trustedSigners);
 
   assert.equal(out.decision, "FAIL_CLOSED");
   assert.ok(out.failures.includes("activation_grant_route_mismatch"));
@@ -116,14 +116,14 @@ test("fails closed when the activation grant is bound to another route", () => {
 test("fails closed when the activation grant is expired or exceeds 15 minutes", () => {
   const expired = good();
   expired.input.activationGrant.expiresAt = "2026-10-01T15:29:59.000Z";
-  let out = evaluateProductionRelightPreflight(expired.input, NOW);
+  let out = evaluateProductionRelightPreflight(expired.input, NOW, expired.input.trustedSigners);
   assert.equal(out.decision, "FAIL_CLOSED");
   assert.ok(out.failures.includes("activation_grant_expired"));
 
   const overlong = good();
   overlong.input.activationGrant.issuedAt = "2026-10-01T15:20:00.000Z";
   overlong.input.activationGrant.expiresAt = "2026-10-01T15:40:00.000Z";
-  out = evaluateProductionRelightPreflight(overlong.input, NOW);
+  out = evaluateProductionRelightPreflight(overlong.input, NOW, overlong.input.trustedSigners);
   assert.equal(out.decision, "FAIL_CLOSED");
   assert.ok(out.failures.includes("activation_grant_window_exceeded"));
 });
@@ -132,14 +132,14 @@ test("fails closed when owner approval signature is not authentic", () => {
   const { input } = good();
   input.approvals.owner.signature = Buffer.from("tampered").toString("base64");
 
-  const out = evaluateProductionRelightPreflight(input, NOW);
+  const out = evaluateProductionRelightPreflight(input, NOW, input.trustedSigners);
   assert.equal(out.decision, "FAIL_CLOSED");
   assert.ok(out.failures.includes("owner_approval_signature_invalid"));
 });
 
 test("never grants third-party mutation or autonomous route creation", () => {
   const { input } = good();
-  const out = evaluateProductionRelightPreflight(input, NOW);
+  const out = evaluateProductionRelightPreflight(input, NOW, input.trustedSigners);
 
   assert.equal(out.scope.third_party_network_mutation_allowed, false);
   assert.equal(out.execution.autonomous_route_creation_allowed, false);
