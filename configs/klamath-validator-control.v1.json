@@ -4,8 +4,8 @@
   "node_id": "klamath-falls-core",
   "record_id": "rec454piNH86zxcy2",
   "role": "west_resilience_anchor",
-  "mode": "safe_validation_work",
-  "live_execution": false,
+  "mode": "production_validation_work",
+  "live_execution": true,
   "availability_target_percent": 100,
   "timezone": "America/Los_Angeles",
   "schedule": {
@@ -68,7 +68,16 @@
     "No private user data movement.",
     "No wallet signing or transaction broadcast.",
     "No payout execution.",
-    "No production failover activation.",
-    "Log validation proof before any operational promotion."
-  ]
+    "Log validation proof before any operational promotion.",
+    "Live validation is permitted only on owned/authorized SKYGRID targets after PNPK passes.",
+    "Network relight requires the separate scoped production preflight, signed activation grant, dual approval, health quorum, rollback proof, and receipts."
+  ],
+  "production_validation": {
+    "enabled": true,
+    "owned_targets_only": true,
+    "health_quorum_required": true,
+    "receipt_required": true,
+    "network_relight_preflight_path": "bridge/skygrid-emergency-onramp.pnpk",
+    "network_relight_authority": "separate_scoped_activation_grant_only"
+  }
 }

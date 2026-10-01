@@ -274,6 +274,40 @@
         "settlement_basis": "verified_operating_revenue",
         "time_tiered": true
       }
+    },
+    "production_operations": {
+      "enabled": true,
+      "sentinel": "fail_closed",
+      "lanes": {
+        "live_validation": {
+          "enabled": true,
+          "owned_targets_only": true,
+          "requires_pnpk_pass": true,
+          "requires_health_quorum": true,
+          "receipt_required": true,
+          "private_data_movement_allowed": false,
+          "payment_execution_allowed": false,
+          "wallet_signing_allowed": false,
+          "transaction_broadcast_allowed": false
+        },
+        "network_relight": {
+          "enabled": true,
+          "purpose": "bounded restoration of previously authorized SKYGRID-owned routes after verified degradation or outage",
+          "exact_route_binding_required": true,
+          "signed_activation_grant_required": true,
+          "dual_approval_required": true,
+          "health_quorum_required": true,
+          "rollback_proof_required": true,
+          "receipt_required_before_and_after": true,
+          "max_activation_window_minutes": 15,
+          "autonomous_route_creation_allowed": false,
+          "third_party_network_mutation_allowed": false,
+          "os_interface_reconfiguration_allowed": false,
+          "payment_execution_allowed": false,
+          "wallet_signing_allowed": false,
+          "transaction_broadcast_allowed": false
+        }
+      }
     }
   },
   "post_build_pipeline": {
@@ -329,7 +363,12 @@
       "evaluate_regional_lease_candidates",
       "rank_regional_capacity_offers",
       "create_regional_reservation_envelope",
-      "emit_regional_lease_planning_receipt"
+      "emit_regional_lease_planning_receipt",
+      "run_live_validation_on_owned_targets",
+      "prepare_network_relight_preflight",
+      "verify_network_relight_health_quorum",
+      "verify_network_relight_activation_grant",
+      "emit_network_relight_receipt"
     ],
     "blocked_actions": [
       "payment_execution",
@@ -351,7 +390,13 @@
       "autonomous_cloud_provisioning",
       "uncapped_cloud_spend",
       "autonomous_beneficiary_selection",
-      "protected_trait_inference_for_beneficiary_selection"
+      "protected_trait_inference_for_beneficiary_selection",
+      "unscoped_production_failover",
+      "network_relight_without_signed_activation_grant",
+      "network_relight_without_dual_approval",
+      "network_relight_without_health_quorum",
+      "network_relight_without_rollback_proof",
+      "third_party_network_mutation"
     ],
     "selected_ramp_ref": "platforms.cloudflare_worker",
     "decision_inputs": [
@@ -379,7 +424,12 @@
       "shared_capacity_time_tier",
       "skygrid_fee_bps",
       "capacity_owner_share_bps",
-      "operating_revenue_receipt"
+      "operating_revenue_receipt",
+      "production_validation_target",
+      "network_relight_route_id",
+      "network_relight_activation_grant",
+      "network_relight_health_quorum",
+      "network_relight_rollback_proof"
     ],
     "decision_output": {
       "active_ramp": null,
@@ -599,7 +649,8 @@
       "capacity_lease",
       "bridge_preflight",
       "solana_playground",
-      "core_p4"
+      "core_p4",
+      "network_relight"
     ],
     "trust_statement": "PNPK is the policy traffic layer. SKYGRID routes only when owner and emergency operator approval agree."
   },
