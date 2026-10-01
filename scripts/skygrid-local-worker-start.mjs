@@ -296,7 +296,6 @@ async function main() {
       owner_control_confirmed: approved
     },
     requested_lease_hours: Number(process.env.SKYGRID_REQUESTED_LEASE_HOURS || 24),
-    requested_rate_usd_per_hour: Number(process.env.SKYGRID_REQUESTED_RATE_USD_PER_HOUR || 0),
     region: process.env.SKYGRID_CAPACITY_REGION || 'unspecified'
   });
 
