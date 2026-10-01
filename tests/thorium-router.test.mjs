@@ -251,7 +251,8 @@ test("receipt binds request and quote selection in one digest", () => {
     requestHash: result.receipt.requestHash,
     selectedQuoteHash: result.receipt.selectedQuoteHash,
     selectedProvider: result.receipt.selectedProvider,
-    selectedQuoteId: result.receipt.selectedQuoteId
+    selectedQuoteId: result.receipt.selectedQuoteId,
+    riskLimits: result.receipt.riskLimits
   });
 
   assert.equal(result.receipt.receiptHash, expected);
@@ -285,4 +286,96 @@ test("asset ids are deterministic", () => {
     thoriumAssetId(USDC_BASE),
     "eip155:8453:token:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
   );
+});
+
+
+test("rejects quotes with missing or nonnumeric risk metrics", () => {
+  for (const overrides of [
+    { slippageBps: undefined },
+    { priceImpactBps: undefined },
+    { slippageBps: "0" },
+    { priceImpactBps: false }
+  ]) {
+    const result = planThoriumExchange({
+      request: request(),
+      quotes: [quote(overrides)],
+      now: () => Date.parse("2026-10-01T07:00:00.000Z")
+    });
+    assert.equal(result.selected, null);
+    assert.match(
+      result.rejected[0].reasons[0],
+      /quote_(slippage|price_impact)_invalid/
+    );
+  }
+});
+
+test("rejects malformed explicit EIP-155 chain references", () => {
+  for (const chainRef of ["eip155:-1", "eip155:01", "eip155:base", "eip155:9007199254740992"]) {
+    assert.throws(
+      () =>
+        thoriumAssetId({
+          chainRef,
+          address: USDC_BASE.address,
+          symbol: "USDC",
+          decimals: 6
+        }),
+      /chain_ref_invalid/
+    );
+  }
+});
+
+test("receipt binds the effective risk limits", () => {
+  const result = planThoriumExchange({
+    request: request(),
+    quotes: [quote()],
+    maxSlippageBps: 75,
+    maxPriceImpactBps: 125,
+    now: () => Date.parse("2026-10-01T07:00:00.000Z")
+  });
+
+  assert.deepEqual(result.receipt.riskLimits, {
+    maxSlippageBps: 75,
+    maxPriceImpactBps: 125
+  });
+
+  const expected = hashCanonical({
+    schema: "thorium-route-receipt/v1",
+    policyVersion: result.policyVersion,
+    status: result.receipt.status,
+    requestHash: result.receipt.requestHash,
+    selectedQuoteHash: result.receipt.selectedQuoteHash,
+    selectedProvider: result.receipt.selectedProvider,
+    selectedQuoteId: result.receipt.selectedQuoteId,
+    riskLimits: result.receipt.riskLimits
+  });
+  assert.equal(result.receipt.receiptHash, expected);
+});
+
+test("canonical metadata preserves __proto__ as data", () => {
+  const metadata = JSON.parse('{"__proto__":{"x":1},"venue":"safe"}');
+  const result = planThoriumExchange({
+    request: request(),
+    quotes: [quote({ metadata })],
+    now: () => Date.parse("2026-10-01T07:00:00.000Z")
+  });
+
+  assert.equal(result.selected.quoteId, "qa");
+  assert.equal(Object.prototype.x, undefined);
+  assert.equal(result.selected.metadata.__proto__.x, 1);
+});
+
+test("rejects malformed approval flags", () => {
+  for (const requiresApproval of ["true", 1, null]) {
+    const result = planThoriumExchange({
+      request: request(),
+      quotes: [quote({ requiresApproval })],
+      now: () => Date.parse("2026-10-01T07:00:00.000Z")
+    });
+
+    assert.equal(result.selected, null);
+    assert.match(
+      result.rejected[0].reasons[0],
+      /quote_requires_approval_invalid/
+    );
+  }
 });
