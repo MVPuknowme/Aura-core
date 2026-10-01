@@ -34,8 +34,8 @@ concurrency:
 env:
   CONTROL_TIMEZONE: America/Los_Angeles
   PNPK_PATH: bridge/skygrid-emergency-onramp.pnpk
-  SKYGRID_LIVE_VALIDATION_BASE_URL: https://api.skygrid-protocol.net
-  SKYGRID_LIVE_VALIDATION_ALLOWED_HOSTS: api.skygrid-protocol.net,aura-sky.skygrid-protocol.net
+  SKYGRID_LIVE_VALIDATION_BASE_URL: https://aura-core.vercel.app
+  SKYGRID_LIVE_VALIDATION_ALLOWED_HOSTS: aura-core.vercel.app
   SKYGRID_LIVE_VALIDATION_TARGETS: /health.json,/dispatch,/api/highway/status
 
 jobs:
