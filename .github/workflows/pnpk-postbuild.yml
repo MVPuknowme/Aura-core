@@ -19,13 +19,14 @@ on:
       - "tests/skygrid-capacity-lease.test.mjs"
       - "lib/pnpk-production-relight-preflight.mjs"
       - "tests/pnpk-production-relight-preflight.test.mjs"
-      - "tests/pnpk-production-hardening.test.mjs tests/pnpk-production-relight-executor.test.mjs tests/skygrid-live-validation.test.mjs"
+      - "tests/pnpk-production-hardening.test.mjs tests/pnpk-production-relight-executor.test.mjs tests/skygrid-live-validation.test.mjs tests/pnpk-production-runtime.test.mjs"
       - "examples/autodrill-healthcheck.pnpk"
       - "lib/pnpk-production-relight-executor.mjs"
       - "tests/pnpk-production-relight-executor.test.mjs"
       - "lib/skygrid-live-validation.mjs"
       - "scripts/skygrid-live-validation.mjs"
       - "tests/skygrid-live-validation.test.mjs"
+      - "tests/pnpk-production-runtime.test.mjs"
       - "package.json"
   push:
     branches:
@@ -53,6 +54,7 @@ on:
       - "lib/skygrid-live-validation.mjs"
       - "scripts/skygrid-live-validation.mjs"
       - "tests/skygrid-live-validation.test.mjs"
+      - "tests/pnpk-production-runtime.test.mjs"
       - "package.json"
 
 permissions:
