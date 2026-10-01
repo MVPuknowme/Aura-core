@@ -340,3 +340,76 @@ test("hrj=2 never designates negative net income and does not use non-realized v
   assert.equal(report.philanthropic_designation.designation_only, true);
   assert.equal(report.philanthropic_designation.payment_authority, false);
 });
+
+
+test("accepts revenue-share capacity leases without upfront rent", () => {
+  const commercial = {
+    model: "revenue_share_lease",
+    agreement_id: "share_lease_001",
+    status: "active",
+    lease_hours: 24,
+    revenue_share_bps: 350,
+    counterparty_share_bps: 9650,
+    upfront_capacity_cost_usd: 0,
+    gross_revenue_usd: 1000,
+    revenue_event_id: "rev_evt_001"
+  };
+
+  const report = summarizeRevenueLedger([
+    {
+      id: "share-lease-accrual",
+      direction: "income",
+      category: "lease",
+      recognition: "accrued",
+      amount_usd: 35,
+      commercial,
+      evidence: [
+        { type: "failover_invoice", reference: "invoice:failover:001" },
+        { type: "validation_receipt", reference: "pnpk:validation:001" },
+        { type: "operating_revenue_event", reference: "rev_evt_001" }
+      ]
+    },
+    {
+      id: "share-lease-settlement",
+      direction: "income",
+      category: "lease",
+      recognition: "realized",
+      amount_usd: 35,
+      commercial,
+      evidence: [
+        { type: "operating_revenue_settlement", reference: "settlement:001" }
+      ]
+    }
+  ]);
+
+  assert.equal(report.summary.accrued_income_usd, 35);
+  assert.equal(report.summary.realized_income_usd, 35);
+  assert.equal(report.summary.rejected_records, 0);
+  assert.equal(report.commercial_evaluation.leases.agreements, 1);
+});
+
+test("rejects revenue-share capacity leases that charge upfront rent", () => {
+  const report = summarizeRevenueLedger([
+    {
+      id: "bad-share-lease",
+      direction: "income",
+      category: "lease",
+      recognition: "projected",
+      amount_usd: 35,
+      commercial: {
+        model: "revenue_share_lease",
+        agreement_id: "share_lease_bad",
+        revenue_share_bps: 350,
+        counterparty_share_bps: 9650,
+        upfront_capacity_cost_usd: 10
+      }
+    }
+  ]);
+
+  assert.equal(report.summary.accepted_records, 0);
+  assert.ok(
+    report.records[0].errors.includes(
+      "revenue_share_lease_upfront_cost_must_be_zero"
+    )
+  );
+});
