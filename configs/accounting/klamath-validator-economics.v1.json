@@ -1,0 +1,27 @@
+{
+  "schema": "skygrid.validator-economics.input.v1",
+  "validatorId": "klamath-falls-core",
+  "status": "Needs Review",
+  "verifiedPaidUsd": 0,
+  "realizedDailyUsd": 0,
+  "scenarios": [
+    {
+      "name": "annualized_family",
+      "recognition": "projected",
+      "dailyUsd": 134.63,
+      "weeklyUsd": 945,
+      "monthlyUsd": 4095,
+      "annualUsd": 49140,
+      "source": "docs/accounting/klamath-core-verification-2026-05-14.md"
+    },
+    {
+      "name": "daily_headline",
+      "recognition": "unverified",
+      "dailyUsd": 1463,
+      "weeklyUsd": 10241,
+      "monthlyUsd": 44533.72,
+      "annualUsd": 533995,
+      "source": "configs/skygrid-validation-node-work-queue.v1.json"
+    }
+  ]
+}
