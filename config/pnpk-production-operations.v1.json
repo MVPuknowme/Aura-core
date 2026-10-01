@@ -1,0 +1,44 @@
+{
+  "schema": "pnpk.production-operations-policy.v1",
+  "mode": "production_bounded",
+  "sentinel": "fail_closed",
+  "live_validation": {
+    "enabled": true,
+    "allowed_targets": [
+      "skygrid_owned",
+      "owner_authorized_lease"
+    ],
+    "requires_validation_scope": true,
+    "requires_audit_write": true,
+    "requires_plan_hash": true,
+    "private_data_movement_allowed": false,
+    "third_party_scanning_allowed": false,
+    "payout_promotion_allowed": false
+  },
+  "network_relight": {
+    "enabled": true,
+    "definition": "Restore an already-authorized SKYGRID route or runtime after degradation; not unrestricted failover.",
+    "allowed_actions": [
+      "restart_runtime",
+      "reenable_route",
+      "promote_verified_healthy_route"
+    ],
+    "requires_operator_approval": true,
+    "requires_activation_grant": true,
+    "requires_health_quorum": 2,
+    "minimum_confidence_score": 0.9,
+    "requires_rollback_verification": true,
+    "requires_health_evidence_hash": true,
+    "requires_rollback_receipt_hash": true
+  },
+  "blocked": {
+    "full_production_failover": true,
+    "payment_execution": true,
+    "wallet_signing": true,
+    "transaction_broadcast": true,
+    "private_data_movement": true,
+    "os_network_switching": true,
+    "third_party_scanning": true,
+    "mutation_outside_bound_target": true
+  }
+}
