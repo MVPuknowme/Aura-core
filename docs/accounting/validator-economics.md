@@ -30,3 +30,23 @@ Before a validator forecast can become realized income, attach qualifying
 primary evidence such as a validator withdrawal, on-chain payout, service
 payment, bank posting, or other accepted settlement record, then reconcile it
 through the SKYGRID Verified Infrastructure Revenue Ledger.
+
+
+## Klamath operating-history note
+
+The operator reports that the Klamath Falls network switch and hub has been
+operating for approximately one year.
+
+Repository evidence corroborates the existence of `klamath-falls-core`, its
+`west_resilience_anchor` role, validator-control configuration, and assigned
+validation work. That supports a long-running operating-history claim, but the
+repository does not yet prove 365 consecutive days of production uptime or 365
+days of realized revenue.
+
+For accounting:
+- operating age is infrastructure evidence;
+- validated work is service evidence;
+- invoices are billing evidence;
+- settlement records are realized-revenue evidence.
+
+These evidence classes remain separate.
