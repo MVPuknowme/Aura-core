@@ -329,7 +329,12 @@
       "evaluate_regional_lease_candidates",
       "rank_regional_capacity_offers",
       "create_regional_reservation_envelope",
-      "emit_regional_lease_planning_receipt"
+      "emit_regional_lease_planning_receipt",
+      "run_live_validation_work",
+      "prepare_network_relight_preflight",
+      "emit_production_operations_receipt",
+      "verify_relight_health_quorum",
+      "verify_relight_rollback"
     ],
     "blocked_actions": [
       "payment_execution",
@@ -351,7 +356,11 @@
       "autonomous_cloud_provisioning",
       "uncapped_cloud_spend",
       "autonomous_beneficiary_selection",
-      "protected_trait_inference_for_beneficiary_selection"
+      "protected_trait_inference_for_beneficiary_selection",
+      "unrestricted_production_failover",
+      "network_relight_without_activation_grant",
+      "network_relight_without_health_quorum",
+      "network_relight_without_rollback"
     ],
     "selected_ramp_ref": "platforms.cloudflare_worker",
     "decision_inputs": [
@@ -379,7 +388,15 @@
       "shared_capacity_time_tier",
       "skygrid_fee_bps",
       "capacity_owner_share_bps",
-      "operating_revenue_receipt"
+      "operating_revenue_receipt",
+      "production_operation_type",
+      "production_target_ownership",
+      "production_validation_plan_hash",
+      "network_relight_action",
+      "network_relight_activation_grant_hash",
+      "network_relight_health_quorum",
+      "network_relight_health_evidence_hash",
+      "network_relight_rollback_receipt_hash"
     ],
     "decision_output": {
       "active_ramp": null,
@@ -683,5 +700,49 @@
       "PNPK cannot compel a government, carrier, platform, or technical operator outside the participating system to disclose access",
       "Call and message content is not captured by default"
     ]
+  },
+  "production_operations": {
+    "enabled": true,
+    "mode": "production_bounded",
+    "sentinel": "fail_closed",
+    "policy_path": "config/pnpk-production-operations.v1.json",
+    "preflight_module": "lib/pnpk-production-operations-preflight.mjs",
+    "live_validation": {
+      "enabled": true,
+      "target_scope": [
+        "skygrid_owned",
+        "owner_authorized_lease"
+      ],
+      "validation_plan_hash_required": true,
+      "audit_write_required": true,
+      "payout_promotion_allowed": false,
+      "private_data_movement_allowed": false,
+      "third_party_scanning_allowed": false
+    },
+    "network_relight": {
+      "enabled": true,
+      "definition": "bounded recovery of an already-authorized SKYGRID route or runtime after degradation",
+      "allowed_actions": [
+        "restart_runtime",
+        "reenable_route",
+        "promote_verified_healthy_route"
+      ],
+      "operator_approval_required": true,
+      "activation_grant_required": true,
+      "minimum_health_quorum": 2,
+      "minimum_confidence_score": 0.9,
+      "rollback_verification_required": true,
+      "separate_execution_adapter_required": true
+    },
+    "blocked": {
+      "unrestricted_production_failover": true,
+      "payment_execution": true,
+      "wallet_signing": true,
+      "transaction_broadcast": true,
+      "private_data_movement": true,
+      "os_network_switching": true,
+      "third_party_scanning": true,
+      "mutation_outside_bound_target": true
+    }
   }
 }
