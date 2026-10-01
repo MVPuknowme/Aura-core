@@ -17,6 +17,10 @@ on:
       - "api/runtime.mjs"
       - "tests/pnpk-postbuild.test.mjs"
       - "tests/skygrid-capacity-lease.test.mjs"
+      - "lib/pnpk-production-relight-preflight.mjs"
+      - "tests/pnpk-production-relight-preflight.test.mjs"
+      - "tests/pnpk-production-hardening.test.mjs"
+      - "examples/autodrill-healthcheck.pnpk"
       - "package.json"
   push:
     branches:
@@ -35,6 +39,10 @@ on:
       - "api/runtime.mjs"
       - "tests/pnpk-postbuild.test.mjs"
       - "tests/skygrid-capacity-lease.test.mjs"
+      - "lib/pnpk-production-relight-preflight.mjs"
+      - "tests/pnpk-production-relight-preflight.test.mjs"
+      - "tests/pnpk-production-hardening.test.mjs"
+      - "examples/autodrill-healthcheck.pnpk"
       - "package.json"
 
 permissions:
@@ -61,7 +69,7 @@ jobs:
           node-version: "24"
 
       - name: Unit-test PNPK adapter
-        run: node --test tests/pnpk-postbuild.test.mjs tests/skygrid-intake-policy-core.test.mjs
+        run: node --test tests/pnpk-postbuild.test.mjs tests/skygrid-intake-policy-core.test.mjs tests/pnpk-production-relight-preflight.test.mjs tests/pnpk-production-hardening.test.mjs
 
       - name: Run PNPK post-build preflight
         run: node scripts/run-pnpk-postbuild.mjs
