@@ -9,7 +9,11 @@ function candidate(overrides = {}) {
     provider: "aws",
     offer_id: "lease-001",
     resource_class: "compute",
-    hourly_rate_usd: 1,
+    commercial_model: "shared_capacity_revenue_share",
+    time_tier_hours: 24,
+    upfront_capacity_cost_usd: 0,
+    skygrid_fee_bps: 350,
+    capacity_owner_share_bps: 9650,
     latency_ms: 40,
     health_score: 99,
     cpu_threads: 8,
@@ -24,15 +28,11 @@ function candidate(overrides = {}) {
   };
 }
 
-test("selects one best policy-compliant offer per region", () => {
+test("selects one best policy-compliant shared-capacity offer per region", () => {
   const plan = planRegionalLeaseFabric({
     candidates: [
       candidate(),
-      candidate({
-        offer_id: "lease-002",
-        hourly_rate_usd: 2,
-        health_score: 96
-      }),
+      candidate({ offer_id: "lease-002", health_score: 96 }),
       candidate({
         region: "ap-east-2",
         provider: "aws",
@@ -40,17 +40,14 @@ test("selects one best policy-compliant offer per region", () => {
         latency_ms: 90
       })
     ],
-    policy: {
-      max_regional_agents: 12,
-      max_aggregate_spend_usd_per_hour: 10,
-      max_region_spend_usd_per_hour: 5
-    }
+    policy: { max_regional_agents: 12, required_skygrid_fee_bps: 350 }
   });
 
   assert.equal(plan.selected_regions, 2);
-  assert.equal(plan.selected.some((item) => item.region === "us-west-2"), true);
-  assert.equal(plan.selected.some((item) => item.region === "ap-east-2"), true);
-  assert.equal(plan.execution.autonomous_provisioning_allowed, false);
+  assert.equal(plan.aggregate_upfront_capacity_cost_usd, 0);
+  assert.equal(plan.commercial_terms.skygrid_fee_bps, 350);
+  assert.equal(plan.commercial_terms.default_capacity_owner_share_bps, 9650);
+  assert.equal(plan.execution.upfront_capacity_payment_allowed, false);
 });
 
 test("fails candidates closed when PNPK or owner agreement is missing", () => {
@@ -62,46 +59,41 @@ test("fails candidates closed when PNPK or owner agreement is missing", () => {
         offer_id: "lease-004",
         owner_agreement_status: "offered"
       })
-    ],
-    policy: {
-      max_aggregate_spend_usd_per_hour: 10,
-      max_region_spend_usd_per_hour: 5
-    }
+    ]
   });
 
   assert.equal(plan.selected_regions, 0);
   assert.equal(plan.rejected.length, 2);
 });
 
-test("enforces aggregate spend cap", () => {
+test("rejects hourly-rent economics and incorrect revenue shares", () => {
   const plan = planRegionalLeaseFabric({
     candidates: [
-      candidate({ hourly_rate_usd: 3 }),
+      candidate({ upfront_capacity_cost_usd: 3 }),
       candidate({
         region: "us-east-1",
         offer_id: "lease-005",
-        hourly_rate_usd: 3
+        skygrid_fee_bps: 500,
+        capacity_owner_share_bps: 9500
       })
-    ],
-    policy: {
-      max_aggregate_spend_usd_per_hour: 5,
-      max_region_spend_usd_per_hour: 5
-    }
+    ]
   });
 
-  assert.equal(plan.selected_regions, 1);
-  assert.equal(plan.aggregate_planned_spend_usd_per_hour, 3);
-  assert.ok(plan.rejected.some((item) => item.failures.includes("aggregate_spend_cap")));
+  assert.equal(plan.selected_regions, 0);
+  assert.ok(
+    plan.rejected.some((item) =>
+      item.failures.includes("upfront_capacity_rent_not_allowed")
+    )
+  );
+  assert.ok(
+    plan.rejected.some((item) =>
+      item.failures.includes("skygrid_fee_bps_mismatch")
+    )
+  );
 });
 
 test("keeps social-return governance separate from lease selection", () => {
-  const plan = planRegionalLeaseFabric({
-    candidates: [candidate()],
-    policy: {
-      max_aggregate_spend_usd_per_hour: 5,
-      max_region_spend_usd_per_hour: 5
-    }
-  });
+  const plan = planRegionalLeaseFabric({ candidates: [candidate()] });
 
   assert.equal(plan.social_return.projected_income_eligible, false);
   assert.equal(plan.social_return.autonomous_beneficiary_selection_allowed, false);
