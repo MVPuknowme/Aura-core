@@ -21,7 +21,7 @@
     "enabled": true
   },
   {
-    "phrase": "show proof",
+    "phrase": "show $$$",
     "intent": "show_training_proof",
     "skill": "Invoke-AuraShowProof",
     "safety_level": "safe-local",
