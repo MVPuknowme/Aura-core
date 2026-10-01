@@ -1,0 +1,37 @@
+{
+  "schema": "skygrid.autodrill-regional-lease-fabric-config.v1",
+  "mode": "quote_and_reserve_only",
+  "sentinel": "fail_closed",
+  "elastic_compute": {
+    "strategy": "provider_neutral_regionally_distributed",
+    "limitless_claim_allowed": false,
+    "scale_rule": "scale_within_budget_capacity_policy_and_activation_grants",
+    "max_regional_agents": 12
+  },
+  "selection_policy": {
+    "max_aggregate_spend_usd_per_hour": 0,
+    "max_region_spend_usd_per_hour": 0,
+    "min_health_score": 95,
+    "max_latency_ms": 250,
+    "require_pnpk_route_approved": true,
+    "require_hash_bound_receipt": true,
+    "require_owner_agreement": true
+  },
+  "regional_agents": {
+    "model": "policy_identical_region_scoped_clones",
+    "role": "aura_regional_switch_planner",
+    "may_evaluate_and_rank": true,
+    "may_reserve": "envelope_only",
+    "may_provision": false,
+    "may_pay": false,
+    "may_switch_production_networks": false,
+    "may_partition_disks": false
+  },
+  "social_return": {
+    "funding_basis": "positive_evidence_backed_net_realized_income_only",
+    "route": "verified_revenue_ledger_to_philanthropy_governance",
+    "beneficiary_selection": "separate_lawful_governance",
+    "autonomous_beneficiary_selection": false,
+    "protected_trait_inference": false
+  }
+}
