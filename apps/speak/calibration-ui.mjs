@@ -8,7 +8,9 @@ const scoreEl = document.getElementById('calibration-score');
 
 let target = pickCalibrationTarget();
 let activeRead = null;
-let masterEnabled = document.documentElement.dataset.speakEnabled === 'true';
+// A DOM dataset or custom event cannot establish professional review/consent.
+// Keep this independent microphone entry point closed pending a verified service.
+let masterEnabled = false;
 
 targetEl.textContent = target;
 
@@ -25,7 +27,7 @@ function setResult(result, rawObserved) {
 }
 
 function syncMasterState(enabled) {
-  masterEnabled = Boolean(enabled);
+  masterEnabled = false;
   if (!masterEnabled && activeRead) {
     try {
       activeRead.stop();
