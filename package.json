@@ -73,7 +73,7 @@
         "preflight:governance-test": "node --test tests/skygrid-synchronous-preflight.test.mjs",
         "partner:candidates:test": "node --test tests/skygrid-partner-candidates.test.mjs",
         "social:url-policy-test": "node --test tests/social-url-policy.test.mjs",
-        "asset:paid:test": "node --test tests/paid-solana-account-response.test.mjs"
+        "asset:paid:test": "node --test tests/paid-solana-account-response.test.mjs",
         "referral:coinbase:preflight": "node scripts/coinbase-referral-preflight.mjs",
         "referral:coinbase:test": "node --test tests/coinbase-referral-preflight.test.mjs",
         "thorium:router:test": "node --test tests/thorium-router.test.mjs",
