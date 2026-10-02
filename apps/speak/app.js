@@ -26,7 +26,10 @@
   let finalTranscript = '';
   let listening = false;
   let thoughtCommandEnabled = false;
-  let masterEnabled = true;
+  // Activation stays blocked until a verified medical/legal review service exists.
+  // Client-side flags, browser events, and a user's click are not approval evidence.
+  const activationBlockReason = 'Medical and legal review required';
+  let masterEnabled = false;
 
   function setStatus(target, message) {
     target.textContent = message;
@@ -51,23 +54,26 @@
   }
 
   function updateControlAvailability() {
-    const speechControls = [thoughtToggle, actionButton, $('speak-button'), $('pause-button'), $('resume-button'), $('stop-button')];
+    const speechControls = [thoughtToggle, actionButton, $('speak-button'), $('pause-button'), $('resume-button')];
     speechControls.forEach((control) => { control.disabled = !masterEnabled; });
     listenButton.disabled = !masterEnabled || !recognition || listening;
-    stopListenButton.disabled = !masterEnabled || !recognition || !listening;
+    // Stop/OFF must never require permission or an active-start callback.
+    $('stop-button').disabled = false;
+    stopListenButton.disabled = false;
   }
 
   function setMasterEnabled(enabled) {
-    masterEnabled = Boolean(enabled);
+    // Deliberate deny-all containment, not a simulated professional approval gate.
+    masterEnabled = false;
     document.documentElement.dataset.speakEnabled = String(masterEnabled);
     masterToggle.setAttribute('aria-checked', String(masterEnabled));
     masterToggle.classList.toggle('active', masterEnabled);
     masterState.textContent = masterEnabled ? 'ON' : 'OFF';
-    setStatus(masterStatus, masterEnabled ? 'On' : 'Off');
+    setStatus(masterStatus, enabled ? activationBlockReason : 'Off');
 
     if (!masterEnabled) {
-      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-      if (recognition && listening) recognition.stop();
+      stopSpeech();
+      stopListening();
       setThoughtCommand(false);
       setStatus(ttsStatus, 'Off');
       setStatus(sttStatus, 'Off');
@@ -129,9 +135,9 @@
     utterance.rate = Number(rate.value) || 1;
     utterance.volume = currentVolume();
 
-    utterance.onstart = () => setStatus(ttsStatus, 'Speaking');
-    utterance.onpause = () => setStatus(ttsStatus, 'Paused');
-    utterance.onresume = () => setStatus(ttsStatus, 'Speaking');
+    utterance.onstart = () => setStatus(ttsStatus, masterEnabled ? 'Speaking' : 'Off');
+    utterance.onpause = () => setStatus(ttsStatus, masterEnabled ? 'Paused' : 'Off');
+    utterance.onresume = () => setStatus(ttsStatus, masterEnabled ? 'Speaking' : 'Off');
     utterance.onend = () => setStatus(ttsStatus, masterEnabled ? 'Ready' : 'Off');
     utterance.onerror = (event) => setStatus(ttsStatus, masterEnabled ? `Speech error: ${event.error || 'unknown'}` : 'Off');
 
@@ -144,7 +150,11 @@
   }
 
   function stopSpeech() {
-    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    try {
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    } catch {
+      // A browser termination error must not prevent the OFF transition.
+    }
     setStatus(ttsStatus, masterEnabled ? 'Stopped' : 'Off');
   }
 
@@ -164,7 +174,7 @@
 
     recognition.onstart = () => {
       if (!masterEnabled) {
-        recognition.stop();
+        stopListening();
         return;
       }
       listening = true;
@@ -215,7 +225,18 @@
   }
 
   function stopListening() {
-    if (recognition && listening) recognition.stop();
+    listening = false;
+    if (recognition) {
+      try {
+        if (typeof recognition.abort === 'function') recognition.abort();
+        else recognition.stop();
+      } catch {
+        // Abort may be unavailable or the session may already be ending.
+        try { recognition.stop(); } catch { /* Preserve the OFF state. */ }
+      }
+    }
+    setStatus(sttStatus, masterEnabled ? 'Idle' : 'Off');
+    updateControlAvailability();
   }
 
   function clearTranscript() {
@@ -353,5 +374,5 @@
   loadVoices();
   if ('speechSynthesis' in window) window.speechSynthesis.onvoiceschanged = loadVoices;
   setupRecognition();
-  setMasterEnabled(true);
+  setMasterEnabled(false);
 })();

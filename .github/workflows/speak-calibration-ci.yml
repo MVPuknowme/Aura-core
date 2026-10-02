@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'apps/speak/**'
+      - 'tests/speak-review-lock.test.mjs'
       - '.github/workflows/speak-calibration-ci.yml'
   workflow_dispatch:
 
@@ -21,8 +22,8 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Run calibration scoring tests
-        run: node --test apps/speak/calibration.test.mjs
+      - name: Run Speak policy and calibration tests
+        run: node --test apps/speak/default-off.test.mjs apps/speak/calibration.test.mjs tests/speak-review-lock.test.mjs
 
       - name: Check dev server health
         run: |

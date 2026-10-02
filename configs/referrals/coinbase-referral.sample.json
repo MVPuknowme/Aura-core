@@ -1,0 +1,26 @@
+{
+  "records": [
+    {
+      "provider": "Coinbase",
+      "referral_code": "S2765RK8",
+      "referral_url": "https://www.coinbase.com/join/S2765RK8",
+      "consent": {
+        "granted": false,
+        "evidence_id": ""
+      },
+      "signup": {
+        "new_account": false,
+        "used_referral_at_signup": false,
+        "evidence_id": ""
+      },
+      "qualification": {
+        "confirmed": false,
+        "evidence_id": ""
+      },
+      "reward": {
+        "credited_or_confirmed": false,
+        "evidence_id": ""
+      }
+    }
+  ]
+}

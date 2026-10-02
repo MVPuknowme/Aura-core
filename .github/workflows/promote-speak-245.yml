@@ -1,0 +1,70 @@
+name: Promote Speak containment release 245
+
+on:
+  push:
+    branches: [MVPuknowme]
+    paths:
+      - '.github/workflows/promote-speak-245.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vercel-production-promotion
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      VERCEL_ORG_ID: team_tktkgTngfxCrLgFeyi8M5Cy0
+      VERCEL_PROJECT_ID: prj_z9Ker7gTAPdyFyO4n6y4aPJL4KZ8
+      DEPLOYMENT_URL: https://aura-core-1slxbgmfj-home-e539c0b1.vercel.app
+      EXPECTED_DEPLOYMENT_ID: dpl_kBpe7HMVzWrBU8XhwyDS9V6ZcXjb
+      EXPECTED_SOURCE_COMMIT: d6e39cfa421776f977518fc4d79967eae8d99932
+    steps:
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Require promotion credential and verify pinned release
+        shell: pwsh
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:VERCEL_TOKEN)) {
+            Write-Error "VERCEL_TOKEN is not configured; refusing production promotion."
+            exit 1
+          }
+          $headers = @{ Authorization = "Bearer $env:VERCEL_TOKEN" }
+          $endpoint = "https://api.vercel.com/v13/deployments/$($env:EXPECTED_DEPLOYMENT_ID)?teamId=$($env:VERCEL_ORG_ID)"
+          $release = Invoke-RestMethod -Uri $endpoint -Headers $headers -Method Get
+          if ($release.id -ne $env:EXPECTED_DEPLOYMENT_ID -or
+              $release.projectId -ne $env:VERCEL_PROJECT_ID -or
+              $release.readyState -ne "READY" -or
+              $release.meta.githubCommitSha -ne $env:EXPECTED_SOURCE_COMMIT) {
+            Write-Error "Deployment identity, project, readiness, or source commit does not match; refusing promotion."
+            exit 1
+          }
+
+      - name: Inspect pinned deployment
+        shell: pwsh
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          npx --yes vercel@59.23.2 inspect $env:DEPLOYMENT_URL --token=$env:VERCEL_TOKEN --scope=home-e539c0b1
+
+      - name: Promote pinned deployment
+        shell: pwsh
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          npx --yes vercel@59.23.2 promote $env:DEPLOYMENT_URL --token=$env:VERCEL_TOKEN --scope=home-e539c0b1 --yes
+
+      - name: Confirm production alias
+        shell: pwsh
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          npx --yes vercel@59.23.2 inspect https://aura-core-home-e539c0b1.vercel.app --token=$env:VERCEL_TOKEN --scope=home-e539c0b1

@@ -112,7 +112,6 @@ test("capacity preflight offers storage, compute, GPU, and proof-only choices", 
     {
       inventory,
       requested_lease_hours: 72,
-      requested_rate_usd_per_hour: 3.5,
       region: "Pacific Northwest"
     },
     {
@@ -123,7 +122,11 @@ test("capacity preflight offers storage, compute, GPU, and proof-only choices", 
   );
 
   assert.equal(result.offer.execution_authority, "none");
-  assert.equal(result.offer.requested_terms.estimated_total_usd, 252);
+  assert.equal(result.offer.requested_terms.commercial_model, "shared_capacity_revenue_share");
+  assert.equal(result.offer.requested_terms.time_tier_hours, 72);
+  assert.equal(result.offer.requested_terms.upfront_capacity_cost_usd, 0);
+  assert.equal(result.offer.requested_terms.skygrid_fee_bps, 350);
+  assert.equal(result.offer.requested_terms.capacity_owner_share_bps, 9650);
   assert.deepEqual(
     result.offer.options.map((option) => option.option_id),
     ["storage-reserve", "compute-node", "gpu-wall-node", "proof-only"]

@@ -1,0 +1,33 @@
+{
+  "schema": "skygrid.thorium.pad1.v1",
+  "name": "Thorium",
+  "pad": "PAD-1",
+  "owner": "MVPuknowme",
+  "system": "SKYGRID-protocol / Aura-Core",
+  "asset_universe": {
+    "mode": "provider_discovered",
+    "static_token_allowlist": false,
+    "token_count_limit": null,
+    "chain_count_limit": null
+  },
+  "routing": {
+    "same_chain": true,
+    "cross_chain": true,
+    "quote_competition": true,
+    "prefer_highest_effective_output": true,
+    "max_slippage_bps_default": 100,
+    "max_price_impact_bps_default": 300
+  },
+  "provenance": {
+    "hash_algorithm": "sha256",
+    "route_receipt_required": true,
+    "pnpk_compatible": true
+  },
+  "execution": {
+    "mode": "plan_only",
+    "wallet_signing": false,
+    "transaction_broadcast": false,
+    "custody": false,
+    "automatic_trading": false
+  }
+}

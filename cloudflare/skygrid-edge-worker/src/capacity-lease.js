@@ -1,7 +1,10 @@
 const encoder = new TextEncoder();
 
-export const CAPACITY_AGREEMENT_VERSION = "skygrid-capacity-lease-pilot-v1";
+export const CAPACITY_AGREEMENT_VERSION = "skygrid-capacity-share-v2";
 export const CAPACITY_OFFER_TTL_HOURS = 24;
+export const SKYGRID_SHARED_CAPACITY_FEE_BPS = 350;
+export const CAPACITY_OWNER_SHARE_BPS = 9650;
+export const CAPACITY_COMMERCIAL_MODEL = "shared_capacity_revenue_share";
 
 function clampNumber(value, minimum, maximum, fallback = 0) {
   const parsed = Number(value);
@@ -171,7 +174,7 @@ export async function createCapacityOffer(input = {}, overrides = {}) {
   const requestedLeaseHours = roundCapacity(
     clampNumber(input.requested_lease_hours, 1, 8_760, 24)
   );
-  const requestedRateUsdPerHour = Number(
+  const legacyRequestedRateUsdPerHour = Number(
     clampNumber(input.requested_rate_usd_per_hour, 0, 100_000, 0).toFixed(4)
   );
   const region = cleanText(input.region, 80) || "unspecified";
@@ -191,11 +194,26 @@ export async function createCapacityOffer(input = {}, overrides = {}) {
     options,
     requested_terms: {
       region,
-      lease_hours: requestedLeaseHours,
-      rate_usd_per_hour: requestedRateUsdPerHour,
-      estimated_total_usd: Number(
-        (requestedLeaseHours * requestedRateUsdPerHour).toFixed(2)
-      )
+      commercial_model: CAPACITY_COMMERCIAL_MODEL,
+      time_tier_hours: requestedLeaseHours,
+      upfront_capacity_cost_usd: 0,
+      skygrid_fee_bps: SKYGRID_SHARED_CAPACITY_FEE_BPS,
+      capacity_owner_share_bps: CAPACITY_OWNER_SHARE_BPS,
+      settlement_basis: "verified_operating_revenue",
+      invoice_required: true,
+      revenue_event_receipt_required: true,
+      billable_service_classes: [
+        "failover_protection",
+        "validation",
+        "approved_idle_compute",
+        "routing",
+        "storage",
+        "proof_archive"
+      ],
+      legacy_requested_rate_usd_per_hour: legacyRequestedRateUsdPerHour,
+      legacy_rate_applied: false,
+      note:
+        "Capacity is shared without upfront rent; verified operating revenue is split after invoicing and receipt reconciliation."
     },
     approvals: {
       device_owner: "pending",
