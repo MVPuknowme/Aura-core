@@ -12,13 +12,14 @@ test('Speak master power fails closed on startup', () => {
   assert.doesNotMatch(app, /setMasterEnabled\(true\);/);
 });
 
-test('calibration is disabled unless Speak is explicitly enabled', () => {
-  assert.match(calibrationUi, /dataset\.speakEnabled === 'true'/);
+test('calibration starts blocked without trusting a DOM enable signal', () => {
+  assert.match(calibrationUi, /let masterEnabled = false;/);
+  assert.doesNotMatch(calibrationUi, /dataset\.speakEnabled === 'true'/);
 });
 
 test('initial UI advertises the disabled state', () => {
   assert.match(html, /id="master-status"[^>]*>Off<\/span>/);
   assert.match(html, /id="master-toggle"[^>]*aria-checked="false"/);
   assert.match(html, /id="master-state">OFF<\/strong>/);
-  assert.match(html, /Speak starts OFF on every load/);
+  assert.match(html, /Speak stays OFF while the approval service is unavailable/);
 });
