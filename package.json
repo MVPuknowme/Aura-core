@@ -35,7 +35,7 @@
         "wallet:routing:test": "node --check scripts/skygrid-local-runtime-router.mjs && node scripts/test-local-wallet-routing.mjs",
         "wallet:inventory:test": "node --test tests/skygrid-goldrush-wallet-inventory.test.mjs",
         "wallet:inventory:arbitrum": "node scripts/skygrid-goldrush-wallet-inventory.mjs",
-        "security:test": "node --test tests/skygrid-operator-mode.test.mjs && node scripts/test-runtime-security.mjs && node scripts/test-aerodrome-wallet-rpc.mjs && node scripts/test-dual-lane-wallet-rpc.mjs && node scripts/test-local-wallet-routing.mjs",
+        "security:test": "node --test tests/privacy-gate.test.mjs tests/skygrid-operator-mode.test.mjs && node scripts/test-runtime-security.mjs && node scripts/test-aerodrome-wallet-rpc.mjs && node scripts/test-dual-lane-wallet-rpc.mjs && node scripts/test-local-wallet-routing.mjs",
         "skygrid:verify": "node scripts/verify-skygrid-routes.mjs",
         "skygrid:test:routing": "node scripts/test-skygrid-routing-success.mjs",
         "intake:policy-test": "node --test tests/skygrid-intake-policy-core.test.mjs",
@@ -85,7 +85,8 @@
         "validator:economics:test": "node --test tests/skygrid-validator-economics.test.mjs",
         "philanthropy:readiness:test": "node --test tests/philanthropy-readiness.test.mjs",
         "autodrill:regional-fabric:test": "node --test tests/autodrill-regional-lease-fabric.test.mjs",
-        "pnpk:production-relight:test": "node --test tests/pnpk-production-relight-preflight.test.mjs"
+        "pnpk:production-relight:test": "node --test tests/pnpk-production-relight-preflight.test.mjs",
+        "privacy:test": "node --test tests/privacy-gate.test.mjs"
     },
     "dependencies": {
         "@allbridge/bridge-core-sdk": "^3.34.0",
