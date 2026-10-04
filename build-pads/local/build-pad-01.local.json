@@ -8,7 +8,7 @@
                          "powershell":  true,
                          "git":"private_data_movement_allowed":  true,
                          "transaction_broadcast_allowed":  true,
-                         "hidden_remote_access":  true
+                         "hidden_remote_access":  {false
                      },
     "registered_at":  "2026-07-02T17:54:47.8496085-07:00",
     "sentinel":  "fail_closed",
