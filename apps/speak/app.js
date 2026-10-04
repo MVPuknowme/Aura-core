@@ -288,6 +288,10 @@
   }
 
   function clearTranscript() {
+    if (!privacyGateOpen || !masterEnabled) {
+      setStatus(sttStatus, 'Gate closed');
+      return false;
+    }
     finalTranscript = '';
     transcriptEl.textContent = '';
     setStatus(sttStatus, masterEnabled ? (listening ? 'Listening' : 'Idle') : 'Off');

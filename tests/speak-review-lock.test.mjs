@@ -83,6 +83,23 @@ test('calibration rejects forged dataset and master events even without app.js',
   assert.equal(h.element('calibration-status').textContent, 'Off');
 });
 
+for (const gateOpen of [false, true]) {
+  test(`forced Clear preserves transcript with privacy gate ${gateOpen ? 'open' : 'locked'} and master OFF`, () => {
+    const h = harness(); h.app();
+    if (gateOpen) h.element('privacy-gate-toggle').click();
+    h.element('transcript').textContent = 'Existing transcript';
+    assert.equal(h.document.documentElement.dataset.speakEnabled, 'false');
+    assert.equal(h.element('clear-button').disabled, true);
+
+    h.element('clear-button').disabled = false;
+    const result = h.element('clear-button').click();
+
+    assert.equal(h.element('transcript').textContent, 'Existing transcript');
+    assert.equal(result, false);
+    assert.equal(h.element('stt-status').textContent, 'Gate closed');
+  });
+}
+
 test('stop controls remain available and do not need approval', () => {
   const h = harness(); h.app();
   assert.equal(h.element('stop-button').disabled, false);
