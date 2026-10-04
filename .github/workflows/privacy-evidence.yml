@@ -1,0 +1,77 @@
+name: Privacy Evidence Boundary
+
+on:
+  pull_request:
+    paths:
+      - 'lib/security/private-receipt-delivery.mjs'
+      - 'tests/private-receipt-delivery.test.mjs'
+      - 'scripts/run-pnpk-postbuild.mjs'
+      - 'scripts/pnpk-access-transparency-policy.mjs'
+      - 'tests/pnpk-postbuild.test.mjs'
+      - 'bridge/skygrid-emergency-onramp.pnpk'
+      - 'lib/security/privacy-boundary.mjs'
+      - 'tests/privacy-boundary.test.mjs'
+      - 'src/security/privacy-gate.mjs'
+      - 'tests/privacy-gate.test.mjs'
+      - '.devcontainer/privacy/**'
+      - 'config/privacy-by-default.v1.json'
+      - 'docs/security/privacy-by-default.md'
+      - '.gitignore'
+      - 'package.json'
+      - '.github/workflows/privacy-evidence.yml'
+  push:
+    branches: [MVPuknowme]
+    paths:
+      - 'lib/security/private-receipt-delivery.mjs'
+      - 'tests/private-receipt-delivery.test.mjs'
+      - 'scripts/run-pnpk-postbuild.mjs'
+      - 'scripts/pnpk-access-transparency-policy.mjs'
+      - 'tests/pnpk-postbuild.test.mjs'
+      - 'bridge/skygrid-emergency-onramp.pnpk'
+      - 'lib/security/privacy-boundary.mjs'
+      - 'tests/privacy-boundary.test.mjs'
+      - 'src/security/privacy-gate.mjs'
+      - 'tests/privacy-gate.test.mjs'
+      - '.devcontainer/privacy/**'
+      - 'config/privacy-by-default.v1.json'
+      - 'docs/security/privacy-by-default.md'
+      - '.gitignore'
+      - 'package.json'
+      - '.github/workflows/privacy-evidence.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  privacy-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm run privacy:test
+
+  privacy-devcontainer-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: devcontainers/ci@v0.3
+        with:
+          configFile: .devcontainer/privacy/devcontainer.json
+          push: never
+          runCmd: |
+            set -euo pipefail
+            test "$(id -un)" = node
+            test "$(stat -c '%U:%G:%a' /workspaces/private-evidence)" = node:node:700
+            test "$(findmnt -n -o FSTYPE --target /workspaces/private-evidence)" = tmpfs
+            test -z "$(ip route show default)"
+            touch /workspaces/private-evidence/permission-check
+            rm /workspaces/private-evidence/permission-check
+            test "$(sudo -n runuser -u nobody -- id -un)" = nobody
+            if sudo -n runuser -u nobody -- test -r /workspaces/private-evidence; then exit 1; fi
+            if sudo -n runuser -u nobody -- test -w /workspaces/private-evidence; then exit 1; fi
+            npm run privacy:test

@@ -39,12 +39,16 @@ test("export requires explicit operator approval, purpose, and destination", () 
   assert.equal(mayExport({
     operatorApproved: false,
     purpose: "user-requested-export",
+    recipientVerified: true,
+    scopeMinimized: true,
     destination: "private-target"
   }), false);
 
   assert.equal(mayExport({
     operatorApproved: true,
     purpose: "user-requested-export",
+    recipientVerified: true,
+    scopeMinimized: true,
     destination: "private-target"
   }), true);
 
@@ -66,6 +70,25 @@ test("legal-response export also requires a stated legal basis", () => {
     operatorApproved: true,
     purpose: "required-legal-response",
     destination: "authorized-recipient",
-    legalBasis: "validated legal process"
+    legalBasis: "validated legal process",
+    legalRequirementVerified: true,
+    recipientVerified: true,
+    scopeMinimized: true
   }), true);
+});
+
+test("legacy boundary cannot bypass the shared privacy gate", () => {
+  const request = { operatorApproved: true, purpose: "required-legal-response",
+    destination: "recipient", legalBasis: "validated legal process",
+    legalRequirementVerified: true, recipientVerified: true, scopeMinimized: true };
+  for (const field of ["operatorApproved", "legalRequirementVerified", "recipientVerified", "scopeMinimized"]) {
+    assert.equal(mayExport({ ...request, [field]: "true" }), false);
+  }
+  assert.equal(mayExport({ ...request, destination: {} }), false);
+  let output;
+  emitAudit({ event: "secret token", status: "192.0.2.1", token: "private" },
+    { enabled: true, sink: value => { output = JSON.parse(value); } });
+  assert.equal(output.event, "unknown");
+  assert.equal(output.status, "unknown");
+  assert.equal("token" in output, false);
 });
