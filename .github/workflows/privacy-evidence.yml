@@ -52,12 +52,14 @@ jobs:
           configFile: .devcontainer/privacy/devcontainer.json
           push: never
           runCmd: |
+            set -euo pipefail
             test "$(id -un)" = node
             test "$(stat -c '%U:%G:%a' /workspaces/private-evidence)" = node:node:700
             test "$(findmnt -n -o FSTYPE --target /workspaces/private-evidence)" = tmpfs
             test -z "$(ip route show default)"
             touch /workspaces/private-evidence/permission-check
             rm /workspaces/private-evidence/permission-check
-            if sudo -u nobody test -r /workspaces/private-evidence; then exit 1; fi
-            if sudo -u nobody test -w /workspaces/private-evidence; then exit 1; fi
+            test "$(sudo -n runuser -u nobody -- id -un)" = nobody
+            if sudo -n runuser -u nobody -- test -r /workspaces/private-evidence; then exit 1; fi
+            if sudo -n runuser -u nobody -- test -w /workspaces/private-evidence; then exit 1; fi
             npm run privacy:test

@@ -21,7 +21,7 @@ also succeed after a restart.
 
 VS Code telemetry is configured with `telemetry.telemetryLevel: off`. Use a clean
 VS Code profile with that user setting already applied before opening evidence.
-No extensions are requested by this configuration. Inherited/local extensions
+The image's inherited ESLint extension is explicitly removed. Other inherited/local extensions
 can have independent telemetry: disable them for evidence review, or verify each
 extension's telemetry controls first. Container network isolation does not isolate
 the host editor, and policy environment variables do not enforce application logging.

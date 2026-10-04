@@ -20,7 +20,7 @@
         "telemetry.telemetryLevel": "off",
         "extensions.ignoreRecommendations": true
       },
-      "extensions": []
+      "extensions": ["-dbaeumer.vscode-eslint"]
     }
   },
   "postStartCommand": "sudo chown node:node /workspaces/private-evidence && sudo chmod 700 /workspaces/private-evidence && test -w /workspaces/private-evidence"

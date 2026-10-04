@@ -146,6 +146,6 @@ test("privacy devcontainer config protects tmpfs and uses supported editor telem
   assert.match(config.postStartCommand, /sudo chown node:node/);
   assert.match(config.postStartCommand, /sudo chmod 700/);
   assert.equal(config.customizations.vscode.settings["telemetry.telemetryLevel"], "off");
-  assert.deepEqual(config.customizations.vscode.extensions, []);
+  assert.deepEqual(config.customizations.vscode.extensions, ["-dbaeumer.vscode-eslint"]);
   assert.equal(config.containerEnv.SKYGRID_TELEMETRY, undefined);
 });
