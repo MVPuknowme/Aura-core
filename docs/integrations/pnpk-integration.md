@@ -2,6 +2,12 @@
 
 Status: transaction-preview pilot implemented in [PR #252](https://github.com/MVPuknowme/Aura-core/pull/252); integration and live-provider validation pending. Implementation inspected at commit `81846a33a95d9cd55cbc9875cfcd351dfb13a96d` on 2026-10-04.
 
+## AuraSky site
+
+AuraSky: [https://aurasky.Skygrid-protocol.net](https://aurasky.Skygrid-protocol.net).
+
+This is the site address supplied by the operator. The PNPK API route and live deployment at this domain have not been verified by this documentation update.
+
 ## Purpose
 
 Integrate PNPK into SKYGRID-protocol/Aura-Core to preview supported asset movements and permissions before a user makes a signing decision. The service name remains **SKYGRID Emergency Data On-Ramp**. Preserve `controlled_pilot` and `fail_closed`.
