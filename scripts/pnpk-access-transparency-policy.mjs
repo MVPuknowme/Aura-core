@@ -108,6 +108,12 @@ export function validateAccessTransparencyPolicy(pnpk) {
   );
 
   const grades = new Set(policy.grade_outcomes ?? []);
+  requirePolicy(policy.receipt_content_policy?.network_identifiers_allowed === false,
+    "raw network identifiers must not be stored in receipts");
+  requirePolicy(policy.receipt_delivery_policy?.verified_private_route_required === true &&
+    policy.receipt_delivery_policy?.direct_network_fallback_allowed === false &&
+    policy.receipt_delivery_policy?.unverified_route_behavior === "fail_closed_no_delivery",
+    "receipt delivery must require a verified private route without direct fallback");
   for (const grade of [
     "verified_current",
     "verified_delayed_notice",

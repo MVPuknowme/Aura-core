@@ -68,3 +68,23 @@ wallet/veteran-status/server/**/*.cer
 wallet/veteran-status/server/**/*.certSigningRequest
 cloudflare/skygrid-edge-worker/.tmp/
 cloudflare/skygrid-edge-worker/dist/
+
+# SKYGRID privacy-by-default evidence boundary
+skygrid-evidence/
+private-evidence/
+**/private-evidence/
+sensitive-evidence/
+**/sensitive-evidence/
+certs/
+secrets/
+credentials/
+*.pfx
+*.key
+*.pem
+*.p12
+*.cer
+*.crt
+*.der
+*.certSigningRequest
+debug/
+tmp/

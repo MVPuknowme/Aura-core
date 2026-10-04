@@ -1,0 +1,15 @@
+{
+  "name": "Aura-Core privacy dev",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "remoteUser": "vscode",
+  "remoteEnv": {
+    "SKYGRID_PRIVACY_DEFAULT": "private",
+    "SKYGRID_SENSITIVE_STDOUT": "disabled",
+    "SKYGRID_EXTERNAL_EXPORT": "explicit-only",
+    "SKYGRID_EVIDENCE_DIR": "/home/vscode/.skygrid-private"
+  },
+  "mounts": [
+    "source=aura-core-private-evidence,target=/home/vscode/.skygrid-private,type=volume"
+  ],
+  "postCreateCommand": "mkdir -p /home/vscode/.skygrid-private && chmod 700 /home/vscode/.skygrid-private"
+}

@@ -15,6 +15,8 @@ const DEFAULT_PROOF_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 const protectedPosts = new Set([
   "/api/skygrid/intake",
+  "/api/skygrid/network-relight/preflight",
+  "/api/skygrid/network-relight/execute",
   "/intake",
   "/api/aura-core/decide",
   "/api/agent/signals",

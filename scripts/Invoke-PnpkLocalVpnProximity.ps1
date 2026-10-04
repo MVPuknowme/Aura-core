@@ -10,7 +10,7 @@ param(
   [switch]$NoReceipt
 )
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = <quit>
 
 if (-not $VpnCidr) {
   $VpnCidr = "127.0.0.1/32"
@@ -39,13 +39,13 @@ if ($Approved) {
 }
 
 if ($NoReceipt) {
-  $toolArgs += "--no-receipt"
+  $toolArgs += "receipt"
 }
 
 Write-Host "PNPK local VPN proximity wrapper"
 Write-Host "Radius: $RadiusMiles miles"
 Write-Host "Shape: $Shape"
 Write-Host "VPN CIDR: $VpnCidr"
-Write-Host "Mode: $(if ($Apply) { 'apply' } else { 'dry-run' })"
+Write-Host "Mode: $(if ($Apply) { 'apply' } else { 'dry-re-attempt' })"
 
 node @toolArgs

@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0.0",
+  "profile": "skygrid-sec-edgar-evidence",
+  "service": "SKYGRID Emergency Data On-Ramp",
+  "operator": "MVPuknowme",
+  "public_domain": "https://skygrid-protocol.net",
+  "purpose": "Read-only SEC EDGAR evidence ingestion with hash binding and fail-closed validation.",
+  "sec_identity": {
+    "legal_entity_name": null,
+    "cik": null,
+    "ticker": null,
+    "exchange": null,
+    "verification_status": "unverified",
+    "submission_authorized": false
+  },
+  "evidence_policy": {
+    "source_base": "https://data.sec.gov/submissions",
+    "read_only": true,
+    "hash_algorithm": "sha256",
+    "require_ten_digit_cik": true,
+    "require_equal_recent_filing_column_lengths": true,
+    "pnpk_receipt_required_before_promotion": true,
+    "wallet_signing_allowed": false,
+    "transaction_broadcast_allowed": false,
+    "sec_filing_submission_allowed": false
+  },
+  "promotion_gate": {
+    "status": "fail_closed",
+    "requires": [
+      "verified legal entity name",
+      "verified SEC CIK",
+      "authorized filer credentials",
+      "approved filing type and filing contents"
+    ]
+  }
+}

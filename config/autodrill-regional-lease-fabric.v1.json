@@ -1,0 +1,55 @@
+{
+  "schema": "skygrid.autodrill-regional-lease-fabric-config.v2",
+  "mode": "shared_capacity_revenue_share",
+  "sentinel": "fail_closed",
+  "elastic_compute": {
+    "strategy": "provider_neutral_regionally_distributed",
+    "limitless_claim_allowed": false,
+    "scale_rule": "scale_within_available_shared_capacity_policy_and_activation_grants",
+    "max_regional_agents": 12
+  },
+  "commercial_model": {
+    "type": "shared_capacity_revenue_share",
+    "upfront_capacity_cost_usd": 0,
+    "skygrid_fee_bps": 350,
+    "capacity_owner_share_bps": 9650,
+    "settlement_basis": "verified_operating_revenue",
+    "invoice_required": true,
+    "revenue_event_receipt_required": true,
+    "time_tiered": true,
+    "billable_service_classes": [
+      "failover_protection",
+      "validation",
+      "approved_idle_compute",
+      "routing",
+      "storage",
+      "proof_archive"
+    ]
+  },
+  "selection_policy": {
+    "min_health_score": 95,
+    "max_latency_ms": 250,
+    "require_pnpk_route_approved": true,
+    "require_hash_bound_receipt": true,
+    "require_owner_agreement": true,
+    "reject_upfront_capacity_rent": true,
+    "required_skygrid_fee_bps": 350
+  },
+  "regional_agents": {
+    "model": "policy_identical_region_scoped_clones",
+    "role": "aura_regional_switch_planner",
+    "may_evaluate_and_rank": true,
+    "may_reserve": "envelope_only",
+    "may_provision": false,
+    "may_pay": false,
+    "may_switch_production_networks": false,
+    "may_partition_disks": false
+  },
+  "social_return": {
+    "funding_basis": "positive_evidence_backed_net_realized_income_only",
+    "route": "verified_revenue_ledger_to_philanthropy_governance",
+    "beneficiary_selection": "separate_lawful_governance",
+    "autonomous_beneficiary_selection": false,
+    "protected_trait_inference": false
+  }
+}

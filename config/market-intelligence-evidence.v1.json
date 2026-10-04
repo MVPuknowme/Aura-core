@@ -1,0 +1,30 @@
+{
+  "schema": "skygrid.market_intelligence_evidence.v1",
+  "provider": {
+    "name": "Market Intelligence API",
+    "origin": "https://api.marketintelligenceapi.com",
+    "mcp_url": "https://api.marketintelligenceapi.com/mcp"
+  },
+  "mode": "read_only_evidence",
+  "default_max_approved_spend_usd": 0,
+  "payment_execution_enabled": false,
+  "automatic_trading_enabled": false,
+  "wallet_signing_allowed": false,
+  "transaction_broadcast_allowed": false,
+  "settlement_authority": "none",
+  "evidence_policy": {
+    "directional_provider_outputs": "inferred",
+    "provider_track_record": "separate_observed_evidence",
+    "max_age_ms": 300000,
+    "require_https_provider_origin": true,
+    "require_route_source_match": true,
+    "require_explicit_payment_authorization_for_paid_calls": true,
+    "cross_source_confirmation_required_for_high_confidence": true
+  },
+  "promotion_rule": {
+    "single_provider_directional_signal": "never_high_confidence",
+    "adverse_empirical_calibration": "conflicting",
+    "stale_observation": "stale",
+    "missing_calibration": "quality_flag"
+  }
+}
