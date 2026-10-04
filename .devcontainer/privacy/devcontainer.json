@@ -1,17 +1,27 @@
 {
   "name": "SKYGRID Privacy Evidence Review",
   "image": "mcr.microsoft.com/devcontainers/javascript-node:24-bookworm",
+  "remoteUser": "node",
+  "waitFor": "postStartCommand",
   "runArgs": [
     "--network=none"
   ],
   "containerEnv": {
     "SKYGRID_PRIVACY_MODE": "strict",
-    "SKYGRID_TELEMETRY": "disabled",
     "SKYGRID_SENSITIVE_STDOUT": "deny",
     "SKYGRID_EXPORT_POLICY": "explicit-approval"
   },
   "mounts": [
-    "type=tmpfs,target=/workspaces/private-evidence"
+    "type=tmpfs,target=/workspaces/private-evidence,tmpfs-mode=0700"
   ],
-  "postCreateCommand": "mkdir -p /workspaces/private-evidence && chmod 700 /workspaces/private-evidence"
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "telemetry.telemetryLevel": "off",
+        "extensions.ignoreRecommendations": true
+      },
+      "extensions": []
+    }
+  },
+  "postStartCommand": "sudo chown node:node /workspaces/private-evidence && sudo chmod 700 /workspaces/private-evidence && test -w /workspaces/private-evidence"
 }

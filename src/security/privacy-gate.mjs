@@ -3,12 +3,16 @@ const USER_AUTHORIZED_PURPOSES = new Set([
   "user-requested-export",
 ]);
 
+const AUDIT_EVENTS = new Set(["evidence.review", "export.allowed", "export.denied"]);
+const AUDIT_STATUSES = new Set(["ok", "denied", "error"]);
+
 export function safeAudit(event, metadata = {}, now = new Date()) {
   return Object.freeze({
-    event: String(event || "unknown"),
+    event: AUDIT_EVENTS.has(event) ? event : "unknown",
     timestamp: now.toISOString(),
-    recordCount: Number.isFinite(metadata.recordCount) ? metadata.recordCount : null,
-    status: typeof metadata.status === "string" ? metadata.status : "ok",
+    recordCount: Number.isSafeInteger(metadata?.recordCount) && metadata.recordCount >= 0
+      ? metadata.recordCount : null,
+    status: AUDIT_STATUSES.has(metadata?.status) ? metadata.status : "unknown",
   });
 }
 
@@ -17,33 +21,21 @@ export function mayExport({
   purpose = "",
   destination = "",
   legalRequirementVerified = false,
+  recipientVerified = false,
+  scopeMinimized = false,
 } = {}) {
-  if (!destination) return false;
+  if (typeof destination !== "string" || destination.trim().length === 0 ||
+      /[\u0000-\u001f\u007f]/u.test(destination)) return false;
 
   if (purpose === "required-legal-response") {
-    return legalRequirementVerified === true;
+    return legalRequirementVerified === true && recipientVerified === true &&
+      scopeMinimized === true;
   }
 
   return operatorApproved === true && USER_AUTHORIZED_PURPOSES.has(purpose);
 }
 
 export function redactSensitive(value) {
-  if (value == null) return value;
-
-  if (typeof value === "string") {
-    if (value.length <= 4) return "[REDACTED]";
-    return `${value.slice(0, 2)}…${value.slice(-2)}`;
-  }
-
-  if (Array.isArray(value)) {
-    return value.map(() => "[REDACTED]");
-  }
-
-  if (typeof value === "object") {
-    return Object.fromEntries(
-      Object.keys(value).map((key) => [key, "[REDACTED]"])
-    );
-  }
-
+  // Do not preserve fragments, object keys, lengths, or value shape.
   return "[REDACTED]";
 }

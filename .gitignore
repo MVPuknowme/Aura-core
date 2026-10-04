@@ -79,3 +79,12 @@ certs/
 secrets/
 credentials/
 *.pfx
+*.key
+*.pem
+*.p12
+*.cer
+*.crt
+*.der
+*.certSigningRequest
+debug/
+tmp/
