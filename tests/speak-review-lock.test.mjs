@@ -49,8 +49,15 @@ function harness({ forged = false, throws = false } = {}) {
   return { app, calibration, element, document, window, calls, events, recognitions };
 }
 
-test('all Speak activation controls stay closed despite local approval flags and forced clicks', async () => {
+test('privacy gate is session-only and professional containment stays closed after gate open', async () => {
   const h = harness(); h.app(); h.calibration();
+  assert.equal(h.document.documentElement.dataset.speakGateOpen, 'false');
+  assert.equal(h.element('privacy-gate-state').textContent, 'LOCKED');
+
+  h.element('privacy-gate-toggle').click();
+  assert.equal(h.document.documentElement.dataset.speakGateOpen, 'true');
+  assert.equal(h.element('privacy-gate-state').textContent, 'OPEN');
+
   h.element('master-toggle').click();
   assert.equal(h.document.documentElement.dataset.speakEnabled, 'false');
   for (const id of ['thought-toggle', 'action-button', 'speak-button', 'listen-button', 'calibration-button']) {
@@ -61,6 +68,10 @@ test('all Speak activation controls stay closed despite local approval flags and
   assert.equal(h.calls.start, 0);
   assert.equal(h.element('master-state').textContent, 'OFF');
   assert.match(h.element('master-status').textContent, /review/i);
+
+  h.element('privacy-gate-toggle').click();
+  assert.equal(h.document.documentElement.dataset.speakGateOpen, 'false');
+  assert.equal(h.element('privacy-gate-state').textContent, 'LOCKED');
 });
 
 test('calibration rejects forged dataset and master events even without app.js', () => {
@@ -92,4 +103,21 @@ test('termination errors cannot prevent OFF state and off-event delivery', () =>
   assert.doesNotThrow(() => h.element('stop-listen-button').click());
   assert.doesNotThrow(() => h.recognitions[0].onstart());
   assert.equal(h.element('stt-status').textContent, 'Off');
+});
+
+
+test('closing the privacy gate forces an immediate stop path', () => {
+  const h = harness(); h.app();
+  h.element('privacy-gate-toggle').click();
+  const cancelsBefore = h.calls.cancel;
+  const stopsBefore = h.calls.abort + h.calls.stop;
+  h.element('privacy-gate-toggle').click();
+
+  assert.equal(h.document.documentElement.dataset.speakGateOpen, 'false');
+  assert.equal(h.document.documentElement.dataset.speakEnabled, 'false');
+  assert.ok(h.calls.cancel > cancelsBefore);
+  assert.ok(h.calls.abort + h.calls.stop > stopsBefore);
+  assert.equal(h.element('master-toggle').disabled, true);
+  assert.equal(h.element('stop-button').disabled, false);
+  assert.equal(h.element('stop-listen-button').disabled, false);
 });
