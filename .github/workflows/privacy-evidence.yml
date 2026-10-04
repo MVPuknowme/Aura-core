@@ -3,6 +3,12 @@ name: Privacy Evidence Boundary
 on:
   pull_request:
     paths:
+      - 'lib/security/private-receipt-delivery.mjs'
+      - 'tests/private-receipt-delivery.test.mjs'
+      - 'scripts/run-pnpk-postbuild.mjs'
+      - 'scripts/pnpk-access-transparency-policy.mjs'
+      - 'tests/pnpk-postbuild.test.mjs'
+      - 'bridge/skygrid-emergency-onramp.pnpk'
       - 'lib/security/privacy-boundary.mjs'
       - 'tests/privacy-boundary.test.mjs'
       - 'src/security/privacy-gate.mjs'
@@ -16,6 +22,12 @@ on:
   push:
     branches: [MVPuknowme]
     paths:
+      - 'lib/security/private-receipt-delivery.mjs'
+      - 'tests/private-receipt-delivery.test.mjs'
+      - 'scripts/run-pnpk-postbuild.mjs'
+      - 'scripts/pnpk-access-transparency-policy.mjs'
+      - 'tests/pnpk-postbuild.test.mjs'
+      - 'bridge/skygrid-emergency-onramp.pnpk'
       - 'lib/security/privacy-boundary.mjs'
       - 'tests/privacy-boundary.test.mjs'
       - 'src/security/privacy-gate.mjs'

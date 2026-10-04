@@ -16,16 +16,19 @@ export function safeAudit(event, metadata = {}, now = new Date()) {
   });
 }
 
-export function mayExport({
+export function mayExport(request = {}) {
+  if (!request || typeof request !== "object" || Array.isArray(request)) return false;
+  const {
   operatorApproved = false,
   purpose = "",
   destination = "",
   legalRequirementVerified = false,
   recipientVerified = false,
   scopeMinimized = false,
-} = {}) {
+  } = request;
   if (typeof destination !== "string" || destination.trim().length === 0 ||
       /[\u0000-\u001f\u007f]/u.test(destination)) return false;
+  if (recipientVerified !== true || scopeMinimized !== true) return false;
 
   if (purpose === "required-legal-response") {
     return legalRequirementVerified === true && recipientVerified === true &&
@@ -33,6 +36,22 @@ export function mayExport({
   }
 
   return operatorApproved === true && USER_AUTHORIZED_PURPOSES.has(purpose);
+}
+
+export function exportPrivacyReceipt(request = {}, now = new Date()) {
+  const allowed = mayExport(request);
+  return Object.freeze({
+    schema: "pnpk.private-export-preflight.v1",
+    observed_at: now.toISOString(),
+    decision: allowed ? "export_preflight_verified" : "fail_closed",
+    enforcement_scope: "instrumented_boundary_only",
+    monitoring_status: "unknown",
+    content_capture: false,
+    execution_authority: "none",
+    // Verification signals are trusted-caller attestations, never surveillance claims.
+    recipient_verified: request?.recipientVerified === true,
+    scope_minimized: request?.scopeMinimized === true,
+  });
 }
 
 export function redactSensitive(value) {

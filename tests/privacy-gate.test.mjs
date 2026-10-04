@@ -7,6 +7,7 @@ import {
   mayExport,
   redactSensitive,
   safeAudit,
+  exportPrivacyReceipt,
 } from "../src/security/privacy-gate.mjs";
 
 test("exports fail closed without operator approval", () => {
@@ -23,6 +24,8 @@ test("authorized disclosure requires approval and destination", () => {
   assert.equal(
     mayExport({
       operatorApproved: true,
+      recipientVerified: true,
+      scopeMinimized: true,
       purpose: "authorized-security-disclosure",
       destination: "security@example.test",
     }),
@@ -112,7 +115,32 @@ test("both export paths reject invalid destinations", () => {
   assert.equal(mayExport({ operatorApproved: true, purpose: "unknown",
     destination: "recipient" }), false);
   assert.equal(mayExport({ operatorApproved: true, purpose: "user-requested-export",
-    destination: " recipient " }), true);
+    destination: " recipient ", recipientVerified: true, scopeMinimized: true }), true);
+});
+
+test("every export requires verified recipient and minimized scope", () => {
+  const request = { operatorApproved: true, purpose: "user-requested-export",
+    destination: "recipient", recipientVerified: true, scopeMinimized: true };
+  for (const field of ["recipientVerified", "scopeMinimized"]) {
+    for (const value of [undefined, false, "true", 1]) {
+      assert.equal(mayExport({ ...request, [field]: value }), false);
+    }
+  }
+  for (const request of [null, [], "secret", false]) assert.equal(mayExport(request), false);
+});
+
+test("privacy receipts are minimized and cannot claim surveillance or execution", () => {
+  const receipt = exportPrivacyReceipt({ operatorApproved: true,
+    purpose: "user-requested-export", destination: "private@example.test",
+    recipientVerified: true, scopeMinimized: true, fisa: true, token: "secret" });
+  assert.equal(receipt.decision, "export_preflight_verified");
+  assert.equal(receipt.monitoring_status, "unknown");
+  assert.equal(receipt.execution_authority, "none");
+  assert.equal(receipt.content_capture, false);
+  assert.equal(JSON.stringify(receipt).includes("private@example.test"), false);
+  assert.equal(JSON.stringify(receipt).includes("secret"), false);
+  assert.ok(Object.isFrozen(receipt));
+  assert.equal(exportPrivacyReceipt(null).decision, "fail_closed");
 });
 
 test("audit failure fields cannot echo free-form secrets", () => {

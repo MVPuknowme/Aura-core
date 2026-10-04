@@ -86,7 +86,7 @@
         "philanthropy:readiness:test": "node --test tests/philanthropy-readiness.test.mjs",
         "autodrill:regional-fabric:test": "node --test tests/autodrill-regional-lease-fabric.test.mjs",
         "pnpk:production-relight:test": "node --test tests/pnpk-production-relight-preflight.test.mjs",
-        "privacy:test": "node --test tests/privacy-gate.test.mjs tests/privacy-boundary.test.mjs"
+        "privacy:test": "node --test tests/privacy-gate.test.mjs tests/privacy-boundary.test.mjs tests/pnpk-postbuild.test.mjs tests/private-receipt-delivery.test.mjs"
     },
     "dependencies": {
         "@allbridge/bridge-core-sdk": "^3.34.0",

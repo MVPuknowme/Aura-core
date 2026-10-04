@@ -96,3 +96,30 @@ Tracked repository files may define policy, schemas, tests, sanitized examples, 
 
 Ignore rules prevent accidental additions of untracked files, not forced additions
 or leaks from files already tracked. Review the staged diff before committing.
+
+## PNPK private receipt enforcement
+
+Every export purpose requires literal verified-recipient and minimized-scope signals,
+including user-approved disclosures. `exportPrivacyReceipt` returns a minimized
+preflight record with monitoring status `unknown`, instrumented-boundary-only
+scope, no content capture, and no execution authority. It records caller
+attestations, not a covert-investigation finding or a legal conclusion.
+
+Post-build receipts retain only fixed step IDs, timestamps, boolean outcomes,
+integer exit codes, and timeout flags. Child output is not captured; arbitrary
+result fields and exception messages are not stored. Malformed results fail closed.
+On POSIX filesystems, receipt writes reject final-path symlinks and multiply linked
+files and enforce mode `0600`, including for an existing receipt. Use a private,
+trusted parent directory; Windows requires independently verified file ACLs.
+
+`deliverPrivateReceipt` accepts only a trusted configured HTTPS relay and transport
+adapter. Before delivery, the adapter must independently verify destination-bound
+VPN or outsourced-relay egress and enforce that route throughout delivery. Direct,
+unknown, failed, or mismatched transport stays blocked without fallback. Delivery
+payloads omit source IP, MAC, device identifiers, content, arbitrary metadata, and
+raw evidence hashes. The adapter must also omit these from headers and logs.
+
+No live VPN/relay adapter or endpoint is configured by this patch. The helper
+does not install a VPN or intercept device traffic. Other receipts and network
+paths are not covered until they use this boundary; finance execution retains
+its existing authorization gates and is not enabled by any privacy receipt.

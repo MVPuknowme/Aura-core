@@ -39,12 +39,16 @@ test("export requires explicit operator approval, purpose, and destination", () 
   assert.equal(mayExport({
     operatorApproved: false,
     purpose: "user-requested-export",
+    recipientVerified: true,
+    scopeMinimized: true,
     destination: "private-target"
   }), false);
 
   assert.equal(mayExport({
     operatorApproved: true,
     purpose: "user-requested-export",
+    recipientVerified: true,
+    scopeMinimized: true,
     destination: "private-target"
   }), true);
 
