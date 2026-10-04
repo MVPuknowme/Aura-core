@@ -4,7 +4,8 @@ Speak is a local-first browser speech interface inside Aura-core.
 
 ## Current rebuild
 
-- **Speak master power OFF by default on every load; speech and microphone features require an explicit user enable action.**
+- **Speak privacy gate LOCKED by default on every load; the gate must be explicitly opened for the current session before any activation attempt.**
+- **Speak master power OFF by default on every load; speech and microphone features require a separate explicit user enable action.**
 - Text-to-speech using the browser `speechSynthesis` API.
 - Speech-to-text using `SpeechRecognition` or `webkitSpeechRecognition` when available.
 - Large iOS-friendly **ACTION** button.
@@ -13,9 +14,17 @@ Speak is a local-first browser speech interface inside Aura-core.
 - Responsive mobile-first Aura styling.
 - No application-level network calls, analytics, background listening, or device discovery.
 
-## Explicit-enable policy
+## Privacy gate + explicit-enable policy
 
-Speak is fail-closed for audio and microphone features. Each page load starts with **Speak power OFF**. No speech synthesis, speech recognition, calibration read, or command-driven speech can start until the user explicitly turns Speak power ON. The enabled state is not silently restored across page loads.
+Speak is fail-closed in two stages:
+
+1. Each page load starts with the **privacy gate LOCKED**. The gate is session-only and is never silently restored.
+2. Closing the privacy gate immediately forces Speak OFF and stops active speech/listening.
+3. Opening the privacy gate only permits an activation attempt; it does not bypass the separate professional-review containment.
+4. Speak master power also starts **OFF**. No speech synthesis, speech recognition, calibration read, command-driven speech, transcript copy, or transcript clear operation can run while the gate is closed.
+5. Stop/OFF controls remain available even while the gate is closed.
+
+The gate is a user-control boundary, not evidence of medical, legal, or other professional approval.
 
 ## Action + Thought Command
 
