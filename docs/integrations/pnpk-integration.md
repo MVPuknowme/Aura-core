@@ -143,3 +143,10 @@ Safe marketing is limited to supported previews and checks. Do not advertise gua
 ## Device and privacy boundary
 
 Bluetooth is not required. No Bluetooth tool was available during this integration-note update, and no device scan or connection occurred. PNPK installation does not establish a VPN, encrypt traffic, intercept communications or protect uninstrumented channels. The approved simulation provider receives public addresses and unsigned calldata; do not submit secrets or private communications.
+
+## AuraSky ownership, Auto-Drill and licensing
+
+Michael Vincent Patrick — MVPuknowme identifies AuraSky (https://aurasky.Skygrid-protocol.net) as entirely his design and the umbrella for Aura-Core, PNPK and Auto-Drill. Until documented partnerships are present, no partner ownership is assigned.
+
+See [Auto-Drill lease-use integration](autodrill-lease-use.md) for signed usage/invoice/payment reconciliation and same-owner revenue attribution. See [exclusive licensing scope](../licensing/exclusive-rights.md) and the root [LICENSE](../../LICENSE) for proprietary rights in new owner-controlled material while preserving previously granted MIT/CC0 and third-party permissions. [README](../../README.md) is the public entry point.
+

@@ -1,0 +1,38 @@
+AuraSky / SKYGRID-protocol Proprietary Rights Notice
+
+Copyright (c) 2026 Michael Vincent Patrick — MVPuknowme.
+All rights reserved in the original material controlled by the copyright owner.
+
+Effective for this notice and new owner-controlled contributions: 2026-10-04.
+
+Michael Vincent Patrick reserves exclusive control of the owner-controlled
+AuraSky design and the Aura-Core, PNPK and Auto-Drill implementation and
+commercial layers. No ownership, partnership, sublicensing or commercial-use
+right is assigned merely by viewing this repository, using a project name,
+proposing an integration, generating a receipt or contributing an idea.
+
+Except for rights already granted, separately licensed material, third-party
+rights and uses permitted by applicable law, no permission is granted by this
+notice to reproduce, modify, distribute, sublicense, sell, commercially host
+or otherwise exploit owner-controlled proprietary material. An authorized
+use or commercial integration requires a separate written license from
+Michael Vincent Patrick identifying the material, purpose, duration and terms.
+An exclusive license to another party requires an express written agreement;
+this notice grants no such license or assignment.
+
+Prior permissions are preserved. Material previously distributed under MIT,
+CC0 or another valid license remains subject to those prior permissions to the
+extent applicable. This notice does not revoke earlier grants or restore
+copyright in public-domain material. Original new contributions or modifications
+may be proprietary without restricting rights in the underlying licensed work.
+See docs/licensing/exclusive-rights.md and LICENSES for the documented scope.
+
+Dependencies, vendor assets and other third-party material retain their own
+licenses and notices. No trademark or patent license is granted by this notice.
+Only rights actually controlled by Michael Vincent Patrick are covered.
+
+The proprietary material is provided as available, without a promise of
+fitness, availability, asset protection or financial return. To the extent
+permitted by applicable law, the owner disclaims warranties and liability for
+losses arising from its use. Mandatory rights and liabilities under applicable
+law remain unaffected.
