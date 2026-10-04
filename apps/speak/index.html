@@ -19,11 +19,27 @@
       <p class="lede">A speech interface for text-to-speech and browser speech recognition. Activation is currently blocked pending medical and legal review. Some browser speech services may process audio remotely.</p>
     </header>
 
+
+    <section class="card command-card" aria-labelledby="privacy-gate-heading">
+      <div class="section-heading">
+        <div>
+          <h2 id="privacy-gate-heading">Privacy gate</h2>
+          <p class="hint command-hint">Speak starts locked on every page load. Opening this session gate is required before any activation attempt.</p>
+        </div>
+        <span id="privacy-gate-status" class="status" aria-live="polite">Locked</span>
+      </div>
+      <button id="privacy-gate-toggle" class="switch-button" type="button" role="switch" aria-checked="false" aria-describedby="privacy-gate-help">
+        <span>Session gate</span>
+        <strong id="privacy-gate-state">LOCKED</strong>
+      </button>
+      <p id="privacy-gate-help" class="hint small-hint">The gate is session-only and is never silently restored. Closing it immediately forces Speak OFF and stops speech/listening. Opening the gate does not bypass the separate professional-review containment.</p>
+    </section>
+
     <section class="card command-card" aria-labelledby="master-heading">
       <div class="section-heading">
         <div>
           <h2 id="master-heading">Basic controls</h2>
-          <p class="hint command-hint">Master app control for Speak audio and microphone features.</p>
+          <p class="hint command-hint">Master app control for Speak audio and microphone features. The privacy gate must be open first.</p>
         </div>
         <span id="master-status" class="status" aria-live="polite">Off</span>
       </div>
