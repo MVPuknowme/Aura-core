@@ -1,0 +1,24 @@
+{
+  "name": "Jaxon’s aura",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
+  "remoteUser": "vscode",
+  "remoteEnv": {
+    "SKYGRID_PRIVACY_DEFAULT": "private",
+    "SKYGRID_SENSITIVE_STDOUT": "disabled",
+    "SKYGRID_EXTERNAL_EXPORT": "explicit-only",
+    "SKYGRID_EVIDENCE_DIR": "/home/vscode/.skygrid-private"
+  },
+  "mounts": [
+    "source=jaxons-aura-private-evidence,target=/home/vscode/.skygrid-private,type=volume"
+  ],
+  "postCreateCommand": "mkdir -p /home/vscode/.skygrid-private && chmod 700 /home/vscode/.skygrid-private && node --test tests/speak-review-lock.test.mjs",
+  "forwardPorts": [
+    8080
+  ],
+  "portsAttributes": {
+    "8080": {
+      "label": "Jaxon’s aura",
+      "onAutoForward": "notify"
+    }
+  }
+}
