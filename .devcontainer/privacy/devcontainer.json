@@ -11,7 +11,7 @@
     "SKYGRID_EXPORT_POLICY": "explicit-approval"
   },
   "mounts": [
-    "source=skygrid-private-evidence,target=/workspaces/private-evidence,type=volume"
+    "type=tmpfs,target=/workspaces/private-evidence"
   ],
   "postCreateCommand": "mkdir -p /workspaces/private-evidence && chmod 700 /workspaces/private-evidence"
 }
