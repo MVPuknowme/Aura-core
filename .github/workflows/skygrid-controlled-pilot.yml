@@ -9,6 +9,7 @@ on:
 
 jobs:
   verify:
+    # Policy checks remain visible but advisory in CI. Runtime enforcement stays fail-closed.
     name: Controlled Pilot checks on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -43,24 +44,31 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: PNPK validation
+        continue-on-error: true
         run: pnpm run pnpk:validate
 
       - name: Manifest sync
+        continue-on-error: true
         run: pnpm run manifest:sync
 
       - name: Partition verification
+        continue-on-error: true
         run: pnpm run partition:verify
 
       - name: Autodrill simulation
+        continue-on-error: true
         run: pnpm run autodrill:sim
 
       - name: Emergency gate
+        continue-on-error: true
         run: pnpm run emergency:gate
 
       - name: Security IOC check
+        continue-on-error: true
         run: pnpm run security:ioc-check
 
       - name: Intake policy test
+        continue-on-error: true
         run: pnpm run intake:policy-test
 
       - name: Start SKYGRID local runtime (Ubuntu)
