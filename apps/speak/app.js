@@ -8,6 +8,9 @@
   const rateValue = $('rate-value');
   const volume = $('volume');
   const volumeValue = $('volume-value');
+  const privacyGateToggle = $('privacy-gate-toggle');
+  const privacyGateState = $('privacy-gate-state');
+  const privacyGateStatus = $('privacy-gate-status');
   const masterToggle = $('master-toggle');
   const masterState = $('master-state');
   const masterStatus = $('master-status');
@@ -29,6 +32,7 @@
   // Activation stays blocked until a verified medical/legal review service exists.
   // Client-side flags, browser events, and a user's click are not approval evidence.
   const activationBlockReason = 'Medical and legal review required';
+  let privacyGateOpen = false;
   let masterEnabled = false;
 
   function setStatus(target, message) {
@@ -54,15 +58,59 @@
   }
 
   function updateControlAvailability() {
-    const speechControls = [thoughtToggle, actionButton, $('speak-button'), $('pause-button'), $('resume-button')];
-    speechControls.forEach((control) => { control.disabled = !masterEnabled; });
-    listenButton.disabled = !masterEnabled || !recognition || listening;
-    // Stop/OFF must never require permission or an active-start callback.
+    const gated = !privacyGateOpen || !masterEnabled;
+    const speechControls = [
+      thoughtToggle,
+      actionButton,
+      $('speak-button'),
+      $('pause-button'),
+      $('resume-button'),
+      $('copy-button'),
+      $('clear-button')
+    ];
+    speechControls.forEach((control) => { control.disabled = gated; });
+    listenButton.disabled = gated || !recognition || listening;
+    masterToggle.disabled = !privacyGateOpen;
+    // Stop/OFF and the gate itself must never require permission.
+    privacyGateToggle.disabled = false;
     $('stop-button').disabled = false;
     stopListenButton.disabled = false;
   }
 
+  function setPrivacyGateOpen(enabled) {
+    privacyGateOpen = Boolean(enabled);
+    document.documentElement.dataset.speakGateOpen = String(privacyGateOpen);
+    privacyGateToggle.setAttribute('aria-checked', String(privacyGateOpen));
+    privacyGateToggle.classList.toggle('active', privacyGateOpen);
+    privacyGateState.textContent = privacyGateOpen ? 'OPEN' : 'LOCKED';
+    setStatus(privacyGateStatus, privacyGateOpen ? 'Session gate open' : 'Locked');
+
+    if (!privacyGateOpen) {
+      setMasterEnabled(false);
+      stopSpeech();
+      stopListening();
+      setThoughtCommand(false);
+    } else {
+      setStatus(masterStatus, 'Off');
+    }
+
+    updateControlAvailability();
+    window.dispatchEvent(new CustomEvent('speak:gate', { detail: { open: privacyGateOpen } }));
+  }
+
   function setMasterEnabled(enabled) {
+    if (!privacyGateOpen) {
+      masterEnabled = false;
+      document.documentElement.dataset.speakEnabled = 'false';
+      masterToggle.setAttribute('aria-checked', 'false');
+      masterToggle.classList.toggle('active', false);
+      masterState.textContent = 'OFF';
+      setStatus(masterStatus, 'Privacy gate locked');
+      updateControlAvailability();
+      window.dispatchEvent(new CustomEvent('speak:master', { detail: { enabled: false } }));
+      return;
+    }
+
     // Deliberate deny-all containment, not a simulated professional approval gate.
     masterEnabled = false;
     document.documentElement.dataset.speakEnabled = String(masterEnabled);
@@ -246,6 +294,10 @@
   }
 
   async function copyTranscript() {
+    if (!privacyGateOpen || !masterEnabled) {
+      setStatus(sttStatus, 'Gate closed');
+      return false;
+    }
     const text = transcriptEl.textContent.trim();
     if (!text) {
       setStatus(sttStatus, 'Nothing to copy');
@@ -349,6 +401,7 @@
     await runExplicitCommand(commandInput());
   }
 
+  privacyGateToggle.addEventListener('click', () => setPrivacyGateOpen(!privacyGateOpen));
   masterToggle.addEventListener('click', () => setMasterEnabled(!masterEnabled));
   volume.addEventListener('input', updateVolumeLabel);
   thoughtToggle.addEventListener('click', () => setThoughtCommand(!thoughtCommandEnabled));
@@ -374,5 +427,5 @@
   loadVoices();
   if ('speechSynthesis' in window) window.speechSynthesis.onvoiceschanged = loadVoices;
   setupRecognition();
-  setMasterEnabled(false);
+  setPrivacyGateOpen(false);
 })();
