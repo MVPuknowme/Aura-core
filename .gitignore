@@ -68,3 +68,12 @@ wallet/veteran-status/server/**/*.cer
 wallet/veteran-status/server/**/*.certSigningRequest
 cloudflare/skygrid-edge-worker/.tmp/
 cloudflare/skygrid-edge-worker/dist/
+
+# Privacy-by-default security evidence and local secret material
+# Canonical evidence belongs in an encrypted private store; never commit working copies.
+skygrid-evidence/
+secrets/
+credentials/
+debug/
+tmp/
+*.pfx
