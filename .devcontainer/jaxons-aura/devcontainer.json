@@ -1,6 +1,6 @@
 {
   "name": "Jaxon’s aura",
-  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-24-bookworm",
   "remoteUser": "vscode",
   "remoteEnv": {
     "SKYGRID_PRIVACY_DEFAULT": "private",
@@ -11,7 +11,7 @@
   "mounts": [
     "source=jaxons-aura-private-evidence,target=/home/vscode/.skygrid-private,type=volume"
   ],
-  "postCreateCommand": "mkdir -p /home/vscode/.skygrid-private && chmod 700 /home/vscode/.skygrid-private && node --test tests/speak-review-lock.test.mjs",
+  "postCreateCommand": "sudo mkdir -p /home/vscode/.skygrid-private && sudo chown $(id -u):$(id -g) /home/vscode/.skygrid-private && chmod 700 /home/vscode/.skygrid-private && node --test tests/speak-review-lock.test.mjs",
   "forwardPorts": [
     8080
   ],

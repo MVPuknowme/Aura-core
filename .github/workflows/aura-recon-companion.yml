@@ -5,6 +5,9 @@ on:
     paths:
       - '.devcontainer/**'
       - 'apps/aura-recon-companion/**'
+      - 'apps/speak/**'
+      - 'tests/speak-review-lock.test.mjs'
+      - 'package.json'
       - '.github/workflows/aura-recon-companion.yml'
   workflow_dispatch:
 
@@ -42,3 +45,24 @@ jobs:
           runCmd: |
             python -m pip check
             cd backend && python -m pytest -q
+
+  jaxons-aura-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify Jaxon’s aura as vscode
+        uses: devcontainers/ci@v0.3
+        with:
+          configFile: .devcontainer/jaxons-aura/devcontainer.json
+          push: never
+          runCmd: |
+            set -eu
+            test "$(id -un)" = vscode
+            node -e 'const { engines } = JSON.parse(require("node:fs").readFileSync("package.json", "utf8")); require("node:assert/strict").equal(process.versions.node.split(".")[0] + ".x", engines.node)'
+            test "$SKYGRID_EVIDENCE_DIR" = /home/vscode/.skygrid-private
+            test "$(stat -c %u "$SKYGRID_EVIDENCE_DIR")" = "$(id -u)"
+            test "$(stat -c %g "$SKYGRID_EVIDENCE_DIR")" = "$(id -g)"
+            test "$(stat -c %a "$SKYGRID_EVIDENCE_DIR")" = 700
+            probe=$(mktemp "$SKYGRID_EVIDENCE_DIR/.ci-write-check.XXXXXX")
+            rm "$probe"
+            node --test tests/speak-review-lock.test.mjs
