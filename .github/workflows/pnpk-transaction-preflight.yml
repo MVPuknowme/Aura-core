@@ -1,0 +1,23 @@
+name: PNPK transaction preflight
+on:
+  pull_request:
+    paths:
+      - 'lib/pnpk-transaction-*.mjs'
+      - 'api/skygrid/transaction-preflight.mjs'
+      - 'scripts/pnpk-transaction-preflight.mjs'
+      - 'tests/pnpk-transaction-*.test.mjs'
+      - '.github/workflows/pnpk-transaction-preflight.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Check PNPK transaction assessment and read-only boundaries
+        run: node --test tests/pnpk-transaction-preflight.test.mjs tests/pnpk-transaction-rpc.test.mjs tests/pnpk-transaction-api.test.mjs tests/pnpk-transaction-cli.test.mjs

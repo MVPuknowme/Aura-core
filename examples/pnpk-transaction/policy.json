@@ -1,0 +1,9 @@
+{
+  "chainId": "0x1",
+  "maxNativeValueWei": "100",
+  "recipients": ["0x2222222222222222222222222222222222222222"],
+  "spenders": [],
+  "tokens": {},
+  "receiptTtlSeconds": 60,
+  "maxBlockAgeSeconds": 120
+}
