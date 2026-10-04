@@ -1,0 +1,17 @@
+{
+  "name": "SKYGRID Privacy Evidence Review",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:24-bookworm",
+  "runArgs": [
+    "--network=none"
+  ],
+  "containerEnv": {
+    "SKYGRID_PRIVACY_MODE": "strict",
+    "SKYGRID_TELEMETRY": "disabled",
+    "SKYGRID_SENSITIVE_STDOUT": "deny",
+    "SKYGRID_EXPORT_POLICY": "explicit-approval"
+  },
+  "mounts": [
+    "source=skygrid-private-evidence,target=/workspaces/private-evidence,type=volume"
+  ],
+  "postCreateCommand": "mkdir -p /workspaces/private-evidence && chmod 700 /workspaces/private-evidence"
+}
