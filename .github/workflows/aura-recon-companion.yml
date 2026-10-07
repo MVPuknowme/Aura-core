@@ -58,7 +58,7 @@ jobs:
           runCmd: |
             set -eu
             test "$(id -un)" = vscode
-            node -e 'const { engines } = JSON.parse(require("node:fs").readFileSync("package.json", "utf8")); require("node:assert/strict").equal(process.versions.node.split(".")[0] + ".x", engines.node)'
+            node -e 'const config = JSON.parse(require("node:fs").readFileSync(".devcontainer/jaxons-aura/devcontainer.json", "utf8")); require("node:assert/strict").equal(process.versions.node.split(".")[0], config.features["ghcr.io/devcontainers/features/node:2"].version)'
             test "$SKYGRID_EVIDENCE_DIR" = /home/vscode/.skygrid-private
             test "$(stat -c %u "$SKYGRID_EVIDENCE_DIR")" = "$(id -u)"
             test "$(stat -c %g "$SKYGRID_EVIDENCE_DIR")" = "$(id -g)"
