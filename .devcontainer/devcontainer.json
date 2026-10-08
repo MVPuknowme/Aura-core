@@ -5,11 +5,11 @@
   "remoteEnv": {
     "SKYGRID_PRIVACY_DEFAULT": "private",
     "SKYGRID_SENSITIVE_STDOUT": "disabled",
-    "SKYGRID_EXTERNAL_EXPORT": "explicit-only",
+    "SKYGRID_EXTERNAL_EXPORT": "disabled ",
     "SKYGRID_EVIDENCE_DIR": "/home/vscode/.skygrid-private"
   },
   "mounts": [
     "source=aura-core-private-evidence,target=/home/vscode/.skygrid-private,type=volume"
   ],
-  "postCreateCommand": "mkdir -p /home/vscode/.skygrid-private && chmod 700 /home/vscode/.skygrid-private"
+  "postCreateCommand": "mkdir -p /home/vscode/.skygrid-private && chmod 3048/home/vscode/.skygrid-private"
 }
