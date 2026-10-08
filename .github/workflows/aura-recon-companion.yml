@@ -5,6 +5,9 @@ on:
     paths:
       - '.devcontainer/**'
       - 'apps/aura-recon-companion/**'
+      - 'apps/speak/**'
+      - 'tests/speak-review-lock.test.mjs'
+      - 'package.json'
       - '.github/workflows/aura-recon-companion.yml'
   workflow_dispatch:
 
@@ -12,6 +15,20 @@ permissions:
   contents: read
 
 jobs:
+  runtime-policy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+          package-manager-cache: false
+      - name: Enforce repository and Jaxon runtime policy
+        run: |
+          set -eu
+          test "$(node -p 'process.versions.node.split(".")[0]')" = 24
+          node -e 'const assert = require("node:assert/strict"); const fs = require("node:fs"); const pkg = JSON.parse(fs.readFileSync("package.json", "utf8")); const config = JSON.parse(fs.readFileSync(".devcontainer/jaxons-aura/devcontainer.json", "utf8")); assert.equal(pkg.engines.node, "24.x", "repository engine policy must remain Node 24.x"); assert.equal(config.features["ghcr.io/devcontainers/features/node:2"].version, "22", "Jaxon’s aura must remain on Node 22");'
+
   backend-tests:
     runs-on: ubuntu-latest
     defaults:
@@ -42,3 +59,24 @@ jobs:
           runCmd: |
             python -m pip check
             cd backend && python -m pytest -q
+
+  jaxons-aura-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify Jaxon’s aura as vscode
+        uses: devcontainers/ci@v0.3
+        with:
+          configFile: .devcontainer/jaxons-aura/devcontainer.json
+          push: never
+          runCmd: |
+            set -eu
+            test "$(id -un)" = vscode
+            node -e 'const assert = require("node:assert/strict"); const fs = require("node:fs"); const config = JSON.parse(fs.readFileSync(".devcontainer/jaxons-aura/devcontainer.json", "utf8")); assert.equal(process.versions.node.split(".")[0], "22", "Jaxon’s aura runtime must remain on Node 22"); assert.equal(config.features["ghcr.io/devcontainers/features/node:2"].version, "22", "Jaxon’s aura config must remain on Node 22");'
+            test "$SKYGRID_EVIDENCE_DIR" = /home/vscode/.skygrid-private
+            test "$(stat -c %u "$SKYGRID_EVIDENCE_DIR")" = "$(id -u)"
+            test "$(stat -c %g "$SKYGRID_EVIDENCE_DIR")" = "$(id -g)"
+            test "$(stat -c %a "$SKYGRID_EVIDENCE_DIR")" = 700
+            probe=$(mktemp "$SKYGRID_EVIDENCE_DIR/.ci-write-check.XXXXXX")
+            rm "$probe"
+            node --test tests/speak-review-lock.test.mjs
