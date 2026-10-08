@@ -1,5 +1,5 @@
 {
-    "mode":  "controlled_pilot"",
+    "mode":  "controlled_pilot"
     "capabilities":  {
                          "local_shell":  true,
                          "production_failover_allowed":  true,
