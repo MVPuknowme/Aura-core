@@ -17,5 +17,8 @@
   "mounts": [
     "source=aura-core-private-evidence,target=/home/vscode/.skygrid-private,type=volume"
   ],
+  "otherPortsAttributes": {
+    "onAutoForward": "ignore"
+  },
   "postCreateCommand": "sudo mkdir -p /home/vscode/.skygrid-private && sudo chown $(id -u):$(id -g) /home/vscode/.skygrid-private && chmod 700 /home/vscode/.skygrid-private"
 }
