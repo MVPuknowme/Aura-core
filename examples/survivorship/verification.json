@@ -1,0 +1,120 @@
+{
+  "suite": "survivorship-policy",
+  "runtime": "JavaScript V8 tool isolate",
+  "total": 23,
+  "passed": 23,
+  "results": [
+    {
+      "name": "complete simulation",
+      "passed": true
+    },
+    {
+      "name": "missing input",
+      "passed": true
+    },
+    {
+      "name": "non-simulation",
+      "passed": true
+    },
+    {
+      "name": "tenant isolation",
+      "passed": true
+    },
+    {
+      "name": "revocation",
+      "passed": true
+    },
+    {
+      "name": "expired authority",
+      "passed": true
+    },
+    {
+      "name": "invalid time",
+      "passed": true
+    },
+    {
+      "name": "unverified location",
+      "passed": true
+    },
+    {
+      "name": "unknown jurisdiction",
+      "passed": true
+    },
+    {
+      "name": "heartbeat is not a death event",
+      "passed": true
+    },
+    {
+      "name": "missing successor",
+      "passed": true
+    },
+    {
+      "name": "missing event evidence",
+      "passed": true
+    },
+    {
+      "name": "missing authority",
+      "passed": true
+    },
+    {
+      "name": "unverified recipient",
+      "passed": true
+    },
+    {
+      "name": "missing consent",
+      "passed": true
+    },
+    {
+      "name": "dispute",
+      "passed": true
+    },
+    {
+      "name": "duplicate approver",
+      "passed": true
+    },
+    {
+      "name": "invented approvers",
+      "passed": true
+    },
+    {
+      "name": "overbroad scope",
+      "passed": true
+    },
+    {
+      "name": "incapacity",
+      "passed": true
+    },
+    {
+      "name": "outage no succession evidence needed",
+      "passed": true
+    },
+    {
+      "name": "no backup",
+      "passed": true
+    },
+    {
+      "name": "revoked outage",
+      "passed": true
+    }
+  ],
+  "checked_at": "2026-10-10T05:07:47.445Z",
+  "source_base_commit": "a57f15072e25dd3d9c077ad372cbf94a164d1e7a",
+  "static_checks": {
+    "html_contains_exact_tested_policy": true,
+    "no_external_script_src": true,
+    "no_form_network_submission": true,
+    "javascript_parses": true,
+    "literal_dom_references_resolve": true,
+    "unique_html_ids": true
+  },
+  "not_run": [
+    "Node CLI tests",
+    "browser rendering and interactions",
+    "hosted deployment",
+    "PNPK validator",
+    "end-to-end authorization or persistence",
+    "PDF generation"
+  ],
+  "offers_sent": 0,
+  "real_execution_authorized": false
+}
