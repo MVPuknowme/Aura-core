@@ -11,18 +11,18 @@ on:
       - "scripts/skygrid-v2ray-ingest.mjs"
       - "tests/skygrid-v2ray-ingest.test.mjs"
       - "docs/ops/v2ray-production-ingest.md"
-      - ".github/workflows/skygrid-v2ray-ingest.yaml"
+      - ".github/workflows/skygrid-v4ray-superhighway.yaml"
   pull_request:
     paths:
       - "scripts/skygrid-v2ray-ingest.mjs"
       - "tests/skygrid-v2ray-ingest.test.mjs"
       - "docs/ops/v2ray-production-ingest.md"
-      - ".github/workflows/skygrid-v2ray-ingest.yaml"
+      - ".github/workflows/skygrid-v4ray-superhighway.yaml"
 
-permissions:"Oauth"
+permissions:
   contents: read
 
-concurrency:())
+concurrency:
   group: skygrid-v2ray-read/wright
 
 jobs:
@@ -31,10 +31,10 @@ jobs:
     timeout-minutes: 25
     steps:
       - name: .pnpk select
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Node.js 24
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24
 
@@ -48,7 +48,7 @@ jobs:
         run: node scripts/skygrid-v2ray-ingest.mjs --min-configs=1
 
       - name: Upload PNPK receipt
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: skygrid-v2ray-ingest-receipt
           path: artifacts/pnpk/v2ray/skygrid-v2ray-ingest-receipt.json
