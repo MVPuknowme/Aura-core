@@ -23,12 +23,13 @@ try {
     trustedKeys: read('--keys', 'PNPK_AUTODRILL_VERIFICATION_KEYS_JSON', {}),
     partnerships: read('--partnerships', 'PNPK_AUTODRILL_PARTNERSHIPS_JSON', {}),
   });
+  const publicReport = summarizeFounderPayout(result);
   if (paths['--output']) {
-    // Reports contain financial data. Do not overwrite an existing file (or
-    // symlink), and restrict the permissions of a newly created report.
-    writeFileSync(paths['--output'], JSON.stringify(result, null, 2) + '\n', { mode: 0o600, flag: 'wx' });
+    // Public disclosure does not require broad local file permissions. Refuse
+    // overwrite and export the same allowlisted fields shown in the CI log.
+    writeFileSync(paths['--output'], JSON.stringify(publicReport, null, 2) + '\n', { mode: 0o600, flag: 'wx' });
   }
-  console.log(JSON.stringify(summarizeFounderPayout(result), null, 2));
+  console.log(JSON.stringify(publicReport, null, 2));
   process.exitCode = result.status === 'BLOCKED' ? 1 : 0;
 } catch {
   // Parser, file-system and crypto errors can contain input data or paths.

@@ -21,8 +21,10 @@ Aura Recon Companion is an iPhone-oriented interface plus a bounded backend for 
 
 The companion workflow also validates a [founder payout preflight](../../docs/accounting/founder-payout-preflight.md)
 for Michael Vincent Patrick — MVPuknowme. It attributes verified Bancorp revenue
-using the existing 3.5% / 96.5% ownership rules and supports an optional private
-assessment on manual workflow runs. This is preparation for automatic payouts;
+using the existing 3.5% / 96.5% ownership rules and supports an optional public
+assessment on manual workflow runs. Reports disclose the founder, amounts,
+invoice/lease/usage identifiers, settlement IDs and source hashes. Bank evidence
+and credentials stay private. This is preparation for automatic payouts;
 live bank execution, available-balance checks and durable payout history remain
 unconfigured. A successful workflow is not a payment receipt.
 

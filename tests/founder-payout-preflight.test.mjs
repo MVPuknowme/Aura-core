@@ -122,12 +122,54 @@ test('re-attestation preserves the allocation fingerprint but a changed receipt 
   assert.notEqual(prepareFounderPayout(f.input, f.options).allocation_fingerprint, original.allocation_fingerprint);
 });
 
-test('public summary omits amounts, business identifiers and source hashes', () => {
+test('public report discloses beneficiary, amounts and verified source references', () => {
   const { input, options } = fixture();
-  const summary = JSON.stringify(summarizeFounderPayout(prepareFounderPayout(input, options)));
-  for (const privateValue of ['10000', 'invoice-001', 'settlement-001', HASH, 'allocation_fingerprint']) {
-    assert.ok(!summary.includes(privateValue));
-  }
+  const report = summarizeFounderPayout(prepareFounderPayout(input, options));
+  assert.equal(report.report_visibility, 'public');
+  assert.equal(report.report_kind, 'payout_preflight_not_payment_receipt');
+  assert.equal(report.beneficiary.name, 'Michael Vincent Patrick');
+  assert.equal(report.founder_attributed_receipts_cents, '10000');
+  assert.equal(report.allocations[0].invoice_id, 'invoice-001');
+  assert.equal(report.allocations[0].lease_id, 'lease-001');
+  assert.equal(report.allocations[0].usage_id, 'usage-001');
+  assert.equal(report.allocations[0].sources[0].settlement_id, 'settlement-001');
+  assert.equal(report.allocations[0].sources[0].source_reference_hash, HASH);
+  assert.equal(report.allocations[0].sources[0].amount_cents, '10000');
+  assert.equal(report.payout_amount_cents, null);
+  assert.equal(report.funds_moved, false);
+});
+
+test('public reporting excludes arbitrary bank fields even from signed evidence', () => {
+  const { input, options, envelope } = fixture();
+  input.settlements = [envelope('settlement', {
+    ...input.settlements[0].payload,
+    account_number: 'private-account-canary',
+    routing_number: 'private-routing-canary',
+    bank_token: 'private-token-canary',
+    raw_statement: 'private-statement-canary',
+  })];
+  const result = prepareFounderPayout(input, options);
+  result.bank_token = 'private-internal-canary';
+  result.allocations[0].bank_token = 'private-allocation-canary';
+  result.allocations[0].sources[0].bank_token = 'private-source-canary';
+  const report = summarizeFounderPayout(result);
+  assert.equal(report.status, 'AWAITING_PAYOUT_CONFIGURATION');
+  const serialized = JSON.stringify(report);
+  assert.ok(!serialized.includes('private-'));
+  assert.ok(!serialized.includes('account_number'));
+  assert.ok(!serialized.includes('bank_token'));
+});
+
+test('invalid evidence cannot disclose its unverified amounts or references', () => {
+  const { input, options } = fixture();
+  input.settlements[0].payload.amount_cents = '987654321';
+  input.settlements[0].payload.settlement_id = 'unverified-identifier';
+  const report = summarizeFounderPayout(prepareFounderPayout(input, options));
+  assert.equal(report.status, 'BLOCKED');
+  assert.deepEqual(report.allocations, []);
+  const serialized = JSON.stringify(report);
+  assert.ok(!serialized.includes('987654321'));
+  assert.ok(!serialized.includes('unverified-identifier'));
 });
 
 const cli = new URL('../scripts/founder-payout-preflight.mjs', import.meta.url);
@@ -145,7 +187,7 @@ test('CLI holds missing/malformed inputs and does not log their contents', () =>
   assert.equal(runCli(['--execute']).status, 1);
 });
 
-test('CLI writes a private report, refuses overwrite, and only logs a redacted summary', () => {
+test('CLI writes and logs the same public report while refusing overwrite', () => {
   const dir = mkdtempSync(join(tmpdir(), 'founder-payout-test-'));
   try {
     const { input, options } = fixture({ now: Date.now() });
@@ -158,8 +200,12 @@ test('CLI writes a private report, refuses overwrite, and only logs a redacted s
     const result = runCli(args);
     assert.equal(result.status, 0, result.stderr);
     assert.equal(JSON.parse(result.stdout).status, 'AWAITING_PAYOUT_CONFIGURATION');
-    assert.ok(!result.stdout.includes('10000'));
-    assert.equal(JSON.parse(readFileSync(outPath, 'utf8')).founder_attributed_receipts_cents, '10000');
+    const logged = JSON.parse(result.stdout);
+    const written = JSON.parse(readFileSync(outPath, 'utf8'));
+    assert.deepEqual(written, logged);
+    assert.equal(logged.report_visibility, 'public');
+    assert.equal(logged.founder_attributed_receipts_cents, '10000');
+    assert.equal(logged.allocations[0].invoice_id, 'invoice-001');
     if (process.platform !== 'win32') assert.equal(statSync(outPath).mode & 0o777, 0o600);
     assert.equal(runCli(args).status, 1);
   } finally {

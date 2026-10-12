@@ -44,12 +44,19 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
-      - name: Prepare founder payout assessment
+      - name: Prepare public founder payout assessment
         env:
           SKYGRID_PAYOUT_EVIDENCE_JSON: ${{ secrets.SKYGRID_PAYOUT_EVIDENCE_JSON }}
           PNPK_AUTODRILL_VERIFICATION_KEYS_JSON: ${{ secrets.PNPK_AUTODRILL_VERIFICATION_KEYS_JSON }}
           PNPK_AUTODRILL_PARTNERSHIPS_JSON: ${{ secrets.PNPK_AUTODRILL_PARTNERSHIPS_JSON }}
-        run: node scripts/founder-payout-preflight.mjs
+        run: node scripts/founder-payout-preflight.mjs --output "$RUNNER_TEMP/founder-payout-public.json"
+      - name: Publish founder payout assessment
+        uses: actions/upload-artifact@v6
+        with:
+          name: founder-payout-public-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/founder-payout-public.json
+          if-no-files-found: error
+          retention-days: 30
 
   backend-tests:
     runs-on: ubuntu-latest

@@ -38,7 +38,28 @@ Successful reconciliation with a positive founder allocation returns
 receipts returns `NO_ATTRIBUTABLE_RECEIPTS`; missing/invalid evidence returns
 `BLOCKED`. No status means paid or approved to pay.
 
-## Private local assessment
+## Public payout reporting
+
+At the owner's request, the CLI and optional workflow assessment publish an
+allowlisted report marked `report_visibility: public`. It shows:
+
+- Michael Vincent Patrick — MVPuknowme as beneficiary, the currency and rail.
+- Exact founder-attributed receipt amounts and external capacity-owner dues.
+- Per-allocation receipt totals and the 3.5% / 96.5% ownership components.
+- Invoice, lease, usage and settlement identifiers, posting timestamps, source
+  reference hashes and allocation fingerprints.
+- Evidence status, outstanding integration gaps and explicit payment status.
+
+The report remains a preflight assessment. `payout_amount_cents` is null because
+no withdrawable amount or actual payment is established. Public visibility does
+not change verification or execution requirements.
+
+Raw statements, account/routing numbers, credentials, signatures and arbitrary
+extra input fields are excluded. The source contract supplies source-reference
+hashes; the reporter does not recover underlying bank references from hashes.
+Use business identifiers intended for public disclosure in the published fields.
+
+## Run an assessment
 
 With Node 24, prepare the actual signed evidence and verifier registry outside
 the repository. The registry contains public verification keys, not signing keys.
@@ -53,13 +74,14 @@ node scripts/founder-payout-preflight.mjs \
 
 `--partnerships` is optional for founder-owned capacity. The detailed report is
 created with mode `0600` and refuses to overwrite an existing file. On Windows,
-also use a directory with an appropriate private ACL. stdout contains only
-status, fixed failure codes and outstanding integration gaps. Input parsing and
-file errors do not print raw input or paths. Exit code 0 means reconciliation
+also use a directory with an appropriate private ACL. stdout contains the same
+public report as the output file, including amounts and business references.
+Input parsing and file errors do not print raw input or paths. Exit code 0 means reconciliation
 completed, **not** that payout execution is enabled; blocked input exits 1.
 
-Keep all financial input and reports outside source control. The module does
-not need raw account/routing numbers, wallet secrets or bank credentials.
+Keep raw financial input and credentials outside source control. The generated
+public report can be shared. The module does not need raw account/routing
+numbers, wallet secrets or bank credentials.
 
 ## Aura Recon workflow integration
 
@@ -85,9 +107,12 @@ restrictions, then add environment secrets:
 Environment naming alone does not configure reviewers or access protection.
 Do not place evidence in dispatch inputs or repository variables. GitHub's
 secret size limits apply; larger batches should use the private local command.
-The workflow publishes only the redacted summary and uploads no financial
-artifact. Pull requests cannot run the evidence job or receive its secrets.
-The evidence is a supplied snapshot, not an automatic bank feed.
+The workflow logs the public report and uploads `founder-payout-public.json`
+as a run-specific artifact retained for 30 days. Only that exact generated file
+is uploaded; source evidence and verifier configuration are excluded. GitHub's
+normal log masking and artifact-access rules still apply. Pull requests cannot
+run the evidence job or receive its secrets. The evidence is a supplied snapshot,
+not an automatic bank feed. No live evidence has been supplied by this change.
 
 ## Remaining work before automatic payouts
 
