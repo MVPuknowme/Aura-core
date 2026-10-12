@@ -11,6 +11,11 @@ on:
       - 'tests/autodrill-lease-use.test.mjs'
       - 'tests/founder-payout-preflight.test.mjs'
       - 'docs/accounting/founder-payout-preflight.md'
+      - 'config/pnpk-exchange-preflight.v1.json'
+      - 'src/intelligence/market-exchange-preflight.mjs'
+      - 'scripts/exchange-preflight.mjs'
+      - 'tests/market-exchange-preflight.test.mjs'
+      - 'docs/integrations/pnpk-exchange-preflight.md'
       - '.github/workflows/aura-recon-companion.yml'
   workflow_dispatch:
 
@@ -26,7 +31,7 @@ jobs:
         with:
           node-version: '24'
       - name: Verify founder revenue attribution and payout holds
-        run: node --test tests/autodrill-lease-use.test.mjs tests/founder-payout-preflight.test.mjs
+        run: node --test tests/autodrill-lease-use.test.mjs tests/founder-payout-preflight.test.mjs tests/market-exchange-preflight.test.mjs
 
   # Opt-in preparation only. No bank adapter, signing key, schedule or payout
   # execution is configured here. PR jobs never receive financial evidence.
@@ -44,6 +49,19 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
+      - name: Evaluate configured exchange preflight
+        id: exchange
+        env:
+          PNPK_EXCHANGE_PREFLIGHT_JSON: ${{ secrets.PNPK_EXCHANGE_PREFLIGHT_JSON }}
+        run: node scripts/exchange-preflight.mjs --output "$RUNNER_TEMP/exchange-preflight-public.json"
+      - name: Publish exchange preflight receipt
+        if: ${{ !cancelled() && (steps.exchange.outcome == 'success' || steps.exchange.outcome == 'failure') }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: exchange-preflight-public-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/exchange-preflight-public.json
+          if-no-files-found: error
+          retention-days: 30
       - name: Prepare public founder payout assessment
         env:
           SKYGRID_PAYOUT_EVIDENCE_JSON: ${{ secrets.SKYGRID_PAYOUT_EVIDENCE_JSON }}

@@ -1,6 +1,17 @@
 {
   "schema": "pnpk.exchange-preflight-policy.v1",
   "mode": "fail_closed",
+  "approved_providers": [],
+  "approved_route_networks": [],
+  "vpn_required": false,
+  "reporting": {
+    "visibility": "public",
+    "beneficiary": {
+      "id": "michael-vincent-patrick",
+      "name": "Michael Vincent Patrick",
+      "github": "MVPuknowme"
+    }
+  },
   "applies_before": [
     "currency_exchange",
     "token_swap",
@@ -13,6 +24,8 @@
     "tls_valid",
     "clock_synchronized",
     "provider_healthy",
+    "provider_authorized",
+    "route_network_authorized",
     "vpn_policy",
     "asset_supported",
     "venue_available",

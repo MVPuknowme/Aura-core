@@ -103,6 +103,13 @@ restrictions, then add environment secrets:
 - `SKYGRID_PAYOUT_EVIDENCE_JSON`: a current, independently verified signed batch.
 - `PNPK_AUTODRILL_VERIFICATION_KEYS_JSON`: the operator's verifier registry.
 - `PNPK_AUTODRILL_PARTNERSHIPS_JSON`: optional verified partnership registry.
+- `PNPK_EXCHANGE_PREFLIGHT_JSON`: current exchange health/market/quote observations
+  for the [configured exchange preflight](../integrations/pnpk-exchange-preflight.md).
+
+The exchange preflight runs first and publishes a public receipt. Its configured
+provider and network allowlists must match the intended route; they default
+empty because no venue/network was selected. A held exchange route skips the
+founder assessment. This route check does not verify a bank payout destination.
 
 Environment naming alone does not configure reviewers or access protection.
 Do not place evidence in dispatch inputs or repository variables. GitHub's
