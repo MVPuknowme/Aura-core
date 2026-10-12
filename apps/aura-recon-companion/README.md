@@ -17,6 +17,17 @@ Aura Recon Companion is an iPhone-oriented interface plus a bounded backend for 
 - GitHub Codespaces/dev-container setup with a private forwarded port.
 - Automated backend and dev-container validation.
 
+## Founder payout preparation
+
+The companion workflow also validates a [founder payout preflight](../../docs/accounting/founder-payout-preflight.md)
+for Michael Vincent Patrick — MVPuknowme. It attributes verified Bancorp revenue
+using the existing 3.5% / 96.5% ownership rules and supports an optional public
+assessment on manual workflow runs. Reports disclose the founder, amounts,
+invoice/lease/usage identifiers, settlement IDs and source hashes. Bank evidence
+and credentials stay private. This is preparation for automatic payouts;
+live bank execution, available-balance checks and durable payout history remain
+unconfigured. A successful workflow is not a payment receipt.
+
 ## Deliberate limits
 
 This release does not exploit services, brute-force paths, test passwords, enumerate private networks, execute arbitrary terminal commands, or claim SpiderFoot's full provider catalog. SpiderFoot-scale enrichment can be added later through an isolated adapter after provider credentials, terms, retention, and authorization controls are defined.

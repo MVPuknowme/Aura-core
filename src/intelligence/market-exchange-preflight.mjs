@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import configuredPolicy from "../../config/pnpk-exchange-preflight.v1.json" with { type: "json" };
 
 function bool(value, field) {
   if (value !== true && value !== false) throw new Error(`${field}_invalid`);
@@ -29,7 +30,17 @@ function digest(value) {
   return `sha256:${createHash("sha256").update(JSON.stringify(stable(value))).digest("hex")}`;
 }
 
-export function evaluateExchangePreflight(input = {}, now = new Date()) {
+// trustedPolicy is server/operator configuration, never a request-body field.
+export function evaluateExchangePreflight(input = {}, now = new Date(), trustedPolicy = configuredPolicy) {
+  if (!(now instanceof Date) || !Number.isFinite(now.getTime())) throw new Error("clock_invalid");
+  if (trustedPolicy?.schema !== "pnpk.exchange-preflight-policy.v1" || trustedPolicy.mode !== "fail_closed") {
+    throw new Error("exchange_policy_invalid");
+  }
+  for (const field of ["approved_providers", "approved_route_networks"]) {
+    if (!Array.isArray(trustedPolicy[field]) || trustedPolicy[field].some(value => typeof value !== "string" || !value.trim())) {
+      throw new Error("exchange_allowlist_invalid");
+    }
+  }
   const intentId = text(input.intentId, "intent_id");
   const routeNetworkId = text(input.routeNetworkId, "route_network_id");
   const assetPair = text(input.assetPair, "asset_pair");
@@ -39,6 +50,7 @@ export function evaluateExchangePreflight(input = {}, now = new Date()) {
   const vpn = input.vpn ?? {};
   const quote = input.quote ?? {};
   const market = input.market ?? {};
+  const policyVpnRequired = bool(trustedPolicy.vpn_required, "policy_vpn_required");
 
   const checks = {
     network_reachable: bool(network.reachable, "network_reachable"),
@@ -46,7 +58,9 @@ export function evaluateExchangePreflight(input = {}, now = new Date()) {
     tls_valid: bool(network.tlsValid, "tls_valid"),
     clock_synchronized: bool(network.clockSynchronized, "clock_synchronized"),
     provider_healthy: bool(network.providerHealthy, "provider_healthy"),
-    vpn_required: bool(vpn.required, "vpn_required"),
+    provider_authorized: trustedPolicy.approved_providers.includes(provider),
+    route_network_authorized: trustedPolicy.approved_route_networks.includes(routeNetworkId),
+    vpn_required: bool(vpn.required, "vpn_required") || policyVpnRequired,
     vpn_present: bool(vpn.present, "vpn_present"),
     vpn_route_valid: bool(vpn.routeValid, "vpn_route_valid"),
     vpn_dns_leak_check_passed: bool(vpn.dnsLeakCheckPassed, "vpn_dns_leak_check_passed"),
@@ -56,11 +70,17 @@ export function evaluateExchangePreflight(input = {}, now = new Date()) {
   };
 
   const quoteAgeMs = finiteNonnegative(quote.ageMs, "quote_age_ms");
-  const maxQuoteAgeMs = finiteNonnegative(input.policy?.maxQuoteAgeMs ?? 5000, "max_quote_age_ms");
+  const maxQuoteAgeMs = effectiveLimit("maxQuoteAgeMs", "max_quote_age_ms");
   const slippageBps = finiteNonnegative(quote.slippageBps, "slippage_bps");
-  const maxSlippageBps = finiteNonnegative(input.policy?.maxSlippageBps ?? 50, "max_slippage_bps");
+  const maxSlippageBps = effectiveLimit("maxSlippageBps", "max_slippage_bps");
   const priceImpactBps = finiteNonnegative(quote.priceImpactBps, "price_impact_bps");
-  const maxPriceImpactBps = finiteNonnegative(input.policy?.maxPriceImpactBps ?? 100, "max_price_impact_bps");
+  const maxPriceImpactBps = effectiveLimit("maxPriceImpactBps", "max_price_impact_bps");
+
+  function effectiveLimit(inputField, policyField) {
+    const configured = finiteNonnegative(trustedPolicy.default_limits?.[policyField], policyField);
+    const requested = finiteNonnegative(input.policy?.[inputField] ?? configured, inputField);
+    return Math.min(configured, requested);
+  }
 
   const failures = [];
   for (const [name, passed] of Object.entries(checks)) {
@@ -81,6 +101,14 @@ export function evaluateExchangePreflight(input = {}, now = new Date()) {
     route_network_id: routeNetworkId,
     asset_pair: assetPair,
     provider,
+    report_visibility: "public",
+    beneficiary: {
+      id: text(trustedPolicy.reporting?.beneficiary?.id, "beneficiary_id"),
+      name: text(trustedPolicy.reporting?.beneficiary?.name, "beneficiary_name"),
+      github: text(trustedPolicy.reporting?.beneficiary?.github, "beneficiary_github"),
+    },
+    policy_hash: digest(trustedPolicy),
+    evidence_scope: "caller-supplied observations; not independent venue or bank verification",
     observed_at: now.toISOString(),
     decision,
     failures,

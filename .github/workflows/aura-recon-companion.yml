@@ -5,6 +5,17 @@ on:
     paths:
       - '.devcontainer/**'
       - 'apps/aura-recon-companion/**'
+      - 'lib/autodrill-lease-use.mjs'
+      - 'lib/founder-payout-preflight.mjs'
+      - 'scripts/founder-payout-preflight.mjs'
+      - 'tests/autodrill-lease-use.test.mjs'
+      - 'tests/founder-payout-preflight.test.mjs'
+      - 'docs/accounting/founder-payout-preflight.md'
+      - 'config/pnpk-exchange-preflight.v1.json'
+      - 'src/intelligence/market-exchange-preflight.mjs'
+      - 'scripts/exchange-preflight.mjs'
+      - 'tests/market-exchange-preflight.test.mjs'
+      - 'docs/integrations/pnpk-exchange-preflight.md'
       - '.github/workflows/aura-recon-companion.yml'
   workflow_dispatch:
 
@@ -12,6 +23,59 @@ permissions:
   contents: read
 
 jobs:
+  payout-preflight-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Verify founder revenue attribution and payout holds
+        run: node --test tests/autodrill-lease-use.test.mjs tests/founder-payout-preflight.test.mjs tests/market-exchange-preflight.test.mjs
+
+  # Opt-in preparation only. No bank adapter, signing key, schedule or payout
+  # execution is configured here. PR jobs never receive financial evidence.
+  founder-payout-preflight:
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.repository == 'MVPuknowme/Aura-core' &&
+      github.ref == 'refs/heads/MVPuknowme' &&
+      vars.AURA_RECON_PAYOUT_PREFLIGHT_ENABLED == 'true'
+    needs: [backend-tests, devcontainer-smoke, payout-preflight-tests]
+    runs-on: ubuntu-latest
+    environment: aura-recon-payout-preflight
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Evaluate configured exchange preflight
+        id: exchange
+        env:
+          PNPK_EXCHANGE_PREFLIGHT_JSON: ${{ secrets.PNPK_EXCHANGE_PREFLIGHT_JSON }}
+        run: node scripts/exchange-preflight.mjs --output "$RUNNER_TEMP/exchange-preflight-public.json"
+      - name: Publish exchange preflight receipt
+        if: ${{ !cancelled() && (steps.exchange.outcome == 'success' || steps.exchange.outcome == 'failure') }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: exchange-preflight-public-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/exchange-preflight-public.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Prepare public founder payout assessment
+        env:
+          SKYGRID_PAYOUT_EVIDENCE_JSON: ${{ secrets.SKYGRID_PAYOUT_EVIDENCE_JSON }}
+          PNPK_AUTODRILL_VERIFICATION_KEYS_JSON: ${{ secrets.PNPK_AUTODRILL_VERIFICATION_KEYS_JSON }}
+          PNPK_AUTODRILL_PARTNERSHIPS_JSON: ${{ secrets.PNPK_AUTODRILL_PARTNERSHIPS_JSON }}
+        run: node scripts/founder-payout-preflight.mjs --output "$RUNNER_TEMP/founder-payout-public.json"
+      - name: Publish founder payout assessment
+        uses: actions/upload-artifact@v6
+        with:
+          name: founder-payout-public-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/founder-payout-public.json
+          if-no-files-found: error
+          retention-days: 30
+
   backend-tests:
     runs-on: ubuntu-latest
     defaults:
