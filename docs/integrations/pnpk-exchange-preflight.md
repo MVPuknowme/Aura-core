@@ -27,8 +27,11 @@ limits are 5,000 ms quote age, 50 bps slippage and 100 bps price impact. Request
 policy can tighten those limits but cannot raise them. When the operator sets
 `vpn_required: true`, a request cannot switch off the VPN checks.
 
-`approved_providers` and `approved_route_networks` are intentionally empty until
-the owner identifies the actual venue and network. Empty lists hold all routes;
+The owner selected **Base mainnet**, so `approved_route_networks` contains only
+`eip155:8453` (chain ID 8453). See the [Base chain-ID reference](https://docs.base.org/base-chain/api-reference/ethereum-json-rpc-api/eth_chainId).
+Base Sepolia and other networks are not authorized by this selection.
+`approved_providers` remains empty until the owner identifies the actual venue.
+Base identifies the network; it does not select an exchange provider. Empty provider lists hold all routes;
 the caller cannot authorize a venue by placing an allowlist in its request.
 The evaluator's third argument is reserved for trusted server configuration;
 never populate it from a request. No exchange or bank credentials are stored

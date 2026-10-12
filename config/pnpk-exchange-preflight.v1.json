@@ -2,7 +2,7 @@
   "schema": "pnpk.exchange-preflight-policy.v1",
   "mode": "fail_closed",
   "approved_providers": [],
-  "approved_route_networks": [],
+  "approved_route_networks": ["eip155:8453"],
   "vpn_required": false,
   "reporting": {
     "visibility": "public",

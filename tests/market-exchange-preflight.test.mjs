@@ -84,11 +84,20 @@ test("does not claim impossible guarantees", () => {
   assert.equal(out.guarantees.guarantees_loss_free_exchange, false);
 });
 
-test("checked-in configuration holds routes until provider and network are selected", () => {
+test("checked-in configuration allows Base mainnet but awaits provider selection", () => {
   const out = evaluateExchangePreflight(valid());
   assert.equal(out.decision, "FAIL_CLOSED");
   assert.ok(out.failures.includes("provider_authorized"));
-  assert.ok(out.failures.includes("route_network_authorized"));
+  assert.equal(out.observations.checks.route_network_authorized, true);
+  assert.ok(!out.failures.includes("route_network_authorized"));
+});
+
+test("Base selection does not authorize Ethereum mainnet or Base Sepolia", () => {
+  for (const routeNetworkId of ["eip155:1", "eip155:84532"]) {
+    const out = evaluateExchangePreflight(valid({ routeNetworkId }));
+    assert.equal(out.decision, "FAIL_CLOSED");
+    assert.ok(out.failures.includes("route_network_authorized"));
+  }
 });
 
 test("request policy cannot raise configured quote and market risk limits", () => {

@@ -107,8 +107,9 @@ restrictions, then add environment secrets:
   for the [configured exchange preflight](../integrations/pnpk-exchange-preflight.md).
 
 The exchange preflight runs first and publishes a public receipt. Its configured
-provider and network allowlists must match the intended route; they default
-empty because no venue/network was selected. A held exchange route skips the
+provider and network allowlists must match the intended route. Base mainnet
+(`eip155:8453`) is selected; the provider allowlist remains empty pending venue
+selection. A held exchange route skips the
 founder assessment. This route check does not verify a bank payout destination.
 
 Environment naming alone does not configure reviewers or access protection.
