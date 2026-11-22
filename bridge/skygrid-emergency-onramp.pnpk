@@ -5,6 +5,13 @@
   "operator": "MVPuknowme",
   "mode": "controlled_pilot",
   "sentinel": "fail_closed",
+  "runtime": {
+    "engine": "node",
+    "version": "27.0.0-alpha.0.1.1",
+    "channel": "alpha",
+    "scope": "pnpk_postbuild_validation",
+    "label": "partition via Auto-Drill"
+  },
   "runtime_policy": {
     "payment_execution": false,
     "device_activation": false,
