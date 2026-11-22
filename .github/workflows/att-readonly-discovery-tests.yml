@@ -1,0 +1,21 @@
+name: AT&T public discovery adapter tests
+on:
+  pull_request:
+    paths:
+      - 'lib/att-readonly-discovery.mjs'
+      - 'scripts/att-readonly-discovery.mjs'
+      - 'tests/att-readonly-discovery.test.mjs'
+      - '.github/workflows/att-readonly-discovery-tests.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  synthetic-unit-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --test tests/att-readonly-discovery.test.mjs
