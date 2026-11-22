@@ -75,10 +75,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Setup Node 24
+      - name: Read PNPK alpha runtime
+        id: runtime
+        shell: pwsh
+        run: |
+          $runtime = (Get-Content -Raw bridge/skygrid-emergency-onramp.pnpk | ConvertFrom-Json).runtime
+          if ($runtime.engine -cne 'node' -or $runtime.channel -cne 'alpha' -or $runtime.scope -cne 'pnpk_postbuild_validation') {
+            throw 'PNPK requires a Node.js alpha runtime scoped to post-build validation'
+          }
+          if ($runtime.version -cnotmatch '^\d+\.\d+\.\d+-alpha\.\d+(\.\d+)*$') {
+            throw 'PNPK alpha runtime must pin an exact prerelease version'
+          }
+          "node-version=$($runtime.version)" >> $env:GITHUB_OUTPUT
+
+      - name: Setup Node.js Alpha for partition via Auto-Drill
         uses: actions/setup-node@v6
         with:
-          node-version: "24"
+          node-version: ${{ steps.runtime.outputs.node-version }}
+
+      - name: Verify pinned alpha runtime
+        run: node --input-type=module -e 'import fs from "node:fs"; import assert from "node:assert/strict"; const runtime = JSON.parse(fs.readFileSync("bridge/skygrid-emergency-onramp.pnpk", "utf8")).runtime; assert.equal(process.versions.node, runtime.version); console.log(process.version);'
 
       - name: Unit-test PNPK adapter
         run: node --test tests/pnpk-postbuild.test.mjs tests/skygrid-intake-policy-core.test.mjs tests/pnpk-production-relight-preflight.test.mjs tests/pnpk-production-hardening.test.mjs
