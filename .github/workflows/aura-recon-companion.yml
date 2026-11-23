@@ -8,6 +8,17 @@ on:
       - 'apps/speak/**'
       - 'tests/speak-review-lock.test.mjs'
       - 'package.json'
+      - 'lib/autodrill-lease-use.mjs'
+      - 'lib/founder-payout-preflight.mjs'
+      - 'scripts/founder-payout-preflight.mjs'
+      - 'tests/autodrill-lease-use.test.mjs'
+      - 'tests/founder-payout-preflight.test.mjs'
+      - 'docs/accounting/founder-payout-preflight.md'
+      - 'config/pnpk-exchange-preflight.v1.json'
+      - 'src/intelligence/market-exchange-preflight.mjs'
+      - 'scripts/exchange-preflight.mjs'
+      - 'tests/market-exchange-preflight.test.mjs'
+      - 'docs/integrations/pnpk-exchange-preflight.md'
       - '.github/workflows/aura-recon-companion.yml'
   workflow_dispatch:
 
@@ -18,16 +29,87 @@ jobs:
   runtime-policy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: '24.x'
           package-manager-cache: false
-      - name: Enforce repository and Jaxon runtime policy
+      - name: Enforce repository Node 24.x and check devcontainer pins
         run: |
-          set -eu
-          test "$(node -p 'process.versions.node.split(".")[0]')" = 24
-          node -e 'const assert = require("node:assert/strict"); const fs = require("node:fs"); const pkg = JSON.parse(fs.readFileSync("package.json", "utf8")); const config = JSON.parse(fs.readFileSync(".devcontainer/jaxons-aura/devcontainer.json", "utf8")); assert.equal(pkg.engines.node, "24.x", "repository engine policy must remain Node 24.x"); assert.equal(config.features["ghcr.io/devcontainers/features/node:2"].version, "22", "Jaxon’s aura must remain on Node 22");'
+          node --input-type=commonjs <<'NODE'
+          const assert = require("node:assert/strict");
+          const { readFileSync } = require("node:fs");
+          const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
+          const nodeFeature = "ghcr.io/devcontainers/features/node:2";
+
+          assert.equal(process.versions.node.split(".")[0], "24", "Root CI must run Node 24.x");
+          assert.equal(readJson("package.json").engines?.node, "24.x", "Root engines.node must be 24.x");
+
+          const jaxon = readJson(".devcontainer/jaxons-aura/devcontainer.json");
+          assert.equal(jaxon.features?.[nodeFeature]?.version, "22", "Jaxon’s aura must pin Node 22");
+
+          const defaultConfig = readJson(".devcontainer/devcontainer.json");
+          const defaultNode = defaultConfig.features?.[nodeFeature]?.version;
+          // The owner pinned Node 20 in e1ab96f. Root tooling still requires Node 24.x.
+          if (defaultNode === "20") {
+            console.log("::warning file=.devcontainer/devcontainer.json::The default devcontainer pins Node 20. Root tooling requires Node 24.x.");
+          } else {
+            assert.equal(defaultNode, "24", "The default devcontainer must pin Node 24 or the existing Node 20 exception");
+          }
+          NODE
+
+  payout-preflight-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Verify founder revenue attribution and payout holds
+        run: node --test tests/autodrill-lease-use.test.mjs tests/founder-payout-preflight.test.mjs tests/market-exchange-preflight.test.mjs
+
+  # Opt-in preparation only. No bank adapter, signing key, schedule or payout
+  # execution is configured here. PR jobs never receive financial evidence.
+  founder-payout-preflight:
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.repository == 'MVPuknowme/Aura-core' &&
+      github.ref == 'refs/heads/MVPuknowme' &&
+      vars.AURA_RECON_PAYOUT_PREFLIGHT_ENABLED == 'true'
+    needs: [backend-tests, devcontainer-smoke, payout-preflight-tests]
+    runs-on: ubuntu-latest
+    environment: aura-recon-payout-preflight
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Evaluate configured exchange preflight
+        id: exchange
+        env:
+          PNPK_EXCHANGE_PREFLIGHT_JSON: ${{ secrets.PNPK_EXCHANGE_PREFLIGHT_JSON }}
+        run: node scripts/exchange-preflight.mjs --output "$RUNNER_TEMP/exchange-preflight-public.json"
+      - name: Publish exchange preflight receipt
+        if: ${{ !cancelled() && (steps.exchange.outcome == 'success' || steps.exchange.outcome == 'failure') }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: exchange-preflight-public-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/exchange-preflight-public.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Prepare public founder payout assessment
+        env:
+          SKYGRID_PAYOUT_EVIDENCE_JSON: ${{ secrets.SKYGRID_PAYOUT_EVIDENCE_JSON }}
+          PNPK_AUTODRILL_VERIFICATION_KEYS_JSON: ${{ secrets.PNPK_AUTODRILL_VERIFICATION_KEYS_JSON }}
+          PNPK_AUTODRILL_PARTNERSHIPS_JSON: ${{ secrets.PNPK_AUTODRILL_PARTNERSHIPS_JSON }}
+        run: node scripts/founder-payout-preflight.mjs --output "$RUNNER_TEMP/founder-payout-public.json"
+      - name: Publish founder payout assessment
+        uses: actions/upload-artifact@v6
+        with:
+          name: founder-payout-public-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/founder-payout-public.json
+          if-no-files-found: error
+          retention-days: 30
 
   backend-tests:
     runs-on: ubuntu-latest
@@ -35,8 +117,8 @@ jobs:
       run:
         working-directory: apps/aura-recon-companion/backend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
           cache: pip
@@ -51,7 +133,7 @@ jobs:
   devcontainer-smoke:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: devcontainers/ci@v0.3
         with:
           configFile: .devcontainer/aura-recon-companion/devcontainer.json

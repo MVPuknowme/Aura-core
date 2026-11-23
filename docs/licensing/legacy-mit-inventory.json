@@ -1,0 +1,159 @@
+{
+  "source_archive": "Aura-core-MVPuknowme-app.zip",
+  "source_archive_sha256": "7e9c94ac3f5349381d5406ec01f4345b31d0ecf9ffc5f5f17d0592463361dd9b",
+  "original_license": "MIT; Copyright (c) 2026 Michael Vincent Patrick",
+  "files": [
+    {
+      "path": "Aura-core-MVPuknowme/aura_core_sync.py",
+      "sha256": "ccaf643f2b296ab4fc955b0bcb301c6eb8711c1e51800f23ab2ca94411273dd7"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/app.py",
+      "sha256": "a0d7c9b94ea893430f91573161fb8e7ca9b953acf886ccc550e9a9d92f0aecd1"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/requirements.txt",
+      "sha256": "56970dccfe04b512557a71fedaf953516ff21c9c1f75e39bc7b40d854084e8e2"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/.devcontainer/yarn",
+      "sha256": "61e4061ba8487fc7344d10470e673c01535b0adc072ccc62131d856599b8207e"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/.devcontainer/yarn.lock",
+      "sha256": "50149e75eaf12160e828a460303d67c031c2044d1e12297d4949068e7606d106"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/.devcontainer/devcontainer.json",
+      "sha256": "8f09f9719d2acc3987334bb2c754df0bdf129929ca35e7c67f5b4c6aa54882d1"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/wallet connect",
+      "sha256": "f3a4e14372fa4ebd172d690a34c1b2ea1d3c9224b08ad366ba7fc71511412657"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/templates/index.html",
+      "sha256": "415e7fe91c32270fd570499e5c49f8ea7db8c3808f9225514208e13f05277a39"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/LICENSE",
+      "sha256": "4662712b545ec1b3ab34bdfcea877284a845077910c1c38d342426fdc395c636"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/aura-core synce.py",
+      "sha256": "27eea659381ba5d266823da038db2826af3212beb855ee9775e28f671edc6124"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/docs/analytics/getting-started.md",
+      "sha256": "14a649fa0fd888dfb7e50fb2251e52252fdf07ca7ecd0a41d4f49dd3589c8e3c"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/docs/README.md",
+      "sha256": "29791f6af86ce16fcb26b42694ee33462136141bfea1882d99b5c5a59b2ef3a6"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/real_time_frequency_detection.py",
+      "sha256": "70d01ba3e8001427f71f165a1e3919d0327be562a953b69833ad8a343c99d9b6"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/aura bridge",
+      "sha256": "699a779cc110b4a0f5d1c17a1e8ece2212097472f57396626a7e787eeafd039b"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/.github/self assistance",
+      "sha256": "b2a6a51f6cb570a3a8f4dd46e1f14555fea789adbec3d1a12267df75a6f2d9a4"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/.github/introducing introspection schema",
+      "sha256": "3079d8d5d08b9741e8a7d86fed2c528bc8b8794abd309184009b830f6d3c38bc"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/.github/iOS biometrics",
+      "sha256": "770cf35cf919e13169081c5473d761b37421a9e0980cc12dbc93dfbbf5dd061b"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/.github/workflows/azure-webapps-node.yml",
+      "sha256": "ee6279f23c7b4053bb090060d003475a68bd5858eeb504cee2d8a109ed861fbc"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/.github/workflows/blank.yml",
+      "sha256": "1a262e55452f0dc585bc7f11eeb9b9167cb08ac25fe3f0f363b4000ecb25411a"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/.github/workflows/dashboard",
+      "sha256": "49aa74cb639fec74cb9d9e7262d9e4bc6deb169bcb7afe054d82db7e42f50000"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/.github/workflows/summary.yml",
+      "sha256": "13d406a70938ecac4852d4d6073755a393d07baf5ebd60e1d0df6d7dabe0af3b"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/.github/workflows/MVPuknowme work",
+      "sha256": "540c85b0977ceb83f4f3fd7cb9a23b340bdcfd1825bd566bbe3dcf6ca6d29378"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/.github/bridge",
+      "sha256": "2e6f26bfdc3d5a4c02f30cbc164304be93202d5830518b540bf7b25f27306e8b"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/.github/funding",
+      "sha256": "0494112374fe11f16d2865225a31506787c8efaecaeacd9983cdf39dd9f53439"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/SECURITY.md",
+      "sha256": "efdd8e5cfc8144abe417ef586b9614227f775472901b05848f5ebab8bf10c6a3"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/readme",
+      "sha256": "8a4eb78b23d63aa9a28229d4b9d19e02467ed9f7eff4578a3b628299565c0bf2"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/paid in/out",
+      "sha256": "5a8399341b0ba1472dce10178f27ef71061666e6417841036d23624e3ea067fc"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/orchastrator/dockerfile",
+      "sha256": "f52c5116a1fd3fb4ed3394539fa324b4ac5b2d4aae7945be569fde33a39cb4b8"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/sun-pay/cloud",
+      "sha256": "b57070ea7f522952bef04b529fabb42a86e6b2b9e392851af3add615aca99fb4"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/sun-pay/postman collection run \\   --collection-id 50503657-a707e1c9-cebc-4819-9ff3-952973e5f0a7",
+      "sha256": "636b056c0ad23c80d74e8450636c13cbb5912f0b0aa2cf4de5255780ff1b0bec"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/runner",
+      "sha256": "a92eca00c7255b37f67fec81090d43e3fc0292904fcbd99cf66dc576ab2bfbb1"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/worker",
+      "sha256": "dae37b5b788553c4e326f1d45bd017c924671efb92694b83606706db9d82ca30"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/all",
+      "sha256": "96b4ba6549598c4e9637f339fd566d68a51ec659d1d19acf697931bbd4b44296"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/suite",
+      "sha256": "ecd5441cc70ca5f49faf7f42af8d84db7d048b8aa68b27841dd4fd8277501dbf"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/test_patch.txt",
+      "sha256": "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/orchestrate",
+      "sha256": "843ef95e0e2565ccb052de27c1b16aabdee83d3d2f7d2dfc9fcf4335727f2a52"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/__pycache__/real_time_frequency_detection.cpython-313.pyc",
+      "sha256": "7231fda1e82718667520fc474309e5a348a5d0fad53257a32e9b7ee02f1e1ea2"
+    },
+    {
+      "path": "Aura-core-MVPuknowme/facial recognition safety",
+      "sha256": "8c5cc10bd4a4305b769314157bf7031c16f8ed9f199f4a97ccfcb2b6b6bbd814"
+    }
+  ]
+}

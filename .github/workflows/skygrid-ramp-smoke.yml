@@ -31,7 +31,7 @@ jobs:
       SKYGRID_ROUTE_CHECK_TIMEOUT_MS: 15000
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install dependencies
         run: npm install --no-audit --no-fund --legacy-peer-deps

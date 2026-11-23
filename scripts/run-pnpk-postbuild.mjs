@@ -1,13 +1,14 @@
 import { createHash } from "node:crypto";
 import { spawn } from "node:child_process";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, open } from "node:fs/promises";
+import { constants } from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { validateAccessTransparencyPolicy } from "./pnpk-access-transparency-policy.mjs";
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const DEFAULT_PNPK_PATH = "bridge/skygrid-emergency-onramp.pnpk";
 const REQUIRED_RECEIPT_PATH = "artifacts/pnpk/proofs/postbuild-latest.json";
-const OUTPUT_LIMIT = 64 * 1024;
 
 export const REQUIRED_STEP_IDS = Object.freeze([
   "pnpk_validate",
@@ -77,11 +78,6 @@ export function validatePostBuildPolicy(pnpk) {
   return pipeline;
 }
 
-function appendLimited(current, chunk) {
-  if (current.length >= OUTPUT_LIMIT) return current;
-  return (current + String(chunk)).slice(0, OUTPUT_LIMIT);
-}
-
 function childEnvironment(pnpkPath) {
   const env = {
     CI: "true",
@@ -114,27 +110,21 @@ async function spawnAllowlistedStep(stepId, { root, pnpkPath }) {
       shell: false,
       windowsHide: true,
       env: childEnvironment(pnpkPath),
-      stdio: ["ignore", "pipe", "pipe"]
+      stdio: ["ignore", "ignore", "ignore"]
     });
 
-    let stdout = "";
-    let stderr = "";
     let timedOut = false;
     const timeout = setTimeout(() => {
       timedOut = true;
       child.kill("SIGKILL");
     }, 30_000);
 
-    child.stdout.on("data", (chunk) => { stdout = appendLimited(stdout, chunk); });
-    child.stderr.on("data", (chunk) => { stderr = appendLimited(stderr, chunk); });
-    child.on("error", (error) => {
+    child.on("error", () => {
       clearTimeout(timeout);
       resolve({
         ok: false,
         exit_code: null,
-        timed_out: timedOut,
-        stdout,
-        stderr: appendLimited(stderr, error.message)
+        timed_out: timedOut
       });
     });
     child.on("close", (code) => {
@@ -142,9 +132,7 @@ async function spawnAllowlistedStep(stepId, { root, pnpkPath }) {
       resolve({
         ok: code === 0 && !timedOut,
         exit_code: code,
-        timed_out: timedOut,
-        stdout,
-        stderr
+        timed_out: timedOut
       });
     });
   });
@@ -161,6 +149,7 @@ export async function runPostBuild({
   const raw = await readFile(absolutePnpkPath, "utf8");
   const pnpk = JSON.parse(raw);
   const pipeline = validatePostBuildPolicy(pnpk);
+  validateAccessTransparencyPolicy(pnpk);
   const absoluteReceiptPath = path.resolve(
     receiptPath || path.join(root, pipeline.receipt_path)
   );
@@ -169,18 +158,23 @@ export async function runPostBuild({
 
   for (const step of pipeline.steps) {
     const stepStartedAt = now();
-    const result = await executeStep(step.id, {
-      root,
-      pnpkPath: absolutePnpkPath
-    });
+    let result;
+    try {
+      result = await executeStep(step.id, { root, pnpkPath: absolutePnpkPath });
+    } catch {
+      result = { ok: false, exit_code: null, timed_out: false };
+    }
+    const stepOk = result?.ok === true && result?.exit_code === 0 && result?.timed_out === false;
     results.push({
       id: step.id,
       required: true,
       started_at: stepStartedAt,
       completed_at: now(),
-      ...result
+      ok: stepOk,
+      exit_code: Number.isInteger(result?.exit_code) ? result.exit_code : null,
+      timed_out: result?.timed_out === true
     });
-    if (!result.ok) break;
+    if (!stepOk) break;
   }
 
   const ok = results.length === pipeline.steps.length && results.every((result) => result.ok);
@@ -202,10 +196,18 @@ export async function runPostBuild({
   };
 
   await mkdir(path.dirname(absoluteReceiptPath), { recursive: true });
-  await writeFile(absoluteReceiptPath, `${JSON.stringify(receipt, null, 2)}\n`, {
-    encoding: "utf8",
-    mode: 0o600
-  });
+  // Refuse symlinks and do not preserve permissive modes of existing receipts.
+  const file = await open(absoluteReceiptPath,
+    constants.O_WRONLY | constants.O_CREAT | constants.O_NOFOLLOW, 0o600);
+  try {
+    const stat = await file.stat();
+    assert(stat.isFile() && stat.nlink === 1, "PNPK receipt requires a private regular file");
+    await file.chmod(0o600);
+    await file.truncate(0);
+    await file.writeFile(`${JSON.stringify(receipt, null, 2)}\n`, "utf8");
+  } finally {
+    await file.close();
+  }
 
   if (!ok) {
     const failed = results.find((result) => !result.ok)?.id || "missing_step";
@@ -231,7 +233,7 @@ async function main() {
     console.error(JSON.stringify({
       ok: false,
       decision: "fail_closed",
-      reason: String(error?.message || error)
+      reason: "pnpk_postbuild_failed"
     }, null, 2));
     process.exitCode = 1;
   }

@@ -11,7 +11,7 @@
   "remoteEnv": {
     "SKYGRID_PRIVACY_DEFAULT": "private",
     "SKYGRID_SENSITIVE_STDOUT": "disabled",
-    "SKYGRID_EXTERNAL_EXPORT": "explicit-only",
+    "SKYGRID_EXTERNAL_EXPORT": "disabled ",
     "SKYGRID_EVIDENCE_DIR": "/home/vscode/.skygrid-private"
   },
   "mounts": [

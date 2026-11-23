@@ -1,5 +1,22 @@
 # SKYGRID — Mobile AI Failover Dispatcher v1
 
+## AuraSky umbrella and ownership
+
+[AuraSky — SKYGRID-protocol](https://aurasky.Skygrid-protocol.net) is the umbrella for Aura-Core, PNPK and Auto-Drill.
+
+**Michael Vincent Patrick — MVPuknowme** declares sole ownership of these software projects and the AuraSky design. Until documented partnership agreements are present, no partner ownership or payment entitlement is assigned. Record future software/licensing and capacity-provider agreements separately.
+
+**Licensing:** exclusive, all-rights-reserved control of new original owner-controlled material. See [LICENSE](LICENSE) and [licensing scope](docs/licensing/exclusive-rights.md). Previously granted MIT/CC0 and third-party permissions remain identified and preserved.
+
+### PNPK + Auto-Drill integration
+
+- **PNPK:** preview supported unsigned EVM transfers and approvals, compare simulated effects with policy, and produce a transaction-bound assessment receipt before user approval.
+- **Auto-Drill:** plan region-scoped shared-capacity leases and reconcile actual signed usage, invoices and settlement evidence. Lease availability or a successful simulation does not prove income or payment.
+- **Commercial model:** $0 upfront capacity rent; 350 bps / 3.5% SKYGRID and 9,650 bps / 96.5% capacity-owner accounting shares of verified operating revenue. Where Michael Vincent Patrick is both software and capacity owner, both shares are attributable to him; this does not create an external partner payout or double the revenue.
+- **Payment status:** missing, stale, contradictory or unverified payment evidence blocks a paid-use assessment. Unpaid/partially paid use remains visible for reconciliation. No automatic bank charge, wallet signature, payout or compute activation is introduced.
+
+See [PNPK integration notes](docs/integrations/pnpk-integration.md), [transaction-preview setup](docs/pnpk-transaction-preflight.md), and [Auto-Drill lease-use integration](docs/integrations/autodrill-lease-use.md). These features are under review in [PR #252](https://github.com/MVPuknowme/Aura-core/pull/252); no claim of live deployment or paid revenue follows from the README.
+
 ## What it is
 
 **SKYGRID is a phone-first emergency data on-ramp/off-ramp.**
@@ -78,3 +95,4 @@ Simulated outage drills for ISP failure, power loss, hurricane/cellular loss, DN
 
 **`/settings`**  
 Thresholds, ping targets, transport toggles, and agent endpoint contract.
+

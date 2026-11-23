@@ -1,38 +1,125 @@
-# SKYGRID Privacy-by-Default Development Policy
+# SKYGRID privacy-by-default evidence handling
 
 ## Purpose
 
-Security evidence, identity data, financial metadata, receipts, network telemetry, certificates, and other sensitive artifacts are private by default.
+Security evidence, personal data, network metadata, credentials, and incident artifacts are private by default.
 
-## Development boundary
+The implementation must minimize collection, avoid accidental logging, and fail closed on export.
 
-- Keep sensitive working copies outside the Git worktree.
-- The dev container uses a private Docker volume at `/home/vscode/.skygrid-private`.
-- Do not print raw evidence, secrets, credentials, wallet data, receipt contents, IP histories, or personally identifiable information to stdout/stderr.
-- Do not commit evidence folders, credentials, secrets, private keys, or environment files.
-- Keep the canonical evidence copy in encrypted private storage with integrity hashes; the dev-container copy is a working copy, not the sole source of truth.
-- No automatic external upload, bounty submission, public posting, or third-party disclosure.
+## Storage model
 
-## Disclosure boundary
+The canonical evidence source should be encrypted and access-controlled.
 
-External disclosure requires an explicit authorization gate and a defined destination and purpose.
+A dev container may receive an ephemeral working copy for analysis. The dev container is not the sole evidence archive and should not be treated as durable storage.
 
-Permitted purposes:
+The strict privacy dev container runs without network access and uses an ephemeral `/workspaces/private-evidence` tmpfs mount.
 
-1. user-requested export;
-2. authorized security disclosure;
-3. response to a valid legal requirement.
+The mount starts with mode `0700`. On every start, the privileged lifecycle command
+sets ownership to the explicit `node` remote user and enforces mode `0700` before
+checking write access. Stop/start discards the working copy; initialization must
+also succeed after a restart.
 
-The system must not volunteer private material to government agencies or other third parties without user authorization, except where disclosure is required by applicable law or valid legal process.
+VS Code telemetry is configured with `telemetry.telemetryLevel: off`. Use a clean
+VS Code profile with that user setting already applied before opening evidence.
+The image's inherited ESLint extension is explicitly removed. Other inherited/local extensions
+can have independent telemetry: disable them for evidence review, or verify each
+extension's telemetry controls first. Container network isolation does not isolate
+the host editor, and policy environment variables do not enforce application logging.
 
 ## Logging
 
-Application code should construct minimal audit records rather than emit raw objects. Logging is disabled by default for security-sensitive workflows. If explicitly enabled, only allowlisted operational metadata may be emitted.
+Sensitive evidence must not be printed to stdout, application logs, CI logs, or debugging output.
 
-## Evidence integrity
+Audit events should record only operational metadata needed to prove that a review occurred, such as event name, timestamp, record count, and status.
 
-- Raw evidence is immutable.
-- Derivations and analysis are stored separately.
-- Record hashes for preserved artifacts when practical.
-- Preserve timestamps and provenance.
-- Never treat a development working copy as authoritative when the encrypted canonical artifact exists.
+## Export boundary
+
+Exports fail closed by default.
+
+User-directed exports and authorized security disclosures require explicit operator approval and a defined destination.
+
+A required legal response is a separate path. The requirement and recipient must be verified, the scope must be minimized, and unrelated data must not be included.
+
+`mayExport` requires literal `true` values for `legalRequirementVerified`,
+`recipientVerified`, and `scopeMinimized` on that path. These are caller attestations,
+not automatic legal or recipient validation; the trusted caller must bind its
+verification to the actual destination and selected evidence. Destinations must be
+nonblank strings without control characters. This gate does not transmit evidence.
+
+The existing `lib/security/privacy-boundary.mjs` delegates to this shared gate,
+while retaining its additional operator approval and legal-basis requirements.
+Its audit emission remains disabled by default and re-sanitizes enabled output.
+The general development profile uses a separate persistent working volume at
+`/home/vscode/.skygrid-private`; select `.devcontainer/privacy/devcontainer.json`
+for strict offline ephemeral evidence review.
+
+Audit events are limited to `evidence.review`, `export.allowed`, and `export.denied`;
+statuses are limited to `ok`, `denied`, and `error`. Other values become `unknown`.
+Counts must be nonnegative safe integers. Redaction returns only `[REDACTED]`,
+including for structured values, so keys and secret fragments are not retained.
+
+The system does not voluntarily submit private information to a government agency or other third party without user direction.
+
+## Repository boundary
+
+Do not commit raw evidence, private keys, certificate private material, environment files, credentials, or other sensitive artifacts.
+
+Tracked repository files may define policy, schemas, tests, sanitized examples, and hashes that do not reveal the underlying private evidence.
+
+## Review checklist
+
+- Private by default.
+- Telemetry disabled for evidence analysis.
+- No sensitive stdout or debug logging.
+- No secret material in Git.
+- Ephemeral dev-container working copy.
+- No network in strict evidence-analysis mode.
+- Explicit approval before user-directed export.
+- Verified and minimized handling for a valid legal requirement.
+- Raw evidence remains immutable.
+
+## Required approval checks
+
+- `Privacy Evidence Boundary / privacy-tests`: run `npm run privacy:test` on Node 24,
+  covering all export gates, invalid destinations, audit fields, complete redaction,
+  ignore patterns, and devcontainer configuration.
+- `Privacy Evidence Boundary / privacy-devcontainer-smoke`: create the actual
+  privacy configuration, verify the remote user is `node`, tmpfs ownership/mode
+  is `node:node:700`, writes succeed as `node`, and `nobody` has no read/write access;
+  verify no default network route and run the same privacy tests offline.
+- Restart the privacy container, reopen it through the Dev Containers lifecycle,
+  and repeat the ownership, access, tmpfs, and network checks before introducing
+  evidence. Confirm the host editor's effective telemetry setting is `off` and
+  independent extensions are disabled or verified. Static tests cannot prove this.
+- Resolve the PR's merge conflicts and require passing repository checks on the
+  resulting head. Review all eight findings against that head before approval.
+
+Ignore rules prevent accidental additions of untracked files, not forced additions
+or leaks from files already tracked. Review the staged diff before committing.
+
+## PNPK private receipt enforcement
+
+Every export purpose requires literal verified-recipient and minimized-scope signals,
+including user-approved disclosures. `exportPrivacyReceipt` returns a minimized
+preflight record with monitoring status `unknown`, instrumented-boundary-only
+scope, no content capture, and no execution authority. It records caller
+attestations, not a covert-investigation finding or a legal conclusion.
+
+Post-build receipts retain only fixed step IDs, timestamps, boolean outcomes,
+integer exit codes, and timeout flags. Child output is not captured; arbitrary
+result fields and exception messages are not stored. Malformed results fail closed.
+On POSIX filesystems, receipt writes reject final-path symlinks and multiply linked
+files and enforce mode `0600`, including for an existing receipt. Use a private,
+trusted parent directory; Windows requires independently verified file ACLs.
+
+`deliverPrivateReceipt` accepts only a trusted configured HTTPS relay and transport
+adapter. Before delivery, the adapter must independently verify destination-bound
+VPN or outsourced-relay egress and enforce that route throughout delivery. Direct,
+unknown, failed, or mismatched transport stays blocked without fallback. Delivery
+payloads omit source IP, MAC, device identifiers, content, arbitrary metadata, and
+raw evidence hashes. The adapter must also omit these from headers and logs.
+
+No live VPN/relay adapter or endpoint is configured by this patch. The helper
+does not install a VPN or intercept device traffic. Other receipts and network
+paths are not covered until they use this boundary; finance execution retains
+its existing authorization gates and is not enabled by any privacy receipt.

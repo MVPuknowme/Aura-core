@@ -769,10 +769,16 @@
       "delayed_notice_requires_expiration_or_review_at": true
     },
     "receipt_content_policy": {
+      "network_identifiers_allowed": false,
       "metadata_and_hashes_only": true,
       "call_or_message_content_allowed": false,
       "public_receipts_redacted": true,
       "secrets_or_protected_details_allowed": false
+    },
+    "receipt_delivery_policy": {
+      "verified_private_route_required": true,
+      "direct_network_fallback_allowed": false,
+      "unverified_route_behavior": "fail_closed_no_delivery"
     },
     "grade_outcomes": [
       "verified_current",

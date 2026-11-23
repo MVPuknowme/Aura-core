@@ -1,0 +1,28 @@
+{
+  "version": "1.0",
+  "policy": "skygrid_privacy_by_default",
+  "defaults": {
+    "privacy": "private",
+    "telemetry": "disabled",
+    "sensitive_stdout": "prohibited",
+    "external_export": "explicit_authorization_only",
+    "public_sharing": "disabled",
+    "pii_collection": "minimum_necessary",
+    "retention": "user_controlled",
+    "raw_evidence_mutation": "prohibited"
+  },
+  "devcontainer": {
+    "network_scope": "offline_private",
+    "working_copy": "ephemeral",
+    "evidence_path": "/workspaces/private-evidence",
+    "secrets_in_repo": "prohibited",
+    "secrets_in_logs": "prohibited",
+    "clipboard_export": "manual_only"
+  },
+  "disclosure": {
+    "bounty_submission": "explicit_approval_required",
+    "third_party_release": "explicit_user_authorization_or_valid_legal_requirement",
+    "government_submission": "no_voluntary_submission_without_user_direction",
+    "required_legal_response": "verify_scope_and_minimize_disclosure"
+  }
+}

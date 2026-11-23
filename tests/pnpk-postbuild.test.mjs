@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile, stat, symlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import {
@@ -63,6 +63,15 @@ test("post-build policy rejects embedded commands", async () => {
     () => validatePostBuildPolicy(pnpk),
     /executable or unsupported fields/
   );
+});
+
+test("access policy rejects network identity receipts and direct delivery fallback", async () => {
+  const pnpk = await loadPnpk();
+  pnpk.access_transparency.receipt_content_policy.network_identifiers_allowed = true;
+  assert.throws(() => validateAccessTransparencyPolicy(pnpk), /network identifiers/);
+  pnpk.access_transparency.receipt_content_policy.network_identifiers_allowed = false;
+  pnpk.access_transparency.receipt_delivery_policy.direct_network_fallback_allowed = true;
+  assert.throws(() => validateAccessTransparencyPolicy(pnpk), /without direct fallback/);
 });
 
 test("post-build policy rejects missing or reordered required steps", async () => {
@@ -176,4 +185,52 @@ test("runner stops at the first failed step and writes a fail-closed receipt", a
   } finally {
     await rm(receiptRoot, { recursive: true, force: true });
   }
+});
+
+test("runner removes private output and extra fields and repairs existing receipt permissions", async () => {
+  const directory = await mkdtemp(path.join(tmpdir(), "pnpk-private-"));
+  const receiptPath = path.join(directory, "receipt.json");
+  try {
+    await writeFile(receiptPath, "old", { mode: 0o644 });
+    const result = await runPostBuild({ root, pnpkPath, receiptPath,
+      executeStep: async () => ({ ok: true, exit_code: 0, timed_out: false,
+        stdout: "secret token", stderr: "private IP", secret: "private key",
+        id: "spoofed", decision: "unsafe" }) });
+    const raw = await readFile(receiptPath, "utf8");
+    for (const forbidden of ["secret token", "private IP", "private key", "spoofed", "unsafe", "stdout", "stderr"]) {
+      assert.equal(raw.includes(forbidden), false);
+    }
+    assert.deepEqual(result.receipt.steps.map(step => step.id), REQUIRED_STEP_IDS);
+    if (process.platform !== "win32") assert.equal((await stat(receiptPath)).mode & 0o777, 0o600);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});
+
+test("runner denies malformed success and receipts a thrown step without its exception", async () => {
+  const directory = await mkdtemp(path.join(tmpdir(), "pnpk-failure-"));
+  try {
+    for (const result of [{ ok: "true", exit_code: 0, timed_out: false },
+      { ok: true, exit_code: 1, timed_out: false }, { ok: true, exit_code: 0, timed_out: true }, null]) {
+      const receiptPath = path.join(directory, "receipt.json");
+      await assert.rejects(runPostBuild({ root, pnpkPath, receiptPath,
+        executeStep: async () => result }), /failed closed/);
+      assert.equal(JSON.parse(await readFile(receiptPath)).steps.length, 1);
+    }
+    const receiptPath = path.join(directory, "receipt.json");
+    await assert.rejects(runPostBuild({ root, pnpkPath, receiptPath,
+      executeStep: async () => { throw new Error("secret credential"); } }), /failed closed/);
+    assert.equal((await readFile(receiptPath, "utf8")).includes("secret credential"), false);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});
+
+test("runner refuses symlink receipt destinations", { skip: process.platform === "win32" }, async () => {
+  const directory = await mkdtemp(path.join(tmpdir(), "pnpk-symlink-"));
+  try {
+    const target = path.join(directory, "target.json");
+    const receiptPath = path.join(directory, "receipt.json");
+    await writeFile(target, "unchanged");
+    await symlink(target, receiptPath);
+    await assert.rejects(runPostBuild({ root, pnpkPath, receiptPath,
+      executeStep: async () => ({ ok: true, exit_code: 0, timed_out: false }) }));
+    assert.equal(await readFile(target, "utf8"), "unchanged");
+  } finally { await rm(directory, { recursive: true, force: true }); }
 });

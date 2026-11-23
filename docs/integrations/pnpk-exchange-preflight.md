@@ -20,6 +20,59 @@ Required evidence includes:
 
 Any failed required check yields `FAIL_CLOSED`.
 
+## Operator configuration and public receipts
+
+The evaluator now loads `config/pnpk-exchange-preflight.v1.json`. Its configured
+limits are 5,000 ms quote age, 50 bps slippage and 100 bps price impact. Request
+policy can tighten those limits but cannot raise them. When the operator sets
+`vpn_required: true`, a request cannot switch off the VPN checks.
+
+The owner selected **Base mainnet**, so `approved_route_networks` contains only
+`eip155:8453` (chain ID 8453). See the [Base chain-ID reference](https://docs.base.org/base-chain/api-reference/ethereum-json-rpc-api/eth_chainId).
+Base Sepolia and other networks are not authorized by this selection.
+`approved_providers` remains empty until the owner identifies the actual venue.
+Base identifies the network; it does not select an exchange provider. Empty provider lists hold all routes;
+the caller cannot authorize a venue by placing an allowlist in its request.
+The evaluator's third argument is reserved for trusted server configuration;
+never populate it from a request. No exchange or bank credentials are stored
+in this policy. The existing quote/network/market observations remain supplied
+inputs, not independently authenticated exchange telemetry.
+
+Receipts publicly identify Michael Vincent Patrick — MVPuknowme, the requested
+provider, network and asset pair, measured quote conditions, effective limits,
+check outcomes and a policy hash. They exclude arbitrary input fields such as
+bank credentials. Put only public business identifiers in intent, provider,
+network and pair fields. A receipt hash is an integrity fingerprint, not a
+signature or an execution grant.
+
+## Aura Recon payout workflow
+
+The opt-in owner-dispatched assessment job now runs the exchange preflight
+before founder payout assessment. Supply the observation object as the
+`PNPK_EXCHANGE_PREFLIGHT_JSON` secret in the existing environment. It uses the
+same input contract as `evaluateExchangePreflight`: `intentId`, `routeNetworkId`,
+`assetPair`, `provider`, `network`, `vpn`, `market`, `quote`, and optional tighter
+`policy` limits. Never put a private bank account or API key in an identifier.
+
+The workflow publishes the generated `exchange-preflight-public.json` receipt
+even when checks hold the route, and skips founder assessment when exchange
+preflight fails. Missing/malformed observations produce a fixed public failure
+record without logging the input. No secrets, environment settings or venue
+allowlists have been configured remotely by this code change.
+
+For an operator-supplied observation snapshot already loaded privately into the
+environment, run with Node 24:
+
+```bash
+node scripts/exchange-preflight.mjs --output /private/exchange-preflight-public.json
+```
+
+Exit 0 means route checks passed; exit 1 means held or invalid input/output.
+Reports refuse overwrite. A passing route does not establish a payout amount,
+source balance, destination verification, payment, or permission to trade. Bank
+payout integration still requires the provider and destination described in
+[founder payout preparation](../accounting/founder-payout-preflight.md).
+
 ## What this can guarantee
 
 When the evaluator and its inputs are valid, PNPK can guarantee that a route
