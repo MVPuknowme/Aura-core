@@ -1,19 +1,26 @@
 ﻿param(
-  [int]$DurationSeconds = 180,
-  [int]$IntervalSeconds = 10,
+  [ValidateRange(1,3600)][int]$DurationSeconds = 180,
+  [ValidateRange(1,3600)][int]$IntervalSeconds = 10,
   [string]$ExpectedSsid = "Base",
   [int]$ExpectedChannel = 1,
-  [int]$MinimumSignalPercent = 70
+  [ValidateRange(0,100)][int]$MinimumSignalPercent = 70,
+  [string]$OutputRoot = (Join-Path ([System.IO.Path]::GetTempPath()) "skygrid-network"),
+  [switch]$IncludeFirewallDrops
 )
 
 $ErrorActionPreference = "Continue"
 
-$Root = "E:\Aura-core"
+$Root = $OutputRoot
+$ErrorCountAtStart = $Error.Count
+$collectionIncomplete = $false
+$wlanReadFailed = $false
+$sampleCount = 0
+$runStatus = "INCOMPLETE"
 $Stamp = Get-Date -Format "yyyy-MM-dd-HHmmss"
-$OutDir = Join-Path $Root ".skygrid\network\firewall-freq-leak-test-$Stamp"
+$OutDir = Join-Path $Root ("firewall-freq-leak-test-{0}-{1}" -f $Stamp, [guid]::NewGuid().ToString("N").Substring(0,8))
 $FirewallLogPath = "C:\Windows\System32\LogFiles\Firewall\pfirewall.log"
 
-New-Item -ItemType Directory -Force $OutDir | Out-Null
+New-Item -ItemType Directory -Force $OutDir -ErrorAction Stop | Out-Null
 
 $Summary = Join-Path $OutDir "skygrid-firewall-freq-leak-summary.md"
 $SamplesCsv = Join-Path $OutDir "network-samples.csv"
@@ -37,13 +44,14 @@ function Add-Finding {
 }
 
 function Get-WlanText {
-  try { return (netsh wlan show interfaces | Out-String) }
-  catch { return "netsh wlan show interfaces failed: $($_.Exception.Message)" }
-}
-
-function Get-WlanNetworksText {
-  try { return (netsh wlan show networks mode=bssid | Out-String) }
-  catch { return "netsh wlan show networks failed: $($_.Exception.Message)" }
+  try {
+    $output = netsh wlan show interfaces | Out-String
+    if ($LASTEXITCODE -ne 0) { throw "netsh exited with $LASTEXITCODE" }
+    return $output
+  } catch {
+    $script:wlanReadFailed = $true
+    return "Wi-Fi interface status unavailable"
+  }
 }
 
 function Parse-WlanInterface {
@@ -77,15 +85,17 @@ Write-Host "Output: $OutDir"
 Write-Host "Duration: $DurationSeconds seconds"
 Write-Host ""
 
-# Enable forward-looking firewall dropped connection logging.
-try {
-  New-Item -ItemType Directory -Force C:\Windows\System32\LogFiles\Firewall | Out-Null
-  netsh advfirewall set allprofiles logging filename C:\Windows\System32\LogFiles\Firewall\pfirewall.log | Out-Null
-  netsh advfirewall set allprofiles logging maxfilesize 32767 | Out-Null
-  netsh advfirewall set allprofiles logging droppedconnections enable | Out-Null
-  netsh advfirewall set allprofiles logging allowedconnections disable | Out-Null
-} catch {
-  Add-Finding "warning" "firewall-logging" "Could not configure firewall logging" $_.Exception.Message
+# Read existing logs only when requested; never change firewall settings.
+$dropBaseline = @()
+$dropState = "NOT_REQUESTED"
+if ($IncludeFirewallDrops) {
+  try {
+    $dropBaseline = @(Get-Content -LiteralPath $FirewallLogPath -ErrorAction Stop)
+    $dropState = "BASELINE_OK"
+  } catch {
+    $dropState = "UNAVAILABLE"
+    $collectionIncomplete = $true
+  }
 }
 
 # Baseline snapshots.
@@ -123,20 +133,19 @@ Get-DnsClientServerAddress |
   Export-Csv -NoTypeInformation -Encoding utf8 (Join-Path $OutDir "dns-client-server-addresses.csv")
 
 (Get-WlanText) | Set-Content -Encoding utf8 (Join-Path $OutDir "wlan-interface-before.txt")
-(Get-WlanNetworksText) | Set-Content -Encoding utf8 (Join-Path $OutDir "wlan-networks-before.txt")
 
 # Parameter checks.
 $wlan = Parse-WlanInterface
 
-if ($wlan.ssid -ne $ExpectedSsid) {
+if ($wlan.ssid -and $wlan.ssid -ne $ExpectedSsid) {
   Add-Finding "warning" "wifi" "Connected SSID does not match expected SSID" "expected=$ExpectedSsid actual=$($wlan.ssid)"
 }
 
-if ([int]$wlan.channel -ne $ExpectedChannel) {
+if ($wlan.channel -match "^\d+$" -and [int]$wlan.channel -ne $ExpectedChannel) {
   Add-Finding "warning" "wifi" "Wi-Fi channel changed from expected parameter" "expected=$ExpectedChannel actual=$($wlan.channel)"
 }
 
-if ([int]$wlan.signal -lt $MinimumSignalPercent) {
+if ($wlan.signal -match "^\d+$" -and [int]$wlan.signal -lt $MinimumSignalPercent) {
   Add-Finding "warning" "wifi" "Wi-Fi signal below threshold" "minimum=$MinimumSignalPercent actual=$($wlan.signal)"
 }
 
@@ -168,17 +177,18 @@ $end = (Get-Date).AddSeconds($DurationSeconds)
 while ((Get-Date) -lt $end) {
   $now = (Get-Date).ToUniversalTime().ToString("o")
   $w = Parse-WlanInterface
+  if ($w.ssid -and $w.channel -match "^\d+$" -and $w.signal -match "^\d+$") { $sampleCount++ }
 
   Get-NetTCPConnection -ErrorAction SilentlyContinue |
     ForEach-Object {
-      $row = '"' + $now + '","tcp","' + $_.LocalAddress + '","' + $_.LocalPort + '","' + $_.RemoteAddress + '","' + $_.RemotePort + '","' + $_.State + '","' + $_.OwningProcess + '","' + $w.ssid + '","' + $w.bssid + '","' + $w.channel + '","' + $w.signal + '","' + $w.radio + '"'
-      Add-Content -Encoding utf8 $SamplesCsv $row
+      $record = [pscustomobject][ordered]@{timestamp=$now;type="tcp";localAddress=$_.LocalAddress;localPort=$_.LocalPort;remoteAddress=$_.RemoteAddress;remotePort=$_.RemotePort;state=$_.State;owningProcess=$_.OwningProcess;ssid=$w.ssid;bssid=$w.bssid;channel=$w.channel;signal=$w.signal;radio=$w.radio}
+      $record | Export-Csv -NoTypeInformation -Encoding utf8 -Append -Path $SamplesCsv
     }
 
   Get-NetUDPEndpoint -ErrorAction SilentlyContinue |
     ForEach-Object {
-      $row = '"' + $now + '","udp","' + $_.LocalAddress + '","' + $_.LocalPort + '","","","endpoint","' + $_.OwningProcess + '","' + $w.ssid + '","' + $w.bssid + '","' + $w.channel + '","' + $w.signal + '","' + $w.radio + '"'
-      Add-Content -Encoding utf8 $SamplesCsv $row
+      $record = [pscustomobject][ordered]@{timestamp=$now;type="udp";localAddress=$_.LocalAddress;localPort=$_.LocalPort;remoteAddress="";remotePort="";state="endpoint";owningProcess=$_.OwningProcess;ssid=$w.ssid;bssid=$w.bssid;channel=$w.channel;signal=$w.signal;radio=$w.radio}
+      $record | Export-Csv -NoTypeInformation -Encoding utf8 -Append -Path $SamplesCsv
     }
 
   Start-Sleep -Seconds $IntervalSeconds
@@ -196,43 +206,26 @@ Get-NetUDPEndpoint |
   Export-Csv -NoTypeInformation -Encoding utf8 (Join-Path $OutDir "udp-endpoints-after.csv")
 
 (Get-WlanText) | Set-Content -Encoding utf8 (Join-Path $OutDir "wlan-interface-after.txt")
-(Get-WlanNetworksText) | Set-Content -Encoding utf8 (Join-Path $OutDir "wlan-networks-after.txt")
 
 # Parse firewall DROP records if present.
-$DropsCsv = Join-Path $OutDir "firewall-drops.csv"
 
-if (Test-Path $FirewallLogPath) {
-  Get-Content $FirewallLogPath |
-    Where-Object { $_ -and $_ -notmatch "^#" -and $_ -match "\bDROP\b" } |
-    ForEach-Object {
-      $p = $_ -split "\s+"
-      if ($p.Count -ge 8) {
-        [pscustomobject]@{
-          date = $p[0]
-          time = $p[1]
-          action = $p[2]
-          protocol = $p[3]
-          sourceIp = $p[4]
-          destinationIp = $p[5]
-          sourcePort = $p[6]
-          destinationPort = $p[7]
-          raw = $_
-        }
-      }
-    } | Export-Csv -NoTypeInformation -Encoding utf8 $DropsCsv
-} else {
-  "date,time,action,protocol,sourceIp,destinationIp,sourcePort,destinationPort,raw" |
-    Set-Content -Encoding utf8 $DropsCsv
-}
-
-# Hash manifest.
-$HashManifest = Join-Path $OutDir "hash-manifest-sha256.csv"
-"file,sha256,size_bytes,hashed_utc" | Set-Content -Encoding utf8 $HashManifest
-
-Get-ChildItem $OutDir -File | ForEach-Object {
-  $h = Get-FileHash -Algorithm SHA256 $_.FullName
-  $row = '"' + $_.Name + '","' + $h.Hash + '","' + $_.Length + '","' + (Get-Date).ToUniversalTime().ToString("o") + '"'
-  Add-Content -Encoding utf8 $HashManifest $row
+$dropCount = 0
+if ($dropState -eq "BASELINE_OK") {
+  try {
+    $endLog = @(Get-Content -LiteralPath $FirewallLogPath -ErrorAction Stop)
+    $consistent = $endLog.Count -ge $dropBaseline.Count
+    for ($i=0; $consistent -and $i -lt $dropBaseline.Count; $i++) {
+      $consistent = [string]::Equals($dropBaseline[$i], $endLog[$i], [StringComparison]::Ordinal)
+    }
+    if (-not $consistent) { throw "Log changed or rotated during sampling" }
+    $drops = @($endLog | Select-Object -Skip $dropBaseline.Count |
+      Where-Object { $_ -and $_ -notmatch "^#" -and (($_ -split "\s+")[2] -eq "DROP") })
+    $dropCount = $drops.Count
+    $dropState = "READ_NEW_ENTRIES"
+  } catch {
+    $dropState = "UNAVAILABLE_OR_ROTATED"
+    $collectionIncomplete = $true
+  }
 }
 
 # Summary.
@@ -241,15 +234,16 @@ if (Test-Path $FindingsCsv) {
   $findingsText = Import-Csv $FindingsCsv | Format-Table -AutoSize | Out-String
 }
 
-$dropCount = 0
-try {
-  $dropCount = @(Import-Csv $DropsCsv).Count
-} catch {}
+if ($sampleCount -gt 0 -and -not $wlanReadFailed -and -not $collectionIncomplete -and $Error.Count -eq $ErrorCountAtStart) {
+  $runStatus = "COLLECTED"
+}
 
 @"
 # SKYGRID Firewall + Frequency-Leak Indicator Test
 
 Generated: $(Get-Date)
+Collection status: $runStatus
+Valid Wi-Fi sample intervals: $sampleCount
 Duration seconds: $DurationSeconds
 Interval seconds: $IntervalSeconds
 
@@ -268,7 +262,6 @@ This test captures:
 - UDP endpoints
 - DNS server configuration
 - Wi-Fi SSID/BSSID/channel/signal/radio metadata
-- visible Wi-Fi network/channel metadata
 - Bluetooth device state
 - Wi-Fi Direct adapter state
 - firewall DROP metadata, if present
@@ -282,7 +275,8 @@ It does not capture RF content, packet payloads, private messages, credentials, 
 
 ## Firewall DROP Rows
 
-DROP rows parsed: $dropCount
+Firewall log status: $dropState
+New DROP rows observed: $dropCount
 
 ## Findings
 
@@ -300,10 +294,15 @@ $OutDir
 - Stable SSID/channel/signal with no unexpected listeners is the desired quiet state.
 "@ | Set-Content -Encoding utf8 $Summary
 
-Write-Host ""
-Write-Host "SKYGRID test complete." -ForegroundColor Green
-Write-Host "Output:  $OutDir"
-Write-Host "Summary: $Summary"
-
-notepad $Summary
-explorer.exe $OutDir
+$HashManifest = Join-Path $OutDir "hash-manifest-sha256.csv"
+Get-ChildItem -LiteralPath $OutDir -File |
+  Where-Object Name -ne "hash-manifest-sha256.csv" |
+  ForEach-Object {
+    [pscustomobject]@{
+      file = $_.Name
+      sha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $_.FullName -ErrorAction Stop).Hash
+      size_bytes = $_.Length
+    }
+  } | Export-Csv -NoTypeInformation -Encoding utf8 -LiteralPath $HashManifest -ErrorAction Stop
+Write-Output ("SKYGRID diagnostic status: {0}. Summary: {1}" -f $runStatus, $Summary)
+if ($runStatus -ne "COLLECTED") { exit 2 }
